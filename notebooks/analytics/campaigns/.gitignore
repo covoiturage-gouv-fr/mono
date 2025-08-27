@@ -1,0 +1,3 @@
+outputs*
+db.duckdb*
+*.parquet
