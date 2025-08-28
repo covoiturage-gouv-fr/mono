@@ -3,7 +3,7 @@
 Notebooks d'analyse de données des campagnes d'incitation.
 Deux territoires de campagne ont été analysés :
 
-- Pôle métropolitain du Genevois français (Pôle métropolitain du Genevois français)
+- Pôle métropolitain du Genevois français (PMGF)
 - Île-de-France Mobilités (IDFM)
 
 ## Démarrage rapide
