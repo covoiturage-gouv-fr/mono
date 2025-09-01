@@ -7,7 +7,7 @@ import { useState } from "react";
 
 export default function SelectOperator(props: { defaultValue?: number; onChange: (id?: number) => void }) {
   const [value, setValue] = useState<number | undefined>(props.defaultValue);
-  const url = `${Config.get<string>("next.public_api_url", "")}/v3/dashboard/operators`;
+  const url = `${Config.get<string>("next.public_api_url", "")}/v3/dashboard/operators?limit=100`;
   const { data } = useApi<OperatorsInterface>(url, true);
   return (
     <Select
