@@ -4,16 +4,11 @@ models:
     columns:
       - name: year
         data_type: smallint
-        description: ''
       - name: type
         data_type: text
-        description: ''
       - name: code
         data_type: character varying
-        description: ''
       - name: libelle
         data_type: character varying
-        description: ''
       - name: geom
         data_type: USER-DEFINED
-        description: ''

@@ -4,133 +4,101 @@ models:
     columns:
       - name: user_identity_key
         data_type: character varying
-        description: ''
       - name: num_trips
         data_type: bigint
-        description: ''
       - name: num_trips_as_driver
         data_type: bigint
-        description: ''
       - name: num_trips_as_passenger
         data_type: bigint
-        description: ''
       - name: num_journeys
         data_type: bigint
-        description: ''
       - name: num_journeys_as_driver
         data_type: bigint
-        description: ''
       - name: num_journeys_as_passenger
         data_type: bigint
-        description: ''
       - name: datetime_first_trip
         data_type: timestamp with time zone
-        description: ''
       - name: datetime_first_trip_as_driver
         data_type: timestamp with time zone
-        description: ''
       - name: datetime_first_trip_as_passenger
         data_type: timestamp with time zone
-        description: ''
       - name: datetime_last_trip
         data_type: timestamp with time zone
-        description: ''
       - name: datetime_last_trip_as_driver
         data_type: timestamp with time zone
-        description: ''
       - name: datetime_last_trip_as_passenger
         data_type: timestamp with time zone
-        description: ''
       - name: average_journey_duration
         data_type: interval
-        description: ''
       - name: average_journey_duration_as_driver
         data_type: interval
-        description: ''
       - name: average_journey_duration_as_passenger
         data_type: interval
-        description: ''
       - name: average_journey_distance
         data_type: numeric
-        description: ''
       - name: average_journey_distance_as_driver
         data_type: numeric
-        description: ''
       - name: average_journey_distance_as_passenger
         data_type: numeric
-        description: ''
       - name: min_journey_distance
         data_type: integer
-        description: ''
       - name: min_journey_distance_as_driver
         data_type: integer
-        description: ''
       - name: min_journey_distance_as_passenger
         data_type: integer
-        description: ''
       - name: max_journey_distance
         data_type: integer
-        description: ''
       - name: max_journey_distance_as_driver
         data_type: integer
-        description: ''
       - name: max_journey_distance_as_passenger
         data_type: integer
-        description: ''
       - name: total_traveled_days
         data_type: bigint
-        description: ''
       - name: total_traveled_days_as_driver
         data_type: bigint
-        description: ''
       - name: total_traveled_days_as_passenger
         data_type: bigint
-        description: ''
       - name: num_unique_operators
         data_type: bigint
-        description: ''
       - name: num_unique_operators_as_driver
         data_type: bigint
-        description: ''
       - name: num_unique_operators_as_passenger
         data_type: bigint
-        description: ''
       - name: list_distinct_operators
         data_type: ARRAY
-        description: ''
       - name: list_distinct_operators_as_driver
         data_type: ARRAY
-        description: ''
       - name: list_distinct_operators_as_passenger
         data_type: ARRAY
-        description: ''
       - name: average_passenger_seats
         data_type: numeric
-        description: ''
       - name: average_passenger_seats_as_driver
         data_type: numeric
-        description: ''
       - name: average_passenger_seats_as_passenger
         data_type: numeric
-        description: ''
       - name: num_nightime_22_5_trips
         data_type: bigint
-        description: ''
       - name: num_nightime_22_5_trips_as_driver
         data_type: bigint
-        description: ''
       - name: num_nightime_22_5_trips_as_passenger
         data_type: bigint
-        description: ''
+      - name: average_speed
+        data_type: numeric
+      - name: average_speed_as_driver
+        data_type: numeric
+      - name: average_speed_as_passenger
+        data_type: numeric
       - name: total_incentives_as_driver
         data_type: numeric
-        description: ''
+      - name: total_revenue_as_driver
+        data_type: bigint
+      - name: total_passengers_contribution_as_driver
+        data_type: bigint
       - name: total_consecutives_intraday_role_changes
         data_type: numeric
-        description: ''
       - name: avg_daily_consecutives_intraday_role_changes
         data_type: numeric
-        description: ''
       - name: max_daily_consecutives_intraday_role_changes
         data_type: bigint
-        description: ''
+      - name: run_at
+        data_type: timestamp with time zone

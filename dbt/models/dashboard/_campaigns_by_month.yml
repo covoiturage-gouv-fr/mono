@@ -3,16 +3,9 @@ models:
   - name: campaigns_by_month
     columns:
       - name: year
-        description: ''
       - name: month
-        description: ''
       - name: campaign_id
-        description: ''
       - name: operator_id
-        description: ''
       - name: journeys
-        description: ''
       - name: incented_journeys
-        description: ''
       - name: incentive_amount
-        description: ''

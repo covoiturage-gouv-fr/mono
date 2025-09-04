@@ -4,28 +4,19 @@ models:
     columns:
       - name: from
         data_type: character varying
-        description: ''
       - name: to
         data_type: character varying
-        description: ''
       - name: start_date
         data_type: date
-        description: ''
       - name: journeys
         data_type: bigint
-        description: ''
       - name: drivers
         data_type: bigint
-        description: ''
       - name: passengers
         data_type: bigint
-        description: ''
       - name: passenger_seats
         data_type: bigint
-        description: ''
       - name: distance
         data_type: bigint
-        description: ''
       - name: duration
         data_type: interval
-        description: ''

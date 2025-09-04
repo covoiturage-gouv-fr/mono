@@ -4,22 +4,15 @@ models:
     columns:
       - name: carpool_id
         data_type: integer
-        description: ''
       - name: start_geo_code
         data_type: character varying
-        description: ''
       - name: end_geo_code
         data_type: character varying
-        description: ''
       - name: operator_id
         data_type: integer
-        description: ''
       - name: operator_name
         data_type: character varying
-        description: ''
       - name: incentive_amount
         data_type: integer
-        description: ''
       - name: start_datetime
         data_type: timestamp without time zone
-        description: ''

@@ -4,31 +4,21 @@ models:
     columns:
       - name: user_identity_key
         data_type: character varying
-        description: ''
       - name: journeys_count
         data_type: bigint
-        description: ''
       - name: journeys_count_as_driver
         data_type: bigint
-        description: ''
       - name: journeys_count_as_passenger
         data_type: bigint
-        description: ''
       - name: trips_count
         data_type: bigint
-        description: ''
       - name: distance_std_as_driver
         data_type: numeric
-        description: ''
       - name: start_time_std_as_driver
         data_type: numeric
-        description: ''
       - name: distance_std_as_passenger
         data_type: numeric
-        description: ''
       - name: start_time_std_as_passenger
         data_type: numeric
-        description: ''
       - name: operators_ids
         data_type: ARRAY
-        description: ''

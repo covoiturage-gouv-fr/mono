@@ -4,49 +4,33 @@ models:
     columns:
       - name: carpool_id
         data_type: integer
-        description: ''
       - name: start_geo_code
         data_type: character varying
-        description: ''
       - name: end_geo_code
         data_type: character varying
-        description: ''
       - name: operator_id
         data_type: integer
-        description: ''
       - name: distance
         data_type: integer
-        description: ''
       - name: driver_revenue
         data_type: integer
-        description: ''
       - name: passenger_seats
         data_type: smallint
-        description: ''
       - name: passenger_contribution
         data_type: integer
-        description: ''
       - name: passenger_payments
         data_type: jsonb
-        description: ''
       - name: acquisition_status
         data_type: USER-DEFINED
-        description: ''
       - name: fraud_status
         data_type: USER-DEFINED
-        description: ''
       - name: start_datetime
         data_type: timestamp without time zone
-        description: ''
       - name: end_datetime
         data_type: timestamp without time zone
-        description: ''
       - name: duration
         data_type: interval
-        description: ''
       - name: driver_id
         data_type: character varying
-        description: ''
       - name: passenger_id
         data_type: character varying
-        description: ''

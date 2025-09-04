@@ -7,46 +7,31 @@ sources:
         columns:
           - name: _id
             data_type: integer
-            description: ''
           - name: created_at
             data_type: timestamp with time zone
-            description: ''
           - name: updated_at
             data_type: timestamp with time zone
-            description: ''
           - name: deleted_at
             data_type: timestamp with time zone
-            description: ''
           - name: name
             data_type: character varying
-            description: ''
           - name: legal_name
             data_type: character varying
-            description: ''
           - name: siret
             data_type: character varying
-            description: ''
           - name: cgu_accepted_at
             data_type: timestamp with time zone
-            description: ''
           - name: cgu_accepted_by
             data_type: character varying
-            description: ''
           - name: company
             data_type: json
-            description: ''
           - name: address
             data_type: json
-            description: ''
           - name: bank
             data_type: json
-            description: ''
           - name: contacts
             data_type: json
-            description: ''
           - name: uuid
             data_type: uuid
-            description: ''
           - name: support
             data_type: character varying
-            description: ''

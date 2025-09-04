@@ -7,28 +7,19 @@ models:
     columns:
       - name: driver_operator_user_id
         data_type: character varying
-        description: ''
       - name: operator_journey_id
         data_type: character varying
-        description: ''
       - name: operator_id
         data_type: integer
-        description: ''
       - name: _id
         data_type: integer
-        description: ''
       - name: start_datetime
         data_type: timestamp with time zone
-        description: ''
       - name: driver_journey_rank
         data_type: bigint
-        description: ''
       - name: driver_journey_daily_rank
         data_type: bigint
-        description: ''
       - name: amount
         data_type: bigint
-        description: ''
       - name: cummulative_amount_month
         data_type: numeric
-        description: ''

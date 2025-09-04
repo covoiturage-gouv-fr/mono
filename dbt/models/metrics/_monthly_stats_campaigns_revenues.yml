@@ -4,67 +4,45 @@ models:
     columns:
       - name: month
         data_type: timestamp with time zone
-        description: ''
       - name: siret
         data_type: character varying
-        description: ''
       - name: legal_name
         data_type: character varying
-        description: ''
       - name: journeys_count
         data_type: bigint
-        description: ''
       - name: journeys_count_18_30
         data_type: bigint
-        description: ''
       - name: journeys_count_filtered
         data_type: bigint
-        description: ''
       - name: journeys_count_filtered_18_30
         data_type: bigint
-        description: ''
       - name: avg_driver_revenue
         data_type: numeric
-        description: ''
       - name: avg_distance
         data_type: numeric
-        description: ''
       - name: min_revenue
         data_type: integer
-        description: ''
       - name: avg_driver_revenue_per_km
         data_type: numeric
-        description: ''
       - name: avg_driver_revenue_per_km_18_30
         data_type: numeric
-        description: ''
       - name: avg_driver_revenue_per_km_filtered
         data_type: numeric
-        description: ''
       - name: avg_driver_revenue_per_km_filtered_18_30
         data_type: numeric
-        description: ''
       - name: avg_passenger_contribution_per_km
         data_type: numeric
-        description: ''
       - name: avg_passenger_contribution_per_km_18_30
         data_type: numeric
-        description: ''
       - name: avg_passenger_contribution_per_km_filtered
         data_type: numeric
-        description: ''
       - name: avg_passenger_contribution_per_km_filtered_18_30
         data_type: numeric
-        description: ''
       - name: avg_incentive_per_km
         data_type: numeric
-        description: ''
       - name: avg_incentive_per_km_18_30
         data_type: numeric
-        description: ''
       - name: avg_incentive_per_km_filtered
         data_type: numeric
-        description: ''
       - name: avg_incentive_per_km_filtered_18_30
         data_type: numeric
-        description: ''

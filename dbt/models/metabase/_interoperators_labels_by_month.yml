@@ -6,13 +6,9 @@ models:
     columns:
       - name: month
         data_type: timestamp without time zone
-        description: ''
       - name: label
         data_type: character varying
-        description: ''
       - name: operator_name
         data_type: character varying
-        description: ''
       - name: count
         data_type: bigint
-        description: ''

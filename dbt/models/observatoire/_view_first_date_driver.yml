@@ -4,7 +4,5 @@ models:
     columns:
       - name: driver_id
         data_type: character varying
-        description: ''
       - name: first_date
         data_type: date
-        description: ''

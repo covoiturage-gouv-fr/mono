@@ -4,16 +4,11 @@ models:
     columns:
       - name: user_identity_key
         data_type: character varying
-        description: ''
       - name: total_traveled_days
         data_type: bigint
-        description: ''
       - name: total_consecutives_intraday_role_changes
         data_type: numeric
-        description: ''
       - name: avg_daily_consecutives_intraday_role_changes
         data_type: numeric
-        description: ''
       - name: max_daily_consecutives_intraday_role_changes
         data_type: bigint
-        description: ''

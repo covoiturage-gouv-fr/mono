@@ -4,25 +4,17 @@ models:
     columns:
       - name: year
         data_type: integer
-        description: ''
       - name: code
         data_type: character varying
-        description: ''
       - name: libelle
         data_type: character varying
-        description: ''
       - name: type
         data_type: text
-        description: ''
       - name: direction
         data_type: text
-        description: ''
       - name: journeys
         data_type: integer
-        description: ''
       - name: occupation_rate
         data_type: double precision
-        description: ''
       - name: geom
         data_type: json
-        description: ''

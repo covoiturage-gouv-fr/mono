@@ -8,81 +8,55 @@ sources:
         columns:
           - name: _id
             data_type: integer
-            description: ''
           - name: policy_id
             data_type: integer
-            description: ''
           - name: status
             data_type: USER-DEFINED
-            description: ''
           - name: meta
             data_type: json
-            description: ''
           - name: carpool_id
             data_type: integer
-            description: ''
           - name: amount
             data_type: integer
-            description: ''
           - name: datetime
             data_type: timestamp with time zone
-            description: ''
           - name: result
             data_type: integer
-            description: ''
           - name: state
             data_type: USER-DEFINED
-            description: ''
           - name: operator_id
             data_type: integer
-            description: ''
           - name: operator_journey_id
             data_type: character varying
-            description: ''
       - name: policies
         columns:
           - name: _id
             data_type: integer
-            description: ''
           - name: created_at
             data_type: timestamp with time zone
-            description: ''
           - name: updated_at
             data_type: timestamp with time zone
-            description: ''
           - name: deleted_at
             data_type: timestamp with time zone
-            description: ''
           - name: territory_id
             data_type: integer
-            description: ''
           - name: start_date
             data_type: timestamp with time zone
-            description: ''
           - name: end_date
             data_type: timestamp with time zone
-            description: ''
           - name: name
             data_type: character varying
-            description: ''
           - name: description
             data_type: character varying
-            description: ''
           - name: unit
             data_type: USER-DEFINED
-            description: ''
           - name: status
             data_type: USER-DEFINED
-            description: ''
           - name: handler
             data_type: character varying
-            description: ''
           - name: incentive_sum
             data_type: integer
-            description: ''
           - name: max_amount
             data_type: bigint
-            description: ''
           - name: tz
             data_type: character varying
-            description: ''

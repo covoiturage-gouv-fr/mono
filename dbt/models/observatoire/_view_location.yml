@@ -4,25 +4,17 @@ models:
     columns:
       - name: carpool_id
         data_type: integer
-        description: ''
       - name: start_geo_code
         data_type: character varying
-        description: ''
       - name: end_geo_code
         data_type: character varying
-        description: ''
       - name: start_datetime
         data_type: timestamp without time zone
-        description: ''
       - name: start_lat
         data_type: double precision
-        description: ''
       - name: start_lon
         data_type: double precision
-        description: ''
       - name: end_lat
         data_type: double precision
-        description: ''
       - name: end_lon
         data_type: double precision
-        description: ''

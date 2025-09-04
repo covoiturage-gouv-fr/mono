@@ -8,95 +8,65 @@ sources:
         columns:
           - name: territory_group_id
             data_type: integer
-            description: ''
           - name: selector_type
             data_type: character varying
-            description: ''
           - name: selector_value
             data_type: character varying
-            description: ''
       - name: territories
         columns:
           - name: _id
             data_type: integer
-            description: ''
           - name: company_id
             data_type: integer
-            description: ''
           - name: created_at
             data_type: timestamp with time zone
-            description: ''
           - name: updated_at
             data_type: timestamp with time zone
-            description: ''
           - name: deleted_at
             data_type: timestamp with time zone
-            description: ''
           - name: level
             data_type: USER-DEFINED
-            description: ''
           - name: name
             data_type: character varying
-            description: ''
           - name: shortname
             data_type: character varying
-            description: ''
           - name: activable
             data_type: boolean
-            description: ''
           - name: active
             data_type: boolean
-            description: ''
           - name: active_since
             data_type: timestamp with time zone
-            description: ''
           - name: contacts
             data_type: json
-            description: ''
           - name: address
             data_type: json
-            description: ''
           - name: population
             data_type: integer
-            description: ''
           - name: surface
             data_type: bigint
-            description: ''
           - name: geo
             data_type: USER-DEFINED
-            description: ''
           - name: ui_status
             data_type: json
-            description: ''
           - name: siret
             data_type: character varying
-            description: ''
       - name: territory_group
         columns:
           - name: _id
             data_type: integer
-            description: ''
           - name: company_id
             data_type: integer
-            description: ''
           - name: created_at
             data_type: timestamp with time zone
-            description: ''
           - name: updated_at
             data_type: timestamp with time zone
-            description: ''
           - name: deleted_at
             data_type: timestamp with time zone
-            description: ''
           - name: name
             data_type: character varying
-            description: ''
           - name: shortname
             data_type: character varying
-            description: ''
           - name: contacts
             data_type: json
-            description: ''
           - name: address
             data_type: json
-            description: ''

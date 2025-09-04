@@ -4,97 +4,65 @@ models:
     columns:
       - name: month
         data_type: timestamp with time zone
-        description: ''
       - name: operator_id
         data_type: integer
-        description: ''
       - name: operator_name
         data_type: character varying
-        description: ''
       - name: siret
         data_type: character varying
-        description: ''
       - name: siret_name
         data_type: character varying
-        description: ''
       - name: siret_is_aom
         data_type: boolean
-        description: ''
       - name: aom_name
         data_type: text
-        description: ''
       - name: journeys_count
         data_type: bigint
-        description: ''
       - name: journeys_count_18_30
         data_type: bigint
-        description: ''
       - name: journeys_count_with_operator_incentive
         data_type: bigint
-        description: ''
       - name: journeys_count_with_policy_incentive
         data_type: bigint
-        description: ''
       - name: journeys_count_with_operator_incentive_18_30
         data_type: bigint
-        description: ''
       - name: journeys_count_with_policy_incentive_18_30
         data_type: bigint
-        description: ''
       - name: avg_driver_revenue
         data_type: numeric
-        description: ''
       - name: avg_distance
         data_type: numeric
-        description: ''
       - name: min_revenue
         data_type: integer
-        description: ''
       - name: avg_driver_revenue_per_km
         data_type: numeric
-        description: ''
       - name: avg_driver_revenue_per_km_journeys_with_operator_incentive
         data_type: numeric
-        description: ''
       - name: avg_driver_revenue_per_km_journeys_with_policy_incentive
         data_type: numeric
-        description: ''
       - name: avg_driver_revenue_per_km_18_30
         data_type: numeric
-        description: ''
       - name: avg_driver_revenue_per_km_18_30_journeys_with_operator_incentiv
         data_type: numeric
-        description: ''
       - name: avg_driver_revenue_per_km_18_30_journeys_with_policy_incentive
         data_type: numeric
-        description: ''
       - name: avg_passenger_contribution_per_km
         data_type: numeric
-        description: ''
       - name: avg_passenger_contribution_per_km_journeys_with_operator_incent
         data_type: numeric
-        description: ''
       - name: avg_passenger_contribution_per_km_journeys_with_policy_incentiv
         data_type: numeric
-        description: ''
       - name: avg_passenger_contribution_per_km_18_30
         data_type: numeric
-        description: ''
       - name: avg_passenger_contribution_per_km_18_30_journeys_with_operator_
         data_type: numeric
-        description: ''
       - name: avg_passenger_contribution_per_km_18_30_journeys_with_policy_in
         data_type: numeric
-        description: ''
       - name: avg_operator_incentive_per_km
         data_type: numeric
-        description: ''
       - name: avg_policy_incentive_per_km
         data_type: numeric
-        description: ''
       - name: avg_operator_incentive_per_km_18_30
         data_type: numeric
-        description: ''
       - name: avg_policy_incentive_per_km_18_30
         data_type: numeric
-        description: ''

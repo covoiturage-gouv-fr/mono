@@ -4,16 +4,11 @@ models:
     columns:
       - name: from
         data_type: character varying
-        description: ''
       - name: to
         data_type: character varying
-        description: ''
       - name: start_date
         data_type: date
-        description: ''
       - name: new_drivers
         data_type: bigint
-        description: ''
       - name: new_passengers
         data_type: bigint
-        description: ''

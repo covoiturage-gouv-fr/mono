@@ -7,107 +7,73 @@ sources:
         columns:
           - name: year
             data_type: smallint
-            description: ''
           - name: mod
             data_type: smallint
-            description: ''
           - name: old_com
             data_type: character varying
-            description: ''
           - name: new_com
             data_type: character varying
-            description: ''
           - name: l_mod
             data_type: character varying
-            description: ''
       - name: perimeters
         columns:
           - name: id
             data_type: integer
-            description: ''
           - name: year
             data_type: smallint
-            description: ''
           - name: centroid
             data_type: USER-DEFINED
-            description: ''
           - name: geom
             data_type: USER-DEFINED
-            description: ''
           - name: geom_simple
             data_type: USER-DEFINED
-            description: ''
           - name: l_arr
             data_type: character varying
-            description: ''
           - name: arr
             data_type: character varying
-            description: ''
           - name: l_com
             data_type: character varying
-            description: ''
           - name: com
             data_type: character varying
-            description: ''
           - name: l_epci
             data_type: character varying
-            description: ''
           - name: epci
             data_type: character varying
-            description: ''
           - name: l_dep
             data_type: character varying
-            description: ''
           - name: dep
             data_type: character varying
-            description: ''
           - name: l_reg
             data_type: character varying
-            description: ''
           - name: reg
             data_type: character varying
-            description: ''
           - name: l_country
             data_type: character varying
-            description: ''
           - name: country
             data_type: character varying
-            description: ''
           - name: l_aom
             data_type: character varying
-            description: ''
           - name: aom
             data_type: character varying
-            description: ''
           - name: l_reseau
             data_type: character varying
-            description: ''
           - name: reseau
             data_type: integer
-            description: ''
           - name: pop
             data_type: integer
-            description: ''
           - name: surface
             data_type: real
-            description: ''
       - name: perimeters_centroid
         columns:
           - name: id
             data_type: integer
-            description: ''
           - name: year
             data_type: integer
-            description: ''
           - name: territory
             data_type: character varying
-            description: ''
           - name: l_territory
             data_type: character varying
-            description: ''
           - name: type
             data_type: character varying
-            description: ''
           - name: geom
             data_type: USER-DEFINED
-            description: ''

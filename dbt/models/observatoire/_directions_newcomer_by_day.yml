@@ -4,19 +4,13 @@ models:
     columns:
       - name: code
         data_type: character varying
-        description: ''
       - name: type
         data_type: text
-        description: ''
       - name: start_date
         data_type: date
-        description: ''
       - name: direction
         data_type: text
-        description: ''
       - name: new_drivers
         data_type: numeric
-        description: ''
       - name: new_passengers
         data_type: numeric
-        description: ''

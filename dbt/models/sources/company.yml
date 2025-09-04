@@ -7,58 +7,39 @@ sources:
         columns:
           - name: siret
             data_type: character varying
-            description: ''
           - name: siren
             data_type: character varying
-            description: ''
           - name: nic
             data_type: character varying
-            description: ''
           - name: legal_name
             data_type: character varying
-            description: ''
           - name: company_naf_code
             data_type: character varying
-            description: ''
           - name: establishment_naf_code
             data_type: character varying
-            description: ''
           - name: legal_nature_code
             data_type: character varying
-            description: ''
           - name: legal_nature_label
             data_type: character varying
-            description: ''
           - name: nonprofit_code
             data_type: character varying
-            description: ''
           - name: intra_vat
             data_type: character varying
-            description: ''
           - name: geo
             data_type: USER-DEFINED
-            description: ''
           - name: address
             data_type: character varying
-            description: ''
           - name: headquarter
             data_type: boolean
-            description: ''
           - name: updated_at
             data_type: timestamp with time zone
-            description: ''
           - name: _id
             data_type: integer
-            description: ''
           - name: address_street
             data_type: character varying
-            description: ''
           - name: address_postcode
             data_type: character varying
-            description: ''
           - name: address_cedex
             data_type: character varying
-            description: ''
           - name: address_city
             data_type: character varying
-            description: ''

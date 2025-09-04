@@ -4,28 +4,19 @@ models:
     columns:
       - name: year
         data_type: integer
-        description: ''
       - name: month
         data_type: integer
-        description: ''
       - name: code
         data_type: character varying
-        description: ''
       - name: libelle
         data_type: character varying
-        description: ''
       - name: type
         data_type: text
-        description: ''
       - name: direction
         data_type: text
-        description: ''
       - name: collectivite
         data_type: numeric
-        description: ''
       - name: operateur
         data_type: numeric
-        description: ''
       - name: autres
         data_type: numeric
-        description: ''

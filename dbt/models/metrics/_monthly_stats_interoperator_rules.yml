@@ -10,10 +10,7 @@ models:
     columns:
       - name: month
         data_type: timestamp with time zone
-        description: ''
       - name: journeys_count
         data_type: numeric
-        description: ''
       - name: incentives_amount_sum
         data_type: numeric
-        description: ''

@@ -4,19 +4,13 @@ models:
     columns:
       - name: from
         data_type: character varying
-        description: ''
       - name: to
         data_type: character varying
-        description: ''
       - name: start_date
         data_type: date
-        description: ''
       - name: collectivite
         data_type: bigint
-        description: ''
       - name: operateur
         data_type: bigint
-        description: ''
       - name: autres
         data_type: bigint
-        description: ''

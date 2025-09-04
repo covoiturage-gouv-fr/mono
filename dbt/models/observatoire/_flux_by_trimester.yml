@@ -4,46 +4,31 @@ models:
     columns:
       - name: year
         data_type: integer
-        description: ''
       - name: trimester
         data_type: integer
-        description: ''
       - name: type
         data_type: text
-        description: ''
       - name: territory_1
         data_type: character varying
-        description: ''
       - name: l_territory_1
         data_type: character varying
-        description: ''
       - name: territory_2
         data_type: character varying
-        description: ''
       - name: l_territory_2
         data_type: character varying
-        description: ''
       - name: journeys
         data_type: numeric
-        description: ''
       - name: passengers
         data_type: numeric
-        description: ''
       - name: distance
         data_type: numeric
-        description: ''
       - name: duration
         data_type: numeric
-        description: ''
       - name: lng_1
         data_type: double precision
-        description: ''
       - name: lat_1
         data_type: double precision
-        description: ''
       - name: lng_2
         data_type: double precision
-        description: ''
       - name: lat_2
         data_type: double precision
-        description: ''

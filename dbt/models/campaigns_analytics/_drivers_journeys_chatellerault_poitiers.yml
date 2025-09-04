@@ -8,37 +8,25 @@ models:
     columns:
       - name: _id
         data_type: integer
-        description: ''
       - name: driver_operator_user_id
         data_type: character varying
-        description: ''
       - name: operator_journey_id
         data_type: character varying
-        description: ''
       - name: operator_id
         data_type: integer
-        description: ''
       - name: operator_class
         data_type: character
-        description: ''
       - name: start_datetime
         data_type: timestamp with time zone
-        description: ''
       - name: start_geo_code
         data_type: character varying
-        description: ''
       - name: start_aom
         data_type: character varying
-        description: ''
       - name: start_l_aom
         data_type: character varying
-        description: ''
       - name: end_geo_code
         data_type: character varying
-        description: ''
       - name: end_aom
         data_type: character varying
-        description: ''
       - name: end_l_aom
         data_type: character varying
-        description: ''

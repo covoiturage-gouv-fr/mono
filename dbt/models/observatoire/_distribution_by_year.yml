@@ -4,22 +4,15 @@ models:
     columns:
       - name: year
         data_type: numeric
-        description: ''
       - name: code
         data_type: character varying
-        description: ''
       - name: libelle
         data_type: character varying
-        description: ''
       - name: type
         data_type: text
-        description: ''
       - name: direction
         data_type: text
-        description: ''
       - name: hours
         data_type: json
-        description: ''
       - name: distances
         data_type: json
-        description: ''

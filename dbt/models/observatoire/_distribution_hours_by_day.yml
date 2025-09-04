@@ -4,22 +4,15 @@ models:
     columns:
       - name: code
         data_type: character varying
-        description: ''
       - name: type
         data_type: text
-        description: ''
       - name: start_date
         data_type: date
-        description: ''
       - name: hour
         data_type: numeric
-        description: ''
       - name: direction
         data_type: text
-        description: ''
       - name: journeys
         data_type: numeric
-        description: ''
       - name: intra_journeys
         data_type: numeric
-        description: ''

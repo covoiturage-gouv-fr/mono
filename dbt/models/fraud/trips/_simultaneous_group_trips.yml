@@ -4,40 +4,27 @@ models:
     columns:
       - name: start_geo_code
         data_type: character varying
-        description: ''
       - name: end_geo_code
         data_type: character varying
-        description: ''
       - name: start_datetime
         data_type: timestamp with time zone
-        description: ''
       - name: distance_50m
         data_type: integer
-        description: ''
       - name: num_journeys
         data_type: bigint
-        description: ''
       - name: total_driver_revenue
         data_type: bigint
-        description: ''
       - name: total_passengers_contributions
         data_type: bigint
-        description: ''
       - name: total_incentives
         data_type: numeric
-        description: ''
       - name: num_incitations
         data_type: numeric
-        description: ''
       - name: operators
         data_type: ARRAY
-        description: ''
       - name: num_fraud_journeys
         data_type: bigint
-        description: ''
       - name: num_anomaly_journeys
         data_type: bigint
-        description: ''
       - name: has_fraud_labels
         data_type: text
-        description: ''

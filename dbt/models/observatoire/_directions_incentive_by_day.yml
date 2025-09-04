@@ -4,25 +4,17 @@ models:
     columns:
       - name: code
         data_type: character varying
-        description: ''
       - name: type
         data_type: text
-        description: ''
       - name: start_date
         data_type: date
-        description: ''
       - name: direction
         data_type: text
-        description: ''
       - name: collectivite
         data_type: numeric
-        description: ''
       - name: intra_collectivite
         data_type: numeric
-        description: ''
       - name: operateur
         data_type: numeric
-        description: ''
       - name: autres
         data_type: numeric
-        description: ''

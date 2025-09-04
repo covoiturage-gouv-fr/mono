@@ -4,13 +4,9 @@ models:
     columns:
       - name: arr
         data_type: character varying
-        description: ''
       - name: l_arr
         data_type: character varying
-        description: ''
       - name: territory_id
         data_type: integer
-        description: ''
       - name: l_territory
         data_type: character varying
-        description: ''

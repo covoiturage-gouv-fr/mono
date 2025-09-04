@@ -4,25 +4,17 @@ models:
     columns:
       - name: year
         data_type: integer
-        description: ''
       - name: semester
         data_type: integer
-        description: ''
       - name: code
         data_type: character varying
-        description: ''
       - name: libelle
         data_type: character varying
-        description: ''
       - name: type
         data_type: text
-        description: ''
       - name: direction
         data_type: text
-        description: ''
       - name: new_drivers
         data_type: numeric
-        description: ''
       - name: new_passengers
         data_type: numeric
-        description: ''

@@ -4,16 +4,11 @@ models:
     columns:
       - name: start
         data_type: character varying
-        description: ''
       - name: end
         data_type: character varying
-        description: ''
       - name: start_date
         data_type: date
-        description: ''
       - name: hour
         data_type: numeric
-        description: ''
       - name: dist_classes
         data_type: text
-        description: ''

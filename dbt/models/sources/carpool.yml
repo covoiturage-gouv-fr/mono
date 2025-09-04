@@ -30,37 +30,26 @@ sources:
         columns:
           - name: _id
             data_type: integer
-            description: ''
           - name: created_at
             data_type: timestamp with time zone
-            description: ''
           - name: updated_at
             data_type: timestamp with time zone
-            description: ''
           - name: operator_id
             data_type: integer
-            description: ''
           - name: operator_journey_id
             data_type: character varying
-            description: ''
           - name: operator_trip_id
             data_type: character varying
-            description: ''
           - name: operator_class
             data_type: character
-            description: ''
           - name: start_datetime
             data_type: timestamp with time zone
-            description: ''
           - name: start_position
             data_type: USER-DEFINED
-            description: ''
           - name: end_datetime
             data_type: timestamp with time zone
-            description: ''
           - name: end_position
             data_type: USER-DEFINED
-            description: ''
           - name: distance
             data_type: integer
             tests:
@@ -86,28 +75,20 @@ sources:
                     - operator_id
                   config:
                     severity: warn
-            description: ''
           - name: licence_plate
             data_type: character varying
-            description: ''
           - name: driver_identity_key
             data_type: character varying
-            description: ''
           - name: driver_operator_user_id
             data_type: character varying
-            description: ''
           - name: driver_phone
             data_type: character varying
-            description: ''
           - name: driver_phone_trunc
             data_type: character varying
-            description: ''
           - name: driver_travelpass_name
             data_type: character varying
-            description: ''
           - name: driver_travelpass_user_id
             data_type: character varying
-            description: ''
           - name: driver_revenue
             data_type: integer
             tests:
@@ -129,43 +110,30 @@ sources:
                     - operator_id
                   config:
                     severity: warn
-            description: ''
           - name: passenger_identity_key
             data_type: character varying
-            description: ''
           - name: passenger_operator_user_id
             data_type: character varying
-            description: ''
           - name: passenger_phone
             data_type: character varying
-            description: ''
           - name: passenger_phone_trunc
             data_type: character varying
-            description: ''
           - name: passenger_travelpass_name
             data_type: character varying
-            description: ''
           - name: passenger_travelpass_user_id
             data_type: character varying
-            description: ''
           - name: passenger_over_18
             data_type: boolean
-            description: ''
           - name: passenger_seats
             data_type: smallint
-            description: ''
           - name: passenger_contribution
             data_type: integer
-            description: ''
           - name: passenger_payments
             data_type: jsonb
-            description: ''
           - name: uuid
             data_type: uuid
-            description: ''
           - name: legacy_id
             data_type: bigint
-            description: ''
       - name: geo
         tags: [geo_source]
         meta:
@@ -203,87 +171,61 @@ sources:
         columns:
           - name: _id
             data_type: integer
-            description: ''
           - name: carpool_id
             data_type: integer
-            description: ''
           - name: updated_at
             data_type: timestamp with time zone
-            description: ''
           - name: start_geo_code
             data_type: character varying
-            description: ''
           - name: end_geo_code
             data_type: character varying
-            description: ''
           - name: errors
             data_type: jsonb
-            description: ''
       - name: operator_incentives
         columns:
           - name: _id
             data_type: integer
-            description: ''
           - name: carpool_id
             data_type: integer
-            description: ''
           - name: idx
             data_type: smallint
-            description: ''
           - name: siret
             data_type: character varying
-            description: ''
           - name: amount
             data_type: integer
-            description: ''
       - name: operator_incentive_counterparts
         columns:
           - name: _id
             data_type: integer
-            description: ''
           - name: carpool_id
             data_type: integer
-            description: ''
           - name: target_is_driver
             data_type: boolean
-            description: ''
           - name: siret
             data_type: character varying
-            description: ''
           - name: amount
             data_type: integer
-            description: ''
       - name: status
         columns:
           - name: _id
             data_type: integer
-            description: ''
           - name: carpool_id
             data_type: integer
-            description: ''
           - name: updated_at
             data_type: timestamp with time zone
-            description: ''
           - name: acquisition_status
             data_type: USER-DEFINED
-            description: ''
           - name: fraud_status
             data_type: USER-DEFINED
-            description: ''
           - name: anomaly_status
             data_type: USER-DEFINED
-            description: ''
       - name: terms_violation_error_labels
         columns:
           - name: _id
             data_type: integer
-            description: ''
           - name: created_at
             data_type: timestamp with time zone
-            description: ''
           - name: carpool_id
             data_type: integer
-            description: ''
           - name: labels
             data_type: ARRAY
-            description: ''

@@ -7,238 +7,160 @@ models:
         data_type: integer
       - name: _legacy_id
         data_type: bigint
-        description: ''
       - name: _operator_id
         data_type: integer
-        description: ''
       - name: _start_at
         data_type: timestamp with time zone
-        description: ''
       - name: _start_insee
         data_type: character varying
-        description: ''
       - name: _start_departement
         data_type: character varying
-        description: ''
       - name: _start_epci
         data_type: character varying
-        description: ''
       - name: _start_aom
         data_type: character varying
-        description: ''
       - name: _start_region
         data_type: character varying
-        description: ''
       - name: _end_insee
         data_type: character varying
-        description: ''
       - name: _end_departement
         data_type: character varying
-        description: ''
       - name: _end_epci
         data_type: character varying
-        description: ''
       - name: _end_aom
         data_type: character varying
-        description: ''
       - name: _end_region
         data_type: character varying
-        description: ''
       - name: journey_id
         data_type: bigint
-        description: ''
       - name: operator_trip_id
         data_type: character varying
-        description: ''
       - name: operator_journey_id
         description: Unique identifier for the journey assigned by the operator.
         data_type: character varying
       - name: operator_class
         data_type: character
-        description: ''
       - name: acquisition_status
         data_type: USER-DEFINED
-        description: ''
       - name: fraud_status
         data_type: USER-DEFINED
-        description: ''
       - name: anomaly_status
         data_type: USER-DEFINED
-        description: ''
       - name: start_datetime
         data_type: text
-        description: ''
       - name: start_date
         data_type: text
-        description: ''
       - name: start_time
         data_type: text
-        description: ''
       - name: end_datetime
         data_type: text
-        description: ''
       - name: end_date
         data_type: text
-        description: ''
       - name: end_time
         data_type: text
-        description: ''
       - name: duration
         data_type: text
-        description: ''
       - name: distance
         data_type: double precision
-        description: ''
       - name: start_lat
         data_type: numeric
-        description: ''
       - name: start_lon
         data_type: numeric
-        description: ''
       - name: end_lat
         data_type: numeric
-        description: ''
       - name: end_lon
         data_type: numeric
-        description: ''
       - name: start_insee
         data_type: character varying
-        description: ''
       - name: start_commune
         data_type: character varying
-        description: ''
       - name: start_departement
         data_type: character varying
-        description: ''
       - name: start_epci
         data_type: character varying
-        description: ''
       - name: start_aom
         data_type: character varying
-        description: ''
       - name: start_region
         data_type: character varying
-        description: ''
       - name: start_pays
         data_type: character varying
-        description: ''
       - name: end_insee
         data_type: character varying
-        description: ''
       - name: end_commune
         data_type: character varying
-        description: ''
       - name: end_departement
         data_type: character varying
-        description: ''
       - name: end_epci
         data_type: character varying
-        description: ''
       - name: end_aom
         data_type: character varying
-        description: ''
       - name: end_region
         data_type: character varying
-        description: ''
       - name: end_pays
         data_type: character varying
-        description: ''
       - name: operator
         data_type: character varying
-        description: ''
       - name: operator_passenger_id
         data_type: character varying
-        description: ''
       - name: passenger_identity_key
         data_type: character varying
-        description: ''
       - name: operator_driver_id
         data_type: character varying
-        description: ''
       - name: driver_identity_key
         data_type: character varying
-        description: ''
       - name: driver_revenue
         data_type: double precision
-        description: ''
       - name: passenger_contribution
         data_type: double precision
-        description: ''
       - name: passenger_seats
         data_type: smallint
-        description: ''
       - name: cee_application
         data_type: boolean
-        description: ''
       - name: incentive_0_siret
         data_type: text
-        description: ''
       - name: incentive_0_name
         data_type: text
-        description: ''
       - name: incentive_0_amount
         data_type: text
-        description: ''
       - name: incentive_1_siret
         data_type: text
-        description: ''
       - name: incentive_1_name
         data_type: text
-        description: ''
       - name: incentive_1_amount
         data_type: text
-        description: ''
       - name: incentive_2_siret
         data_type: text
-        description: ''
       - name: incentive_2_name
         data_type: text
-        description: ''
       - name: incentive_2_amount
         data_type: text
-        description: ''
       - name: incentive_rpc_0_campaign_id
         data_type: text
-        description: ''
       - name: incentive_rpc_0_campaign_name
         data_type: text
-        description: ''
       - name: incentive_rpc_0_siret
         data_type: text
-        description: ''
       - name: incentive_rpc_0_name
         data_type: text
-        description: ''
       - name: incentive_rpc_0_amount
         data_type: text
-        description: ''
       - name: incentive_rpc_1_campaign_id
         data_type: text
-        description: ''
       - name: incentive_rpc_1_campaign_name
         data_type: text
-        description: ''
       - name: incentive_rpc_1_siret
         data_type: text
-        description: ''
       - name: incentive_rpc_1_name
         data_type: text
-        description: ''
       - name: incentive_rpc_1_amount
         data_type: text
-        description: ''
       - name: incentive_rpc_2_campaign_id
         data_type: text
-        description: ''
       - name: incentive_rpc_2_campaign_name
         data_type: text
-        description: ''
       - name: incentive_rpc_2_siret
         data_type: text
-        description: ''
       - name: incentive_rpc_2_name
         data_type: text
-        description: ''
       - name: incentive_rpc_2_amount
         data_type: text
-        description: ''
