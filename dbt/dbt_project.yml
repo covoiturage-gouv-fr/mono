@@ -54,8 +54,8 @@ models:
       +schema: "metrics"
     metabase:
       +schema: "metabase"
-    0_raw_zone:
-      +schema: "0_raw_zone"
+    1_trusted_zone:
+      +schema: "trusted_zone"
 
   ## see docs: https://docs.elementary-data.com/
   elementary:
