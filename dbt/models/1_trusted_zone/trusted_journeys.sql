@@ -37,23 +37,53 @@
   )
 }}
 
-with status as ( -- New status lines
-  select s.*
+{% if is_incremental() %}
+with new_status as ( -- New status lines
+  select s."carpool_id"
   from {{ source('carpool', 'status') }} as s
   {% if is_incremental() %} -- select only new status
     where s.updated_at >= (select max(status_updated_at) from {{ this }})
   {% endif %}
 ),
 
-geo as ( -- New geo lines
-  select *
+new_geo as ( -- New geo lines
+  select g.carpool_id
   from {{ source('carpool', 'geo') }} as g
   {% if is_incremental() %} -- select only new geos
     where g.updated_at >= (select max(geo_updated_at) from {{ this }})
   {% endif %}
 ),
 
-carpool as ( -- All new/to update carpool lines
+new_carpools as ( -- New carpools lines
+  select
+    "_id"
+  from {{ source('carpool', 'carpools') }} as c
+  {% if is_incremental() %} 
+    where
+      -- select new carpools
+      c.updated_at >= (select max(updated_at) from {{ this }})
+  {% endif %}
+),
+
+candidates_to_update as ( -- We take all carpools ids that needs an update and deduplicate
+  select distinct "_id"
+  from (
+    select
+      carpool_id as "_id"
+    from new_status
+    union all
+    select
+      carpool_id as "_id"
+    from new_geo
+    union all
+    select
+      "_id"
+    from new_carpools
+  )
+),
+{% endif %}
+
+{% if not is_incremental() %} with {% endif %} carpools as ( -- join carpools with all datasets
   select
     c.*,
     -- Add data from other sources
@@ -84,27 +114,25 @@ carpool as ( -- All new/to update carpool lines
     )
     as journey_has_valid_acquisition_status
   from {{ source('carpool', 'carpools') }} as c
-  left join status as s on c._id = s.carpool_id
-  left join geo as g on c._id = g.carpool_id
-  {% if is_incremental() %} 
-    where
-      -- select new carpools
-      c.updated_at >= (select max(updated_at) from {{ this }})
-      or s._id is not NULL -- OR old carpools with updated status
-      or g._id is not NULL -- OR old carpools with updated geo
+  {% if is_incremental() %} -- in case of incremental, only select relevant carpools
+    inner join candidates_to_update ctu on c."_id"=ctu."_id"
   {% endif %}
+  left join {{ source('carpool', 'status') }} as s on c._id = s.carpool_id
+  left join {{ source('carpool', 'geo') }} as g on c._id = g.carpool_id
   {% if target.name == 'dev' %}
-    limit 10000
+  order by c.updated_at
+  limit 10000 
   {% endif %}
 ),
 
+-- The following datasets have not updated_at column
 fraud_labels as ( -- Pre-aggregate fraud labels for selected carpools
   select
     fl.carpool_id,
     array_agg(fl.label) as fraud_labels
   from {{ source('fraudcheck', 'labels') }} as fl
   {% if is_incremental() %}
-    inner join carpool as c on fl.carpool_id = c._id
+    inner join carpools as c on fl.carpool_id = c._id
   {% endif %}
   group by 1
 ),
@@ -115,7 +143,7 @@ anomaly_labels as ( -- Pre-aggregate anomaly labels for selected carpools
     array_agg(al.label) as anomaly_labels
   from {{ source('fraudcheck', 'labels') }} as al
   {% if is_incremental() %}
-    inner join carpool as c on al.carpool_id = c._id
+    inner join carpools as c on al.carpool_id = c._id
   {% endif %}
   group by 1
 ),
@@ -128,7 +156,7 @@ operator_incentives as (
     sum(oi.amount)               as operator_incentives_amount_total
   from {{ source('carpool', 'operator_incentives') }} as oi
   {% if is_incremental() %}
-    inner join carpool as c on oi.carpool_id = c._id
+    inner join carpools as c on oi.carpool_id = c._id
   {% endif %}
   where oi.amount > 0 -- Filter out zero-amounts as should be nulls
   group by 1
@@ -145,7 +173,7 @@ joined_data as ( -- Join carpool enriched data with aggregated datasets
     al.anomaly_labels,
     oi.operator_incentives_sirets,
     oi.operator_incentives_amount_total
-  from carpool as c
+  from carpools as c
   left join fraud_labels as fl on c._id = fl.carpool_id
   left join anomaly_labels as al on c._id = al.carpool_id
   left join operator_incentives as oi on c._id = oi.carpool_id
