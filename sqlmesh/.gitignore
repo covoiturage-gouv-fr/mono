@@ -1,0 +1,33 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+env/
+venv/
+
+# --- SQLMesh ---
+# État et cache générés par SQLMesh
+.sqlmesh/
+sqlmesh.db
+
+# DuckDB local (si tu stockes une base temporaire)
+*.duckdb
+
+# Données temporaires ou locales
+data/
+tmp/
+logs/
+.cache/
+*.log
+
+# --- Environnements ---
+# Fichiers contenant des secrets
+.env
+.env.*
+
+# --- OS / IDE ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

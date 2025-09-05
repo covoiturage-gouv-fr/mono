@@ -1,0 +1,45 @@
+# --- Gateway Connection ---
+gateways:
+  postgres:
+    connection:
+      # For more information on configuring the connection to your execution engine, visit:
+      # https://sqlmesh.readthedocs.io/en/stable/reference/configuration/#connection
+      # https://sqlmesh.readthedocs.io/en/stable/integrations/engines/postgres/#connection-options
+      type: postgres
+      host: {{ env_var('MESHPGHOST') }}
+      user: {{ env_var('MESHPGUSER') }}
+      password: {{ env_var('MESHPGPASSWORD') }}
+      port: {{ env_var('MESHPGPORT') }}
+      database: {{ env_var('MESHPGDBNAME') }}
+      # concurrent_tasks: 4
+      # register_comments: True
+      # pre_ping: True
+      # pretty_sql: False
+      # schema_differ_overrides: 
+      # keepalives_idle: 
+      # connect_timeout: 10
+      # role: 
+      # sslmode: 
+      # application_name: 
+physical_schema_mapping:
+  test: test
+
+default_gateway: postgres
+
+# --- Model Defaults ---
+# https://sqlmesh.readthedocs.io/en/stable/reference/model_configuration/#model-defaults
+
+model_defaults:
+  dialect: postgres
+  start: 2025-09-03 # Start date for backfill history
+  cron: '@daily'    # Run models daily at 12am UTC (can override per model)
+
+# --- Linting Rules ---
+# Enforce standards for your team
+# https://sqlmesh.readthedocs.io/en/stable/guides/linter/
+
+linter:
+  enabled: true
+  rules:
+    - ambiguousorinvalidcolumn
+    - invalidselectstarexpansion
