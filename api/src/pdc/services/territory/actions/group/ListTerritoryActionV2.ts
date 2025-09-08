@@ -11,6 +11,7 @@ export const TerritoryParamsValidator = object({
   id: optional(Id),
   page: optional(Id),
   limit: optional(Id),
+  offset: optional(Id),
   search: optional(Varchar),
   operator_id: optional(Id),
   policy: optional(Boolean),
