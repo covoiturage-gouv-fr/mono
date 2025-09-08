@@ -1,0 +1,80 @@
+version: 2
+
+sources:
+  - name: geo
+    database: pg
+    tables:
+      - name: com_evolution
+        columns:
+          - name: year
+            data_type: smallint
+          - name: mod
+            data_type: smallint
+          - name: old_com
+            data_type: character varying
+          - name: new_com
+            data_type: character varying
+          - name: l_mod
+            data_type: character varying
+      - name: perimeters
+        columns:
+          - name: id
+            data_type: integer
+          - name: year
+            data_type: smallint
+          - name: centroid
+            data_type: USER-DEFINED
+          - name: geom
+            data_type: USER-DEFINED
+          - name: geom_simple
+            data_type: USER-DEFINED
+          - name: l_arr
+            data_type: character varying
+          - name: arr
+            data_type: character varying
+          - name: l_com
+            data_type: character varying
+          - name: com
+            data_type: character varying
+          - name: l_epci
+            data_type: character varying
+          - name: epci
+            data_type: character varying
+          - name: l_dep
+            data_type: character varying
+          - name: dep
+            data_type: character varying
+          - name: l_reg
+            data_type: character varying
+          - name: reg
+            data_type: character varying
+          - name: l_country
+            data_type: character varying
+          - name: country
+            data_type: character varying
+          - name: l_aom
+            data_type: character varying
+          - name: aom
+            data_type: character varying
+          - name: l_reseau
+            data_type: character varying
+          - name: reseau
+            data_type: integer
+          - name: pop
+            data_type: integer
+          - name: surface
+            data_type: real
+      - name: perimeters_centroid
+        columns:
+          - name: id
+            data_type: integer
+          - name: year
+            data_type: integer
+          - name: territory
+            data_type: character varying
+          - name: l_territory
+            data_type: character varying
+          - name: type
+            data_type: character varying
+          - name: geom
+            data_type: USER-DEFINED

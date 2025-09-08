@@ -1,0 +1,38 @@
+version: 2
+
+sources:
+  - name: operator
+    database: pg
+    tables:
+      - name: operators
+        columns:
+          - name: _id
+            data_type: integer
+          - name: created_at
+            data_type: timestamp with time zone
+          - name: updated_at
+            data_type: timestamp with time zone
+          - name: deleted_at
+            data_type: timestamp with time zone
+          - name: name
+            data_type: character varying
+          - name: legal_name
+            data_type: character varying
+          - name: siret
+            data_type: character varying
+          - name: cgu_accepted_at
+            data_type: timestamp with time zone
+          - name: cgu_accepted_by
+            data_type: character varying
+          - name: company
+            data_type: json
+          - name: address
+            data_type: json
+          - name: bank
+            data_type: json
+          - name: contacts
+            data_type: json
+          - name: uuid
+            data_type: uuid
+          - name: support
+            data_type: character varying

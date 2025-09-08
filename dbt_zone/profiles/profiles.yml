@@ -1,0 +1,42 @@
+default:
+  target: dev
+  outputs:
+    prod:
+      type: duckdb
+      path: "tmp/base.db"
+      extensions:
+        - httpfs
+        - excel
+        - spatial
+        - postgres
+      attach:
+        - path: "postgresql://{{ env_var('DBT_USER', 'postgres') }}:{{ env_var('DBT_PASSWORD', 'password') }}@{{ env_var('DBT_HOST', 'localhost') }}:{{ env_var('DBT_PORT', 5432) | int }}/{{ env_var('DBT_DBNAME', 'covoiturage_production') }}"
+          type: postgres
+          alias: pg
+      schema: ""
+      threads: 6
+    dev:
+      type: duckdb
+      path: "tmp/base.db"
+      extensions:
+        - httpfs
+        - excel
+        - spatial
+        - postgres
+      attach:
+        - path: "postgresql://{{ env_var('DBT_USER', 'postgres') }}:{{ env_var('DBT_PASSWORD', 'password') }}@{{ env_var('DBT_HOST', 'localhost') }}:{{ env_var('DBT_PORT', 5432) | int }}/{{ env_var('DBT_DBNAME') }}"
+          type: postgres
+          alias: pg
+      schema: "{{ env_var('DBT_SCHEMA', '') }}"
+      threads: "{{ env_var('DBT_THREADS', 6) | int }}"
+elementary:
+  outputs:
+    default:
+      type: postgres
+      host: "{{ env_var('DBT_HOST', 'localhost') }}"
+      user: "{{ env_var('DBT_USER', 'postgres') }}"
+      password: "{{ env_var('DBT_PASSWORD', 'password') }}"
+      port: "{{ env_var('DBT_PORT', 5432) | int }}"
+      dbname: "{{ env_var('DBT_DBNAME', 'covoiturage_production') }}" # or database instead of dbname
+      schema: "{{ env_var('DBT_SCHEMA_ELEMENTARY', 'elementary') }}"
+      threads: 6

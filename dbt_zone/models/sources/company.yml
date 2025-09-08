@@ -1,0 +1,46 @@
+version: 2
+
+sources:
+  - name: company
+    database: pg
+    tables:
+      - name: companies
+        columns:
+          - name: siret
+            data_type: character varying
+          - name: siren
+            data_type: character varying
+          - name: nic
+            data_type: character varying
+          - name: legal_name
+            data_type: character varying
+          - name: company_naf_code
+            data_type: character varying
+          - name: establishment_naf_code
+            data_type: character varying
+          - name: legal_nature_code
+            data_type: character varying
+          - name: legal_nature_label
+            data_type: character varying
+          - name: nonprofit_code
+            data_type: character varying
+          - name: intra_vat
+            data_type: character varying
+          - name: geo
+            data_type: USER-DEFINED
+          - name: address
+            data_type: character varying
+          - name: headquarter
+            data_type: boolean
+          - name: updated_at
+            data_type: timestamp with time zone
+          - name: _id
+            data_type: integer
+          - name: address_street
+            data_type: character varying
+          - name: address_postcode
+            data_type: character varying
+          - name: address_cedex
+            data_type: character varying
+          - name: address_city
+            data_type: character varying

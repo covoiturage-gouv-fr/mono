@@ -1,0 +1,16 @@
+version: 2
+
+sources:
+  - name: fraudcheck
+    database: pg
+    tables:
+      - name: labels
+        columns:
+          - name: _id
+            data_type: integer
+          - name: created_at
+            data_type: timestamp with time zone
+          - name: carpool_id
+            data_type: integer
+          - name: label
+            data_type: character varying

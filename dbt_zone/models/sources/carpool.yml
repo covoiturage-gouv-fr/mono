@@ -1,0 +1,231 @@
+version: 2
+
+sources:
+  - name: carpool
+    schema: carpool_v2
+    database: pg
+    tables:
+      - name: carpools
+        tags: [carpools_source]
+        meta:
+          elementary: # default config
+            timestamp_column: start_datetime
+            detection_delay:
+              period: day
+              count: 2
+            training_period:
+              period: day
+              count: 30
+            time_bucket:
+              period: day
+              count: 1
+            seasonality: day_of_week
+        tests:
+          - elementary.dimension_anomalies:
+              name: volume de trajets par opérateur
+              dimensions:
+                - operator_id
+              config:
+                severity: warn
+        columns:
+          - name: _id
+            data_type: integer
+          - name: created_at
+            data_type: timestamp with time zone
+          - name: updated_at
+            data_type: timestamp with time zone
+          - name: operator_id
+            data_type: integer
+          - name: operator_journey_id
+            data_type: character varying
+          - name: operator_trip_id
+            data_type: character varying
+          - name: operator_class
+            data_type: character
+          - name: start_datetime
+            data_type: timestamp with time zone
+          - name: start_position
+            data_type: USER-DEFINED
+          - name: end_datetime
+            data_type: timestamp with time zone
+          - name: end_position
+            data_type: USER-DEFINED
+          - name: distance
+            data_type: integer
+            tests:
+              - elementary.column_anomalies:
+                  name: Anomalies sur la distance
+                  column_anomalies:
+                    - null_count
+                    - min
+                    - max
+                    - average
+                    - zero_count
+                  config:
+                    severity: warn
+              - elementary.column_anomalies:
+                  name: Anomalies sur la distance par opérateur
+                  column_anomalies:
+                    - null_count
+                    - min
+                    - max
+                    - average
+                    - zero_count
+                  dimensions:
+                    - operator_id
+                  config:
+                    severity: warn
+          - name: licence_plate
+            data_type: character varying
+          - name: driver_identity_key
+            data_type: character varying
+          - name: driver_operator_user_id
+            data_type: character varying
+          - name: driver_phone
+            data_type: character varying
+          - name: driver_phone_trunc
+            data_type: character varying
+          - name: driver_travelpass_name
+            data_type: character varying
+          - name: driver_travelpass_user_id
+            data_type: character varying
+          - name: driver_revenue
+            data_type: integer
+            tests:
+              - elementary.column_anomalies:
+                  name: Anomalies sur les revenus conducteurs
+                  column_anomalies:
+                    - null_count
+                    - max
+                    - average
+                  config:
+                    severity: warn
+              - elementary.column_anomalies:
+                  name: Anomalies sur les revenus conducteurs par opérateurs
+                  column_anomalies:
+                    - null_count
+                    - max
+                    - average
+                  dimensions:
+                    - operator_id
+                  config:
+                    severity: warn
+          - name: passenger_identity_key
+            data_type: character varying
+          - name: passenger_operator_user_id
+            data_type: character varying
+          - name: passenger_phone
+            data_type: character varying
+          - name: passenger_phone_trunc
+            data_type: character varying
+          - name: passenger_travelpass_name
+            data_type: character varying
+          - name: passenger_travelpass_user_id
+            data_type: character varying
+          - name: passenger_over_18
+            data_type: boolean
+          - name: passenger_seats
+            data_type: smallint
+          - name: passenger_contribution
+            data_type: integer
+          - name: passenger_payments
+            data_type: jsonb
+          - name: uuid
+            data_type: uuid
+          - name: legacy_id
+            data_type: bigint
+      - name: geo
+        tags: [geo_source]
+        meta:
+          elementary: # default config
+            timestamp_column: updated_at
+            detection_delay:
+              period: day
+              count: 2
+            training_period:
+              period: week
+              count: 12
+            time_bucket:
+              period: week
+              count: 1
+        tests:
+          - elementary.dimension_anomalies:
+              name: volume de trajets par O/D
+              timestamp_column: updated_at
+              dimensions:
+                - start_geo_code
+                - end_geo_code
+              exclude_final_results: average > 50
+          - elementary.dimension_anomalies:
+              name: volume de trajets par origine
+              timestamp_column: updated_at
+              dimensions:
+                - start_geo_code
+              exclude_final_results: average > 50
+          - elementary.dimension_anomalies:
+              name: volume de trajets par destination
+              timestamp_column: updated_at
+              dimensions:
+                - end_geo_code
+              exclude_final_results: average > 50
+        columns:
+          - name: _id
+            data_type: integer
+          - name: carpool_id
+            data_type: integer
+          - name: updated_at
+            data_type: timestamp with time zone
+          - name: start_geo_code
+            data_type: character varying
+          - name: end_geo_code
+            data_type: character varying
+          - name: errors
+            data_type: jsonb
+      - name: operator_incentives
+        columns:
+          - name: _id
+            data_type: integer
+          - name: carpool_id
+            data_type: integer
+          - name: idx
+            data_type: smallint
+          - name: siret
+            data_type: character varying
+          - name: amount
+            data_type: integer
+      - name: operator_incentive_counterparts
+        columns:
+          - name: _id
+            data_type: integer
+          - name: carpool_id
+            data_type: integer
+          - name: target_is_driver
+            data_type: boolean
+          - name: siret
+            data_type: character varying
+          - name: amount
+            data_type: integer
+      - name: status
+        columns:
+          - name: _id
+            data_type: integer
+          - name: carpool_id
+            data_type: integer
+          - name: updated_at
+            data_type: timestamp with time zone
+          - name: acquisition_status
+            data_type: USER-DEFINED
+          - name: fraud_status
+            data_type: USER-DEFINED
+          - name: anomaly_status
+            data_type: USER-DEFINED
+      - name: terms_violation_error_labels
+        columns:
+          - name: _id
+            data_type: integer
+          - name: created_at
+            data_type: timestamp with time zone
+          - name: carpool_id
+            data_type: integer
+          - name: labels
+            data_type: ARRAY

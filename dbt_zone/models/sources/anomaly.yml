@@ -1,0 +1,32 @@
+version: 2
+
+sources:
+  - name: anomaly
+    database: pg
+    tables:
+      - name: labels
+        columns:
+          - name: _id
+            data_type: integer
+            description: ''
+          - name: created_at
+            data_type: timestamp with time zone
+            description: ''
+          - name: carpool_id
+            data_type: integer
+            description: ''
+          - name: label
+            data_type: character varying
+            description: ''
+          - name: conflicting_carpool_id
+            data_type: integer
+            description: ''
+          - name: conflicting_operator_journey_id
+            data_type: character varying
+            description: ''
+          - name: overlap_duration_ratio
+            data_type: real
+            description: ''
+          - name: operator_journey_id
+            data_type: character varying
+            description: ''

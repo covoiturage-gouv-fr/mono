@@ -1,0 +1,6 @@
+packages:
+  - package: elementary-data/elementary
+    version: 0.18.3
+    ## Docs: https://docs.elementary-data.com
+  - package: dbt-labs/codegen
+    version: 0.13.1

@@ -1,0 +1,10 @@
+target/
+dbt_packages/
+tmp/
+logs/*
+.pgcli*
+.venv/*
+
+.env.local
+.env.prod
+.env.demo

@@ -1,0 +1,62 @@
+version: 2
+
+sources:
+  - name: policy
+    database: pg
+    tables:
+      - name: incentives
+        columns:
+          - name: _id
+            data_type: integer
+          - name: policy_id
+            data_type: integer
+          - name: status
+            data_type: USER-DEFINED
+          - name: meta
+            data_type: json
+          - name: carpool_id
+            data_type: integer
+          - name: amount
+            data_type: integer
+          - name: datetime
+            data_type: timestamp with time zone
+          - name: result
+            data_type: integer
+          - name: state
+            data_type: USER-DEFINED
+          - name: operator_id
+            data_type: integer
+          - name: operator_journey_id
+            data_type: character varying
+      - name: policies
+        columns:
+          - name: _id
+            data_type: integer
+          - name: created_at
+            data_type: timestamp with time zone
+          - name: updated_at
+            data_type: timestamp with time zone
+          - name: deleted_at
+            data_type: timestamp with time zone
+          - name: territory_id
+            data_type: integer
+          - name: start_date
+            data_type: timestamp with time zone
+          - name: end_date
+            data_type: timestamp with time zone
+          - name: name
+            data_type: character varying
+          - name: description
+            data_type: character varying
+          - name: unit
+            data_type: USER-DEFINED
+          - name: status
+            data_type: USER-DEFINED
+          - name: handler
+            data_type: character varying
+          - name: incentive_sum
+            data_type: integer
+          - name: max_amount
+            data_type: bigint
+          - name: tz
+            data_type: character varying

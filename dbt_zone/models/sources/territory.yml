@@ -1,0 +1,72 @@
+version: 2
+
+sources:
+  - name: territory
+    database: pg
+    tables:
+      - name: territory_group_selector
+        columns:
+          - name: territory_group_id
+            data_type: integer
+          - name: selector_type
+            data_type: character varying
+          - name: selector_value
+            data_type: character varying
+      - name: territories
+        columns:
+          - name: _id
+            data_type: integer
+          - name: company_id
+            data_type: integer
+          - name: created_at
+            data_type: timestamp with time zone
+          - name: updated_at
+            data_type: timestamp with time zone
+          - name: deleted_at
+            data_type: timestamp with time zone
+          - name: level
+            data_type: USER-DEFINED
+          - name: name
+            data_type: character varying
+          - name: shortname
+            data_type: character varying
+          - name: activable
+            data_type: boolean
+          - name: active
+            data_type: boolean
+          - name: active_since
+            data_type: timestamp with time zone
+          - name: contacts
+            data_type: json
+          - name: address
+            data_type: json
+          - name: population
+            data_type: integer
+          - name: surface
+            data_type: bigint
+          - name: geo
+            data_type: USER-DEFINED
+          - name: ui_status
+            data_type: json
+          - name: siret
+            data_type: character varying
+      - name: territory_group
+        columns:
+          - name: _id
+            data_type: integer
+          - name: company_id
+            data_type: integer
+          - name: created_at
+            data_type: timestamp with time zone
+          - name: updated_at
+            data_type: timestamp with time zone
+          - name: deleted_at
+            data_type: timestamp with time zone
+          - name: name
+            data_type: character varying
+          - name: shortname
+            data_type: character varying
+          - name: contacts
+            data_type: json
+          - name: address
+            data_type: json
