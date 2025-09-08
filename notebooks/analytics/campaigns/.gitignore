@@ -1,0 +1,4 @@
+outputs*
+db.duckdb*
+*.parquet
+.virtual_documents
