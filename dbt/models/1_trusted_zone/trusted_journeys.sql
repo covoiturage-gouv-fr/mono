@@ -74,7 +74,9 @@ with carpools as ( -- join carpools with all datasets
   {% if is_incremental() %} -- in case of incremental, only select relevant carpools
     where c.updated_at >= coalesce(
       (select least(max(updated_at),max(geo_updated_at),max(status_updated_at)) from {{this}}), '1970-01-01'
-    )
+    ) -- Updates
+    or (c."_id" in (select "_id" from {{this}} where geo_updated_at is null)) -- new rows that does not have geo data yet
+    or (c."_id" in (select "_id" from {{this}} where status_updated_at is null)) -- new rows that does not have status data yet
   {% endif %}
 ),
 
