@@ -37,53 +37,8 @@
   )
 }}
 
-{% if is_incremental() %}
-with new_status as ( -- New status lines
-  select s."carpool_id"
-  from {{ source('carpool', 'status') }} as s
-  {% if is_incremental() %} -- select only new status
-    where s.updated_at >= (select max(status_updated_at) from {{ this }})
-  {% endif %}
-),
 
-new_geo as ( -- New geo lines
-  select g.carpool_id
-  from {{ source('carpool', 'geo') }} as g
-  {% if is_incremental() %} -- select only new geos
-    where g.updated_at >= (select max(geo_updated_at) from {{ this }})
-  {% endif %}
-),
-
-new_carpools as ( -- New carpools lines
-  select
-    "_id"
-  from {{ source('carpool', 'carpools') }} as c
-  {% if is_incremental() %} 
-    where
-      -- select new carpools
-      c.updated_at >= (select max(updated_at) from {{ this }})
-  {% endif %}
-),
-
-candidates_to_update as ( -- We take all carpools ids that needs an update and deduplicate
-  select distinct "_id"
-  from (
-    select
-      carpool_id as "_id"
-    from new_status
-    union all
-    select
-      carpool_id as "_id"
-    from new_geo
-    union all
-    select
-      "_id"
-    from new_carpools
-  )
-),
-{% endif %}
-
-{% if not is_incremental() %} with {% endif %} carpools as ( -- join carpools with all datasets
+with carpools as ( -- join carpools with all datasets
   select
     c.*,
     -- Add data from other sources
@@ -114,14 +69,12 @@ candidates_to_update as ( -- We take all carpools ids that needs an update and d
     )
     as journey_has_valid_acquisition_status
   from {{ source('carpool', 'carpools') }} as c
-  {% if is_incremental() %} -- in case of incremental, only select relevant carpools
-    inner join candidates_to_update ctu on c."_id"=ctu."_id"
-  {% endif %}
   left join {{ source('carpool', 'status') }} as s on c._id = s.carpool_id
   left join {{ source('carpool', 'geo') }} as g on c._id = g.carpool_id
-  {% if target.name == 'dev' %}
-  order by c.updated_at
-  limit 10000 
+  {% if is_incremental() %} -- in case of incremental, only select relevant carpools
+    where c.updated_at >= coalesce(
+      (select least(max(updated_at),max(geo_updated_at),max(status_updated_at)) from {{this}}), '1970-01-01'
+    )
   {% endif %}
 ),
 
