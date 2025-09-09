@@ -1,7 +1,6 @@
 {{ 
     config(
-    materialized = 'incremental',
-    incremental_strategy = 'delete+insert',
+    materialized = 'table',
     unique_key=['_id'],
     indexes = [
       {
@@ -38,7 +37,7 @@
 }}
 
 
-with carpools as ( -- join carpools with all datasets
+with carpools as ( -- join carpools with all 1:1 datasets
   select
     c.*,
     -- Add data from other sources
@@ -54,8 +53,8 @@ with carpools as ( -- join carpools with all datasets
     g.errors
     as geo_errors,
     -- datetimes are timezoned
-    {{ get_timezoned_timestamp('g.start_geo_code','c.start_datetime') }} as start_datetime_tz,
-    {{ get_timezoned_timestamp('g.end_geo_code','c.end_datetime') }} as end_datetime_tz,
+          {{ get_timezoned_timestamp('g.start_geo_code','c.start_datetime') }}    {{ get_timezoned_timestamp('g.start_geo_code','c.start_datetime') }} as start_datetime_tz,
+          {{ get_timezoned_timestamp('g.end_geo_code','c.end_datetime') }}    {{ get_timezoned_timestamp('g.end_geo_code','c.end_datetime') }} as end_datetime_tz,
     -- Enrich with useful status columns
     coalesce(
       s.acquisition_status in {{ get_final_acquisition_status_list() }},
@@ -71,16 +70,8 @@ with carpools as ( -- join carpools with all datasets
   from {{ source('carpool', 'carpools') }} as c
   left join {{ source('carpool', 'status') }} as s on c._id = s.carpool_id
   left join {{ source('carpool', 'geo') }} as g on c._id = g.carpool_id
-  {% if is_incremental() %} -- in case of incremental, only select relevant carpools
-    where c.updated_at >= coalesce(
-      (select least(max(updated_at),max(geo_updated_at),max(status_updated_at)) from {{this}}), '1970-01-01'
-    ) -- Updates
-    or (c."_id" in (select "_id" from {{this}} where geo_updated_at is null)) -- new rows that does not have geo data yet
-    or (c."_id" in (select "_id" from {{this}} where status_updated_at is null)) -- new rows that does not have status data yet
-  {% endif %}
 ),
 
--- The following datasets have not updated_at column
 fraud_labels as ( -- Pre-aggregate fraud labels for selected carpools
   select
     fl.carpool_id,
@@ -97,9 +88,6 @@ anomaly_labels as ( -- Pre-aggregate anomaly labels for selected carpools
     al.carpool_id,
     array_agg(al.label) as anomaly_labels
   from {{ source('fraudcheck', 'labels') }} as al
-  {% if is_incremental() %}
-    inner join carpools as c on al.carpool_id = c._id
-  {% endif %}
   group by 1
 ),
 
@@ -110,10 +98,18 @@ operator_incentives as (
     array_agg(distinct oi.siret) as operator_incentives_sirets,
     sum(oi.amount)               as operator_incentives_amount_total
   from {{ source('carpool', 'operator_incentives') }} as oi
-  {% if is_incremental() %}
-    inner join carpools as c on oi.carpool_id = c._id
-  {% endif %}
   where oi.amount > 0 -- Filter out zero-amounts as should be nulls
+  group by 1
+),
+
+-- Pre-aggregate operator incentives for selected carpools
+policy_incentives as (
+  select
+    pi.carpool_id,
+    sum(pi.amount) as policy_incentives_amount_total,
+    sum(pi.result) as policy_incentives_result_total
+  from {{ source('policy', 'incentives') }} as pi
+  where pi.status = 'validated' -- Filter out non validated amounts
   group by 1
 ),
 
@@ -127,11 +123,14 @@ joined_data as ( -- Join carpool enriched data with aggregated datasets
     fl.fraud_labels,
     al.anomaly_labels,
     oi.operator_incentives_sirets,
-    oi.operator_incentives_amount_total
+    oi.operator_incentives_amount_total,
+    pi.policy_incentives_amount_total,
+    pi.policy_incentives_result_total
   from carpools as c
   left join fraud_labels as fl on c._id = fl.carpool_id
   left join anomaly_labels as al on c._id = al.carpool_id
   left join operator_incentives as oi on c._id = oi.carpool_id
+  left join policy_incentives as pi on c._id = pi.carpool_id
   left join
     {{ source('operator', 'operators') }} as o
     on c.operator_id = o._id
@@ -178,7 +177,9 @@ select
   passenger_payments,
   operator_incentives_sirets,
   operator_incentives_amount_total,
-  status_updated_at,
+  policy_incentives_amount_total,
+  policy_incentives_result_total
+  as status_updated_at,
   acquisition_status,
   fraud_status,
   fraud_labels,

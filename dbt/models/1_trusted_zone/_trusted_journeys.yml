@@ -82,8 +82,10 @@ models:
         data_type: ARRAY
       - name: operator_incentives_amount_total
         data_type: bigint
+      - name: policy_incentives_amount_total
+        data_type: bigint
       - name: status_updated_at
-        data_type: timestamp with time zone
+        data_type: bigint
       - name: acquisition_status
         data_type: USER-DEFINED
       - name: fraud_status
