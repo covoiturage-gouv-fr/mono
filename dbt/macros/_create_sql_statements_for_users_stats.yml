@@ -1,0 +1,16 @@
+version: 2
+
+macros:
+  - name: create_sql_statements_for_users_stats
+    description: "Crée trois colonnes avec les mêmes conditions, une sans filtre et deux filtrées par rôle (driver, passenger)"
+    config:
+      docs:
+        show: true
+      meta: {}
+    arguments:
+      - name: statement
+        type: string
+        description: "Expression SQL à utiliser comme base pour les trois requêtes"
+      - name: column_name
+        type: string
+        description: "Préfixe à utiliser comme nom de colonne"

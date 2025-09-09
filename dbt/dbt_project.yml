@@ -53,7 +53,9 @@ models:
     metrics:
       +schema: "metrics"
     metabase:
-      +schema: "stats"
+      +schema: "metabase"
+    1_trusted_zone:
+      +schema: "trusted_zone"
 
   ## see docs: https://docs.elementary-data.com/
   elementary:

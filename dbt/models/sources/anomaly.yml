@@ -1,0 +1,23 @@
+version: 2
+
+sources:
+  - name: anomaly
+    tables:
+      - name: labels
+        columns:
+          - name: _id
+            data_type: integer
+          - name: created_at
+            data_type: timestamp with time zone
+          - name: carpool_id
+            data_type: integer
+          - name: label
+            data_type: character varying
+          - name: conflicting_carpool_id
+            data_type: integer
+          - name: conflicting_operator_journey_id
+            data_type: character varying
+          - name: overlap_duration_ratio
+            data_type: real
+          - name: operator_journey_id
+            data_type: character varying

@@ -1,0 +1,10 @@
+version: 2
+
+macros:
+  - name: get_final_acquisition_status_list
+    description: "Retourne la liste des statuts finaux possibles pour l'acquisition"
+    config:
+      docs:
+        show: true
+      meta: {}
+    arguments: []

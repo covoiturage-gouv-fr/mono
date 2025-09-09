@@ -2,16 +2,13 @@ version: 2
 
 models:
   - name: interoperators_labels_by_month
-    description: ""
+    description: ''
     columns:
       - name: month
         data_type: timestamp without time zone
-
       - name: label
         data_type: character varying
-
       - name: operator_name
         data_type: character varying
-
       - name: count
         data_type: bigint

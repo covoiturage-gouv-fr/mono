@@ -1,0 +1,15 @@
+version: 2
+macros:
+  - name: get_timezoned_timestamp
+    description: "Convertit une colonne de datetime vers le fuseau horaire approprié en fonction du code géographique"
+    config:
+      docs:
+        show: true
+      meta: {}
+    arguments:
+      - name: geo_code_col
+        type: column
+        description: "Colonne contenant les codes géographiques (codes commune/arrondissement INSEE) pour déterminer le fuseau horaire"
+      - name: datetime_col
+        type: column
+        description: "Colonne contenant les valeurs datetime à convertir"

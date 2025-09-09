@@ -1,0 +1,11 @@
+version: 2
+models:
+  - name: campaigns_by_month
+    columns:
+      - name: year
+      - name: month
+      - name: campaign_id
+      - name: operator_id
+      - name: journeys
+      - name: incented_journeys
+      - name: incentive_amount

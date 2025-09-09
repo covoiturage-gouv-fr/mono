@@ -1,0 +1,10 @@
+version: 2
+models:
+  - name: campaigns_by_day
+    columns:
+      - name: campaign_id
+      - name: start_date
+      - name: operator_id
+      - name: journeys
+      - name: incented_journeys
+      - name: incentive_amount
