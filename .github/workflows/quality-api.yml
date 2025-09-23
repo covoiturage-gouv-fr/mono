@@ -65,15 +65,15 @@ jobs:
         fetch-depth: 2
 
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@v3
+      uses: github/codeql-action/init@16df4fbc19aea13d921737861d6c622bf3cefe23
       with:
         config-file: ./.github/codeql/codeql-config.yml
 
     - name: Autobuild
-      uses: github/codeql-action/autobuild@v3
+      uses: github/codeql-action/autobuild@16df4fbc19aea13d921737861d6c622bf3cefe23
 
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v3
+      uses: github/codeql-action/analyze@16df4fbc19aea13d921737861d6c622bf3cefe23
 
   integration:
     needs: [test]

@@ -98,4 +98,4 @@ fileignoreconfig:
 - filename: .github/workflows/base-build-push-docker.yml
   checksum: a3175451c4f803a421cb9dfaf770de56511a251365d8e4d9a6bcca93b8e70305
 - filename: .github/workflows/quality-api.yml
-  checksum: a798fd3ef2b6454df002543adbcd2f33a2c93e7a671b9247f296a19dd2e6ef2d
+  checksum: 2a685945c377988664f97a0c45edc17b5dd95e8cedbb19b5e41370600b5f9c4b
