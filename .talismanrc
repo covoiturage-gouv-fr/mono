@@ -5,8 +5,6 @@ scopeconfig:
 fileignoreconfig:
 - filename: api/src/lib/pg/sql.ts
   checksum: 34a1d26889326c6bd576b22b2b4de9ef2a10dcc6d36ee915b3c99028d378bd39
-- filename: .github/workflows/quality-api.yml
-  allowed_patterns: [key,pass,"(?i)secretkey","(?i)accesskey","(?i)password","(?i)email"]
 - filename: attestation/src/app/services/pdfLimited.service.ts
   checksum: b26661547756ef686b92ff195f1a9d2ebe4348d3b09264f80a1a28adcbd168d9
 - filename: attestation/src/app/services/pdfPublic.service.ts
@@ -79,3 +77,25 @@ fileignoreconfig:
   checksum: 9c9aad9660da5bfdac53266fdf9167fb845fd83bde8fe55f5740f224537f597d
 - filename: api/src/pdc/proxy/middlewares/sessionMiddleware.ts
   checksum: 1a256ae8d37e81643b202fc4b1dff89482bddb54420ac38c4c34253c96041841
+- filename: .github/actions/build-stack/action.yml
+  checksum: a6ece9f29e65dbd9e4222d46029ab62ae3b8785865ba0ac2aa7cc64479fff32f
+- filename: .github/workflows/deploy-techdoc.yaml
+  checksum: ebdfc0b8e94cfe6d35623f126e3841cb01c07da3706b6786e3bc0967b6caed61
+- filename: .github/workflows/issue_bot.yml
+  checksum: 57c643d8f7938fa059a64c4dd1101148fb2064604e6803a93b9e8c832ca7b772
+- filename: .github/workflows/quality-data.yml
+  checksum: 436cf26507abda7d452d8c1dbc7fa924b203de81fc6a69f7d0a7b30b326a6f99
+- filename: .github/workflows/quality-frontend.yml
+  checksum: 7d6a1a1679209dd86e0111dd44b2d944cfc8a8f769dd0eb85d00f27c222e346d
+- filename: .github/workflows/release.yml
+  checksum: 31836b9706985754166300275c87bca5ae4e83b860661221bd5ea12818429492
+- filename: .github/workflows/deploy-frontends-public.yml
+  checksum: 3901d60370cf3b9f15a8c1aa9839eb39b58792854db80f6f9611c22d814f0981
+- filename: .github/workflows/base-deploy-to-bucket.yml
+  checksum: 3b49c362eadacb133ca0d70d87b53fc27007db169ec5df2d5fbb2eb038646533
+- filename: .github/workflows/deploy-frontends-dashboardv2.yml
+  checksum: 8963745aa4f7c42309e5f405d91a901350867d57d3be98415df46a49b7bd0a33
+- filename: .github/workflows/base-build-push-docker.yml
+  checksum: a3175451c4f803a421cb9dfaf770de56511a251365d8e4d9a6bcca93b8e70305
+- filename: .github/workflows/quality-api.yml
+  checksum: a798fd3ef2b6454df002543adbcd2f33a2c93e7a671b9247f296a19dd2e6ef2d
