@@ -7,12 +7,11 @@ Le Registre de preuve de covoiturage est un produit [beta.gouv.fr](https://beta.
 - [Documentation générale](https://doc.covoiturage.beta.gouv.fr)
 - [Documentation technique](https://tech.covoiturage.beta.gouv.fr)
 - [Statistiques publiques](https://app.covoiturage.beta.gouv.fr/stats)
-- [Metabase](https://stats.covoiturage.beta.gouv.fr)
-- [Grafana](https://grafana.stats.covoiturage.beta.gouv.fr)
+- [Metabase (interne)](https://stats.covoiturage.beta.gouv.fr)
+- [Matomo (interne)](https://matomo.covoiturage.beta.gouv.fr)
 - [Page de statut des services](https://status.covoiturage.beta.gouv.fr)
-- [Dépôt de l'application](https://github.com/betagouv/preuve-covoiturage) (monorepo)
-- [Dépôt de l'infrastructure](https://github.com/betagouv/preuve-covoiturage-infra)
-- [Dépôt de l'observatoire](https://github.com/betagouv/observatoire-covoiturage) (obsolète)
+- [Dépôt de l'application](https://github.com/covoiturage-gouv-fr/mono)
+- [Dépôt de l'infrastructure](https://github.com/covoiturage-gouv-fr/infra)
 
 ### Sécurité
 

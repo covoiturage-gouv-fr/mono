@@ -1,19 +1,19 @@
-import { Strapi } from '@strapi/strapi';
+import { Strapi } from "@strapi/strapi";
 
 type FlowFn = () => Promise<boolean>;
 
 const flows: Record<string, FlowFn> = {
-  flush_cache: async() => {
+  flush_cache: async () => {
     const url = `https://api.covoiturage.beta.gouv.fr/cache`;
     const params = {
-      method: 'DELETE',
+      method: "DELETE",
       headers: {
-        'X-Route-Cache-Auth': `${process.env.FLOW_FLUSH_CACHE_TOKEN}`,
+        "X-Route-Cache-Auth": `${process.env.FLOW_FLUSH_CACHE_TOKEN}`,
       },
     };
 
-    if(!process.env.FLOW_FLUSH_CACHE_TOKEN) {
-      console.debug('flush_cache', url, params);
+    if (!process.env.FLOW_FLUSH_CACHE_TOKEN) {
+      console.debug("flush_cache", url, params);
       return true;
     }
 
@@ -23,22 +23,23 @@ const flows: Record<string, FlowFn> = {
     }
     return true;
   },
-  deploy: async() => {
-    const url = `https://api.github.com/repos/betagouv/preuve-covoiturage/actions/workflows/deploy-frontends-public.yml/dispatches`
+  deploy: async () => {
+    const url =
+      `https://api.github.com/repos/covoiturage-gouv-fr/mono/actions/workflows/deploy-frontends-public.yml/dispatches`;
     const params = {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Authorization': `token ${process.env.FLOW_DEPLOY_GH_TOKEN}`,
-        'Accept': 'application/vnd.github.v3+json',
-        'Content-Type': 'application/json',
+        "Authorization": `token ${process.env.FLOW_DEPLOY_GH_TOKEN}`,
+        "Accept": "application/vnd.github.v3+json",
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        ref: 'main'
+        ref: "main",
       }),
     };
 
-    if(!process.env.FLOW_DEPLOY_GH_TOKEN) {
-      console.debug('deploy', url, params);
+    if (!process.env.FLOW_DEPLOY_GH_TOKEN) {
+      console.debug("deploy", url, params);
       return true;
     }
 
@@ -67,5 +68,5 @@ export default ({ strapi }: { strapi: Strapi }) => ({
       success,
       flow: id,
     };
-  }
+  },
 });
