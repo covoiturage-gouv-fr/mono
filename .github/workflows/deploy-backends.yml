@@ -32,24 +32,3 @@ jobs:
           dockerfile: './docker/api/Dockerfile'
         - name: data
           dockerfile: './docker/data/Dockerfile'
-  deploy:
-    name: Deploy
-    needs: [build]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Trigger Workflow
-        uses: actions/github-script@v6
-        env: 
-          TARGET_VERSION: ${{ env.tag }}
-        with:
-          github-token: ${{ secrets.GA_PDC_TOKEN }}
-          script: |
-              github.rest.actions.createWorkflowDispatch({
-                owner: context.repo.owner,
-                repo: 'preuve-covoiturage-infra',
-                workflow_id: 'deploy.yml',
-                ref: 'main',
-                inputs: {
-                  version: process.env.TARGET_VERSION,
-                },
-              })

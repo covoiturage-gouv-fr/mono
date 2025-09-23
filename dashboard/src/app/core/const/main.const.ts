@@ -12,7 +12,7 @@ export const URLS = {
   exportDoc: 'https://tech.covoiturage.beta.gouv.fr/topic/topic-export-de-trajets',
   contactEmail: 'contact@covoiturage.beta.gouv.fr',
   legalMentions: 'https://doc.covoiturage.beta.gouv.fr/ressources/mentions-legales',
-  repository: 'https://github.com/betagouv/preuve-covoiturage',
+  repository: 'https://github.com/covoiturage-gouv-fr/mono',
 };
 
 export const HTTP = {
