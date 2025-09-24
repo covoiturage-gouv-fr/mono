@@ -11,6 +11,10 @@ fileignoreconfig:
   checksum: 5c8511305a8806cf773f0e0b92c4576e6a8f7ab3e3e27e138f474466d6ff79e8
 - filename: flake.nix
   checksum: 35591837abd86ad13d74e7628be053f7c5d18b60e0acc463a93c7e69cced02e3
+- filename: flake.lock
+  allowed_patterns:
+    - "sha256-.*"
+    - "\"rev\": \"[0-9a-f]{40}\""
 - filename: api/deno.lock
   allowed_patterns:
     - "sha512-.*"
@@ -39,10 +43,6 @@ fileignoreconfig:
   allowed_patterns: [key,uuid,driver,passenger]
 - filename: notebooks/cerema/*.sql
   ignore_detectors: [filename]
-- filename: notebooks/cerema/flake.lock
-  allowed_patterns:
-    - "sha256-.*"
-    - "\"rev\": \"[0-9a-f]{40}\""
 - filename: api/src/ilos/connection-postgres/DenoPostgresConnection.ts
   allowed_patterns: [username,password]
 - filename: api/src/config/connections.ts

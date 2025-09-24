@@ -46,7 +46,7 @@
               minio-client
 
               # rpc infra
-              nodejs_20
+              nodejs_24
               postgresql_16
               deno
 
