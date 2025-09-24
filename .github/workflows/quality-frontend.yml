@@ -18,7 +18,7 @@ jobs:
       - name: Install NodeJS
         uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
         with:
-          node-version: '20'
+          node-version: '24'
 
       - name: 'Audit dashboard dependencies'
         run: npm audit --audit-level moderate && exit 0 || $([[ $? -ge 8 ]] && exit 1 || exit 0)
@@ -38,7 +38,7 @@ jobs:
       - name: Install NodeJS
         uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
         with:
-          node-version: '20'
+          node-version: '24'
 
       - name: Cache dependencies
         uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809
