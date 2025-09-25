@@ -264,7 +264,7 @@ export default function UsersTable(props: { title: string; territoryId?: number;
                   </option>
                 ))}
               </Select>
-              {((modal.currentRow.role && (modal.currentRow.role as string).split(".")[0] === "operator") ||
+              {((modal.currentRow.role && (modal.currentRow.role as string).split(".")[0] === "operator") ??
                 user?.operator_id) && (
                 <Select
                   label="Opérateur"
@@ -281,7 +281,7 @@ export default function UsersTable(props: { title: string; territoryId?: number;
                   ))}
                 </Select>
               )}
-              {((modal.currentRow.role && (modal.currentRow.role as string).split(".")[0] === "territory") ||
+              {((modal.currentRow.role && (modal.currentRow.role as string).split(".")[0] === "territory") ??
                 user?.territory_id) && (
                 <Select
                   label="Territoire"

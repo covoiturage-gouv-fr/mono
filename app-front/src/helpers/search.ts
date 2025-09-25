@@ -1,6 +1,5 @@
 import { Config } from "@/config";
 import { search } from "@/config/search";
-// eslint-disable-next-line prettier/prettier
 import type { PerimeterType, TerritoryListInterface } from "@/interfaces/searchInterface";
 
 export const searchHost = Config.get<string>("search.host");
