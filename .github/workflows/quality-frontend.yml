@@ -18,13 +18,13 @@ jobs:
       - name: Install NodeJS
         uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
         with:
-          node-version: '24'
+          node-version: "24"
 
-      - name: 'Audit dashboard dependencies'
+      - name: "Audit dashboard dependencies"
         run: npm audit --audit-level moderate && exit 0 || $([[ $? -ge 8 ]] && exit 1 || exit 0)
         working-directory: dashboard
 
-      - name: 'Audit public site dependencies'
+      - name: "Audit public site dependencies"
         run: npm audit --audit-level moderate && exit 0 || $([[ $? -ge 8 ]] && exit 1 || exit 0)
         working-directory: public
 
@@ -38,7 +38,7 @@ jobs:
       - name: Install NodeJS
         uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
         with:
-          node-version: '24'
+          node-version: "24"
 
       - name: Cache dependencies
         uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809
@@ -55,3 +55,31 @@ jobs:
       - name: Run lint
         working-directory: app-front
         run: npm run lint
+
+  build-dashboard:
+    name: Build Dashboard
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+
+      - name: Install NodeJS
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
+        with:
+          node-version: "24"
+
+      - name: Cache dependencies
+        uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809
+        with:
+          path: app-front/node_modules
+          key: npm-cache-${{ runner.os }}-${{ hashFiles('app-front/package-lock.json') }}
+          restore-keys: |
+            npm-cache-${{ runner.os }}-
+
+      - name: Install dependencies
+        working-directory: app-front
+        run: npm ci
+
+      - name: Run build
+        working-directory: app-front
+        run: npm run build

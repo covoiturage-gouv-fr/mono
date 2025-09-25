@@ -135,7 +135,7 @@ export default function TerritoriesTable(props: { title: string; id?: number }) 
         request.url = getApiUrl("v3", `${url}/${modal.currentRow?._id as string}`);
         request.params.method = "DELETE";
         break;
-      case "create":
+      case "create": {
         const companyResponse: Response = await fetchCompany(modal.currentRow.siret as string);
         if (companyResponse.ok) {
           const companyBody = (await companyResponse.json()) as Company;
@@ -150,6 +150,7 @@ export default function TerritoriesTable(props: { title: string; id?: number }) 
           throw new Error("Aucune entreprise trouvée pour ce siret");
         }
         break;
+      }
     }
     const response = await fetch(request.url, request.params);
     if (!response.ok) {

@@ -104,8 +104,6 @@ fileignoreconfig:
     checksum: 57c643d8f7938fa059a64c4dd1101148fb2064604e6803a93b9e8c832ca7b772
   - filename: .github/workflows/quality-data.yml
     checksum: 436cf26507abda7d452d8c1dbc7fa924b203de81fc6a69f7d0a7b30b326a6f99
-  - filename: .github/workflows/quality-frontend.yml
-    checksum: 7d6a1a1679209dd86e0111dd44b2d944cfc8a8f769dd0eb85d00f27c222e346d
   - filename: .github/workflows/release.yml
     checksum: 31836b9706985754166300275c87bca5ae4e83b860661221bd5ea12818429492
   - filename: .github/workflows/deploy-frontends-public.yml

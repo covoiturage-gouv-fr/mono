@@ -43,13 +43,13 @@ export interface TerritorySelectorsInterface {
   [TerritoryCodeEnum.Region]?: string[];
 }
 
-export interface Territory {
+export interface Territory extends Record<string, unknown> {
   _id?: number;
   name: string;
   siret: string;
 }
 
-export interface TerritoriesInterface {
+export interface TerritoriesInterface extends Record<string, unknown> {
   meta: {
     pagination: {
       limit: number;
@@ -60,7 +60,7 @@ export interface TerritoriesInterface {
   data: Territory[];
 }
 
-export interface OperatorTokenInterface {
+export interface OperatorTokenInterface extends Record<string, unknown> {
   token_id: string;
   operator_id: number;
   role: string;
