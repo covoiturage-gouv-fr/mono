@@ -80,7 +80,7 @@ export class CarpoolStatusService {
       status,
       created_at: statusResult.created_at,
       fraud_error_labels: statusResult.fraud.map((f) =>
-        (!!f.label && f.label == "interoperator_overlap_trip") ? "interoperator_overlap" : f.label
+        (!!f.label && f.label === "interoperator_overlap_trip") ? "interoperator_overlap" : f.label
       ),
       anomaly_error_details: statusResult.anomaly as any,
       terms_violation_details: statusResult.terms.map((f) => f.label),
