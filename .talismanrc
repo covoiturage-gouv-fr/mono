@@ -114,7 +114,7 @@ fileignoreconfig:
     checksum: 8963745aa4f7c42309e5f405d91a901350867d57d3be98415df46a49b7bd0a33
   - filename: .github/workflows/base-build-push-docker.yml
     checksum: a3175451c4f803a421cb9dfaf770de56511a251365d8e4d9a6bcca93b8e70305
-  - filename: .github/workflows/quality-api.yml
-    checksum: 2a685945c377988664f97a0c45edc17b5dd95e8cedbb19b5e41370600b5f9c4b
   - filename: api/src/db/migrations/20250925100000-certificates.sql
     checksum: dd6926e2ca43353d0f09537ce4e951df6256b2e48c1721b3bf88e15d9a4231ba
+  - filename: .github/workflows/quality-api.yml
+    checksum: fd8e2e74be03fb9d986fc56dec989cbf4971aefa4e7835b6fd4ad884cd4d4171
