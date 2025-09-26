@@ -10,6 +10,7 @@ import { CreateJourneyAction } from "./actions/CreateJourneyAction.ts";
 import { ListJourneyAction } from "./actions/ListJourneyAction.ts";
 import { PatchJourneyAction } from "./actions/PatchJourneyAction.ts";
 import { StatusJourneyAction } from "./actions/StatusJourneyAction.ts";
+import { JourneyStatusCommand } from "./commands/JourneyStatusCommand.ts";
 import { AcquisitionMigrateCommand } from "./commands/MigrateAcquisitionCommand.ts";
 import { ProcessGeoCommand } from "./commands/ProcessGeoCommand.ts";
 import { config } from "./config/index.ts";
@@ -24,6 +25,7 @@ import { binding as statusBinding } from "./contracts/status.schema.ts";
   commands: [
     AcquisitionMigrateCommand,
     ProcessGeoCommand,
+    JourneyStatusCommand,
   ],
   providers: [
     GeoProvider,

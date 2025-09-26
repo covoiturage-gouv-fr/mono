@@ -10,10 +10,16 @@ function registerCommand(
   cmd: CommandOptions,
   processCommand: (...args: unknown[]) => Promise<unknown>,
 ): void {
-  const command = runner.command(cmd.signature);
+  const splitSignature = cmd.signature.split(" ");
+  const command = runner.command(splitSignature[0]);
+  for (const arg of splitSignature.slice(1)) {
+    command.argument(arg);
+  }
+
   if (cmd.description) {
     command.description(cmd.description);
   }
+
   if (cmd.options && cmd.options.length) {
     for (const option of cmd.options) {
       const { signature, description, coerce, default: def } = option;
