@@ -1,4 +1,4 @@
-import { command, CommandInterface } from "@/ilos/common/index.ts";
+import { command, CommandInterface, NotFoundException } from "@/ilos/common/index.ts";
 import { CarpoolStatusService } from "@/pdc/providers/carpool/providers/CarpoolStatusService.ts";
 import { lastApiVersion } from "@/pdc/proxy/config/API_VERSION.ts";
 
@@ -16,18 +16,24 @@ export class JourneyStatusCommand implements CommandInterface {
   public async call(id: string, list: string[]): Promise<void> {
     const operator_id = parseInt(id, 10);
     for (const operator_journey_id of list) {
-      const result = await this.statusService.findByOperatorJourneyId(
-        operator_id,
-        operator_journey_id,
-        lastApiVersion(),
-      );
+      try {
+        const result = await this.statusService.findByOperatorJourneyId(
+          operator_id,
+          operator_journey_id,
+          lastApiVersion(),
+        );
 
-      if (!result) {
-        console.log(`${operator_journey_id} not found`);
-        continue;
+        const status = this.statusService.castToStatusResult(operator_journey_id, result);
+
+        console.log(`${operator_journey_id} status=${status.status} journey_id=${status.journey_id}`);
+      } catch (e) {
+        if (e instanceof NotFoundException) {
+          console.log(`${operator_journey_id} status=NOT_FOUND`);
+          continue;
+        }
+
+        throw e;
       }
-
-      console.log(this.statusService.castToStatusResult(operator_journey_id, result));
     }
   }
 }
