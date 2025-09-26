@@ -15,6 +15,10 @@ export class JourneyStatusCommand implements CommandInterface {
 
   public async call(id: string, list: string[]): Promise<void> {
     const operator_id = parseInt(id, 10);
+    if (Number.isNaN(operator_id)) {
+      console.error(`Invalid operator_id: "${id}". Must be a valid integer.`);
+      return;
+    }
     for (const operator_journey_id of list) {
       try {
         const result = await this.statusService.findByOperatorJourneyId(
