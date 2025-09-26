@@ -1,5 +1,6 @@
 import { provider } from "@/ilos/common/Decorators.ts";
 import { LegacyPostgresConnection } from "@/ilos/connection-postgres/index.ts";
+import { NotFoundException } from "../../../../ilos/common/index.ts";
 import { castToStatusEnum } from "../helpers/castStatus.ts";
 import { CarpoolLabel, CarpoolStatus } from "../interfaces/database/label.ts";
 import { CarpoolLabelRepository } from "../repositories/CarpoolLabelRepository.ts";
@@ -40,7 +41,7 @@ export class CarpoolStatusService {
   ): Promise<FindByOperatorJourneyIdResult> {
     const statusResult = await this.statusRepository.getStatusByOperatorJourneyId(operator_id, operator_journey_id);
     if (!statusResult) {
-      return;
+      throw new NotFoundException();
     }
 
     const { created_at, legacy_id, ...status } = statusResult;
