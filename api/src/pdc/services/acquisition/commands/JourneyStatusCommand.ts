@@ -1,10 +1,6 @@
 import { command, CommandInterface } from "@/ilos/common/index.ts";
 import { CarpoolStatusService } from "@/pdc/providers/carpool/providers/CarpoolStatusService.ts";
-
-interface Options {
-  operator_id: number;
-  operator_journey_id: string;
-}
+import { lastApiVersion } from "@/pdc/proxy/config/API_VERSION.ts";
 
 @command({
   signature: "journey:status <operator_id> <operator_journey_id...>",
@@ -23,7 +19,7 @@ export class JourneyStatusCommand implements CommandInterface {
       const result = await this.statusService.findByOperatorJourneyId(
         operator_id,
         operator_journey_id,
-        "3.1",
+        lastApiVersion(),
       );
 
       if (!result) {
