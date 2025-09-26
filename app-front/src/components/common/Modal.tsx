@@ -2,7 +2,7 @@ import { createModal } from "@codegouvfr/react-dsfr/Modal";
 import { useIsModalOpen } from "@codegouvfr/react-dsfr/Modal/useIsModalOpen";
 import { type ReactNode, useEffect, useId, useState } from "react";
 
-export type ModalProps = {
+export interface ModalProps {
   open: boolean;
   title: string;
   children?: ReactNode;
@@ -10,11 +10,11 @@ export type ModalProps = {
   onClose: () => void;
   onOpen?: () => Promise<void>;
   onSubmit: () => Promise<void>;
-};
+}
 
-export type ModalResponse = {
+export interface ModalResponse {
   doProceed: boolean;
-};
+}
 
 export function Modal(props: ModalProps) {
   const id = useId();
@@ -32,7 +32,6 @@ export function Modal(props: ModalProps) {
         void props.onOpen();
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.open]);
 
   useIsModalOpen(modal, {

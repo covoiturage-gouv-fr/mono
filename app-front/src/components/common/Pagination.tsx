@@ -41,35 +41,21 @@ export default function Pagination(props: PaginationProps) {
       }),
     ];
   };
-  const defaultPage = props.defaultPage ? props.defaultPage : 1;
+  const defaultPage = props.defaultPage ?? 1;
   const pages = getPagination(props.count, defaultPage);
 
   return (
     <div className={fr.cx("fr-grid-row", "fr-mt-5w")}>
       <div className={fr.cx("fr-mx-auto")}>
-        <nav
-          role="navigation"
-          className={fr.cx("fr-pagination")}
-          aria-label="Pagination"
-        >
+        <nav role="navigation" className={fr.cx("fr-pagination")} aria-label="Pagination">
           <ul className={fr.cx("fr-pagination__list")}>
             <li>
               {defaultPage == 1 && (
-                <p
-                  className={fr.cx(
-                    "fr-pagination__link",
-                    "fr-pagination__link--first",
-                  )}
-                >
-                  Première page
-                </p>
+                <p className={fr.cx("fr-pagination__link", "fr-pagination__link--first")}>Première page</p>
               )}
               {defaultPage > 1 && (
                 <Link
-                  className={fr.cx(
-                    "fr-pagination__link",
-                    "fr-pagination__link--first",
-                  )}
+                  className={fr.cx("fr-pagination__link", "fr-pagination__link--first")}
                   href=""
                   onClick={() => props.onChange(1)}
                 >
@@ -80,22 +66,14 @@ export default function Pagination(props: PaginationProps) {
             <li>
               {defaultPage == 1 && (
                 <p
-                  className={fr.cx(
-                    "fr-pagination__link",
-                    "fr-pagination__link--prev",
-                    "fr-pagination__link--lg-label",
-                  )}
+                  className={fr.cx("fr-pagination__link", "fr-pagination__link--prev", "fr-pagination__link--lg-label")}
                 >
                   Page précédente
                 </p>
               )}
               {defaultPage > 1 && (
                 <Link
-                  className={fr.cx(
-                    "fr-pagination__link",
-                    "fr-pagination__link--prev",
-                    "fr-pagination__link--lg-label",
-                  )}
+                  className={fr.cx("fr-pagination__link", "fr-pagination__link--prev", "fr-pagination__link--lg-label")}
                   href=""
                   onClick={() => props.onChange(defaultPage - 1)}
                 >
@@ -106,19 +84,12 @@ export default function Pagination(props: PaginationProps) {
             {pages.map((p) => (
               <li key={p.number}>
                 {p.active && (
-                  <p
-                    className={fr.cx("fr-pagination__link")}
-                    aria-current={"page"}
-                  >
+                  <p className={fr.cx("fr-pagination__link")} aria-current={"page"}>
                     {p.number}
                   </p>
                 )}
                 {!p.active && (
-                  <Link
-                    className={fr.cx("fr-pagination__link")}
-                    href=""
-                    onClick={() => props.onChange(p.number)}
-                  >
+                  <Link className={fr.cx("fr-pagination__link")} href="" onClick={() => props.onChange(p.number)}>
                     {p.number}
                   </Link>
                 )}
@@ -127,22 +98,14 @@ export default function Pagination(props: PaginationProps) {
             <li>
               {defaultPage == props.count && (
                 <p
-                  className={fr.cx(
-                    "fr-pagination__link",
-                    "fr-pagination__link--next",
-                    "fr-pagination__link--lg-label",
-                  )}
+                  className={fr.cx("fr-pagination__link", "fr-pagination__link--next", "fr-pagination__link--lg-label")}
                 >
                   Page suivante
                 </p>
               )}
               {defaultPage != props.count && (
                 <Link
-                  className={fr.cx(
-                    "fr-pagination__link",
-                    "fr-pagination__link--next",
-                    "fr-pagination__link--lg-label",
-                  )}
+                  className={fr.cx("fr-pagination__link", "fr-pagination__link--next", "fr-pagination__link--lg-label")}
                   href=""
                   onClick={() => props.onChange(defaultPage + 1)}
                 >
@@ -152,21 +115,11 @@ export default function Pagination(props: PaginationProps) {
             </li>
             <li>
               {defaultPage == props.count && (
-                <p
-                  className={fr.cx(
-                    "fr-pagination__link",
-                    "fr-pagination__link--last",
-                  )}
-                >
-                  Dernière page
-                </p>
+                <p className={fr.cx("fr-pagination__link", "fr-pagination__link--last")}>Dernière page</p>
               )}
               {defaultPage != props.count && (
                 <Link
-                  className={fr.cx(
-                    "fr-pagination__link",
-                    "fr-pagination__link--last",
-                  )}
+                  className={fr.cx("fr-pagination__link", "fr-pagination__link--last")}
                   href=""
                   onClick={() => props.onChange(props.count)}
                 >

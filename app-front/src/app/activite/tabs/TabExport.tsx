@@ -61,13 +61,13 @@ enum ExportTarget {
   TERRITORY = "territory",
 }
 
-type ResultInterfaceV3 = {
+interface ResultInterfaceV3 {
   uuid: string;
   target: ExportTarget;
   status: ExportStatus;
   start_at: Date;
   end_at: Date;
-};
+}
 
 export default function TabExport() {
   const { user, simulate, simulatedRole } = useAuth();
@@ -252,7 +252,7 @@ export default function TabExport() {
                     }}
                     className="fr-btn"
                     size="large"
-                    onClick={() => handleExport()}
+                    onClick={() => void handleExport()}
                   >
                     Exporter
                   </Button>

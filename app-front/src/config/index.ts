@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/consistent-indexed-object-style */
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /**
  * 1. Import the configuration file
  * 2. add the configuration to the object in objectToMap()
@@ -13,8 +10,8 @@ const objectToMap = (obj: ConfigObject): Map<string, ConfigObject> => {
   const map = new Map<string, ConfigObject>();
   if (typeof obj === "object" && obj !== null) {
     for (const key in obj) {
-      if (obj.hasOwnProperty(key)) {
-        const value = (obj as { [key: string]: ConfigObject })[key];
+      if (key in obj) {
+        const value = (obj as Record<string, ConfigObject>)[key];
 
         if (typeof value === "object" && value !== null) {
           map.set(key, objectToMap(value)); // Recursively convert nested objects
@@ -65,10 +62,7 @@ export const Config = {
   get<T>(key: string, defaultValue?: T): T {
     let _value: unknown = _configuration;
     for (const part of key.split(".")) {
-      _value =
-        _value instanceof Map && _value.has(part)
-          ? _value.get(part)
-          : undefined;
+      _value = _value instanceof Map && _value.has(part) ? _value.get(part) : undefined;
     }
     if (typeof _value === "undefined") {
       if (typeof defaultValue === "undefined") {
