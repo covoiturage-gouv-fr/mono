@@ -9,19 +9,19 @@ export default function TabsNav() {
   const tabs = [
     {
       tabId: "1",
-      label: `Suivi des campagnes`,
+      label: "Export des données",
     },
     {
       tabId: "2",
-      label: "Export des données",
+      label: `Suivi des campagnes`,
     },
   ];
   const tabContent = () => {
     switch (activeTab) {
       case "1":
-        return <TabCampaigns />;
-      case "2":
         return <TabExport />;
+      case "2":
+        return <TabCampaigns />;
     }
   };
 
