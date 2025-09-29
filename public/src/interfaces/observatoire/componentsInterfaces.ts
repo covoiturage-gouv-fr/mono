@@ -80,6 +80,7 @@ export interface IndicatorProps {
   text: string;
   info?: string;
   icon?: FrCxArg;
+  link?: string;
 }
 
 export interface AnalyseProps {

@@ -31,7 +31,10 @@
     "react-chartjs-2": "^5.3.0",
     "react-dom": "^19.0.0",
     "react-map-gl": "^7.1.8",
+    "rehype-slug": "^6.0.0",
+    "remark-autolink-headings": "^7.0.1",
     "remark-gfm": "^4.0.0",
+    "remark-slug": "^7.0.1",
     "remixicon": "^4.6.0",
     "simple-statistics": "^7.8.7"
   },
