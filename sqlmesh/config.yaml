@@ -22,7 +22,10 @@ gateways:
       # sslmode: 
       # application_name: 
 physical_schema_mapping:
-  test: test
+  raw_zone: raw_zone
+  trusted_zone: trusted_zone
+  refined_zone: refined_zone
+physical_table_naming_convention: table_only
 
 default_gateway: postgres
 

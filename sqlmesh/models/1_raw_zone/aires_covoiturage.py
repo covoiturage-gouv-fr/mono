@@ -20,7 +20,7 @@ def get_aires_last_url(api_url: str) -> str:
     return filtered[0]["payload"]["permanent_url"]
 
 @model(
-    "test.aire_covoiturage",
+    "raw_zone.aires_covoiturage",
     kind="FULL",
     columns={
         "id_lieu": "VARCHAR",
