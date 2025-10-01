@@ -5,19 +5,16 @@ import requests
 
 from sqlmesh import ExecutionContext, model
 
-def get_aires_last_url(api_url: str) -> str:
-    """Récupère l'URL du dernier fichier CSV depuis l'API transport.data.gouv.fr"""
-    resp = requests.get(api_url)
-    resp.raise_for_status()
-    data = resp.json()
-
-    history = data.get("history", [])
-    filtered = [h for h in history if h.get("payload", {}).get("schema_name") is not None]
-
-    if not filtered:
-        raise ValueError(f"Aucune entrée valide trouvée dans {api_url}")
-
-    return filtered[0]["payload"]["permanent_url"]
+def get_last_url(api_url: str) -> str:
+  """Récupère l'URL du dernier fichier CSV depuis l'API transport.data.gouv.fr"""
+  resp = requests.get(api_url)
+  resp.raise_for_status()
+  data = resp.json()
+  history = data.get("history", [])
+  filtered = [h for h in history if h.get("payload", {}).get("schema_name") is not None]
+  if not filtered:
+      raise ValueError(f"Aucune entrée valide trouvée dans {api_url}")
+  return filtered[0]["payload"]["permanent_url"]
 
 @model(
     "raw_zone.aires_covoiturage",
@@ -45,7 +42,7 @@ def get_aires_last_url(api_url: str) -> str:
         "dataset_id": "VARCHAR",
         "resource_id": "VARCHAR"
     },
-    grain=("id_lieu", "date_maj"),
+    grains=("id_lieu", "date_maj"),
 )
 
 
@@ -58,7 +55,7 @@ def execute(
     **kwargs: t.Any,
 ) -> pd.DataFrame:
     api_url = "https://transport.data.gouv.fr/api/datasets/5d6eaffc8b4c417cdc452ac3"
-    csv_url = get_aires_last_url(api_url)
+    csv_url = get_last_url(api_url)
 
     df = pd.read_csv(csv_url)
 
