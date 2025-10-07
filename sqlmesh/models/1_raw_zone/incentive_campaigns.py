@@ -3,7 +3,8 @@ from datetime import datetime
 import pandas as pd
 import requests
 from sqlmesh import ExecutionContext, model
-from utils.cleaning import auto_cast, clean_columns
+from utils.loading import load_dataset
+from utils.cleaning import clean_columns
 
 # dictionnaire global des colonnes et types
 COLUMN_TYPES = {
@@ -61,13 +62,10 @@ def execute(
     execution_time: datetime,
     **kwargs: t.Any,
 ) -> pd.DataFrame:
-
     # --- Chargement des données ---
     api_url = "https://www.data.gouv.fr/api/1/datasets/64a436118c609995b0386541"
     csv_url = get_last_url(api_url)
-    df = pd.read_csv(csv_url)
+    df = load_dataset(csv_url)
     # --- Nettoyage et cast ---
     df = clean_columns(df)
-    df = auto_cast(df, COLUMN_TYPES)
-
     return df
