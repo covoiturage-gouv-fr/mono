@@ -3,7 +3,8 @@ import io
 import typing as t
 import geopandas as gpd
 import pandas as pd
-from utils.cleaning import auto_cast
+import requests
+from utils.cleaning import auto_cast, clean_columns
 from utils.s3 import get_s3_client
 
 
@@ -72,12 +73,15 @@ def load_geo_dataset(
 def load_dataset(
     path_or_bucket: str,
     key: t.Optional[str] = None,
+    rename_columns: t.Optional[dict[str, str]] = None,
+    clean_col_name: bool = False,
     column_types: dict[str, str] = {},
     s3_client: t.Optional[t.Any] = None,
     file_type: t.Optional[str] = None,
     sheet_name: t.Optional[str] = None,
     sep: str = ",",
     encoding: str = "utf-8",
+    date_format: t.Optional[str] = None,
 ) -> pd.DataFrame:
     """
     Charge un jeu de données tabulaire (CSV, Excel, ODS, Parquet)
@@ -86,6 +90,8 @@ def load_dataset(
     Args:
         path_or_bucket: Chemin local du fichier ou nom du bucket S3
         key: Clé/chemin du fichier dans le bucket (si S3)
+        rename_columns: dictionnaire {ancien_nom: nouveau_nom} pour renommer les colonnes
+        clean_col_name: Si True, nettoie les noms de colonnes (minuscules, underscores, sans accents)
         column_types: Mapping des colonnes et leurs types SQLMesh
         s3_client: Client S3 existant (facultatif)
         file_type: Type de fichier explicite ("csv", "excel", "ods", "parquet"). Si None, détecté depuis l’extension
@@ -100,9 +106,21 @@ def load_dataset(
     # --- Lecture depuis S3 ou local ---
     if key:  # 🔹 Mode S3
         s3 = s3_client or get_s3_client()
+        try:
+            s3.head_object(Bucket=path_or_bucket, Key=key)
+        except Exception:
+            raise FileNotFoundError(f"❌ Fichier S3 introuvable : s3://{path_or_bucket}/{key}")
         obj = s3.get_object(Bucket=path_or_bucket, Key=key)
         data = io.BytesIO(obj["Body"].read())
         file_path = key
+    elif path_or_bucket.startswith(("http://", "https://")):
+        try:
+            head = requests.head(path_or_bucket, allow_redirects=True, timeout=10)
+            if head.status_code >= 400:
+                raise FileNotFoundError(f"❌ Fichier distant inaccessible : {path_or_bucket} (HTTP {head.status_code})")
+            file_path = path_or_bucket  # pandas peut lire directement l'URL
+        except Exception as e:
+            raise ValueError(f"❌ Erreur lors de l'accès à l'URL : {e}")
     else:  # 🔹 Mode local
         if not os.path.exists(path_or_bucket):
             raise FileNotFoundError(f"❌ Fichier introuvable : {path_or_bucket}")
@@ -124,9 +142,9 @@ def load_dataset(
 
     # --- Lecture selon le type ---
     if file_type == "csv":
-        df = pd.read_csv(file_path, sep=sep, encoding=encoding)
+        df = pd.read_csv(file_path, sep=sep, encoding=encoding, dtype=str)
     elif file_type == "excel":
-        df = pd.read_excel(file_path, sheet_name=sheet_name)
+        df = pd.read_excel(file_path, sheet_name=sheet_name, dtype=str)
     elif file_type == "ods":
         try:
             import odf  # juste pour vérifier si odfpy est installé
@@ -134,12 +152,17 @@ def load_dataset(
             raise ImportError(
                 "⚠️ Pour lire les fichiers ODS, installez 'odfpy' via `pip install odfpy`"
             )
-        df = pd.read_excel(data, sheet_name=sheet_name, engine="odf")
+        df = pd.read_excel(data, sheet_name=sheet_name, engine="odf", dtype=str)
     elif file_type == "parquet":
         df = pd.read_parquet(file_path)
     else:
         raise ValueError(f"❌ Type de fichier non supporté : {file_type}")
 
     # --- Cast des colonnes selon le mapping fourni ---
-    df = auto_cast(df, column_types)
+    
+    if rename_columns:
+      df = df.rename(columns=rename_columns)
+    if clean_col_name:
+      df = clean_columns(df)
+    df = auto_cast(df, column_types, date_format=date_format)
     return df

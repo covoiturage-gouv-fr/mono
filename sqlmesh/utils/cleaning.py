@@ -1,4 +1,4 @@
-# utils/cleaning.py
+import typing as t
 import pandas as pd
 import unicodedata, re
 
@@ -15,36 +15,52 @@ def clean_columns(df: pd.DataFrame) -> pd.DataFrame:
 # mapping SQL type -> fonction de cast pandas
 
 
-def auto_cast(df: pd.DataFrame, columns: dict[str, str]) -> pd.DataFrame:
+def auto_cast(df: pd.DataFrame, columns: dict[str, str], date_format: t.Optional[str] = None) -> pd.DataFrame:
     """
     Cast les colonnes selon le type SQL désiré.
     Si df est un GeoDataFrame et contient une colonne géométrique,
     elle sera automatiquement convertie en WKB (BYTEA).
     """
+    def to_bool(s: pd.Series) -> pd.Series:
+      return (
+          s.apply(
+              lambda x: (
+                  True if str(x).strip().lower() in ["true", "1", "yes", "y", "vrai"]
+                  else False if str(x).strip().lower() in ["false", "0", "no", "n", "faux"]
+                  else pd.NA
+              )
+          ).astype("boolean").astype(object)
+      )
+    def na_to_null(s: pd.Series, string: bool = False) -> pd.Series:
+      if string:
+        return s.where(pd.notna(s), None).map(lambda x: str(x) if x is not None else None)
+      else:
+        return s.where(pd.notna(s), None).map(lambda x: x if x is not None else None)
+
     CAST_MAPPING = {
-        "DATE": lambda s: pd.to_datetime(s, format="%d/%m/%Y", errors="coerce").dt.date,
-        "TIMESTAMP": lambda s: pd.to_datetime(s, errors="coerce"),
-        "INTEGER": lambda s: pd.to_numeric(s, errors="coerce"),
-        "BIGINT": lambda s: pd.to_numeric(s.astype(str).str.replace(',', '.'), errors="coerce"),
-        "FLOAT": lambda s: pd.to_numeric(s.astype(str).str.replace(',', '.'), errors="coerce"),
-        "DOUBLE": lambda s: pd.to_numeric(s.astype(str).str.replace(',', '.'), errors="coerce"),
-        "VARCHAR": lambda s: s.where(pd.notna(s), None).map(lambda x: str(x) if x is not None else None),
-        "TEXT": lambda s: s.where(pd.notna(s), None).map(lambda x: str(x) if x is not None else None),
-        "BOOLEAN": lambda s: s.astype(str).str.strip().str.lower().map(
-            {"true": True, "1": True, "yes": True, "false": False, "0": False, "no": False, "nan": pd.NA}
-        ).astype("boolean"),
+      "DATE": lambda s: na_to_null(pd.to_datetime(s, format=date_format, errors="coerce").dt.date),
+      "TIMESTAMP": lambda s: na_to_null(pd.to_datetime(s, errors="coerce")),
+      "INTEGER": lambda s: na_to_null(pd.to_numeric(s, errors="coerce")),
+      "BIGINT": lambda s: na_to_null(pd.to_numeric(s.astype(str).str.replace(',', '.'), errors="coerce")),
+      "FLOAT": lambda s: na_to_null(pd.to_numeric(s.astype(str).str.replace(',', '.'), errors="coerce")),
+      "DOUBLE": lambda s: na_to_null(pd.to_numeric(s.astype(str).str.replace(',', '.'), errors="coerce")),
+      "VARCHAR": lambda s: na_to_null(s, string=True),
+      "TEXT": lambda s: na_to_null(s, string=True),
+      "BOOLEAN": to_bool,
     }
 
     for col, sql_type in columns.items():
         if col not in df.columns:
             df[col] = pd.NA
-
         sql_type_clean = sql_type.upper().split("(")[0]
         caster = CAST_MAPPING.get(sql_type_clean)
         if caster:
             try:
                 df[col] = caster(df[col])
             except Exception as e:
-                print(f"[WARN] Impossible de caster {col} en {sql_type_clean}: {e}")
-
+                # 🧭 Log détaillé pour diagnostic
+                print(f"[ERROR] ❌ Erreur de cast sur '{col}' → {sql_type_clean}")
+                print(f"        Dtype actuel: {df[col].dtype}")
+                print(f"        Erreur: {e}")
+    df = df.where(pd.notnull(df), None)
     return df
