@@ -61,9 +61,9 @@ def load_geo_dataset(
     gdf_non_geom = gdf.drop(columns=[geometry_col])
     # --- Cast des colonnes non géométriques ---
     if rename_columns:
-      gdf = gdf.rename(columns=rename_columns)
+      gdf_non_geom = gdf_non_geom.rename(columns=rename_columns)
     if clean_col_name:
-      gdf = clean_columns(gdf)
+      gdf_non_geom = clean_columns(gdf_non_geom)
     gdf_non_geom = auto_cast(
       gdf_non_geom,
       {k: v for k, v in column_types.items() if k != geometry_col},
