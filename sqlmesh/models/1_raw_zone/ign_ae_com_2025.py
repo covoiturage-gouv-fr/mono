@@ -7,17 +7,17 @@ from utils.loading import load_geo_dataset
 # --- Définition des colonnes pour SQLMesh ---
 GEOMETRY_COL = "geometry"
 COLUMN_TYPES = {
-    "nom_officiel": "VARCHAR",
-    "code_insee": "VARCHAR",
+    "l_com": "VARCHAR",
+    "com": "VARCHAR",
+    "epci": "VARCHAR",
+    "dep": "VARCHAR",
+    "reg": "VARCHAR",
     "population": "INTEGER",
-    "code_insee_du_departement": "VARCHAR",
-    "code_insee_de_la_region": "VARCHAR",
-    "codes_siren_des_epci": "VARCHAR",
     GEOMETRY_COL: "TEXT"
 }
 
 @model(
-    "raw_zone.ign_adminexpress_2025",
+    "raw_zone.ign_ae_com_2025",
     kind="FULL",
     columns=COLUMN_TYPES,
     post_statements=[f"ALTER TABLE @this_model ALTER COLUMN {GEOMETRY_COL} TYPE geometry USING ST_SetSRID(ST_GeomFromText({GEOMETRY_COL}, 4326), 4326);"],
@@ -34,6 +34,13 @@ def execute(
     key="ADE-COG_4-0_GPKG_WGS84G_FRA-ED2025-01-01.gpkg",
     layer="commune",
     column_types=COLUMN_TYPES,
+    rename_columns={
+      "nom_officiel": "l_com",
+      "code_insee": "com",
+      "code_insee_du_departement": "dep",
+      "code_insee_de_la_region": "reg",
+      "codes_siren_des_epci": "epci",
+    },
     geometry_col=GEOMETRY_COL,
     target_crs="EPSG:4326"
   )

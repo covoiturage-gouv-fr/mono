@@ -13,6 +13,8 @@ def load_geo_dataset(
     key: t.Optional[str] = None,
     layer: t.Optional[str] = None,
     column_types: dict[str, str] = {},
+    rename_columns: t.Optional[dict[str, str]] = None,
+    clean_col_name: bool = False,
     target_crs: str = "EPSG:4326",
     geometry_col: str = "geometry",
     s3_client: t.Optional[t.Any] = None,
@@ -26,6 +28,8 @@ def load_geo_dataset(
         key: (Optionnel) Clé/chemin du fichier dans le bucket S3. Si non défini, on suppose un fichier local.
         layer: Nom de la couche à lire (pour les GPKG ou multi-layers)
         column_types: Mapping des colonnes pour SQLMesh
+        rename_columns: dictionnaire {ancien_nom: nouveau_nom} pour renommer les colonnes
+        clean_col_name: Si True, nettoie les noms de colonnes (minuscules, underscores, sans accents)
         target_crs: Code EPSG cible pour reprojection (par défaut "EPSG:4326")
         geometry_col: Nom de la colonne géométrique dans le GeoDataFrame
         s3_client: Client S3 existant (facultatif, sinon créé automatiquement)
@@ -36,35 +40,34 @@ def load_geo_dataset(
 
     # --- Lecture du fichier ---
     if key:  # 🔹 Mode S3
-        s3 = s3_client or get_s3_client()
-        obj = s3.get_object(Bucket=path_or_bucket, Key=key)
-        data_stream = io.BytesIO(obj["Body"].read())
-        gdf = gpd.read_file(data_stream, layer=layer)
+      s3 = s3_client or get_s3_client()
+      obj = s3.get_object(Bucket=path_or_bucket, Key=key)
+      data_stream = io.BytesIO(obj["Body"].read())
+      gdf = gpd.read_file(data_stream, layer=layer)
     else:  # 🔹 Mode local
-        if not os.path.exists(path_or_bucket):
-            raise FileNotFoundError(f"❌ Fichier introuvable : {path_or_bucket}")
-        gdf = gpd.read_file(path_or_bucket, layer=layer)
-
+      if not os.path.exists(path_or_bucket):
+        raise FileNotFoundError(f"❌ Fichier introuvable : {path_or_bucket}")
+      gdf = gpd.read_file(path_or_bucket, layer=layer)
     # --- Vérification de la colonne géométrique ---
     if geometry_col not in gdf.columns:
         raise ValueError(f"❌ La colonne géométrique '{geometry_col}' est introuvable dans les données.")
-
     # --- Harmonisation du CRS ---
     if gdf.crs is None:
-        gdf.set_crs(target_crs, inplace=True)
+      gdf.set_crs(target_crs, inplace=True)
     elif str(gdf.crs) != target_crs:
-        gdf = gdf.to_crs(target_crs)
-
+      gdf = gdf.to_crs(target_crs)
     # --- Conversion géométrie → WKT ---
     gdf_geom = gdf[geometry_col].apply(lambda x: x.wkt if x is not None else None)
     gdf_non_geom = gdf.drop(columns=[geometry_col])
-
     # --- Cast des colonnes non géométriques ---
+    if rename_columns:
+      gdf = gdf.rename(columns=rename_columns)
+    if clean_col_name:
+      gdf = clean_columns(gdf)
     gdf_non_geom = auto_cast(
-        gdf_non_geom,
-        {k: v for k, v in column_types.items() if k != geometry_col},
+      gdf_non_geom,
+      {k: v for k, v in column_types.items() if k != geometry_col},
     )
-
     # --- Recomposition du DataFrame final ---
     gdf_final = pd.concat([gdf_non_geom, gdf_geom.rename(geometry_col)], axis=1)
 
