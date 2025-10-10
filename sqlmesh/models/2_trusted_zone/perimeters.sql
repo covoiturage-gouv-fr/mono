@@ -77,7 +77,7 @@ new_arr AS (
     b.l_reg,
     b.country,
     b.l_country,
-    NULL::integer AS pop,
+    a.population AS pop,
     ST_Area(c.geometry::geography) / 1000000 AS surface,
     c.geometry AS geom,
     a.geometry AS geom_simple,

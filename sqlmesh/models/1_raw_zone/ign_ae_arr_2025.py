@@ -10,6 +10,7 @@ COLUMN_TYPES = {
     "arr": "VARCHAR",
     "l_arr": "VARCHAR",
     "com": "VARCHAR",
+    "population": "INTEGER",
     GEOMETRY_COL: "TEXT"
 }
 
