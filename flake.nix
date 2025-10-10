@@ -53,7 +53,7 @@
               # data stack
               dbt
               pre-commit
-              python312Packages.dbt-postgres
+              python313Packages.dbt-postgres
               uv
 
               # pre-commit hooks
