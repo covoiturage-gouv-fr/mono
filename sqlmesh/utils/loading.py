@@ -71,7 +71,7 @@ def load_geo_dataset(
     # --- Recomposition du DataFrame final ---
     gdf_final = pd.concat([gdf_non_geom, gdf_geom.rename(geometry_col)], axis=1)
 
-    return pd.DataFrame(gdf_final)
+    return pd.DataFrame(gdf_final)   
 
 def load_dataset(
     path_or_bucket: str,
@@ -105,67 +105,58 @@ def load_dataset(
     Returns:
         pd.DataFrame prêt à être retourné dans un modèle SQLMesh
     """
-
-    # --- Lecture depuis S3 ou local ---
-    if key:  # 🔹 Mode S3
+    # --- Déterminer la source (local / HTTP / S3) ---
+    data: t.Union[str, io.BytesIO]
+    if key:  # S3
         s3 = s3_client or get_s3_client()
         try:
-            s3.head_object(Bucket=path_or_bucket, Key=key)
-        except Exception:
-            raise FileNotFoundError(f"❌ Fichier S3 introuvable : s3://{path_or_bucket}/{key}")
-        obj = s3.get_object(Bucket=path_or_bucket, Key=key)
+            obj = s3.get_object(Bucket=path_or_bucket, Key=key)
+        except Exception as e:
+            raise FileNotFoundError(f"❌ S3 introuvable : s3://{path_or_bucket}/{key}") from e
         data = io.BytesIO(obj["Body"].read())
         file_path = key
     elif path_or_bucket.startswith(("http://", "https://")):
         try:
-            head = requests.head(path_or_bucket, allow_redirects=True, timeout=10)
-            if head.status_code >= 400:
-                raise FileNotFoundError(f"❌ Fichier distant inaccessible : {path_or_bucket} (HTTP {head.status_code})")
-            file_path = path_or_bucket  # pandas peut lire directement l'URL
+            resp = requests.get(path_or_bucket, stream=True, timeout=10)
+            resp.raise_for_status()
+            data = io.BytesIO(resp.content)
         except Exception as e:
-            raise ValueError(f"❌ Erreur lors de l'accès à l'URL : {e}")
-    else:  # 🔹 Mode local
+            raise FileNotFoundError(f"❌ Fichier HTTP introuvable : {path_or_bucket}") from e
+        file_path = path_or_bucket
+    else:
         if not os.path.exists(path_or_bucket):
-            raise FileNotFoundError(f"❌ Fichier introuvable : {path_or_bucket}")
+            raise FileNotFoundError(f"❌ Fichier local introuvable : {path_or_bucket}")
+        data = path_or_bucket
         file_path = path_or_bucket
 
-    # --- Détection automatique du type de fichier ---
+    # --- Détecter le type de fichier ---
     if file_type is None:
         ext = os.path.splitext(file_path)[1].lower()
-        if ext in [".csv", ".tsv"]:
-            file_type = "csv"
-        elif ext in [".xlsx", ".xls"]:
-            file_type = "excel"
-        elif ext == ".ods":
-            file_type = "ods"
-        elif ext == ".parquet":
-            file_type = "parquet"
-        else:
-            raise ValueError(f"❌ Type de fichier non reconnu pour : {file_path}")
+        file_type = {
+            ".csv": "csv", ".tsv": "csv",
+            ".xlsx": "excel", ".xls": "excel",
+            ".ods": "ods", ".parquet": "parquet",
+        }.get(ext)
+        if not file_type:
+            raise ValueError(f"❌ Extension non reconnue : {file_path}")
 
-    # --- Lecture selon le type ---
-    if file_type == "csv":
-        df = pd.read_csv(file_path, sep=sep, encoding=encoding, dtype=str)
-    elif file_type == "excel":
-        df = pd.read_excel(file_path, sheet_name=sheet_name, dtype=str)
-    elif file_type == "ods":
-        try:
-            import odf  # juste pour vérifier si odfpy est installé
-        except ImportError:
-            raise ImportError(
-                "⚠️ Pour lire les fichiers ODS, installez 'odfpy' via `pip install odfpy`"
-            )
-        df = pd.read_excel(data, sheet_name=sheet_name, engine="odf", dtype=str)
-    elif file_type == "parquet":
-        df = pd.read_parquet(file_path)
-    else:
+    # --- Lecture unique selon le type ---
+    read_func = {
+        "csv": lambda: pd.read_csv(data, sep=sep, encoding=encoding, dtype=str),
+        "excel": lambda: pd.read_excel(data, sheet_name=sheet_name, dtype=str),
+        "ods": lambda: pd.read_excel(data, sheet_name=sheet_name, engine="odf", dtype=str),
+        "parquet": lambda: pd.read_parquet(data),
+    }.get(file_type)
+
+    if not read_func:
         raise ValueError(f"❌ Type de fichier non supporté : {file_type}")
 
-    # --- Cast des colonnes selon le mapping fourni ---
-    
+    df = read_func()
+
+    # --- Post-traitement ---
     if rename_columns:
-      df = df.rename(columns=rename_columns)
+        df = df.rename(columns=rename_columns)
     if clean_col_name:
-      df = clean_columns(df)
+        df = clean_columns(df)
     df = auto_cast(df, column_types, date_format=date_format)
     return df
