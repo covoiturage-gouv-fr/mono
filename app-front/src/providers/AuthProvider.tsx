@@ -14,7 +14,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   const checkAuth = async () => {
-    const response = await fetch(`${Config.get<string>("auth.domain")}/auth/me`, { credentials: "include" }); // alkajslkdjlkasjdkjasldjlaksjdlkajsdljaslkdj
+    const response = await fetch(`${Config.get<string>("auth.domain")}/auth/me`, { credentials: "include" });
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const data: AuthContextProps["user"] = await response.json();
@@ -114,7 +114,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    throw new Error("useAuth must be used within an AuthContext Provider");
   }
   return context;
 };

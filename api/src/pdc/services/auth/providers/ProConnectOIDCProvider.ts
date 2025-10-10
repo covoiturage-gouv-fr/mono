@@ -100,9 +100,21 @@ export class ProConnectOIDCProvider implements InitHookInterface {
   }
 
   protected async getLocalUser(email: string, siret: string, given_name?: string, family_name?: string) {
-    const user = await this.userRepository.authenticateByEmail(email);
+    try {
+      const user = await this.userRepository.authenticateByEmail(email);
 
-    if (!user || this.failsSiretCheck(user, siret)) {
+      if (!user) throw new Error(`User not found: ${email}`);
+      if (this.failsSiretCheck(user, siret)) throw new Error(`SIRET check failed: ${email} / ${siret}`);
+
+      return {
+        ...user,
+        ...(given_name || family_name) ? { name: given_name + " " + family_name } : {},
+        permissions: getPermissions(user.role),
+      };
+    } catch (e) {
+      const m = e instanceof Error ? e.message : e;
+      logger.error("[ProConnectOIDCProvider] Error fetching local user:", m);
+
       return {
         email: email,
         role: "anonymous",
@@ -110,12 +122,6 @@ export class ProConnectOIDCProvider implements InitHookInterface {
         ...(given_name || family_name) ? { name: given_name + " " + family_name } : {},
       };
     }
-
-    return {
-      ...user,
-      ...(given_name || family_name) ? { name: given_name + " " + family_name } : {},
-      permissions: getPermissions(user.role),
-    };
   }
 
   async getLogoutUrl(idToken: string) {

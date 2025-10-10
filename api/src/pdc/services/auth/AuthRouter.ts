@@ -5,7 +5,6 @@ import express, { NextFunction, Request, Response } from "dep:express";
 import { session } from "../../../config/proxy.ts";
 import { authGuard } from "../../proxy/middlewares/authGuard.ts";
 import { sessionMiddleware } from "../../proxy/middlewares/sessionMiddleware.ts";
-import { UserRepository } from "./providers/UserRepository.ts";
 
 @injectable()
 export class AuthRouter {
@@ -14,7 +13,6 @@ export class AuthRouter {
     private kernel: KernelInterfaceResolver,
     private proConnectOIDCProvider: ProConnectOIDCProvider,
     private config: ConfigInterfaceResolver,
-    private userRepository: UserRepository,
   ) {
   }
 
