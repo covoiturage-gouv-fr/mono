@@ -1,0 +1,56 @@
+name: 'Deploy Sqlmesh'
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'sqlmesh/**'
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    outputs:
+      value: ${{ steps.set_tag.outputs.value }}
+    steps:
+      - id: set_tag
+        run: echo "value=$(date +'%F.%H%M')" >> $GITHUB_OUTPUT
+
+  build:
+    needs: tag
+    name: Build sqlmesh tool
+    uses: ./.github/workflows/base-build-push-docker.yml
+    with:
+      name: sqlmesh
+      context: ./sqlmesh
+      tag: ${{ needs.tag.outputs.value }}
+      dockerfile: ./docker/sqlmesh/prod/Dockerfile 
+    secrets:
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+  deploy:
+    name: Deploy
+    needs: [tag, build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Workflow
+        uses: actions/github-script@v7
+        env: 
+          TARGET_VERSION: ${{ needs.tag.outputs.value }}
+        with:
+          github-token: ${{ secrets.GA_PDC_TOKEN }}
+          script: |
+              github.rest.actions.createWorkflowDispatch({
+                owner: context.repo.owner,
+                repo: 'preuve-covoiturage-infra',
+                workflow_id: 'deploy.yml',
+                ref: 'main',
+                inputs: {
+                  version: process.env.TARGET_VERSION,
+                },
+              })
