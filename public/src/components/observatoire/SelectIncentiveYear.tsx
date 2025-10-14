@@ -44,6 +44,7 @@ export default function SelectIncentiveYear(props: {
                 name="year"
                 type="radio"
                 checked={currentYear === l.val}
+                readOnly
               />
               <label className={fr.cx("fr-label")}>{l.name}</label>
             </div>
