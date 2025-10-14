@@ -104,7 +104,7 @@ export class ProConnectOIDCProvider implements InitHookInterface {
       const user = await this.userRepository.authenticateByEmail(email);
 
       if (!user) throw new Error(`User not found: ${email}`);
-      if (this.failsSiretCheck(user, siret)) throw new Error(`SIRET check failed: ${email} / ${siret}`);
+      if (this.failsSirenCheck(user, siret)) throw new Error(`SIRET check failed: ${email} / ${siret}`);
 
       return {
         ...user,
@@ -137,8 +137,13 @@ export class ProConnectOIDCProvider implements InitHookInterface {
     return { state, redirectUrl };
   }
 
-  private failsSiretCheck(user: LocalSiretUser, siret: string): boolean {
-    const fails = user.siret !== siret && user.role !== "registry.admin";
+  private failsSirenCheck(user: LocalSiretUser, siret: string): boolean {
+    // admins bypass siret check
+    if (user.role === "registry.admin") return false;
+
+    const siren = siret.substring(0, 9);
+    const userSiren = String(user.siret).substring(0, 9);
+    const fails = siren !== userSiren;
 
     if (fails) {
       console.warn(`[ProConnectOIDCProvider] SIRET mismatch ${user.email}: expected ${siret}, got ${user.siret}`);
