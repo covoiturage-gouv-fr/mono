@@ -1,0 +1,37 @@
+name: 'Deploy SQLMesh'
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'sqlmesh/**'
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    outputs:
+      value: ${{ steps.set_tag.outputs.value }}
+    steps:
+      - id: set_tag
+        run: echo "value=$(date +'%F.%H%M')" >> $GITHUB_OUTPUT
+
+  build:
+    needs: tag
+    name: Build and Push SQLMesh Docker Image
+    uses: ./.github/workflows/base-build-push-docker.yml
+    with:
+      name: sqlmesh
+      context: ./sqlmesh
+      tag: ${{ needs.tag.outputs.value }}
+      dockerfile: ./docker/sqlmesh/prod/Dockerfile
+    secrets:
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
