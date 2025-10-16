@@ -4,7 +4,7 @@ export const description = `<div _ngcontent-moy-c231="" id="summary" class="camp
   </p>
   
   <p>
-    Cette campagne est limitée à <b>161 000,00 €</b>
+    Cette campagne est limitée à <b>248 500,00 €</b>
   </p>
   
   <p>

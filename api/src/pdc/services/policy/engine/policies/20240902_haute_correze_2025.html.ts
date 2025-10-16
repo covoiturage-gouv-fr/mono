@@ -6,7 +6,7 @@ export const description = `
     toute la semaine
   </p>
 
-  <p>Cette campagne est limitée à <b>15 000,00 €</b>.</p>
+  <p>Cette campagne est limitée à <b>24 000,00 €</b>.</p>
 
   <p>
     Les <b> conducteurs </b> effectuant un trajet en covoiturage d'au moins 2 km
