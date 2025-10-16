@@ -7,6 +7,7 @@ node_modules
 .env.disabled
 .pgcli*
 db/*
+logs
 
 !docker/dashboard
 dashboard/src/environments/environment.review.ts
