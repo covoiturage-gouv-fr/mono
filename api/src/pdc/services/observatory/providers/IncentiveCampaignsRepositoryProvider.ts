@@ -29,14 +29,14 @@ export class IncentiveCampaignsRepositoryProvider implements IncentiveCampaignsR
       filters.push(sql`left(a.code,9) = ${params.code}`);
     }
     if (params.year && !params.code) {
-      filters.push(sql`right(a.date_fin,4) = ${params.year}::varchar`);
-      filters.push(sql`to_date(a.date_fin,'DD/MM/YYYY') < now()`);
+      filters.push(sql`EXTRACT(YEAR FROM a.date_fin) = ${params.year}::int`);
+      filters.push(sql`a.date_fin < now()`);
     }
     if (params.year && params.code) {
-      filters.push(sql`right(a.date_fin,4) = ${params.year}::varchar`);
+      filters.push(sql`EXTRACT(YEAR FROM a.date_fin) = ${params.year}::int`);
     }
     if (!params.year && !params.code) {
-      filters.push(sql`to_date(a.date_fin,'DD/MM/YYYY') > now()`);
+      filters.push(sql`a.date_fin > now()`);
     }
     if (typeParam) {
       filters.push(sql`a.type = ${typeParam}`);

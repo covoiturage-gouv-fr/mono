@@ -9,19 +9,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuth, setIsAuth] = useState(false);
   const [user, setUser] = useState<AuthContextProps["user"]>();
   const [simulate, setSimulate] = useState(false);
-  const [simulatedRole, setSimulatedRole] = useState<
-    "operator" | "territory"
-  >();
+  const [simulatedRole, setSimulatedRole] = useState<"operator" | "territory">();
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   const checkAuth = async () => {
-    const response = await fetch(
-      `${Config.get<string>("auth.domain")}/auth/me`,
-      {
-        credentials: "include",
-      },
-    );
+    const response = await fetch(`${Config.get<string>("auth.domain")}/auth/me`, { credentials: "include" });
+
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const data: AuthContextProps["user"] = await response.json();
     if (data?.role && data?.role !== "anonymous") {
@@ -120,7 +114,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    throw new Error("useAuth must be used within an AuthContext Provider");
   }
   return context;
 };

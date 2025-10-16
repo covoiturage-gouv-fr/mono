@@ -62,7 +62,7 @@ Table des matières
 2.2.   Version supportée
 
    La version supportée est celle de la dernière release.
-   https://github.com/betagouv/preuve-covoiturage/releases
+   https://github.com/covoiturage-gouv-fr/mono/releases
 
 2.3.   Les failles qui nous intéressent
 

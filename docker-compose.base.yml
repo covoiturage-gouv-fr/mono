@@ -5,7 +5,7 @@ name: rpc
 
 services:
   dex:
-    image: bitnami/dex:2
+    image: dexidp/dex:v2.44.0-alpine
     environment:
       # DEX configuration calling back to the API
       DEX_ISSUER_URL: http://dex:8090/
@@ -20,7 +20,7 @@ services:
       PROCONNECT_BASE_URL: ${PROCONNECT_BASE_URL:-'https://fca.integ01.dev-agentconnect.fr/api/v2'}
       PROCONNECT_CLIENT_ID: ${PROCONNECT_CLIENT_ID:-}
       PROCONNECT_CLIENT_SECRET: ${PROCONNECT_CLIENT_SECRET:-}
-    command: ["serve", "--web-http-addr", "0.0.0.0:8090", "/etc/dex/config.yaml"]
+    command: ["dex", "serve", "--web-http-addr", "0.0.0.0:8090", "/etc/dex/config.yaml"]
     volumes:
       - ./docker/dex/config-local.yaml:/etc/dex/config.yaml:ro
     networks:

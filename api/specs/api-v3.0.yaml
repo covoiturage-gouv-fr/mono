@@ -5,7 +5,7 @@ info:
   description: |
     [Conditions Générales d'Utilisation](https://doc.covoiturage.beta.gouv.fr/le-registre-de-preuve-de-covoiturage/kit-de-communication/cgu-conditions-generales-dutilisation)
     | [Contact technique](mailto:technique@covoiturage.beta.gouv.fr)
-    | [Licence Apache-2.0](https://raw.githubusercontent.com/betagouv/preuve-covoiturage/main/LICENSE)
+    | [Licence Apache-2.0](https://raw.githubusercontent.com/covoiturage-gouv-fr/mono/main/LICENSE)
     | [Documentation Générale](https://doc.covoiturage.beta.gouv.fr/)
 
     ⚠️ Cette version de l'API n'est plus supportée

@@ -7,7 +7,7 @@ jobs:
   stale:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/stale@v8
+      - uses: actions/stale@3a9db7e6a41a89f618792c92c0e97cc736e1b13f
         with:
           stale-issue-message: "Ce ticket est marqué comme obsolète car cela fait 60 jours qu'il n'y a pas eu d'activité dessus. Retirez ce label ou ajoutez un commentaire sinon ce ticket sera fermé dans 5 jours."
           stale-pr-message: "Cette PR est marquée comme obsolète car cela fait 60 jours qu'il n'y a pas eu d'activité dessus. Retirez ce label ou ajoutez un commentaire sinon cette PR sera fermée dans 5 jours."

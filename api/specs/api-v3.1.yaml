@@ -8,7 +8,7 @@ info:
     email: technique@covoiturage.beta.gouv.fr
   license:
     name: Licence Apache-2.0
-    url: 'https://raw.githubusercontent.com/betagouv/preuve-covoiturage/main/LICENSE'
+    url: 'https://raw.githubusercontent.com/covoiturage-gouv-fr/mono/main/LICENSE'
   description: |
     ## Le produit
 
@@ -58,7 +58,7 @@ info:
     ## Code source
 
     Le code source de l'application est ouvert et disponible sur
-    [Github](https://github.com/betagouv/preuve-covoiturage/).
+    [Github](https://github.com/covoiturage-gouv-fr/mono/).
 
     ## Licence et version
 servers:

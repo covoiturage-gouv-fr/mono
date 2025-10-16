@@ -103,7 +103,6 @@ export class HttpTransport implements TransportInterface {
     this.registerNestedRoutes();
     this.registerLegacyAuthRoutes();
     this.registerApplicationRoutes();
-    this.registerCertificateRoutes();
     this.registerAcquisitionRoutes();
     this.registerSimulationRoutes();
     this.registerCeeRoutes();
@@ -513,10 +512,6 @@ export class HttpTransport implements TransportInterface {
         res.status(201).json({ application, token });
       }),
     );
-  }
-
-  private registerCertificateRoutes(): void {
-    // Routes have been migrated to apiRoute annotations in the action handlers
   }
 
   private registerAfterAllHandlers(): void {

@@ -1,8 +1,7 @@
-/* eslint-disable max-len */
-export const description =
-  `<div _ngcontent-fyn-c231="" id="summary" class="campaignSummaryText-content-text">
+export const description = `<div _ngcontent-fyn-c231="" id="summary" class="campaignSummaryText-content-text">
 
-  <p>Campagne d'incitation au covoiturage du <b> 01 avril 2024 au 31 décembre 2024</b></p>
+  <p>Campagne d'incitation au covoiturage du <b> 01 avril 2024 au 31 décembre 2025</b></p>
+
   
   <p>Cette campagne est limitée à <b>144 906,00 €</b>.</p>
 

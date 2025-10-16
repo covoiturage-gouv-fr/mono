@@ -14,11 +14,20 @@
   "deno.enablePaths": [
     "./api"
   ],
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
-    "source.organizeImports": "explicit"
+    "source.organizeImports": "explicit",
+    "source.fixAll.eslint": "explicit"
   },
   "editor.detectIndentation": false,
   "editor.tabSize": 2,
+  "eslint.enable": true,
+  "eslint.workingDirectories": [
+    {
+      "mode": "auto"
+    }
+  ],
   "files.associations": {
     "*deps.ts": "deno_dependencies_files"
   },

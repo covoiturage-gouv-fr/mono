@@ -10,7 +10,7 @@ import { CreateJourneyAction } from "./actions/CreateJourneyAction.ts";
 import { ListJourneyAction } from "./actions/ListJourneyAction.ts";
 import { PatchJourneyAction } from "./actions/PatchJourneyAction.ts";
 import { StatusJourneyAction } from "./actions/StatusJourneyAction.ts";
-import { AcquisitionMigrateCommand } from "./commands/MigrateAcquisitionCommand.ts";
+import { JourneyStatusCommand } from "./commands/JourneyStatusCommand.ts";
 import { ProcessGeoCommand } from "./commands/ProcessGeoCommand.ts";
 import { config } from "./config/index.ts";
 import { binding as cancelBinding } from "./contracts/cancel.schema.ts";
@@ -22,8 +22,8 @@ import { binding as statusBinding } from "./contracts/status.schema.ts";
 @serviceProvider({
   config,
   commands: [
-    AcquisitionMigrateCommand,
     ProcessGeoCommand,
+    JourneyStatusCommand,
   ],
   providers: [
     GeoProvider,
@@ -50,5 +50,5 @@ import { binding as statusBinding } from "./contracts/status.schema.ts";
   ],
 })
 export class AcquisitionServiceProvider extends AbstractServiceProvider {
-  readonly extensions: NewableType<ExtensionInterface>[] = [ValidatorExtension];
+  override readonly extensions: NewableType<ExtensionInterface>[] = [ValidatorExtension];
 }

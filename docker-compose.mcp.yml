@@ -1,9 +1,0 @@
-services:
-  mcp_pg:
-    image: mcp/postgres:latest
-    networks:
-      - back
-    entrypoint:
-      - node
-      - dist/index.js
-      - $MCP_POSTGRES_URL

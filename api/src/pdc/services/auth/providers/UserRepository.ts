@@ -36,7 +36,7 @@ export class UserRepository {
       LEFT JOIN ${raw(this.companyTable)} c on c._id = t.company_id
       LEFT JOIN ${raw(this.operatorTable)} o
         ON o._id = u.operator_id
-      WHERE u.email = ${email}
+      WHERE lower(u.email) = ${email.trim().toLowerCase()}
       LIMIT 1
     `);
 

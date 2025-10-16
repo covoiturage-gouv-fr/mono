@@ -2,22 +2,19 @@
 import Alert from "@codegouvfr/react-dsfr/Alert";
 import { useEffect, useState } from "react";
 
-export type AlertProps = {
+export interface AlertProps {
   message?: string;
   title?: string;
   typeAlert: "create" | "update" | "delete" | "error";
   duration?: number;
   onClose?: () => void;
-};
+}
 
 export default function AlertMessage(props: AlertProps) {
   const [visible, setVisible] = useState(true);
   const { message = "", title, typeAlert, duration = 5000, onClose } = props;
 
-  const severityMap: Record<
-    AlertProps["typeAlert"],
-    "success" | "warning" | "error" | "info"
-  > = {
+  const severityMap: Record<AlertProps["typeAlert"], "success" | "warning" | "error" | "info"> = {
     create: "success",
     update: "success",
     delete: "warning",

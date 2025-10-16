@@ -1,6 +1,6 @@
 export const description = `<div _ngcontent-fyn-c231="" id="summary" class="campaignSummaryText-content-text">
 
-  <p>Campagne d'incitation au covoiturage à partir du <b>1er janvier 2025</b></p>
+  <p>Campagne d'incitation au covoiturage du <b>1er janvier 2025</b> au <b>31 décembre 2025</b></p>
   
   <p>Cette campagne est limitée à <b>10 000,00 €</b>.</p>
 

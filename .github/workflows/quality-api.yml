@@ -1,5 +1,9 @@
 name: "Quality - API"
 
+permissions:
+  contents: read
+  actions: read
+
 on:
   push:
     branches: [main]
@@ -13,8 +17,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
-      - uses: denoland/setup-deno@v1
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+      - uses: denoland/setup-deno@e95548e56dfa95d4e1a28d6f422fafe75c4c26fb
         with:
           deno-version: v2.x
       - name: Run lint
@@ -29,17 +33,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
-      - uses: actions/cache@v4
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+      - uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809
         with:
           path: |
             ~/.deno
             ~/.cache/deno
           key: ${{ runner.os }}-deno-${{ hashFiles('**/deno.lock') }}
-      - uses: denoland/setup-deno@v1
+      - uses: denoland/setup-deno@e95548e56dfa95d4e1a28d6f422fafe75c4c26fb
         with:
           deno-version: v2.x
-      - uses: taiki-e/install-action@v2
+      - uses: taiki-e/install-action@5597bc27da443ba8bf9a3bc4e5459ea59177de42
         with:
           tool: just@1.40.0
       - name: Run unit test
@@ -56,24 +60,24 @@ jobs:
 
     strategy:
       matrix:
-        language: ['javascript']
+        language: ["javascript"]
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 2
+      - name: Checkout repository
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        with:
+          fetch-depth: 2
 
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v3
-      with:
-        config-file: ./.github/codeql/codeql-config.yml
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@16df4fbc19aea13d921737861d6c622bf3cefe23
+        with:
+          config-file: ./.github/codeql/codeql-config.yml
 
-    - name: Autobuild
-      uses: github/codeql-action/autobuild@v3
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@16df4fbc19aea13d921737861d6c622bf3cefe23
 
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v3
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@16df4fbc19aea13d921737861d6c622bf3cefe23
 
   integration:
     needs: [test]
@@ -81,7 +85,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
       - name: Build stack
         uses: ./.github/actions/build-stack
       - name: Run integration tests
@@ -90,7 +94,7 @@ jobs:
         env:
           APP_CEE_PRIVATE_KEY_PATH: ${{ github.workspace }}/docker/api/certs/privateKey.pem
           APP_CEE_PUBLIC_KEY_PATH: ${{ github.workspace }}/docker/api/certs/publicKey.pem
-          APP_JWT_SECRET: 'integration-test'
+          APP_JWT_SECRET: "integration-test"
           APP_MAIL_SMTP_URL: smtp://localhost:1025
           APP_POSTGRES_TIMEOUT: 120000
           APP_POSTGRES_URL: postgres://postgres:postgres@localhost:5432/test
@@ -110,7 +114,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
       - name: Build stack
         uses: ./.github/actions/build-stack
       - name: Run e2e tests

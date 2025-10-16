@@ -89,7 +89,7 @@ export function Follow() {
                   <a
                     className={fr.cx("fr-btn--github", "fr-btn")}
                     target="_blank"
-                    href="https://github.com/betagouv/preuve-covoiturage"
+                    href="https://github.com/covoiturage-gouv-fr/mono"
                     title="GitHub - nouvelle fenêtre"
                     aria-label="GitHub - nouvelle fenêtre"
                   >

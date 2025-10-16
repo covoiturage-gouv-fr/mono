@@ -100,9 +100,21 @@ export class ProConnectOIDCProvider implements InitHookInterface {
   }
 
   protected async getLocalUser(email: string, siret: string, given_name?: string, family_name?: string) {
-    const user = await this.userRepository.authenticateByEmail(email);
+    try {
+      const user = await this.userRepository.authenticateByEmail(email);
 
-    if (!user || this.failsSiretCheck(user, siret)) {
+      if (!user) throw new Error(`User not found: ${email}`);
+      if (this.failsSirenCheck(user, siret)) throw new Error(`SIRET check failed: ${email} / ${siret}`);
+
+      return {
+        ...user,
+        ...(given_name || family_name) ? { name: given_name + " " + family_name } : {},
+        permissions: getPermissions(user.role),
+      };
+    } catch (e) {
+      const m = e instanceof Error ? e.message : e;
+      logger.error("[ProConnectOIDCProvider] Error fetching local user:", m);
+
       return {
         email: email,
         role: "anonymous",
@@ -110,12 +122,6 @@ export class ProConnectOIDCProvider implements InitHookInterface {
         ...(given_name || family_name) ? { name: given_name + " " + family_name } : {},
       };
     }
-
-    return {
-      ...user,
-      ...(given_name || family_name) ? { name: given_name + " " + family_name } : {},
-      permissions: getPermissions(user.role),
-    };
   }
 
   async getLogoutUrl(idToken: string) {
@@ -131,8 +137,13 @@ export class ProConnectOIDCProvider implements InitHookInterface {
     return { state, redirectUrl };
   }
 
-  private failsSiretCheck(user: LocalSiretUser, siret: string): boolean {
-    const fails = user.siret !== siret && user.role !== "registry.admin";
+  private failsSirenCheck(user: LocalSiretUser, siret: string): boolean {
+    // admins bypass siret check
+    if (user.role === "registry.admin") return false;
+
+    const siren = siret.substring(0, 9);
+    const userSiren = String(user.siret).substring(0, 9);
+    const fails = siren !== userSiren;
 
     if (fails) {
       console.warn(`[ProConnectOIDCProvider] SIRET mismatch ${user.email}: expected ${siret}, got ${user.siret}`);

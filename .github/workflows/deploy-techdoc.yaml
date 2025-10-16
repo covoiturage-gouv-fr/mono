@@ -32,7 +32,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
 
       - name: Verify OpenAPI files
         run: |
@@ -43,12 +43,12 @@ jobs:
           fi
 
       - name: Validate OpenAPI syntax
-        uses: swaggerexpert/swagger-editor-validate@v1
+        uses: swaggerexpert/swagger-editor-validate@264fd875d3c6e1bf65da1f0a63e095cbe41ffef3
         with:
           definition-file: api/specs/${{ matrix.doc }}-${{ matrix.version }}.yaml
 
       - name: Deploy
-        uses: bump-sh/github-action@v1
+        uses: bump-sh/github-action@590e36a25548cb10a8efb1ca9e5b1e111ad67120
         with:
           doc: ${{ matrix.doc }}
           token: ${{ secrets[matrix.token] }}

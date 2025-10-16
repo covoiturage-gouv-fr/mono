@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 
-type PaginateAPIResponse<T> = {
+interface PaginateAPIResponse<T> {
   meta?: { totalPages: number };
   data?: T[];
-};
+}
 
-type ErrorResponse = {
+interface ErrorResponse {
   message: string;
-};
+}
 
 type ApiResponse<T> = PaginateAPIResponse<T> | T | ErrorResponse;
 
@@ -37,7 +37,7 @@ export const useApi = <T>(
         ((res as PaginateAPIResponse<T>).meta?.totalPages ?? 0) > 1
       ) {
         const paginateResponse = res as PaginateAPIResponse<T>;
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
         setData({
           meta: paginateResponse.meta,
           data: paginateResponse.data,

@@ -1,4 +1,4 @@
-export type UsersInterface = {
+export interface UsersInterface {
   meta: {
     page: number;
     total: number;
@@ -14,16 +14,16 @@ export type UsersInterface = {
     phone?: string;
     role: string;
   }[];
-};
+}
 
-export type Company = {
+export interface Company {
   result: {
     data: {
       _id: number;
       siret: string;
     };
   };
-};
+}
 
 export enum TerritoryCodeEnum {
   Arr = "arr",
@@ -43,13 +43,13 @@ export interface TerritorySelectorsInterface {
   [TerritoryCodeEnum.Region]?: string[];
 }
 
-export type Territory = {
+export interface Territory extends Record<string, unknown> {
   _id?: number;
   name: string;
   siret: string;
-};
+}
 
-export type TerritoriesInterface = {
+export interface TerritoriesInterface extends Record<string, unknown> {
   meta: {
     pagination: {
       limit: number;
@@ -58,20 +58,20 @@ export type TerritoriesInterface = {
     };
   };
   data: Territory[];
-};
+}
 
-export type OperatorTokenInterface = {
+export interface OperatorTokenInterface extends Record<string, unknown> {
   token_id: string;
   operator_id: number;
   role: string;
-};
+}
 
-export type CreateTokenResponseInterface = {
+export interface CreateTokenResponseInterface {
   access_key: string;
   secret_key: string;
-};
+}
 
-export type OperatorsInterface = {
+export interface OperatorsInterface {
   meta: {
     page: number;
     total: number;
@@ -82,9 +82,9 @@ export type OperatorsInterface = {
     name: string;
     siret: string;
   }[];
-};
+}
 
-export type CampaignsInterface = {
+export interface CampaignsInterface {
   _id: string;
   start_date: Date;
   end_date: Date;
@@ -98,13 +98,13 @@ export type CampaignsInterface = {
   incentive_sum: number;
   max_amount: number;
   territory_selector: TerritorySelectorsInterface;
-};
+}
 
-export type CampaignsListInterface = {
+export interface CampaignsListInterface {
   meta: {
     page: number;
     total: number;
     totalPages: number;
   };
   data: CampaignsInterface[];
-};
+}

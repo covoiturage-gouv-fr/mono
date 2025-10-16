@@ -39,7 +39,7 @@ pg_dump --no-owner --no-acl --no-comments -s \
 pg_dump --no-owner --no-acl --no-comments -s -n anomaly -n fraud -n fraudcheck > fraud.sql
 
 pg_dump --no-owner --no-acl --no-comments -s \
-   -n application -n auth -n carpool_v2 -n certificate -n common -n company \
+   -n application -n auth -n carpool_v2 -n common -n company \
    -n export -n honor -n operator -n policy -n territory \
     > application.sql
 ```

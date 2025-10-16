@@ -41,6 +41,7 @@ export const description = `<p id="summary">
     <li><b>Du 06/12/2024 au 15/03/2025 inclus</b> pour les communes suivantes : Boisemont, Conflans-Sainte-Honorine, Maurecourt, Poissy, Saint-Germain-en-Laye, Achères, Neuville-sur-Oise, Éragny, Courdimanche, Puiseux-Pontoise, Vauréal, Herblay-sur-Seine, Saint-Ouen-l'Aumône, Jouy-le-Moutier, Méry-sur-Oise, Cergy, Osny, Menucourt, Pontoise</li>
     <li><b>Le 01/07/2025</b></li>
     <li><b>Le 02/07/2025</b></li>
+    <li><b>Le 18/09/2025</b></li>
   </ul>
   <p>
   La campagne est limitée aux opérateurs BlaBlaCar Daily, Karos, Ynstant (jusqu'au 11/05/2025 à minuit) et Mobicoop proposant des preuves de classe C</b>.

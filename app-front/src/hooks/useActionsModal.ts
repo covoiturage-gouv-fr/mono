@@ -103,7 +103,7 @@ export const useActionsModal = <T extends Record<string, unknown>>() => {
         const response = await fetch(request.url, request.params);
         const res = await response.json();
         if (!response.ok) {
-          throw new Error(res.message || "Une erreur est survenue");
+          throw new Error(res.message ?? "Une erreur est survenue");
         }
         setSubmitData(res);
         return;

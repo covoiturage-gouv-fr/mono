@@ -7,7 +7,7 @@ export interface AuthContextProps {
     email: string;
     name?: string;
     role: (typeof enumRoles)[number];
-    permissions: Array<string>;
+    permissions: string[];
     operator_id?: number;
     territory_id?: number;
     siret?: string;
