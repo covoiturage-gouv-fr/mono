@@ -1,4 +1,6 @@
-name: 'Deploy Sqlmesh'
+name: 'Deploy SQLMesh'
+permissions:
+  contents: read
 
 on:
   workflow_dispatch:
@@ -23,7 +25,7 @@ jobs:
 
   build:
     needs: tag
-    name: Build sqlmesh tool
+    name: Build and Push SQLMesh Docker Image
     uses: ./.github/workflows/base-build-push-docker.yml
     with:
       name: sqlmesh
