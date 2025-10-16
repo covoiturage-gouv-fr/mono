@@ -79,3 +79,5 @@ fileignoreconfig:
   checksum: 9c9aad9660da5bfdac53266fdf9167fb845fd83bde8fe55f5740f224537f597d
 - filename: api/src/pdc/proxy/middlewares/sessionMiddleware.ts
   checksum: 1a256ae8d37e81643b202fc4b1dff89482bddb54420ac38c4c34253c96041841
+- filename: .github/workflows/deploy-sqlmesh.yml
+  checksum: e8d8d8202095c00265a8c3633f1b23252abbd150572d74c2e3f000c5569085e2
