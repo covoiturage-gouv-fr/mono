@@ -2,3 +2,6 @@ outputs*
 db.duckdb*
 *.parquet
 .virtual_documents
+*.geojson
+*.duckdb*
+*marimo*
