@@ -1,8 +1,8 @@
-import { it } from "@/dev_deps.ts";
-import { v4 as uuidV4 } from "@/lib/uuid/index.ts";
-import { HauteCorreze2026 as Handler } from "@/pdc/services/policy/engine/policies/20250902_haute_correze_2026.ts";
-import { makeProcessHelper } from "@/pdc/services/policy/engine/tests/macro.ts";
-import { OperatorsEnum } from "@/pdc/services/policy/interfaces/index.ts";
+import { it } from "../../../../../dev_deps.ts";
+import { v4 as uuidV4 } from "../../../../../lib/uuid/index.ts";
+import { OperatorsEnum } from "../../interfaces/index.ts";
+import { makeProcessHelper } from "../tests/macro.ts";
+import { HauteCorreze2026 as Handler } from "./20250902_haute_correze_2026.ts";
 
 const defaultPosition = {
   arr: "19139",
@@ -12,7 +12,7 @@ const defaultPosition = {
   dep: "19",
   reg: "75",
   country: "XXXXX",
-  reseau: "73",
+  reseau: 73,
 };
 const defaultLat = 45.54858380899173;
 const defaultLon = 2.3146017323921195;
