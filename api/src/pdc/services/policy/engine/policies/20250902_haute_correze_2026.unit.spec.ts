@@ -27,7 +27,7 @@ const defaultCarpool = {
   passenger_is_over_18: true,
   passenger_has_travel_pass: true,
   driver_has_travel_pass: true,
-  datetime: new Date("2024-11-01"),
+  datetime: new Date("2025-11-01"),
   seats: 1,
   distance: 5_000,
   operator_journey_id: uuidV4(),
@@ -81,15 +81,15 @@ it("should work basic with start/end inside aom", async () =>
           value: 1500,
         },
         {
-          key: "max_amount_restriction.0-one.month.10-2024",
+          key: "max_amount_restriction.0-one.month.10-2025",
           value: 450,
         },
         {
-          key: "max_amount_restriction.0-two.month.10-2024",
+          key: "max_amount_restriction.0-two.month.10-2025",
           value: 750,
         },
         {
-          key: "max_amount_restriction.0-marcel.month.10-2024",
+          key: "max_amount_restriction.0-marcel.month.10-2025",
           value: 300,
         },
       ],
@@ -116,7 +116,7 @@ it("should work with global limits", async () =>
           value: 15_000_00,
         },
         {
-          key: "max_amount_restriction.0-one.month.10-2024",
+          key: "max_amount_restriction.0-one.month.10-2025",
           value: 300,
         },
       ],
@@ -146,7 +146,7 @@ it("should work with 6 trips per day limit", async () =>
           value: 900,
         },
         {
-          key: "max_amount_restriction.0-one.month.10-2024",
+          key: "max_amount_restriction.0-one.month.10-2025",
           value: 900,
         },
       ],
