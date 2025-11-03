@@ -1,17 +1,4 @@
-import { getOperatorsAt, TimestampedOperators } from "@/pdc/services/policy/engine/helpers/getOperatorsAt.ts";
-import { isOperatorClassOrThrow } from "@/pdc/services/policy/engine/helpers/isOperatorClassOrThrow.ts";
-import { isOperatorOrThrow } from "@/pdc/services/policy/engine/helpers/isOperatorOrThrow.ts";
-import {
-  LimitTargetEnum,
-  watchForGlobalMaxAmount,
-  watchForPersonMaxAmountByMonth,
-} from "@/pdc/services/policy/engine/helpers/limits.ts";
-import { onDistanceRange, onDistanceRangeOrThrow } from "@/pdc/services/policy/engine/helpers/onDistanceRange.ts";
-import { perKm, perSeat } from "@/pdc/services/policy/engine/helpers/per.ts";
-import { startsAndEndsAt } from "@/pdc/services/policy/engine/helpers/position.ts";
-import { startsOrEndsAtOrThrow } from "@/pdc/services/policy/engine/helpers/startsOrEndsAtOrThrow.ts";
-import { AbstractPolicyHandler } from "@/pdc/services/policy/engine/policies/AbstractPolicyHandler.ts";
-import { RunnableSlices } from "@/pdc/services/policy/interfaces/engine/PolicyInterface.ts";
+import { RunnableSlices } from "../../interfaces/engine/PolicyInterface.ts";
 import {
   OperatorsEnum,
   PolicyHandlerInterface,
@@ -20,8 +7,17 @@ import {
   StatelessContextInterface,
   TerritoryCodeEnum,
   TerritorySelectorsInterface,
-} from "@/pdc/services/policy/interfaces/index.ts";
+} from "../../interfaces/index.ts";
+import { getOperatorsAt, TimestampedOperators } from "../helpers/getOperatorsAt.ts";
+import { isOperatorClassOrThrow } from "../helpers/isOperatorClassOrThrow.ts";
+import { isOperatorOrThrow } from "../helpers/isOperatorOrThrow.ts";
+import { LimitTargetEnum, watchForGlobalMaxAmount, watchForPersonMaxAmountByMonth } from "../helpers/limits.ts";
+import { onDistanceRange, onDistanceRangeOrThrow } from "../helpers/onDistanceRange.ts";
+import { perKm, perSeat } from "../helpers/per.ts";
+import { startsAndEndsAt } from "../helpers/position.ts";
+import { startsOrEndsAtOrThrow } from "../helpers/startsOrEndsAtOrThrow.ts";
 import { description } from "./20250701_PMGFxATMBxSM4CC.html.ts";
+import { AbstractPolicyHandler } from "./AbstractPolicyHandler.ts";
 
 // INSERT INTO policy.policies (territory_id, start_date, end_date, name, unit, status, handler, max_amount)
 // VALUES (
@@ -68,66 +64,46 @@ export const PMGFxATMBxSM4CCx2025: PolicyHandlerStaticInterface = class extends 
   /**
    * Trajets intra-AOM (origine ET destination dans l'AOM)
    * - 1,50€ par passager de 5 à 20 km
-   * - 1,50€ par passager + 0,125€ pour les km > 20 km
-   * - limite d'incitation à 40 km
+   * - 1,50€ par passager + 0,05€ de 20 à 30 km
+   * - 2,00€ par passager de 30 à 40 km
+   * - 2,00€ par passager - 0,10€ de 40 à 50 km
+   * - 1,00€ par passager au delà de 50 km
+   * - limite d'incitation à 80 km
    */
-  protected internalTripsSlicesBefore21April2025: RunnableSlices = [
+  protected intraAOMSlices: RunnableSlices = [
     {
       start: 5_000,
       end: 20_000,
-      fn: (ctx: StatelessContextInterface) => perSeat(ctx, 150),
-    },
-    {
-      start: 20_000,
-      end: 150_000,
-      fn: (ctx: StatelessContextInterface) =>
-        perSeat(
-          ctx,
-          perKm(ctx, { amount: 12.5, offset: 20_000, limit: 40_000 }),
-        ),
-    },
-  ];
-
-  /**
-   * Trajets intra-AOM (origine ET destination dans l'AOM)
-   * - 1,50€ par passager de 5 à 20 km
-   * - + 0,15 € pour les km >= 20 km et < 30 km
-   * - + 0,10 € pour les km >= 30 km et < 40 km
-   * - limite d'incitation à 40 km
-   */
-  protected internalTripsSlicesAfter21April2025: RunnableSlices = [
-    {
-      start: 5_000,
-      end: 20_000,
-      fn: (ctx: StatelessContextInterface) => perSeat(ctx, 150),
+      fn: (ctx: StatelessContextInterface) => perSeat(ctx, 1_50),
     },
     {
       start: 20_000,
       end: 30_000,
-      fn: (ctx: StatelessContextInterface) =>
-        perSeat(
-          ctx,
-          perKm(ctx, { amount: 15, offset: 20_000, limit: 30_000 }),
-        ),
+      fn: (ctx: StatelessContextInterface) => perSeat(ctx, perKm(ctx, { amount: 5, offset: 20_000, limit: 30_000 })),
     },
     {
       start: 30_000,
       end: 40_000,
-      fn: (ctx: StatelessContextInterface) =>
-        perSeat(
-          ctx,
-          perKm(ctx, { amount: 10, offset: 30_000, limit: 40_000 }),
-        ),
+      fn: () => 0,
+    },
+    {
+      start: 40_000,
+      end: 50_000,
+      fn: (ctx: StatelessContextInterface) => perSeat(ctx, perKm(ctx, { amount: -10, offset: 40_000, limit: 50_000 })),
+    },
+    {
+      start: 50_000,
+      end: 80_000,
+      fn: () => 0,
     },
   ];
 
   /**
    * Trajets extra-AOM (origine OU destination dans l'AOM)
    * - 0,50€ par passager de 5 à 20 km
-   * - 0,50€ par passager + 0,125€ pour les km > 20 km
-   * - limite d'incitation à 40 km
+   * - 1,00€ par passager > 20 km
    */
-  protected externalTripsSlicesBefore21April2025: RunnableSlices = [
+  protected extraAOMSlices: RunnableSlices = [
     {
       start: 5_000,
       end: 20_000,
@@ -135,30 +111,7 @@ export const PMGFxATMBxSM4CCx2025: PolicyHandlerStaticInterface = class extends 
     },
     {
       start: 20_000,
-      end: 150_000,
-      fn: (ctx: StatelessContextInterface) =>
-        perSeat(
-          ctx,
-          perKm(ctx, { amount: 12.5, offset: 20_000, limit: 40_000 }),
-        ),
-    },
-  ];
-
-  /**
-   * Trajets extra-AOM (origine OU destination dans l'AOM)
-   * - 0,50€ par passager de 5 à 21 km
-   * - 0,50€ par passager > 21 km
-   * - limite d'incitation à 40 km
-   */
-  protected externalTripsSlicesAfter21April2025: RunnableSlices = [
-    {
-      start: 5_000,
-      end: 21_000,
-      fn: (ctx: StatelessContextInterface) => perSeat(ctx, 50),
-    },
-    {
-      start: 21_000,
-      end: 40_000,
+      end: 80_000,
       fn: (ctx: StatelessContextInterface) => perSeat(ctx, 50),
     },
   ];
@@ -179,24 +132,16 @@ export const PMGFxATMBxSM4CCx2025: PolicyHandlerStaticInterface = class extends 
   };
 
   protected getSlices(ctx?: StatelessContextInterface): RunnableSlices {
-    if (!ctx) return this.internalTripsSlicesBefore21April2025;
+    if (!ctx) return this.intraAOMSlices;
 
-    if (ctx.carpool.datetime >= new Date("2025-04-21T00:00:00+0200")) {
-      return startsAndEndsAt(ctx, this.territorySelector)
-        ? this.internalTripsSlicesAfter21April2025
-        : this.externalTripsSlicesAfter21April2025;
-    }
-
-    return startsAndEndsAt(ctx, this.territorySelector)
-      ? this.internalTripsSlicesBefore21April2025
-      : this.externalTripsSlicesBefore21April2025;
+    return startsAndEndsAt(ctx, this.territorySelector) ? this.intraAOMSlices : this.extraAOMSlices;
   }
 
   protected processExclusions(ctx: StatelessContextInterface) {
     isOperatorOrThrow(ctx, getOperatorsAt(this.operators, ctx.carpool.datetime));
     isOperatorClassOrThrow(ctx, this.operator_class);
     startsOrEndsAtOrThrow(ctx, this.territorySelector);
-    onDistanceRangeOrThrow(ctx, { min: 4_999, max: 150_000 });
+    onDistanceRangeOrThrow(ctx, { min: 4_999, max: 80_001 });
   }
 
   override processStateless(ctx: StatelessContextInterface): void {

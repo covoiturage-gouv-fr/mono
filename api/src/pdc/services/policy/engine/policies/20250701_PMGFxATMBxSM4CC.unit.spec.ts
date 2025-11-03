@@ -1,7 +1,7 @@
-import { it } from "@/dev_deps.ts";
-import { v4 as uuidV4 } from "@/lib/uuid/index.ts";
-import { makeProcessHelper } from "@/pdc/services/policy/engine/tests/macro.ts";
-import { OperatorsEnum } from "@/pdc/services/policy/interfaces/index.ts";
+import { it } from "../../../../../dev_deps.ts";
+import { v4 as uuidV4 } from "../../../../../lib/uuid/index.ts";
+import { OperatorsEnum } from "../../interfaces/index.ts";
+import { makeProcessHelper } from "../tests/macro.ts";
 import { PMGFxATMBxSM4CCx2025 as Handler } from "./20250701_PMGFxATMBxSM4CC.ts";
 
 const defaultPosition = {
@@ -127,6 +127,11 @@ it("trips inside", async () =>
           passenger_identity_key: "three",
         },
         {
+          distance: 45_000,
+          driver_identity_key: "one",
+          passenger_identity_key: "three",
+        },
+        {
           distance: 40_000,
           seats: 2,
           driver_identity_key: "one",
@@ -139,11 +144,22 @@ it("trips inside", async () =>
       ],
     },
     {
-      incentive: [150, 300, 150, 165, 300, 310, 400, 800, 400],
+      incentive: [
+        150,
+        300,
+        150,
+        155,
+        200,
+        200,
+        200,
+        150,
+        400,
+        100,
+      ],
     },
   ));
 
-it("trips outside AOM before 21/04/2025", async () =>
+it("trips outside", async () =>
   await process(
     {
       policy: { handler: Handler.id },
@@ -192,81 +208,15 @@ it("trips outside AOM before 21/04/2025", async () =>
       ],
     },
     {
-      incentive: [50, 100, 50, 175, 300, 600, 300],
-    },
-  ));
-
-it("trips outside AOM after 21/04/2025", async () =>
-  await process(
-    {
-      policy: { handler: Handler.id },
-      carpool: [
-        {
-          distance: 5_000,
-          driver_identity_key: "one",
-          start: { ...defaultPosition, epci: "200070852", aom: "200070852" },
-          datetime: new Date("2025-07-15"),
-        },
-        {
-          distance: 5_000,
-          seats: 2,
-          driver_identity_key: "one",
-          start: { ...defaultPosition, epci: "200070852", aom: "200070852" },
-          datetime: new Date("2025-07-15"),
-        },
-        {
-          distance: 20_000,
-          driver_identity_key: "one",
-          passenger_identity_key: "two",
-          start: { ...defaultPosition, epci: "200070852", aom: "200070852" },
-          datetime: new Date("2025-07-15"),
-        },
-        {
-          distance: 21_000,
-          driver_identity_key: "one",
-          passenger_identity_key: "two",
-          start: { ...defaultPosition, epci: "200070852", aom: "200070852" },
-          datetime: new Date("2025-07-15"),
-        },
-        {
-          distance: 22_000,
-          driver_identity_key: "one",
-          passenger_identity_key: "two",
-          start: { ...defaultPosition, epci: "200070852", aom: "200070852" },
-          datetime: new Date("2025-07-15"),
-        },
-        {
-          distance: 30_000,
-          driver_identity_key: "one",
-          passenger_identity_key: "two",
-          start: { ...defaultPosition, epci: "200070852", aom: "200070852" },
-          datetime: new Date("2025-07-15"),
-        },
-        {
-          distance: 40_000,
-          driver_identity_key: "one",
-          passenger_identity_key: "three",
-          start: { ...defaultPosition, epci: "200070852", aom: "200070852" },
-          datetime: new Date("2025-07-15"),
-        },
-        {
-          distance: 40_000,
-          seats: 2,
-          driver_identity_key: "one",
-          passenger_identity_key: "three",
-          start: { ...defaultPosition, epci: "200070852", aom: "200070852" },
-          datetime: new Date("2025-07-15"),
-        },
-        {
-          distance: 70_000,
-          driver_identity_key: "one",
-          start: { ...defaultPosition, epci: "200070852", aom: "200070852" },
-          datetime: new Date("2025-07-15"),
-        },
+      incentive: [
+        50,
+        100,
+        100,
+        100,
+        100,
+        200,
+        100,
       ],
-    },
-    {
-      incentive: [50, 100, 50, 100, 100, 100, 100, 200, 100],
     },
   ));
 
@@ -280,7 +230,7 @@ it("should work with driver month limits", async () =>
       ],
       meta: [
         {
-          key: "max_amount_restriction.0-one.month.3-2025",
+          key: "max_amount_restriction.0-one.month.6-2025",
           value: 48_50,
         },
       ],
@@ -289,7 +239,7 @@ it("should work with driver month limits", async () =>
       incentive: [150, 0],
       meta: [
         {
-          key: "max_amount_restriction.0-one.month.3-2025",
+          key: "max_amount_restriction.0-one.month.6-2025",
           value: 50_00,
         },
         {

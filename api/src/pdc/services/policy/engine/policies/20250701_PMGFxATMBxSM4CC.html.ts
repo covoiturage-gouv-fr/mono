@@ -9,7 +9,7 @@ export const description = `<div _ngcontent-fyn-c231="" id="summary" class="camp
   <!-- ------------------------------------------------------------------------------------ -->
 
   <p>
-    Les <b> conducteurs </b> effectuant un trajet entre 5 et 40 km
+    Les <b> conducteurs </b> effectuant un trajet entre 5 et 80 km
     au départ ou à l'arrivée du Pôle Métropolitain Genevois
     sont incités selon les règles suivantes.
   </p>
@@ -18,16 +18,17 @@ export const description = `<div _ngcontent-fyn-c231="" id="summary" class="camp
 
   <ul>
     <li><b>De 5 à 20 km : 1,50 € par passager transporté&nbsp;;</b></li>
-    <li><b>De 20 à 30 km : 1,50 € par passager transporté + 0,15 € par passager par kilomètre supplémentaire soit 3,00 € pour 30 km&nbsp;;</b></li>
-    <li><b>De 30 à 40 km : 1,50 € par passager transporté + 0,10 € par passager par kilomètre supplémentaire soit 4,00 € pour 40 km&nbsp;;</b></li>
-    <li><b>Au delà de 40 km : 4,00 € par passager transporté.</b></li>
+    <li><b>De 20 à 30 km : 1,50 € par passager transporté + 0,05 € par passager par kilomètre supplémentaire soit 2,00 € pour 30 km&nbsp;;</b></li>
+    <li><b>De 30 à 40 km : 2,00 € par passager transporté&nbsp;;</b></li>
+    <li><b>De 40 à 50 km : 2,00 € par passager transporté - 0,10 € par kilomètre supplémentaire par passager soit 1,00 € par passager transporté&nbsp;;</b></li>
+    <li><b>Au delà de 50 km : 1,00 € par passager transporté.</b></li>
   </ul>
 
   <p><strong>Départ <u>ou</u> Arrivée au sein du PMGF :</strong></p>
 
   <ul>
-    <li><b>De 5 à 21 km : 0,50 € par passager transporté&nbsp;;</b></li>
-    <li><b>Au delà de 21 km : 1,00 € par passager transporté.</b></li>
+    <li><b>De 5 à 20 km : 0,50 € par passager transporté&nbsp;;</b></li>
+    <li><b>Au delà de 20 km : 1,00 € par passager transporté.</b></li>
   </ul>
 
   <p>Les restrictions suivantes seront appliquées :</p>
