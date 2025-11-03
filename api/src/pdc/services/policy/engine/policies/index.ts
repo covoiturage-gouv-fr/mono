@@ -40,6 +40,7 @@ import { GrandPoitiers2025 } from "@/pdc/services/policy/engine/policies/2025010
 import { LaRochelle2025 } from "@/pdc/services/policy/engine/policies/20250101_LaRochelle.ts";
 import { PaysBasque2025 } from "@/pdc/services/policy/engine/policies/20250101_PaysBasqueAdour.ts";
 import { PMGFxATMB2025 } from "@/pdc/services/policy/engine/policies/20250101_PMGFxATMB.ts";
+import { HauteCorreze2026 } from "@/pdc/services/policy/engine/policies/20250902_haute_correze_2026.ts";
 import { PolicyTemplateOne } from "@/pdc/services/policy/engine/policies/unbound/PolicyTemplateOne.ts";
 import { PolicyTemplateThree } from "@/pdc/services/policy/engine/policies/unbound/PolicyTemplateThree.ts";
 import { PolicyTemplateTwo } from "@/pdc/services/policy/engine/policies/unbound/PolicyTemplateTwo.ts";
@@ -58,6 +59,7 @@ export const policies: Map<string, PolicyHandlerStaticInterface> = new Map(
     GrandPoitiers,
     GrandPoitiers2025,
     HauteCorreze2025,
+    HauteCorreze2026,
     IDFMPeriodeNormale2021,
     Lannion202305,
     LannionTregor2024,
