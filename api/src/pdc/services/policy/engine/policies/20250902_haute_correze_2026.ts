@@ -10,7 +10,7 @@ import {
 import { onDistanceRange, onDistanceRangeOrThrow } from "@/pdc/services/policy/engine/helpers/onDistanceRange.ts";
 import { perKm, perSeat } from "@/pdc/services/policy/engine/helpers/per.ts";
 import { startsOrEndsAtOrThrow } from "@/pdc/services/policy/engine/helpers/startsOrEndsAtOrThrow.ts";
-import { description } from "@/pdc/services/policy/engine/policies/20240902_haute_correze_2025.html.ts";
+import { description } from "@/pdc/services/policy/engine/policies/20250902_haute_correze_2026.html.ts";
 import { AbstractPolicyHandler } from "@/pdc/services/policy/engine/policies/AbstractPolicyHandler.ts";
 import { RunnableSlices } from "@/pdc/services/policy/interfaces/engine/PolicyInterface.ts";
 import {
