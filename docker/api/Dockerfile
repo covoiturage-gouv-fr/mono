@@ -1,4 +1,4 @@
-ARG DENO_VERSION=2.2.0
+ARG DENO_VERSION=2.5.6
 ARG BIN_IMAGE=denoland/deno:bin-${DENO_VERSION}
 FROM ${BIN_IMAGE} AS bin
 FROM ubuntu:24.04
@@ -7,8 +7,8 @@ RUN useradd --uid 1993 --user-group deno \
   && mkdir /app/ \
   && chown deno:deno /app/
 
-ENV DENO_DIR /app/
-ENV DENO_INSTALL_ROOT /usr/local
+ENV DENO_DIR=/app/
+ENV DENO_INSTALL_ROOT=/usr/local
 
 ARG DENO_VERSION
 ENV DENO_VERSION=${DENO_VERSION}
@@ -24,13 +24,13 @@ RUN tar -xzf just.tar.gz -C /usr/local/bin
 RUN rm just.tar.gz
 RUN chmod +x /usr/local/bin/just
 
-WORKDIR /app/api
-
 RUN chown -R deno:deno /app/
 
 USER deno
 
 COPY --chown=deno:deno ./api /app/api
+
+WORKDIR /app/api
 
 RUN just cache
 RUN just cache-migrator
