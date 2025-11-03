@@ -9,7 +9,7 @@ export const description = `
   <p>Cette campagne est limitée à <b>24 000,00 €</b>.</p>
 
   <p>
-    Les <b> conducteurs </b> effectuant un trajet en covoiturage d'au moins 2 km
+    Les <b> conducteurs </b> effectuant un trajet en covoiturage entre 2 km et 80 km
     au départ ou à l'arrivée de la CC Haute-Corrèze Communauté
     sont incités selon les règles suivantes :
   </p>
