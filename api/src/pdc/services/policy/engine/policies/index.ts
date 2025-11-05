@@ -44,6 +44,7 @@ import { PMGFxATMB2025 } from "./20250101_PMGFxATMB.ts";
 import { Rennes2025 } from "./20250101_Rennes.ts";
 import { PMGFxATMBxSM4CCx2025 } from "./20250701_PMGFxATMBxSM4CC.ts";
 import { HauteCorreze2026 } from "./20250902_haute_correze_2026.ts";
+import { ATMB2025 } from "./20251014_ATMB.ts";
 import { PolicyTemplateOne } from "./unbound/PolicyTemplateOne.ts";
 import { PolicyTemplateThree } from "./unbound/PolicyTemplateThree.ts";
 import { PolicyTemplateTwo } from "./unbound/PolicyTemplateTwo.ts";
@@ -51,6 +52,7 @@ import { PolicyTemplateTwo } from "./unbound/PolicyTemplateTwo.ts";
 export const policies: Map<string, PolicyHandlerStaticInterface> = new Map(
   [
     ATMB202305,
+    ATMB2025,
     Cannes2024,
     CCPOA202410,
     CCVMM202405,
