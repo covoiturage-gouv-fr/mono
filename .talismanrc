@@ -12,8 +12,6 @@ fileignoreconfig:
     checksum: b26661547756ef686b92ff195f1a9d2ebe4348d3b09264f80a1a28adcbd168d9
   - filename: attestation/src/app/services/pdfPublic.service.ts
     checksum: 5c8511305a8806cf773f0e0b92c4576e6a8f7ab3e3e27e138f474466d6ff79e8
-  - filename: flake.nix
-    checksum: 35591837abd86ad13d74e7628be053f7c5d18b60e0acc463a93c7e69cced02e3
   - filename: api/deno.lock
     allowed_patterns:
       - "sha512-.*"
@@ -42,10 +40,10 @@ fileignoreconfig:
     ignore_detectors: [filecontent]
   - filename: notebooks/cerema/*.sql
     ignore_detectors: [filename]
-  - filename: notebooks/cerema/flake.lock
-    allowed_patterns:
-      - "sha256-.*"
-      - '"rev": "[0-9a-f]{40}"'
+  - filename: flake.nix
+    ignore_detectors: [filecontent]
+  - filename: flake.lock
+    ignore_detectors: [filecontent]
   - filename: api/src/ilos/connection-postgres/DenoPostgresConnection.ts
     allowed_patterns: [username, password]
   - filename: api/src/config/connections.ts
