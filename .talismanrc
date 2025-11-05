@@ -3,81 +3,99 @@ scopeconfig:
   - scope: node
   - scope: python
 fileignoreconfig:
-- filename: api/src/lib/pg/sql.ts
-  checksum: 34a1d26889326c6bd576b22b2b4de9ef2a10dcc6d36ee915b3c99028d378bd39
-- filename: .github/workflows/quality-api.yml
-  allowed_patterns: [key,pass,"(?i)secretkey","(?i)accesskey","(?i)password","(?i)email"]
-- filename: attestation/src/app/services/pdfLimited.service.ts
-  checksum: b26661547756ef686b92ff195f1a9d2ebe4348d3b09264f80a1a28adcbd168d9
-- filename: attestation/src/app/services/pdfPublic.service.ts
-  checksum: 5c8511305a8806cf773f0e0b92c4576e6a8f7ab3e3e27e138f474466d6ff79e8
-- filename: flake.nix
-  checksum: 35591837abd86ad13d74e7628be053f7c5d18b60e0acc463a93c7e69cced02e3
-- filename: api/deno.lock
-  allowed_patterns:
-    - "sha512-.*"
-    - "\"[0-9a-f]{64}\""
-- filename: api/src/pdc/services/cee/config/signature.ts
-  checksum: bc1b5afcb79fb043a259ffe7cccd6e7d805c5d43ef0430d1fc73809de9adf0fc
-- filename: docker/dex/config-local.yaml
-  checksum: 49435999ee3dc46f53f2265842affd97a56e3d7d7b5bc1bd712a2e0ce10072f0
-- filename: docker/dex/config-e2e.yaml
-  checksum: b9d61835e4bc73b76af477bdd2e9a3cf86eb60219a7a6fc6134363801060022d
-- filename: docker-compose.base.yml
-  checksum: 26800d502eead58a42d2972c5077ef5974e45a3a4cc27734c17ce9a5866a8c06
-- filename: docker-compose.e2e.yml
-  allowed_patterns: ["(?i)pass","(?i)key"]
-- filename: notebooks/cerema/pdll2025.ipynb
-  checksum: 26708491073bd3546e9c811ed788218e7a0e28551e311b25325f870d8eea0a6a
-- filename: api/src/config/connections.ts
-  checksum: 243b7f3ec0caaedd588841b5310b9de50fdbe6a81aaf66737bacd57d724f3aa7
-- filename: api/src/pdc/services/policy/engine/policies/*.html.ts
-  allowed_patterns: [pass]
-- filename: api/src/lib/crypto/index.ts
-  allowed_patterns: [key]
-- filename: api/src/pdc/services/policy/providers/*.ts
-  allowed_patterns: [key]
-- filename: api/src/pdc/services/policy/engine/policies/*.ts
-  allowed_patterns: [key,uuid,driver,passenger]
-- filename: notebooks/cerema/*.sql
-  ignore_detectors: [filename]
-- filename: notebooks/cerema/flake.lock
-  allowed_patterns:
-    - "sha256-.*"
-    - "\"rev\": \"[0-9a-f]{40}\""
-- filename: api/src/ilos/connection-postgres/DenoPostgresConnection.ts
-  allowed_patterns: [username,password]
-- filename: api/src/config/connections.ts
-  checksum: 243b7f3ec0caaedd588841b5310b9de50fdbe6a81aaf66737bacd57d724f3aa7
-- filename: dbt/models/export/dbt_trips.sql
-  checksum: 484baa24d66833f4c2ee45a86e7e62c8a677e519a8b5ef6a40b13185721804f2
-- filename: api/src/pdc/providers/migration/*Migrator.ts
-  allowed_patterns: [pass]
-- filename: api/e2e/lib/API.ts
-  allowed_patterns: [key,"(?i)secretkey","(?i)accesskey","(?i)access","(?i)secret"]
-- filename: api/src/pdc/services/auth/actions/CreateAccessTokenAction.ts
-  allowed_patterns: [key,"(?i)secretkey","(?i)accesskey","(?i)access","(?i)secret"]
-- filename: api/e2e/scenarios/0-stack/004-credentials.test.ts
-  checksum: 6b59470986719df9b04032fb0861d52d0091129c35715b0c5838ad42f280ddab
-- filename: api/e2e/scenarios/**/*.test.ts
-  allowed_patterns: [key,pass,"(?i)secretkey","(?i)accesskey","(?i)password","(?i)email", "(?i)secret_"]
-- filename: api/e2e/lib/*.ts
-  allowed_patterns: ["(?i)key","(?i)pass"]
-- filename: api/src/pdc/proxy/config/dex.ts
-  allowed_patterns: ["(?i)key","(?i)secret"]
-- filename: api/e2e/config.ts
-  allowed_patterns: ["(?i)key","(?i)pass","(?i)secretkey","(?i)accesskey","(?i)password","(?i)secret"]
-- filename: app-front/.env.example
-  checksum: 36c5d64bf21daf6fb29fe15a98ece709414d3c7c3b0d350c150aee16354fae0d
-- filename: api/src/pdc/services/auth/providers/DexClient.ts
-  checksum: dc93dad663156e6b9924148218a02e909a59194e18a3f9c0793ac9ace711e9de
-- filename: api/src/pdc/services/auth/dto/Credentials.ts
-  checksum: 91a64650019bf028b007d007f60dd5aea509dc45da3abcfdb3a00195367f55bc
-- filename: dashboard/src/environments/environment.ts
-  checksum: 1009fa48bed279f75cbda214d8cab09c21feac71e7492c43291bf24688772a45
-- filename: api/specs/api-v3.3.yaml
-  checksum: 9c9aad9660da5bfdac53266fdf9167fb845fd83bde8fe55f5740f224537f597d
-- filename: api/src/pdc/proxy/middlewares/sessionMiddleware.ts
-  checksum: 1a256ae8d37e81643b202fc4b1dff89482bddb54420ac38c4c34253c96041841
-- filename: .github/workflows/deploy-sqlmesh.yml
-  checksum: aeeb368275d22468808cab7e182fd29d08d4ac00691b8b9ca21eca5ba7a3397e
+  - filename: api/src/lib/pg/sql.ts
+    checksum: 34a1d26889326c6bd576b22b2b4de9ef2a10dcc6d36ee915b3c99028d378bd39
+  - filename: .github/workflows/quality-api.yml
+    allowed_patterns:
+      [key, pass, "(?i)secretkey", "(?i)accesskey", "(?i)password", "(?i)email"]
+  - filename: attestation/src/app/services/pdfLimited.service.ts
+    checksum: b26661547756ef686b92ff195f1a9d2ebe4348d3b09264f80a1a28adcbd168d9
+  - filename: attestation/src/app/services/pdfPublic.service.ts
+    checksum: 5c8511305a8806cf773f0e0b92c4576e6a8f7ab3e3e27e138f474466d6ff79e8
+  - filename: api/deno.lock
+    allowed_patterns:
+      - "sha512-.*"
+      - '"[0-9a-f]{64}"'
+  - filename: api/src/pdc/services/cee/config/signature.ts
+    checksum: bc1b5afcb79fb043a259ffe7cccd6e7d805c5d43ef0430d1fc73809de9adf0fc
+  - filename: docker/dex/config-local.yaml
+    checksum: 49435999ee3dc46f53f2265842affd97a56e3d7d7b5bc1bd712a2e0ce10072f0
+  - filename: docker/dex/config-e2e.yaml
+    checksum: b9d61835e4bc73b76af477bdd2e9a3cf86eb60219a7a6fc6134363801060022d
+  - filename: docker-compose.base.yml
+    checksum: 26800d502eead58a42d2972c5077ef5974e45a3a4cc27734c17ce9a5866a8c06
+  - filename: docker-compose.e2e.yml
+    allowed_patterns: ["(?i)pass", "(?i)key"]
+  - filename: notebooks/cerema/pdll2025.ipynb
+    checksum: 26708491073bd3546e9c811ed788218e7a0e28551e311b25325f870d8eea0a6a
+  - filename: api/src/config/connections.ts
+    checksum: 243b7f3ec0caaedd588841b5310b9de50fdbe6a81aaf66737bacd57d724f3aa7
+  - filename: api/src/pdc/services/policy/engine/policies/*.html.ts
+    allowed_patterns: [pass]
+  - filename: api/src/lib/crypto/index.ts
+    allowed_patterns: [key]
+  - filename: api/src/pdc/services/policy/providers/*.ts
+    allowed_patterns: [key]
+  - filename: api/src/pdc/services/policy/engine/policies/*.ts
+    ignore_detectors: [filecontent]
+  - filename: notebooks/cerema/*.sql
+    ignore_detectors: [filename]
+  - filename: flake.nix
+    ignore_detectors: [filecontent]
+  - filename: flake.lock
+    ignore_detectors: [filecontent]
+  - filename: api/src/ilos/connection-postgres/DenoPostgresConnection.ts
+    allowed_patterns: [username, password]
+  - filename: api/src/config/connections.ts
+    checksum: 243b7f3ec0caaedd588841b5310b9de50fdbe6a81aaf66737bacd57d724f3aa7
+  - filename: dbt/models/export/dbt_trips.sql
+    checksum: 484baa24d66833f4c2ee45a86e7e62c8a677e519a8b5ef6a40b13185721804f2
+  - filename: api/src/pdc/providers/migration/*Migrator.ts
+    allowed_patterns: [pass]
+  - filename: api/e2e/lib/API.ts
+    allowed_patterns:
+      [key, "(?i)secretkey", "(?i)accesskey", "(?i)access", "(?i)secret"]
+  - filename: api/src/pdc/services/auth/actions/CreateAccessTokenAction.ts
+    allowed_patterns:
+      [key, "(?i)secretkey", "(?i)accesskey", "(?i)access", "(?i)secret"]
+  - filename: api/e2e/scenarios/0-stack/004-credentials.test.ts
+    checksum: 6b59470986719df9b04032fb0861d52d0091129c35715b0c5838ad42f280ddab
+  - filename: api/e2e/scenarios/**/*.test.ts
+    allowed_patterns:
+      [
+        key,
+        pass,
+        "(?i)secretkey",
+        "(?i)accesskey",
+        "(?i)password",
+        "(?i)email",
+        "(?i)secret_",
+      ]
+  - filename: api/e2e/lib/*.ts
+    allowed_patterns: ["(?i)key", "(?i)pass"]
+  - filename: api/src/pdc/proxy/config/dex.ts
+    allowed_patterns: ["(?i)key", "(?i)secret"]
+  - filename: api/e2e/config.ts
+    allowed_patterns:
+      [
+        "(?i)key",
+        "(?i)pass",
+        "(?i)secretkey",
+        "(?i)accesskey",
+        "(?i)password",
+        "(?i)secret",
+      ]
+  - filename: app-front/.env.example
+    checksum: 36c5d64bf21daf6fb29fe15a98ece709414d3c7c3b0d350c150aee16354fae0d
+  - filename: api/src/pdc/services/auth/providers/DexClient.ts
+    checksum: dc93dad663156e6b9924148218a02e909a59194e18a3f9c0793ac9ace711e9de
+  - filename: api/src/pdc/services/auth/dto/Credentials.ts
+    checksum: 91a64650019bf028b007d007f60dd5aea509dc45da3abcfdb3a00195367f55bc
+  - filename: dashboard/src/environments/environment.ts
+    checksum: 1009fa48bed279f75cbda214d8cab09c21feac71e7492c43291bf24688772a45
+  - filename: api/specs/api-v3.3.yaml
+    checksum: 9c9aad9660da5bfdac53266fdf9167fb845fd83bde8fe55f5740f224537f597d
+  - filename: api/src/pdc/proxy/middlewares/sessionMiddleware.ts
+    checksum: 1a256ae8d37e81643b202fc4b1dff89482bddb54420ac38c4c34253c96041841
+  - filename: .github/workflows/deploy-sqlmesh.yml
+    checksum: aeeb368275d22468808cab7e182fd29d08d4ac00691b8b9ca21eca5ba7a3397e
