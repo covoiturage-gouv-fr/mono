@@ -6,7 +6,7 @@ export const description = `
   </p>
 
   <p>Cette campagne est limitée à
-    <b>78 262,55 € </b>.
+    <b>129 686,38 € </b>.
   </p>
 
   <p>
