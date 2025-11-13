@@ -77,12 +77,13 @@ operator_incentives as (
 policy_incentives as (
   select
     pi.carpool_id,
+    pi.policy_id,
     sum(pi.amount) as policy_incentives_amount_total,
     sum(pi.result) as policy_incentives_result_total
   from policy.incentives as pi
   inner join carpools as c on pi.carpool_id = c._id
   where pi.status = 'validated' -- Filter out non validated amounts
-  group by 1
+  group by 1, 2
 ),
 
 joined_data as ( -- Join carpool enriched data with aggregated datasets
@@ -96,6 +97,7 @@ joined_data as ( -- Join carpool enriched data with aggregated datasets
     al.anomaly_labels,
     oi.operator_incentives_sirets,
     oi.operator_incentives_amount_total,
+    pi.policy_id,
     pi.policy_incentives_amount_total,
     pi.policy_incentives_result_total
   from carpools as c
@@ -149,6 +151,7 @@ select
   passenger_payments,
   operator_incentives_sirets,
   operator_incentives_amount_total,
+  policy_id,
   policy_incentives_amount_total,
   policy_incentives_result_total,
   fraud_status,
