@@ -66,7 +66,7 @@ export class CarpoolAcquisitionService {
         max: endOfDay(data.start_datetime),
       },
     }, client);
-    if (journeyCount >= 4) {
+    if (journeyCount > 4) {
       result.push("too_many_trips_by_day");
     }
 
