@@ -15,9 +15,10 @@ COLUMN_TYPES = {
 }
 
 @model(
-    "raw_zone.ign_aecarto_arr_2025",
+    "raw_zone.ign_aecentroid_arr_2025",
     kind="FULL",
     columns=COLUMN_TYPES,
+    tags=["raw", "perimeters", "ign_aecentroid_arr_2025"],
     post_statements=[f"ALTER TABLE @this_model ALTER COLUMN {GEOMETRY_COL} TYPE geometry USING ST_SetSRID(ST_GeomFromText({GEOMETRY_COL}, 4326), 4326);"],
 )
 def execute(
@@ -30,7 +31,7 @@ def execute(
   return load_geo_dataset(
     path_or_bucket="geo-datasets-archives",
     key="ADE-COG-CARTO-PE_4-0_GPKG_WGS84G_FRA-ED2025-01-01.gpkg",
-    layer="arrondissement_municipal",
+    layer="chef_lieu_d_arrondissement_municipal",
     column_types=COLUMN_TYPES,
     rename_columns={
       "nom_officiel": "l_arr",

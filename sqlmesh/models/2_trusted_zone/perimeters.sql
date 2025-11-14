@@ -1,7 +1,8 @@
 MODEL (
   name trusted_zone.perimeters,
   kind FULL,
-  grains ['id','year','arr']
+  grain ['id','year','arr'],
+  tags ['trusted', 'perimeters']
 );
 
 WITH old_perimeters AS (

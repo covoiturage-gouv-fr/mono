@@ -7,15 +7,16 @@ from utils.loading import load_geo_dataset
 # --- Définition des colonnes pour SQLMesh ---
 GEOMETRY_COL = "geometry"
 COLUMN_TYPES = {
-    "reg": "VARCHAR",
-    "l_reg": "VARCHAR",
+    "l_com": "VARCHAR",
+    "com": "VARCHAR",
     GEOMETRY_COL: "TEXT"
 }
 
 @model(
-    "raw_zone.ign_aecarto_reg_2025",
+    "raw_zone.ign_aecentroid_com_2025",
     kind="FULL",
     columns=COLUMN_TYPES,
+    tags=["raw", "perimeters", "ign_aecentroid_com_2025"],
     post_statements=[f"ALTER TABLE @this_model ALTER COLUMN {GEOMETRY_COL} TYPE geometry USING ST_SetSRID(ST_GeomFromText({GEOMETRY_COL}, 4326), 4326);"],
 )
 def execute(
@@ -28,11 +29,11 @@ def execute(
   return load_geo_dataset(
     path_or_bucket="geo-datasets-archives",
     key="ADE-COG-CARTO-PE_4-0_GPKG_WGS84G_FRA-ED2025-01-01.gpkg",
-    layer="region",
+    layer="chef_lieu_de_commune",
     column_types=COLUMN_TYPES,
     rename_columns={
-      "nom_officiel": "l_reg",
-      "code_insee": "reg",
+      "nom_officiel": "l_com",
+      "code_insee": "com",
     },
     geometry_col=GEOMETRY_COL,
     target_crs="EPSG:4326"

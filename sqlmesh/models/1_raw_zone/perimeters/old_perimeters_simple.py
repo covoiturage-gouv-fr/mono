@@ -6,41 +6,47 @@ from utils.loading import load_geo_dataset
 
 # --- Définition des colonnes pour SQLMesh ---
 GEOMETRY_COL = "geometry"
+# --- Définition des colonnes pour SQLMesh ---
 COLUMN_TYPES = {
-    "l_com": "VARCHAR",
+    "year": "INTEGER",
+    "arr": "VARCHAR",
+    "l_arr": "VARCHAR",
     "com": "VARCHAR",
+    "l_com": "VARCHAR",
     "epci": "VARCHAR",
+    "l_epci": "VARCHAR",
+    "aom": "VARCHAR",
+    "l_aom": "VARCHAR",
     "dep": "VARCHAR",
+    "l_dep": "VARCHAR",
     "reg": "VARCHAR",
-    "population": "INTEGER",
-    GEOMETRY_COL: "TEXT"
+    "l_reg": "VARCHAR",
+    "country": "VARCHAR",
+    "l_country": "VARCHAR",
+    "pop": "INTEGER",
+    'surface': 'FLOAT',
+    "geometry": "TEXT"
 }
 
 @model(
-    "raw_zone.ign_ae_com_2025",
+    "raw_zone.old_perimeters_simple",
     kind="FULL",
     columns=COLUMN_TYPES,
+    tags=["raw", "perimeters", "old_perimeters_simple"],
     post_statements=[f"ALTER TABLE @this_model ALTER COLUMN {GEOMETRY_COL} TYPE geometry USING ST_SetSRID(ST_GeomFromText({GEOMETRY_COL}, 4326), 4326);"],
 )
 def execute(
-  context: ExecutionContext,
-  start: datetime,
-  end: datetime,
-  execution_time: datetime,
-  **kwargs: t.Any,
+    context: ExecutionContext,
+    start: datetime,
+    end: datetime,
+    execution_time: datetime,
+    **kwargs: t.Any,
 ) -> pd.DataFrame:
-  return load_geo_dataset(
+    return load_geo_dataset(
     path_or_bucket="geo-datasets-archives",
-    key="ADE-COG_4-0_GPKG_WGS84G_FRA-ED2025-01-01.gpkg",
-    layer="commune",
+    key="old_perimeters.gpkg",
+    layer="simple",
     column_types=COLUMN_TYPES,
-    rename_columns={
-      "nom_officiel": "l_com",
-      "code_insee": "com",
-      "code_insee_du_departement": "dep",
-      "code_insee_de_la_region": "reg",
-      "codes_siren_des_epci": "epci",
-    },
     geometry_col=GEOMETRY_COL,
     target_crs="EPSG:4326"
   )

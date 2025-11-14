@@ -33,7 +33,8 @@ COLUMN_TYPES = {
     "raw_zone.aires_covoiturage",
     kind="FULL",
     columns=COLUMN_TYPES,
-    grains=("id_lieu", "date_maj"),
+    grain=("id_lieu", "date_maj"),
+    tags=["raw", "aires_covoiturage"],
 )
 
 def execute(
@@ -44,7 +45,7 @@ def execute(
     **kwargs: t.Any,
 ) -> pd.DataFrame:
     api_url = "https://transport.data.gouv.fr/api/datasets/5d6eaffc8b4c417cdc452ac3"
-    csv_url = get_last_url(api_url=api_url, path=["history", "0", "payload", "permanent_url"])
+    csv_url = get_last_url(api_url=api_url, path=["resources", "0", "original_url"])
     df = load_dataset(
       path_or_bucket=csv_url, 
       file_type="csv",
