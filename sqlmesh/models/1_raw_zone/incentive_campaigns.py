@@ -45,6 +45,7 @@ COLUMN_TYPES = {
     "raw_zone.incentive_campaigns",
     kind="FULL",
     columns=COLUMN_TYPES,
+    tags=["raw", "incentive_campaigns"],
 )
 def execute(
     context: ExecutionContext,

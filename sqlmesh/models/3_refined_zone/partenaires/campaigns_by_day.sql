@@ -1,11 +1,12 @@
 MODEL (
-  name refined_zone.dashboard_campaigns_by_day,
+  name refined_zone.part_campaigns_by_day,
   kind INCREMENTAL_BY_TIME_RANGE (
     time_column start_date,
     lookback 1
   ),
   start '2020-01-01',
   grain ['campaign_id', 'start_date', 'operator_id'],
+  tags ['refined', 'partenaires']
 );
 
 SELECT 
@@ -18,5 +19,4 @@ SELECT
 FROM trusted_zone.journeys a
 LEFT JOIN policy.policies b ON a.policy_id = b._id
 WHERE a.valid_acquisition_status
-GROUP BY 1, 2, 3
-  
+GROUP BY 1, 2, 3;

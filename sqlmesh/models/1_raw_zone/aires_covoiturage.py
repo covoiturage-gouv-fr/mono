@@ -33,7 +33,8 @@ COLUMN_TYPES = {
     "raw_zone.aires_covoiturage",
     kind="FULL",
     columns=COLUMN_TYPES,
-    grains=("id_lieu", "date_maj"),
+    grain=("id_lieu", "date_maj"),
+    tags=["raw", "aires_covoiturage"],
 )
 
 def execute(

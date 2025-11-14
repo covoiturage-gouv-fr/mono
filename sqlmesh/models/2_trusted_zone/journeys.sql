@@ -6,6 +6,7 @@ MODEL (
   ),
   start '2020-01-01',
   grain '_id',
+  tags ['trusted', 'journeys']
 );
 
 with carpools as ( 
