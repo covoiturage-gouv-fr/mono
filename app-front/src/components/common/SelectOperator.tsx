@@ -21,7 +21,7 @@ export default function SelectOperator(props: { defaultValue: number | null; onC
         },
       }}
     >
-      <option value="">Sélectionner un operateur</option>
+      <option value="">Sélectionner un opérateur</option>
       {data?.data.map((d, i) => (
         <option key={i} value={d.id}>
           {d.name}
