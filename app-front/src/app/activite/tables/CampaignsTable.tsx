@@ -25,7 +25,6 @@ export default function CampaignsTable(props: {
   const [page, setPage] = useState(1);
   const url = `${Config.get<string>("auth.domain")}/rpc?methods=campaign:list`;
   const init = useMemo(() => {
-    console.debug("USE MEMO", { ...props });
     const params = {
       ...(props.territoryId && { territory_id: props.territoryId }),
       ...(props.operatorId && { operator_id: props.operatorId }),
