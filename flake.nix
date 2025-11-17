@@ -11,7 +11,7 @@
 
         talisman = pkgs.stdenv.mkDerivation rec {
           pname = "talisman";
-          version = "1.34.0";
+          version = "1.37.0";
 
           # Binary URL from GitHub Releases
           src = pkgs.fetchurl {
