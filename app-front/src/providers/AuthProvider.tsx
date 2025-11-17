@@ -43,32 +43,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [loading, isAuth]);
 
-  // clean up user on simulatedRole change
+  // clean up user on simulatedRole reset
   useEffect(() => {
-    if (user) {
-      setUser(prev =>
-        prev
-          ? {
-              ...prev,
-              territory_id: simulatedRole === "territory" ? prev.territory_id : null,
-              operator_id: simulatedRole === "operator" ? prev.operator_id : null,
-            }
-          : prev
-      );
+    if (!simulatedRole) {
+      setUser((prev) => (prev ? { ...prev, territory_id: null, operator_id: null } : prev));
     }
-  }, [simulatedRole, user]);
+  }, [simulatedRole]);
 
   const onChangeTerritory = (id: number | null) => {
     const territory_id = simulatedRole === "territory" && id ? id : null;
     if (user) {
-      setUser({ ...user, territory_id });
+      setUser((prev) => (prev ? { ...prev, territory_id, operator_id: null } : prev));
     }
   };
 
   const onChangeOperator = (id: number | null) => {
     const operator_id = simulatedRole === "operator" && id ? id : null;
     if (user) {
-      setUser({ ...user, operator_id });
+      setUser((prev) => (prev ? { ...prev, operator_id, territory_id: null } : prev));
     }
   };
 
