@@ -15,7 +15,7 @@ COLUMN_TYPES = {
 
 @model(
     "raw_zone.cerema_aom_2025",
-    kind="FULL",
+    kind="EXTERNAL",
     columns=COLUMN_TYPES,
     tags=["raw","perimeters","cerema_aom_2025"],
 )
