@@ -14,13 +14,18 @@ import JourneysGraph from "../graphs/JourneysGraph";
 import OperatorsGraph from "../graphs/OperatorsGraph";
 import ApdfTable from "./ApdfTable";
 
-export default function CampaignsTable(props: { title: string; territoryId?: number; operatorId?: number }) {
+export default function CampaignsTable(props: {
+  title: string;
+  territoryId: number | null;
+  operatorId: number | null;
+}) {
   const [campaignId, setCampaignId] = useState<number>();
   const { user, simulatedRole } = useAuth();
   const pageSize = 15;
   const [page, setPage] = useState(1);
   const url = `${Config.get<string>("auth.domain")}/rpc?methods=campaign:list`;
   const init = useMemo(() => {
+    console.debug("USE MEMO", { ...props });
     const params = {
       ...(props.territoryId && { territory_id: props.territoryId }),
       ...(props.operatorId && { operator_id: props.operatorId }),

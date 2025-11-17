@@ -16,7 +16,7 @@ import Table from "@codegouvfr/react-dsfr/Table";
 import { useMemo, useState } from "react";
 import { z } from "zod";
 
-export default function UsersTable(props: { title: string; territoryId?: number; operatorId?: number }) {
+export default function UsersTable(props: { title: string; territoryId: number | null; operatorId: number | null }) {
   const { user, simulatedRole } = useAuth();
   const [currentPage, setCurrentPage] = useState(1);
   const modal = useActionsModal<UsersInterface["data"][0]>();

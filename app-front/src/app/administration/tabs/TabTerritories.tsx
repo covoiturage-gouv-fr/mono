@@ -5,10 +5,7 @@ export default function TabTerritories() {
   const { user } = useAuth();
   return (
     <>
-      <TerritoriesTable
-        title={`Gestion des territoires`}
-        id={user?.territory_id}
-      />
+      <TerritoriesTable title={`Gestion des territoires`} id={user?.territory_id ?? null} />
     </>
   );
 }
