@@ -11,6 +11,7 @@ import { PolicyRepositoryProviderInterfaceResolver, SerializedPolicyInterface } 
 export class PolicyRepositoryProvider implements PolicyRepositoryProviderInterfaceResolver {
   public readonly table = "policy.policies";
   public readonly getTerritorySelectorFn = "territory.get_selector_by_territory_id";
+  private readonly tableTerritory = "territory.territory_group";
 
   constructor(protected connection: LegacyPostgresConnection) {}
 
@@ -154,9 +155,10 @@ export class PolicyRepositoryProvider implements PolicyRepositoryProviderInterfa
     status?: PolicyStatusEnum;
     datetime?: Date;
     ends_in_the_future?: boolean;
+    search?: string;
   }): Promise<SerializedPolicyInterface[]> {
     const values = [];
-    const whereClauses = ["deleted_at IS NULL and handler is not null"];
+    const whereClauses = ["pp.deleted_at IS NULL and handler is not null"];
     for (const key of Reflect.ownKeys(search)) {
       switch (key) {
         case "_id":
@@ -191,6 +193,10 @@ export class PolicyRepositoryProvider implements PolicyRepositoryProviderInterfa
         case "ends_in_the_future":
           whereClauses.push(`pp.end_date ${search[key] ? ">" : "<"} NOW()`);
           break;
+        case "search":
+          values.push(`%${search[key]}%`);
+          whereClauses.push(`(pp.name ILIKE $${values.length} OR tg.name ILIKE $${values.length})`);
+          break;
         default:
           break;
       }
@@ -209,8 +215,9 @@ export class PolicyRepositoryProvider implements PolicyRepositoryProviderInterfa
           pp.territory_id,
           pp.incentive_sum,
           pp.max_amount
-        FROM ${this.table} as pp,
-        LATERAL (
+        FROM ${this.table} as pp
+        LEFT JOIN ${this.tableTerritory} as tg ON tg._id = pp.territory_id
+        CROSS JOIN LATERAL (
           SELECT * FROM ${this.getTerritorySelectorFn}(ARRAY[pp.territory_id])
         ) as sel
         WHERE ${whereClauses.join(" AND ")}

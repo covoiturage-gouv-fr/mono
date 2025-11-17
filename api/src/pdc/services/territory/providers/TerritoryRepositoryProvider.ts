@@ -85,7 +85,7 @@ export class TerritoryRepositoryProvider implements TerritoryRepositoryProviderI
 
     if (search) {
       values.push(`%${search.toLowerCase()}%`);
-      whereClauses.push(`LOWER(tg.name) LIKE $${values.length}`);
+      whereClauses.push(`(LOWER(tg.name) LIKE $${values.length} or cc.siret LIKE $${values.length})`);
     }
 
     const client = this.connection.getClient();
@@ -133,9 +133,9 @@ export class TerritoryRepositoryProvider implements TerritoryRepositoryProviderI
         `tg._id = ANY ($1::int[])`,
       );
     }
-    const countQuery = `SELECT count(*) as territory_count from ${this.table} as tg ${
-      whereClauses.length ? ` WHERE ${whereClauses.join(" AND ")}` : ""
-    }`;
+    const countQuery = `SELECT count(*) as territory_count from ${this.table} as tg
+      ${search ? `JOIN company.companies cc ON cc._id = tg.company_id` : ``}
+      ${whereClauses.length ? ` WHERE ${whereClauses.join(" AND ")}` : ""}`;
 
     const total = parseFloat(
       (
@@ -150,8 +150,8 @@ export class TerritoryRepositoryProvider implements TerritoryRepositoryProviderI
     values.push(offset);
     const query = {
       text: `
-        SELECT tg._id, tg.name, cc.siret FROM ${this.table} as tg
-        JOIN company.companies cc ON cc._id = tg.company_id
+        SELECT tg._id, tg.name ${search ? `, cc.siret`:``} FROM ${this.table} as tg
+        ${search ? `JOIN company.companies cc ON cc._id = tg.company_id` : ``}
         WHERE tg.deleted_at IS NULL ${whereClauses.length ? `AND ${whereClauses.join(" AND ")}` : ""}
         ORDER BY tg.name ASC
         LIMIT $${whereClauses.length + 1}
