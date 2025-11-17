@@ -45,10 +45,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // clean up user on simulatedRole change
   useEffect(() => {
-    if (!simulatedRole && user) {
-      setUser({ ...user, territory_id: null, operator_id: null });
+    if (user) {
+      setUser(prev =>
+        prev
+          ? {
+              ...prev,
+              territory_id: simulatedRole === "territory" ? prev.territory_id : null,
+              operator_id: simulatedRole === "operator" ? prev.operator_id : null,
+            }
+          : prev
+      );
     }
-  }, [simulatedRole]);
+  }, [simulatedRole, user]);
 
   const onChangeTerritory = (id: number | null) => {
     const territory_id = simulatedRole === "territory" && id ? id : null;
