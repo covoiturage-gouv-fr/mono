@@ -1,9 +1,7 @@
-import { handler, KernelInterfaceResolver } from "@/ilos/common/index.ts";
-import { Action as AbstractAction } from "@/ilos/core/index.ts";
-import { copyFromContextMiddleware, hasPermissionMiddleware } from "@/pdc/providers/middleware/index.ts";
-import { SerializedPolicyInterface } from "../interfaces/engine/PolicyInterface.ts";
-
-import { logger } from "@/lib/logger/index.ts";
+import { handler, KernelInterfaceResolver } from "../../../../ilos/common/index.ts";
+import { Action as AbstractAction } from "../../../../ilos/core/index.ts";
+import { logger } from "../../../../lib/logger/index.ts";
+import { copyFromContextMiddleware, hasPermissionMiddleware } from "../../../providers/middleware/index.ts";
 import {
   ParamsInterface as OperatorParamsInterface,
   ResultInterface as OperatorResultInterface,
@@ -12,6 +10,7 @@ import {
 import { handlerConfig, ParamsInterface, ResultInterface, SingleResultInterface } from "../contracts/list.contract.ts";
 import { alias } from "../contracts/list.schema.ts";
 import { Policy } from "../engine/entities/Policy.ts";
+import { SerializedPolicyInterface } from "../interfaces/engine/PolicyInterface.ts";
 import { PolicyRepositoryProviderInterfaceResolver } from "../interfaces/index.ts";
 
 @handler({
@@ -31,9 +30,8 @@ export class ListAction extends AbstractAction {
     super();
   }
 
-  public async handle(params: ParamsInterface): Promise<ResultInterface> {
-    const policies: SerializedPolicyInterface[] = await this.repository
-      .findWhere(params);
+  public override async handle(params: ParamsInterface): Promise<ResultInterface> {
+    const policies: SerializedPolicyInterface[] = await this.repository.findWhere(params);
 
     const result: ResultInterface = await Promise.all(
       policies.map(async (r) => {
@@ -42,7 +40,8 @@ export class ListAction extends AbstractAction {
           const importedPolicy = await Policy.import(r);
           policy.params = importedPolicy.params();
         } catch (e) {
-          logger.warn(`Could not import policy ${r._id}`, e.message);
+          const errMsg = e instanceof Error ? e.message : String(e);
+          logger.warn(`Could not import policy ${r._id}`, errMsg);
         } finally {
           return policy;
         }
@@ -53,10 +52,7 @@ export class ListAction extends AbstractAction {
       return result;
     }
 
-    const operator: OperatorResultInterface = await this.kernel.call<
-      OperatorParamsInterface,
-      OperatorResultInterface
-    >(
+    const operator: OperatorResultInterface = await this.kernel.call<OperatorParamsInterface, OperatorResultInterface>(
       operatorFindSignature,
       { _id: params.operator_id },
       {
@@ -72,10 +68,7 @@ export class ListAction extends AbstractAction {
     return p.status !== "draft";
   }
 
-  private withOperator(
-    p: SingleResultInterface,
-    operator: OperatorResultInterface,
-  ): boolean {
+  private withOperator(p: SingleResultInterface, operator: OperatorResultInterface): boolean {
     return (p.params?.allTimeOperators ?? p.params?.operators)?.includes(
       operator.uuid,
     ) as boolean;

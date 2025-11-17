@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import AlertMessage from "@/components/common/AlertMessage";
 import { Modal } from "@/components/common/Modal";
 import Pagination from "@/components/common/Pagination";
@@ -15,13 +14,11 @@ import Table from "@codegouvfr/react-dsfr/Table";
 import { useMemo, useState } from "react";
 import { z } from "zod";
 
-export default function OperatorsTable(props: { title: string; id?: number }) {
+export default function OperatorsTable(props: { title: string; id: number | null }) {
   const { user } = useAuth();
   const [currentPage, setCurrentPage] = useState(1);
   const modal = useActionsModal<OperatorsInterface["data"][0]>();
-  const [alert, setAlert] = useState<
-    "create" | "update" | "delete" | "error"
-  >();
+  const [alert, setAlert] = useState<"create" | "update" | "delete" | "error">();
   const onChangePage = (id: number) => {
     setCurrentPage(id);
   };
@@ -73,12 +70,8 @@ export default function OperatorsTable(props: { title: string; id?: number }) {
     ]) ?? [];
 
   const formSchema = z.object({
-    name: z
-      .string()
-      .min(3, { message: "Le nom doit contenir au moins 3 caractères" }),
-    siret: z
-      .string()
-      .regex(/^\d{14}$/, { message: "Le SIRET doit contenir 14 chiffres" }),
+    name: z.string().min(3, { message: "Le nom doit contenir au moins 3 caractères" }),
+    siret: z.string().regex(/^\d{14}$/, { message: "Le SIRET doit contenir 14 chiffres" }),
   });
 
   return (
@@ -134,22 +127,14 @@ export default function OperatorsTable(props: { title: string; id?: number }) {
         </>
       )}
       <Table data={dataTable} headers={headers} colorVariant="blue-ecume" />
-      <Pagination
-        count={totalPages}
-        defaultPage={currentPage}
-        onChange={onChangePage}
-      />
+      <Pagination count={totalPages} defaultPage={currentPage} onChange={onChangePage} />
       <Modal
         open={modal.openModal}
         title={modal.modalTitle(modal.typeModal)}
         onClose={() => modal.setOpenModal(false)}
         onSubmit={async () => {
           await modal.submitModal("dashboard/operator", formSchema);
-          setAlert(
-            Object.keys(modal.errors ?? {}).length > 0
-              ? "error"
-              : modal.typeModal,
-          );
+          setAlert(Object.keys(modal.errors ?? {}).length > 0 ? "error" : modal.typeModal);
           await refetchOperators();
         }}
       >
@@ -163,12 +148,7 @@ export default function OperatorsTable(props: { title: string; id?: number }) {
                 nativeInputProps={{
                   type: "text",
                   value: (modal.currentRow.name as string) ?? "",
-                  onChange: (e) =>
-                    modal.validateInputChange(
-                      formSchema,
-                      "name",
-                      e.target.value,
-                    ),
+                  onChange: (e) => modal.validateInputChange(formSchema, "name", e.target.value),
                 }}
               />
               <Input
@@ -178,12 +158,7 @@ export default function OperatorsTable(props: { title: string; id?: number }) {
                 nativeInputProps={{
                   type: "text",
                   value: (modal.currentRow.siret as string) ?? "",
-                  onChange: (e) =>
-                    modal.validateInputChange(
-                      formSchema,
-                      "siret",
-                      e.target.value,
-                    ),
+                  onChange: (e) => modal.validateInputChange(formSchema, "siret", e.target.value),
                 }}
               />
             </>

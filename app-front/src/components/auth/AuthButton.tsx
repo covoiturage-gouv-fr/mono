@@ -13,8 +13,8 @@ export function AuthButton() {
     const url = `${Config.get<string>("auth.domain")}/auth/login`;
     router.push(url);
   };
-  const authLogout = async () => {
-    await logout();
+  const authLogout = () => {
+    logout();
     router.push(`${Config.get<string>("auth.domain")}/auth/logout`);
   };
 
@@ -29,7 +29,7 @@ export function AuthButton() {
             linkProps={{
               href: "",
               onClick: () => {
-                authLogout().catch(console.error);
+                authLogout();
               },
             }}
           >

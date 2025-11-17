@@ -4,10 +4,10 @@ import {
   handler,
   KernelInterfaceResolver,
   NotFoundException,
-} from "@/ilos/common/index.ts";
-import { Action } from "@/ilos/core/index.ts";
-import { logger } from "@/lib/logger/index.ts";
-import { copyGroupIdAndApplyGroupPermissionMiddlewares } from "@/pdc/providers/middleware/index.ts";
+} from "../../../../ilos/common/index.ts";
+import { Action } from "../../../../ilos/core/index.ts";
+import { logger } from "../../../../lib/logger/index.ts";
+import { copyGroupIdAndApplyGroupPermissionMiddlewares } from "../../../providers/middleware/index.ts";
 import {
   ParamsInterface as CampaignFindParams,
   ResultInterface as CampaignFindResult,
@@ -36,10 +36,7 @@ export class ListAction extends Action {
     super();
   }
 
-  public async handle(
-    params: ParamsInterface,
-    context: ContextType,
-  ): Promise<ResultsInterface> {
+  public override async handle(params: ParamsInterface, context: ContextType): Promise<ResultsInterface> {
     const { campaign_id, operator_id } = params;
 
     // fetch the policy by id
@@ -51,7 +48,8 @@ export class ListAction extends Action {
         { channel: { service: "apdf" }, call: context.call },
       );
     } catch (e) {
-      logger.error(`[apdf:list -> campaign:find] ${e.message}`);
+      const errMsg = e instanceof Error ? e.message : String(e);
+      logger.error(`[apdf:list -> campaign:find] ${errMsg}`);
       throw e;
     }
 
@@ -61,9 +59,7 @@ export class ListAction extends Action {
 
     // curry operators and campaign filters
     // find policies, enrich and filter by operator
-    const opsFilter = this.storageRepository.operatorsFilter(
-      operator_id ? [operator_id] : [],
-    );
+    const opsFilter = this.storageRepository.operatorsFilter(operator_id ? [operator_id] : []);
     const cmpFilter = this.storageRepository.campaignsFilter([campaign_id]);
 
     // month filter. We can hide the current month to operators and territories
@@ -74,9 +70,7 @@ export class ListAction extends Action {
       this.config.get("apdf.showLastMonth"),
     );
 
-    return (await this.storageRepository.enrich(
-      await this.storageRepository.findByCampaign(campaign),
-    ))
+    return (await this.storageRepository.enrich(await this.storageRepository.findByCampaign(campaign)))
       .filter(cmpFilter)
       .filter(opsFilter)
       .filter(monthFilter);
