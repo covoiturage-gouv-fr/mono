@@ -9,6 +9,7 @@
         let
         pkgs = import nixpkgs { inherit system; };
 
+        # Talisman pre-commit hook to detect secrets
         talisman = pkgs.stdenv.mkDerivation rec {
           pname = "talisman";
 
@@ -38,8 +39,20 @@
             maintainers = with maintainers; [ ];
           };
         };
+
+        sqlmesh = pkgs.writeShellApplication {
+          name = "sqlmesh";
+          runtimeInputs = with pkgs; [ uv ];
+          text = ''
+            exec uvx --from 'sqlmesh[postgres]' --python 3.13 sqlmesh "$@"
+          '';
+        };
+
         in {
           devShells.default = pkgs.mkShell {
+            # expose pg_config for building psycopg2
+            nativeBuildInputs = [ pkgs.postgresql_16.pg_config ];
+
             buildInputs = with pkgs; [
               # system packages
               p7zip
@@ -55,9 +68,9 @@
 
               # data stack
               dbt
-              pre-commit
               python313Packages.dbt-postgres
               uv
+              sqlmesh # our custom sqlmesh wrapper
 
               # pre-commit hooks
               pre-commit
