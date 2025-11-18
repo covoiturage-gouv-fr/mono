@@ -2,7 +2,7 @@ MODEL (
   name trusted_zone.perimeters,
   kind FULL,
   cron '@yearly',
-  grain ['year','arr'],
+  grain ['id','year','arr'],
   tags ['trusted', 'perimeters']
 );
 
