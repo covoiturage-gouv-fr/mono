@@ -15,7 +15,11 @@ import JourneysGraph from "../graphs/JourneysGraph";
 import OperatorsGraph from "../graphs/OperatorsGraph";
 import ApdfTable from "./ApdfTable";
 
-export default function CampaignsTable(props: { title: string; territoryId?: number; operatorId?: number }) {
+export default function CampaignsTable(props: {
+  title: string;
+  territoryId: number | null;
+  operatorId: number | null;
+}) {
   const [campaignId, setCampaignId] = useState<number>();
   const { user, simulatedRole } = useAuth();
   const pageSize = 15;

@@ -15,7 +15,7 @@ import Table from "@codegouvfr/react-dsfr/Table";
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 
-export default function TerritoriesTable(props: { title: string; id?: number }) {
+export default function TerritoriesTable(props: { title: string; id: number | null }) {
   const { user } = useAuth();
   const [currentPage, setCurrentPage] = useState(1);
   const [selector, setSelector] = useState<TerritorySelectorsInterface>();

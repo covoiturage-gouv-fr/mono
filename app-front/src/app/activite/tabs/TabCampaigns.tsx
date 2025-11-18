@@ -43,8 +43,8 @@ export default function TabCampaigns() {
         <div className={fr.cx("fr-mt-4w")}>
           <CampaignsTable
             title={`Campagnes d'incitation`}
-            territoryId={user?.territory_id}
-            operatorId={user?.operator_id}
+            territoryId={user?.territory_id ?? null}
+            operatorId={user?.operator_id ?? null}
           />
         </div>
       )}

@@ -7,7 +7,7 @@ import { Download } from "@codegouvfr/react-dsfr/Download";
 import Table from "@codegouvfr/react-dsfr/Table";
 import { type ReactNode, useMemo } from "react";
 
-export default function ApdfTable(props: { title: string; campaignId: number; operatorId?: number }) {
+export default function ApdfTable(props: { title: string; campaignId: number; operatorId: number | null }) {
   const { user, simulate } = useAuth();
   const url = `${Config.get<string>("auth.domain")}/rpc?methods=apdf:list`;
   const init = useMemo(() => {

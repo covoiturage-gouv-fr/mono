@@ -20,8 +20,7 @@ export default function TabProfil() {
 
   useEffect(() => {
     if (user?.role === "registry.admin" && simulate === false) {
-      onChangeTerritory();
-      onChangeSimulatedRole();
+      onChangeSimulatedRole(undefined);
     }
   }, [simulate]);
 
@@ -66,8 +65,8 @@ export default function TabProfil() {
               <ToggleSwitch
                 label="S'identifier en tant qu'opérateur ou territoire"
                 checked={simulate}
-                onChange={() => {
-                  onChangeSimulate();
+                onChange={(state) => {
+                  onChangeSimulate(state);
                 }}
               />
               {simulate && (
