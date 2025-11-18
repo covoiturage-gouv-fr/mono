@@ -43,6 +43,7 @@ export interface SerializedPolicyInterface {
   territory_id: number;
   territory_selector: TerritorySelectorsInterface;
   name: string;
+  descriptive_sheet_url?: string;
   start_date: Date;
   end_date: Date;
   tz: Timezone;

@@ -1,3 +1,4 @@
+import DescriptiveSheetUrlEditor from "@/components/campaign/DescriptiveSheetUrlEditor";
 import Loading from "@/components/layout/Loading";
 import { Config } from "@/config";
 import { getApiUrl } from "@/helpers/api";
@@ -104,6 +105,7 @@ export default function CampaignsTable(props: { title: string; territoryId?: num
   ];
 
   const currentCampaign = data?.result.data.find((d) => Number(d._id) === campaignId);
+
   if (loading) return <Loading />;
   return (
     <>
@@ -170,6 +172,10 @@ export default function CampaignsTable(props: { title: string; territoryId?: num
               * A noter que le budget est le montant dédié aux incitations uniquement et qu’il s’agit ici d’une
               estimation de la consommation en quasi temps réel.{" "}
             </i>
+            <DescriptiveSheetUrlEditor
+              campaignId={campaignId}
+              initialValue={currentCampaign.descriptive_sheet_url as string}
+            />
           </div>
           <JourneysGraph title="Evolution des trajets" campaignId={campaignId} />
           {["registry", "territory"].includes(user?.role.split(".")[0] ?? "") && simulatedRole !== "operator" && (
