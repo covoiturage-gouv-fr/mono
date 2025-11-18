@@ -13,6 +13,7 @@ import { SimulateOnPastAction } from "./actions/SimulateOnPastAction.ts";
 import { SimulateOnPastByGeoAction } from "./actions/SimulateOnPastByGeoAction.ts";
 import { StatsAction } from "./actions/StatsAction.ts";
 import { syncIncentiveSumAction } from "./actions/SyncIncentiveSumAction.ts";
+import { UpdateDescriptiveSheetUrlAction } from "./actions/UpdateDescriptiveSheetUrlAction.ts";
 import { ApplyCommand } from "./commands/ApplyCommand.ts";
 import { FinalizeCommand } from "./commands/FinalizeCommand.ts";
 import { StatsCommand } from "./commands/StatsCommand.ts";
@@ -27,6 +28,7 @@ import { binding as simulateOnSchemaBinding } from "./contracts/simulateOnPast.s
 import { binding as simulateOnPastGeoSchemaBinding } from "./contracts/simulateOnPastGeo.schema.ts";
 import { binding as statsSchemaBinding } from "./contracts/stats.schema.ts";
 import { binding as syncIncentiveSumSchemaBinding } from "./contracts/syncIncentiveSum.schema.ts";
+import { binding as updateDescriptiveSheetUrlSchemaBinding } from "./contracts/updateDescriptiveSheetUrl.schema.ts";
 import { IncentiveRepositoryProvider } from "./providers/IncentiveRepositoryProvider.ts";
 import { MetadataRepositoryProvider } from "./providers/MetadataRepositoryProvider.ts";
 import { PolicyRepositoryProvider } from "./providers/PolicyRepositoryProvider.ts";
@@ -53,6 +55,7 @@ import { TripRepositoryProvider } from "./providers/TripRepositoryProvider.ts";
     simulateOnSchemaBinding,
     statsSchemaBinding,
     syncIncentiveSumSchemaBinding,
+    updateDescriptiveSheetUrlSchemaBinding,
   ],
   handlers: [
     ApplyAction,
@@ -65,6 +68,7 @@ import { TripRepositoryProvider } from "./providers/TripRepositoryProvider.ts";
     SimulateOnPastByGeoAction,
     StatsAction,
     syncIncentiveSumAction,
+    UpdateDescriptiveSheetUrlAction,
   ],
   commands: [ApplyCommand, FinalizeCommand, StatsCommand, SyncCommand],
   middlewares: [...defaultMiddlewareBindings, [
