@@ -11,12 +11,15 @@
 
         talisman = pkgs.stdenv.mkDerivation rec {
           pname = "talisman";
+
+          # Get the hash using nix-prefetch-url https://...
           version = "1.37.0";
+          sha256 = "1r57mb62n2aayzgxvcq56pk3aam30kmqni519w6g22qngfxyh2lf";
 
           # Binary URL from GitHub Releases
           src = pkgs.fetchurl {
             url = "https://github.com/thoughtworks/talisman/releases/download/v${version}/talisman_linux_amd64";
-            sha256 = "1r57mb62n2aayzgxvcq56pk3aam30kmqni519w6g22qngfxyh2lf";
+            sha256 = sha256;
           };
 
           dontUnpack = true;
