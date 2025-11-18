@@ -1,10 +1,10 @@
-import { ConfigInterfaceResolver, provider, ProviderInterface } from "@/ilos/common/index.ts";
-import { env_or_fail } from "@/lib/env/index.ts";
-import { logger } from "@/lib/logger/index.ts";
 import { constants as fsConstants } from "dep:fs";
 import { access } from "dep:fs-promises";
 import { S3Client } from "dep:s3-lite-client";
 import { URL } from "dep:url";
+import { ConfigInterfaceResolver, provider, ProviderInterface } from "../../../ilos/common/index.ts";
+import { env_or_fail } from "../../../lib/env/index.ts";
+import { logger } from "../../../lib/logger/index.ts";
 import { filenameFromPath, getBucketName } from "./helpers/buckets.ts";
 import { S3ObjectList } from "./index.ts";
 import { BucketName } from "./interfaces/BucketName.ts";

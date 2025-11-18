@@ -5,8 +5,8 @@ import { type TerritoriesInterface } from "@/interfaces/dataInterface";
 import { Select } from "@codegouvfr/react-dsfr/Select";
 import { useEffect, useState } from "react";
 
-export default function SelectTerritory(props: { defaultValue?: number; onChange: (id?: number) => void }) {
-  const [value, setValue] = useState<number | undefined>(props.defaultValue);
+export default function SelectTerritory(props: { defaultValue: number | null; onChange: (id: number | null) => void }) {
+  const [value, setValue] = useState<number | null>(props.defaultValue);
   const url = `${Config.get<string>("next.public_api_url", "")}/v3/dashboard/territories?policy=true&limit=200`;
   const { data } = useApi<TerritoriesInterface>(url, true);
   useEffect(() => {

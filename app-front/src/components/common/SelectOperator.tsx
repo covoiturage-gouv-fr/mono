@@ -5,8 +5,8 @@ import { type OperatorsInterface } from "@/interfaces/dataInterface";
 import { Select } from "@codegouvfr/react-dsfr/Select";
 import { useState } from "react";
 
-export default function SelectOperator(props: { defaultValue?: number; onChange: (id?: number) => void }) {
-  const [value, setValue] = useState<number | undefined>(props.defaultValue);
+export default function SelectOperator(props: { defaultValue: number | null; onChange: (id: number | null) => void }) {
+  const [value, setValue] = useState<number | null>(props.defaultValue);
   const url = `${Config.get<string>("next.public_api_url", "")}/v3/dashboard/operators?limit=100`;
   const { data } = useApi<OperatorsInterface>(url, true);
   return (
@@ -21,7 +21,7 @@ export default function SelectOperator(props: { defaultValue?: number; onChange:
         },
       }}
     >
-      <option value="">Selectionner un operateur</option>
+      <option value="">Sélectionner un opérateur</option>
       {data?.data.map((d, i) => (
         <option key={i} value={d.id}>
           {d.name}
