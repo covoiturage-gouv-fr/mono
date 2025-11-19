@@ -3,10 +3,15 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
   };
-  outputs = { self, nixpkgs, flake-utils }:
-    flake-utils.lib.eachDefaultSystem
-      (system:
-        let
+  outputs =
+    {
+      self,
+      nixpkgs,
+      flake-utils,
+    }:
+    flake-utils.lib.eachDefaultSystem (
+      system:
+      let
         pkgs = import nixpkgs { inherit system; };
 
         # Talisman pre-commit hook to detect secrets
@@ -39,57 +44,54 @@
             maintainers = with maintainers; [ ];
           };
         };
+      in
+      {
+        devShells.default = pkgs.mkShell {
+          # expose pg_config for building psycopg2
+          nativeBuildInputs = [ pkgs.postgresql_16.pg_config ];
 
-        sqlmesh = pkgs.writeShellApplication {
-          name = "sqlmesh";
-          runtimeInputs = with pkgs; [ uv ];
-          text = ''
-            exec uvx --from 'sqlmesh[postgres]' --python 3.13 sqlmesh "$@"
+          buildInputs = with pkgs; [
+            # system packages
+            p7zip
+            just
+            openssl
+            jq
+            minio-client
+
+            # rpc infra
+            nodejs_24
+            postgresql_16
+            deno
+
+            # data stack
+            cmake
+            python313
+            uv
+
+            # pre-commit hooks
+            pre-commit
+            talisman
+
+            # misc
+            gh
+            yq-go
+            zizmor
+          ];
+
+          shellHook = ''
+            export PATH="$PWD/node_modules/.bin/:$PATH"
+            export PRE_COMMIT_ALLOW_NO_CONFIG=1
+            export GH_REPO=covoiturage-gouv-fr/mono
+            export DENO_NO_UPDATE_CHECK=true
+            export SEVEN_ZIP_BIN_PATH=$(which 7z)
+            export LESS="-SRXF"
+
+            export LD_LIBRARY_PATH="${pkgs.stdenv.cc.cc.lib.outPath}/lib:${pkgs.pythonManylinuxPackages.manylinux2014Package}/lib:$LD_LIBRARY_PATH";
+            test -d .nix-venv || uv venv .nix-venv --no-project --no-managed-python --no-python-downloads
+            source .nix-venv/bin/activate
+            $(cd sqlmesh && UV_PROJECT_ENVIRONMENT=../.nix-venv uv sync)
           '';
         };
-
-        in {
-          devShells.default = pkgs.mkShell {
-            # expose pg_config for building psycopg2
-            nativeBuildInputs = [ pkgs.postgresql_16.pg_config ];
-
-            buildInputs = with pkgs; [
-              # system packages
-              p7zip
-              just
-              openssl
-              jq
-              minio-client
-
-              # rpc infra
-              nodejs_24
-              postgresql_16
-              deno
-
-              # data stack
-              dbt
-              python313Packages.dbt-postgres
-              uv
-              sqlmesh # our custom sqlmesh wrapper
-
-              # pre-commit hooks
-              pre-commit
-              talisman
-
-              # misc
-              gh
-              yq-go
-              zizmor
-            ];
-            shellHook = ''
-              export PATH="$PWD/node_modules/.bin/:$PATH"
-              export PRE_COMMIT_ALLOW_NO_CONFIG=1
-              export GH_REPO=covoiturage-gouv-fr/mono
-              export DENO_NO_UPDATE_CHECK=true
-              export DENO_DIR="$PWD/api/.cache"
-              export SEVEN_ZIP_BIN_PATH=$(which 7z)
-              export LESS="-SRXF"
-            '';
-          };
-        });
+      }
+    );
 }
