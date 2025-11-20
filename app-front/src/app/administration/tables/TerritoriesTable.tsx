@@ -5,7 +5,7 @@ import { Config } from "@/config";
 import { getApiUrl } from "@/helpers/api";
 import { formatErrors, useActionsModal } from "@/hooks/useActionsModal";
 import { useApi } from "@/hooks/useApi";
-import { useDebounce } from "@/hooks/useDebounce";
+import { useUrlSearch } from "@/hooks/useUrlSearch";
 import type { Company, TerritoriesInterface, TerritorySelectorsInterface } from "@/interfaces/dataInterface";
 import { useAuth } from "@/providers/AuthProvider";
 import { fr } from "@codegouvfr/react-dsfr";
@@ -19,8 +19,7 @@ import { z } from "zod";
 export default function TerritoriesTable(props: { title: string; id: number | null }) {
   const { user } = useAuth();
   const [currentPage, setCurrentPage] = useState(1);
-  const [search, setSearch] = useState("");
-  const debouncedSearch = useDebounce(search, 500);
+  const { search, debouncedSearch, onChangeSearch: setSearchValue } = useUrlSearch();
   const [selector, setSelector] = useState<TerritorySelectorsInterface>();
   const modal = useActionsModal<TerritoriesInterface["data"][0]>();
   const [alert, setAlert] = useState<"create" | "update" | "delete" | "error">();
@@ -28,7 +27,7 @@ export default function TerritoriesTable(props: { title: string; id: number | nu
     setCurrentPage(page);
   };
   const onChangeSearch = (search: string) => {
-    setSearch(search);
+    setSearchValue(search);
     setCurrentPage(1);
   };
   const url = useMemo(() => {

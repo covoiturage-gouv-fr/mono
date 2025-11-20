@@ -4,7 +4,7 @@ import Pagination from "@/components/common/Pagination";
 import { getApiUrl } from "@/helpers/api";
 import { useActionsModal } from "@/hooks/useActionsModal";
 import { useApi } from "@/hooks/useApi";
-import { useDebounce } from "@/hooks/useDebounce";
+import { useUrlSearch } from "@/hooks/useUrlSearch";
 import { type OperatorsInterface } from "@/interfaces/dataInterface";
 import { useAuth } from "@/providers/AuthProvider";
 import { fr } from "@codegouvfr/react-dsfr";
@@ -18,15 +18,14 @@ import { z } from "zod";
 export default function OperatorsTable(props: { title: string; id: number | null }) {
   const { user } = useAuth();
   const [currentPage, setCurrentPage] = useState(1);
-  const [search, setSearch] = useState("");
-  const debouncedSearch = useDebounce(search, 500);
+  const { search, debouncedSearch, onChangeSearch: setSearchValue } = useUrlSearch();
   const modal = useActionsModal<OperatorsInterface["data"][0]>();
   const [alert, setAlert] = useState<"create" | "update" | "delete" | "error">();
   const onChangePage = (id: number) => {
     setCurrentPage(id);
   };
   const onChangeSearch = (search: string) => {
-    setSearch(search);
+    setSearchValue(search);
     setCurrentPage(1);
   };
   const url = useMemo(() => {

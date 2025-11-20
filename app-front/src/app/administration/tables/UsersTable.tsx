@@ -5,7 +5,7 @@ import { getApiUrl } from "@/helpers/api";
 import { enumRoles, getRolesList, labelRole } from "@/helpers/auth";
 import { useActionsModal } from "@/hooks/useActionsModal";
 import { useApi } from "@/hooks/useApi";
-import { useDebounce } from "@/hooks/useDebounce";
+import { useUrlSearch } from "@/hooks/useUrlSearch";
 import { type OperatorsInterface, type TerritoriesInterface, type UsersInterface } from "@/interfaces/dataInterface";
 import { useAuth } from "@/providers/AuthProvider";
 import { fr } from "@codegouvfr/react-dsfr";
@@ -20,15 +20,14 @@ import { z } from "zod";
 export default function UsersTable(props: { title: string; territoryId: number | null; operatorId: number | null }) {
   const { user, simulatedRole } = useAuth();
   const [currentPage, setCurrentPage] = useState(1);
-  const [search, setSearch] = useState("");
-  const debouncedSearch = useDebounce(search, 500);
+  const { search, debouncedSearch, onChangeSearch: setSearchValue } = useUrlSearch();
   const modal = useActionsModal<UsersInterface["data"][0]>();
   const [alert, setAlert] = useState<"create" | "update" | "delete" | "error">();
   const onChangePage = (id: number) => {
     setCurrentPage(id);
   };
   const onChangeSearch = (search: string) => {
-    setSearch(search);
+    setSearchValue(search);
     setCurrentPage(1);
   };
   const url = useMemo(() => {

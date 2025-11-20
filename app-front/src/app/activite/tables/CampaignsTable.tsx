@@ -2,7 +2,7 @@ import Loading from "@/components/layout/Loading";
 import { Config } from "@/config";
 import { getApiUrl } from "@/helpers/api";
 import { useApi } from "@/hooks/useApi";
-import { useDebounce } from "@/hooks/useDebounce";
+import { useUrlSearch } from "@/hooks/useUrlSearch";
 import { type TerritoriesInterface } from "@/interfaces/dataInterface";
 import { useAuth } from "@/providers/AuthProvider";
 import { fr } from "@codegouvfr/react-dsfr";
@@ -23,14 +23,13 @@ export default function CampaignsTable(props: {
 }) {
   const [campaignId, setCampaignId] = useState<number>();
   const { user, simulatedRole } = useAuth();
-  const [search, setSearch] = useState("");
-  const debouncedSearch = useDebounce(search, 500);
+  const { search, debouncedSearch, onChangeSearch: setSearchValue } = useUrlSearch();
   const pageSize = 15;
   const [page, setPage] = useState(1);
   const url = `${Config.get<string>("auth.domain")}/rpc?methods=campaign:list`;
 
   const onChangeSearch = (search: string) => {
-    setSearch(search);
+    setSearchValue(search);
   };
 
   const init = useMemo(() => {
