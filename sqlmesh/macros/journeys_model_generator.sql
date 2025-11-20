@@ -2,17 +2,17 @@
     WITH carpools AS (
       SELECT *
       FROM carpool_v2.carpools
-      WHERE start_datetime BETWEEN ({{start_date}}::timestamp - INTERVAL '1 day') AND ({{end_date}}::timestamp + INTERVAL '1 day')
+      WHERE start_datetime BETWEEN ('{{start_date}}'::timestamp - INTERVAL '1 day') AND ('{{end_date}}'::timestamp + INTERVAL '1 day')
     ),
 
     perimeters_retablissement AS (
       SELECT com, geom 
       FROM trusted_zone.perimeters
-      WHERE year = EXTRACT(YEAR FROM {{start_date}}::date)
+      WHERE year = EXTRACT(YEAR FROM '{{start_date}}'::date)
         AND com IN (
           SELECT DISTINCT new_com 
           FROM trusted_zone.com_evolution 
-          WHERE year = EXTRACT(YEAR FROM {{start_date}}::date) 
+          WHERE year = EXTRACT(YEAR FROM '{{start_date}}'::date) 
             AND mod = 21
         )
     ),
@@ -30,20 +30,20 @@
       LEFT JOIN trusted_zone.com_evolution cs 
         ON g.start_geo_code = cs.old_com 
         AND cs.mod = 32 
-        AND cs.year = EXTRACT(YEAR FROM {{start_date}}::date)
+        AND cs.year = EXTRACT(YEAR FROM '{{start_date}}'::date)
       LEFT JOIN trusted_zone.com_evolution ce 
         ON g.end_geo_code = ce.old_com 
         AND ce.mod = 32 
-        AND ce.year = EXTRACT(YEAR FROM {{start_date}}::date)
+        AND ce.year = EXTRACT(YEAR FROM '{{start_date}}'::date)
       WHERE g.start_geo_code NOT IN (
         SELECT DISTINCT old_com 
         FROM trusted_zone.com_evolution 
-        WHERE year = EXTRACT(YEAR FROM {{start_date}}::date) AND mod = 21
+        WHERE year = EXTRACT(YEAR FROM '{{start_date}}'::date) AND mod = 21
       )
         OR g.end_geo_code NOT IN (
         SELECT DISTINCT old_com 
         FROM trusted_zone.com_evolution 
-        WHERE year = EXTRACT(YEAR FROM {{start_date}}::date) AND mod = 21
+        WHERE year = EXTRACT(YEAR FROM '{{start_date}}'::date) AND mod = 21
       )
 
       UNION ALL
@@ -64,12 +64,12 @@
       WHERE g.start_geo_code IN (
         SELECT DISTINCT old_com 
         FROM trusted_zone.com_evolution 
-        WHERE year = EXTRACT(YEAR FROM {{start_date}}::date) AND mod = 21
+        WHERE year = EXTRACT(YEAR FROM '{{start_date}}'::date) AND mod = 21
       )
         OR g.end_geo_code IN (
         SELECT DISTINCT old_com 
         FROM trusted_zone.com_evolution 
-        WHERE year = EXTRACT(YEAR FROM {{start_date}}::date) AND mod = 21
+        WHERE year = EXTRACT(YEAR FROM '{{start_date}}'::date) AND mod = 21
       )
     ),
 
@@ -148,28 +148,19 @@
       c.start_datetime,
       {{get_timezoned_timestamp("g.start_geo_code", "c.start_datetime")}} AS start_datetime_tz,
       c.start_position,
-      h3_lat_lng_to_cell((c.start_position::geometry)::point, 9) AS start_h3_index,
       g.start_geo_code,
       c.end_datetime,
       {{get_timezoned_timestamp("g.end_geo_code", "c.end_datetime")}} AS end_datetime_tz,
       c.end_position,
-      h3_lat_lng_to_cell((c.end_position::geometry)::point, 9) AS end_h3_index,
       g.end_geo_code,
       g.geo_errors,
       g.geo_updated_at,
       c.distance,
-      c.end_datetime - c.start_datetime AS duration,
       c.licence_plate,
       c.driver_identity_key,
       c.driver_operator_user_id,
       c.driver_phone,
       c.driver_phone_trunc,
-      coalesce(
-        c.driver_identity_key,
-        c.driver_operator_user_id,
-        c.driver_phone,
-        c.driver_phone_trunc
-      ) AS driver_id,
       c.driver_travelpass_name,
       c.driver_travelpass_user_id,
       c.driver_revenue,
@@ -177,12 +168,6 @@
       c.passenger_operator_user_id,
       c.passenger_phone,
       c.passenger_phone_trunc,
-      coalesce(
-        c.passenger_identity_key,
-        c.passenger_operator_user_id,
-        c.passenger_phone,
-        c.passenger_phone_trunc
-      ) AS passenger_id,
       c.passenger_travelpass_name,
       c.passenger_travelpass_user_id,
       c.passenger_over_18,
@@ -212,5 +197,5 @@
     LEFT JOIN operator_incentives AS oi ON c._id = oi.carpool_id
     LEFT JOIN policy_incentives AS pi ON c._id = pi.carpool_id
     LEFT JOIN operator.operators AS o ON c.operator_id = o._id
-    WHERE {{get_timezoned_timestamp("g.start_geo_code", "c.start_datetime")}} BETWEEN {{start_date}}::timestamp AND {{end_date}}::timestamp;
+    WHERE {{get_timezoned_timestamp("g.start_geo_code", "c.start_datetime")}} BETWEEN '{{start_date}}'::timestamp AND '{{end_date}}'::timestamp;
 {% endmacro %}
