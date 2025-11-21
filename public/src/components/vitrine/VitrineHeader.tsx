@@ -1,4 +1,4 @@
-import { Header } from '@codegouvfr/react-dsfr/Header';
+import { Header } from "@codegouvfr/react-dsfr/Header";
 
 export function VitrineHeader() {
   return (
@@ -17,37 +17,37 @@ export function VitrineHeader() {
         </>
       }
       homeLinkProps={{
-        href: '/',
-        title: 'Accueil | Covoiturage.beta.gouv.fr',
-        "aria-label": 'Accueil | Covoiturage.beta.gouv.fr',
+        href: "/",
+        title: "Accueil | Covoiturage.beta.gouv.fr",
+        "aria-label": "Accueil | Covoiturage.beta.gouv.fr",
       }}
-      serviceTitle='Covoiturage.beta.gouv.fr'
-      serviceTagline='Accelerateur de covoiturage courte distance'
+      serviceTitle="Covoiturage.beta.gouv.fr"
+      serviceTagline="Accelerateur de covoiturage courte distance"
       quickAccessItems={[
         {
-          iconId: 'fr-icon-team-line',
+          iconId: "fr-icon-team-line",
           linkProps: {
-            href: 'https://app.covoiturage.beta.gouv.fr',
-            target:'_blank',
+            href: "https://partenaire.covoiturage.beta.gouv.fr",
+            target: "_blank",
           },
-          text: 'Espace partenaire'
+          text: "Espace partenaire",
         },
         {
-          iconId: 'fr-icon-article-line',
+          iconId: "fr-icon-article-line",
           linkProps: {
-            href:'https://doc.covoiturage.beta.gouv.fr',
-            target:'_blank',
+            href: "https://doc.covoiturage.beta.gouv.fr",
+            target: "_blank",
           },
-          text: 'Notre documentation'
+          text: "Notre documentation",
         },
         {
-          iconId: 'fr-icon-car-line',
+          iconId: "fr-icon-car-line",
           linkProps: {
-            href: 'https://app.covoiturage.beta.gouv.fr/stats',
-            target:'_blank',
+            href: "https://stats.covoiturage.beta.gouv.fr/public/dashboard/2084d346-8e3b-495e-9b10-b4870a35632a",
+            target: "_blank",
           },
-          text: 'Notre impact'
-        }
+          text: "Notre impact",
+        },
       ]}
     />
   );
