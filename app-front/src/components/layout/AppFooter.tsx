@@ -29,7 +29,7 @@ export function AppFooter() {
             },
             {
               linkProps: {
-                href: "https://app.covoiturage.beta.gouv.fr/stats",
+                href: "https://stats.covoiturage.beta.gouv.fr/public/dashboard/2084d346-8e3b-495e-9b10-b4870a35632a",
                 target: "_blank",
                 title: "Notre impact | nouvelle fenêtre",
                 "aria-label": "Notre impact | nouvelle fenêtre",
@@ -54,10 +54,8 @@ export function AppFooter() {
               linkProps: {
                 href: "https://observatoire.covoiturage.gouv.fr/observatoire/territoire/",
                 target: "_blank",
-                title:
-                  "Les statistiques sur votre territoire | nouvelle fenêtre",
-                "aria-label":
-                  "Les statistiques sur votre territoire | nouvelle fenêtre",
+                title: "Les statistiques sur votre territoire | nouvelle fenêtre",
+                "aria-label": "Les statistiques sur votre territoire | nouvelle fenêtre",
               },
               text: "Les statistiques sur votre territoire",
             },
@@ -78,8 +76,7 @@ export function AppFooter() {
       contentDescription="L’application web des collectivités et opérateurs de covoiturage courte distance  partenaires du Registre de Preuve de Covoiturage. Ces comptes privés donnent accès à une fonctionnalité d’export et à des rapports sur les campagnes d’incitations financières."
       operatorLogo={{
         alt: "Registre de Preuve de Covoiturage",
-        imgUrl:
-          "https://static.covoiturage.beta.gouv.fr/logo_rpc_d82e4b3a4a.png",
+        imgUrl: "https://static.covoiturage.beta.gouv.fr/logo_rpc_d82e4b3a4a.png",
         orientation: "horizontal",
       }}
       bottomItems={[headerFooterDisplayItem]}
