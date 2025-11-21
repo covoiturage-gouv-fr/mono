@@ -4,7 +4,12 @@ import { addMinutes, differenceInHours } from "@/lib/date/index.ts";
 import { env_or_false } from "@/lib/env/index.ts";
 import { logger } from "@/lib/logger/index.ts";
 import { endOfDay, startOfDay } from "@/pdc/helpers/dates.helper.ts";
-import { CarpoolAnomalyStatusEnum, CarpoolFraudStatusEnum } from "@/pdc/providers/carpool/interfaces/common.ts";
+import { getTzFromLon } from "@/pdc/helpers/geo.helper.ts";
+import {
+  CarpoolAnomalyStatusEnum,
+  CarpoolFraudStatusEnum,
+  Position,
+} from "@/pdc/providers/carpool/interfaces/common.ts";
 import { GeoProvider } from "@/pdc/providers/geo/index.ts";
 import {
   CancelRequest,
@@ -44,6 +49,7 @@ export class CarpoolAcquisitionService {
     start_datetime: Date;
     end_datetime: Date;
     operator_trip_id: string;
+    start_position: Position;
   }, client?: PoolClient): Promise<Array<string>> {
     const result = [];
     // The journey has been sent too late
@@ -57,13 +63,14 @@ export class CarpoolAcquisitionService {
 
     // This select all distinct operator_trip_id that started in the same day
     // with the same identity key as any role
+    const tz = getTzFromLon(data.start_position.lon);
     const journeyCount = await this.lookupRepository.countJourneyBy({
       operator_id: data.operator_id,
       identity_key: [data.driver_identity_key, data.passenger_identity_key],
       identity_key_or: true,
       start_date: {
-        min: startOfDay(data.start_datetime),
-        max: endOfDay(data.start_datetime),
+        min: startOfDay(data.start_datetime, tz),
+        max: endOfDay(data.start_datetime, tz),
       },
     }, client);
     if (journeyCount > 4) {
@@ -127,6 +134,7 @@ export class CarpoolAcquisitionService {
           operator_trip_id: data.operator_trip_id,
           start_datetime: data.start_datetime,
           end_datetime: data.end_datetime,
+          start_position: data.start_position,
         }, conn);
 
         await this.statusRepository.saveAcquisitionStatus(
