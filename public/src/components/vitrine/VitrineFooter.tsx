@@ -133,7 +133,7 @@ export function VitrineFooter() {
           >
             licence etalab-2.0
           </a>{" "}
-          Toutes les illustrations sont réalisés par
+          Toutes les illustrations sont réalisées par
           <a
             href={"https://www.freepik.com"}
             target="_blank"
