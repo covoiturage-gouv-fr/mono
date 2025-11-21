@@ -22,7 +22,7 @@ export function VitrineHeader() {
         "aria-label": "Accueil | Covoiturage.beta.gouv.fr",
       }}
       serviceTitle="Covoiturage.beta.gouv.fr"
-      serviceTagline="Accelerateur de covoiturage courte distance"
+      serviceTagline="Accélérateur de covoiturage courte distance"
       quickAccessItems={[
         {
           iconId: "fr-icon-team-line",
