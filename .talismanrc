@@ -107,3 +107,5 @@ fileignoreconfig:
     checksum: 452b87beff16e55df299abe7c6094361508e43d368b3b56b08473d6029cfeb57
   - filename: sqlmesh/.env.example
     checksum: ff13bf7998aa7ecff77fd58a0c305ed5f16fbf27d14eeda570306c1d02b4c499
+  - filename: sqlmesh/models/2_trusted_zone/perimeters.sql
+    checksum: ac106872e48c275810c85484a19a771f6cf4cf4256d5e9c7292cddab9d11c6d2

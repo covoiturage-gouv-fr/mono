@@ -55,4 +55,8 @@ def execute(
           "Ylat": "lat"
       },
     )
+
+    # Correction des valeurs NaT dans la colonne date_maj
+    df["date_maj"] = df["date_maj"].replace(pd.NaT, "1970-01-01")
+
     return df
