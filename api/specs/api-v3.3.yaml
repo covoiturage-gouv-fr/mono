@@ -73,7 +73,7 @@ servers:
   - url: "https://api.covoiturage.beta.gouv.fr/v3.3"
     description: Production
   - url: "https://api.demo.covoiturage.beta.gouv.fr/v3.3"
-    description: Pré-production
+    description: Demo
 paths:
   /auth/access_token:
     post:
