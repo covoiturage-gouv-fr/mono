@@ -17,4 +17,5 @@ RUN pip install --no-cache-dir geopandas
 RUN pip install --no-cache-dir requests
 RUN pip install --no-cache-dir python-dotenv
 RUN pip install --no-cache-dir boto3
+RUN pip install --no-cache-dir pyarrow
 ENV PATH=/home/sqlmesh/.local/bin:$PATH
