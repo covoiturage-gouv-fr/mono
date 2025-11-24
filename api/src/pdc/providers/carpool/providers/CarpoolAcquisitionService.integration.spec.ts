@@ -265,6 +265,7 @@ describe("CarpoolAcquisitionService", () => {
       start_datetime: new Date("2024-01-01T02:00:00.000Z"),
       end_datetime: new Date("2024-01-01T04:00:00.000Z"),
       operator_trip_id: "operator_trip_id",
+      start_position: { lon: 2.3522, lat: 48.8566 },
     };
 
     const errors = await service.verifyTermsViolation({ ...data, distance: 100 });
@@ -320,6 +321,7 @@ describe("CarpoolAcquisitionService", () => {
       passenger_identity_key: "key_passenger",
       end_datetime: new Date("2024-10-23 07:20:00.000Z"),
       operator_trip_id: "operator_trip_id",
+      start_position: { lon: 2.3522, lat: 48.8566 },
     };
 
     const errors = await service.verifyTermsViolation(data);
