@@ -5,7 +5,7 @@ from sqlmesh import ExecutionContext, model
 from utils.upload import upload_to_s3
 
 @model(
-    "trusted_zone.archive_journeys_2020",
+    "trusted_zone.archive_journeys_2021",
     kind="FULL",
     columns={
       "status": "VARCHAR",
@@ -17,15 +17,15 @@ from utils.upload import upload_to_s3
       "columns": "INTEGER",
       "date_uploaded": "TIMESTAMP",
     },
-    tags=["trusted","archive","journeys_2020"],
+    tags=["trusted","archive","journeys_2021"],
 )
 def execute(
     context: ExecutionContext,
     **kwargs: t.Any,
 ) -> pd.DataFrame:
-    df = context.fetchdf("SELECT * FROM trusted_zone.journeys_2020")
+    df = context.fetchdf("SELECT * FROM trusted_zone.journeys_2021")
     upload_result = upload_to_s3(
-      key="exports/journeys_2020.parquet",
+      key="exports/journeys_2021.parquet",
       df=df,
   )
 
