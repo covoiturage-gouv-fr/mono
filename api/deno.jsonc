@@ -4,8 +4,8 @@
     "dep:assert": "jsr:@std/assert@^1.0.12",
     "dep:expect": "jsr:@std/expect@^1.0.14",
     "dep:testing-bdd": "jsr:@std/testing@^1.0.9/bdd",
-    "dep:reflect-metadata": "https://cdn.esm.sh/reflect-metadata?deno",
-    "dep:inversify": "https://cdn.esm.sh/inversify@6.2.2?deno",
+    "dep:reflect-metadata": "npm:reflect-metadata@0.2.2",
+    "dep:inversify": "npm:inversify@6.2.2",
     "dep:https": "node:https",
     "dep:http": "node:http",
     "dep:process": "node:process",
@@ -82,12 +82,13 @@
     // keep them even if deprecated as the code uses legacy decorators
     // and removing the experimentalDecorators option will enable standard decorators.
     // https://www.typescriptlang.org/tsconfig/#emitDecoratorMetadata
-    "experimentalDecorators": true,
-    
     //      emitDecoratorMetadata is required for inversify
+    "experimentalDecorators": true,
     // /!\  but not supported by standard decorators
     "emitDecoratorMetadata": true,
-    "types": ["geojson"]
+    "types": [
+      "geojson"
+    ]
   },
   "nodeModulesDir": "none",
   "fmt": {
@@ -95,7 +96,9 @@
   },
   "lint": {
     "rules": {
-      "exclude": ["require-await"]
+      "exclude": [
+        "require-await"
+      ]
     }
   }
 }
