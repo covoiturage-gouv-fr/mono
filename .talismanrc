@@ -109,3 +109,5 @@ fileignoreconfig:
     checksum: ff13bf7998aa7ecff77fd58a0c305ed5f16fbf27d14eeda570306c1d02b4c499
   - filename: sqlmesh/models/2_trusted_zone/perimeters.sql
     checksum: ac106872e48c275810c85484a19a771f6cf4cf4256d5e9c7292cddab9d11c6d2
+  - filename: sqlmesh/models/3_refined_zone/opendata/datagouv_journeys.sql
+    checksum: a8f9d736473abdab68d3d3901a7d7088517a7e3450225af889826e6969b16bf6
