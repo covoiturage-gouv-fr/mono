@@ -43,7 +43,7 @@ export default function Home() {
                 {
                   children: "Opérateurs, découvrez les étapes",
                   linkProps: {
-                    href: "https://covoiturage.beta.gouv.fr/devenir-partenaire",
+                    href: "https://doc.covoiturage.beta.gouv.fr/vous-etes/je-suis-un-operateur/se-connecter",
                     title: `Devenir partenaire - nouvelle fenêtre`,
                     "aria-label": `Devenir partenaire  - nouvelle fenêtre`,
                     target: "_blank",
