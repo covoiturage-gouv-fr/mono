@@ -9,7 +9,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuth, setIsAuth] = useState(false);
   const [user, setUser] = useState<AuthContextProps["user"]>();
   const [simulate, setSimulate] = useState(false);
-  const [simulatedRole, setSimulatedRole] = useState<"operator" | "territory">();
+  const [simulatedRole, setSimulatedRole] = useState<"operator" | "territory" | undefined>(undefined);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
@@ -43,50 +43,46 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [loading, isAuth]);
 
-  const onChangeTerritory = (id?: number) => {
+  // clean up user on simulatedRole reset
+  useEffect(() => {
+    if (!simulatedRole) {
+      setUser((prev) => (prev ? { ...prev, territory_id: null, operator_id: null } : prev));
+    }
+  }, [simulatedRole]);
+
+  const onChangeTerritory = (id: number | null) => {
+    const territory_id = simulatedRole === "territory" && id ? id : null;
     if (user) {
-      if (simulatedRole === "territory") {
-        setUser({
-          ...user,
-          territory_id: id ?? undefined,
-          operator_id: undefined,
-        });
-      } else {
-        setUser({
-          ...user,
-          territory_id: id ?? undefined,
-        });
-      }
+      setUser((prev) => (prev ? { ...prev, territory_id, operator_id: null } : prev));
     }
   };
 
-  const onChangeOperator = (id?: number) => {
+  const onChangeOperator = (id: number | null) => {
+    const operator_id = simulatedRole === "operator" && id ? id : null;
     if (user) {
-      if (simulatedRole === "operator") {
-        setUser({
-          ...user,
-          territory_id: undefined,
-          operator_id: id ?? undefined,
-        });
-      } else {
-        setUser({
-          ...user,
-          operator_id: id ?? undefined,
-        });
-      }
+      setUser((prev) => (prev ? { ...prev, operator_id, territory_id: null } : prev));
     }
   };
-  const onChangeSimulate = () => {
-    setSimulate((prev) => !prev);
-    if (simulate === false) {
+
+  const onChangeSimulate = (toggleState: boolean) => {
+    setSimulate(toggleState);
+    if (!toggleState) {
       setSimulatedRole(undefined);
     }
   };
-  const onChangeSimulatedRole = (value?: "operator" | "territory") => {
-    setSimulatedRole(value);
+
+  const onChangeSimulatedRole = (value: "operator" | "territory" | undefined) => {
+    switch (value) {
+      case "operator":
+      case "territory":
+        setSimulatedRole(value);
+        break;
+      default:
+        setSimulatedRole(undefined);
+    }
   };
 
-  const logout = async () => {
+  const logout = () => {
     setIsAuth(false);
     setUser(undefined);
   };

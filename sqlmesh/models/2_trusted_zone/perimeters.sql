@@ -1,6 +1,8 @@
 MODEL (
   name trusted_zone.perimeters,
   kind FULL,
+  start '2020-01-01',
+  cron '@yearly',
   grain ['id','year','arr'],
   tags ['trusted', 'perimeters']
 );
@@ -131,3 +133,11 @@ FROM all_perimeters
 ORDER BY year, arr;
 
 CREATE INDEX IF NOT EXISTS perimeters_id_index ON @this_model USING btree (id);
+CREATE INDEX IF NOT EXISTS perimeters_centroid_index ON @this_model USING gist (centroid);
+CREATE INDEX IF NOT EXISTS perimeters_geom_index ON @this_model USING gist (geom);
+CREATE INDEX IF NOT EXISTS perimeters_geom_simple_index ON @this_model USING gist (geom_simple);
+CREATE INDEX IF NOT EXISTS perimeters_year_index ON @this_model USING btree (year);
+CREATE INDEX IF NOT EXISTS perimeters_surface_index ON @this_model USING btree (surface);
+CREATE INDEX IF NOT EXISTS perimeters_arr_index ON @this_model USING btree (arr);
+CREATE INDEX IF NOT EXISTS perimeters_aom_index ON @this_model USING btree (aom);
+CREATE INDEX IF NOT EXISTS perimeters_epci_index ON @this_model USING btree (epci);

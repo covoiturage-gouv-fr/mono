@@ -1,13 +1,13 @@
-import { provider } from "@/ilos/common/index.ts";
-import { logger } from "@/lib/logger/index.ts";
+import { subMonths } from "dep:date-fns";
+import { provider } from "../../../../ilos/common/index.ts";
+import { logger } from "../../../../lib/logger/index.ts";
 import {
   APDFNameProvider,
   BucketName,
   S3Object,
   S3ObjectList,
   S3StorageProvider,
-} from "@/pdc/providers/storage/index.ts";
-import { subMonths } from "dep:date-fns";
+} from "../../../providers/storage/index.ts";
 import { EnrichedApdfType } from "../contracts/list.contract.ts";
 import {
   SerializedPolicyInterface,
@@ -25,19 +25,13 @@ export class StorageRepositoryProvider implements StorageRepositoryProviderInter
     private APDFNameProvider: APDFNameProvider,
   ) {}
 
-  async findByCampaign(
-    campaign: SerializedPolicyInterface,
-  ): Promise<S3ObjectList> {
+  async findByCampaign(campaign: SerializedPolicyInterface): Promise<S3ObjectList> {
     try {
-      const list = await this.s3StorageProvider.list(
-        this.bucket,
-        `${campaign._id}`,
-      );
-
+      const list = await this.s3StorageProvider.list(this.bucket, `${campaign._id}`);
       return list.filter((obj: S3Object) => obj.size > 0);
     } catch (e) {
-      logger.error(`[Apdf:StorageRepo:findByCampaign] ${e.message}`);
-      logger.debug(e.stack);
+      const errMsg = e instanceof Error ? e.message : String(e);
+      logger.error(`[Apdf:StorageRepo:findByCampaign] ${errMsg}`);
       throw e;
     }
   }
@@ -46,11 +40,7 @@ export class StorageRepositoryProvider implements StorageRepositoryProviderInter
     return Promise.all(
       list.map(async (o: S3Object) => ({
         ...this.APDFNameProvider.parse(o.key),
-        signed_url: await this.s3StorageProvider.getSignedUrl(
-          this.bucket,
-          o.key,
-          S3StorageProvider.TEN_MINUTES,
-        ),
+        signed_url: await this.s3StorageProvider.getSignedUrl(this.bucket, o.key, S3StorageProvider.TEN_MINUTES),
         key: o.key,
         size: o.size,
       })),
@@ -84,10 +74,7 @@ export class StorageRepositoryProvider implements StorageRepositoryProviderInter
 
       // show all but last month
       const fileMonth = obj.datetime.toISOString().substring(0, 7);
-      const lastMonth = subMonths(new Date(), 1).toISOString().substring(
-        0,
-        7,
-      );
+      const lastMonth = subMonths(new Date(), 1).toISOString().substring(0, 7);
 
       return fileMonth !== lastMonth;
     };

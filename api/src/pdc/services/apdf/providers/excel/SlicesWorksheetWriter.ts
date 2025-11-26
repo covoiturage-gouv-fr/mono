@@ -1,5 +1,5 @@
-import { provider } from "@/ilos/common/index.ts";
 import excel from "dep:excel";
+import { provider } from "../../../../../ilos/common/index.ts";
 import { SliceInterface } from "../../../policy/contracts/common/interfaces/Slices.ts";
 import { SliceStatInterface } from "../../contracts/interfaces/PolicySliceStatInterface.ts";
 import { AbstractWorksheetWriter } from "./AbstractWorksheetWriter.ts";
@@ -211,8 +211,8 @@ export class SlicesWorksheetWriter extends AbstractWorksheetWriter {
     };
     ws.mergeCells("G34:L34");
     ws.getCell(`G34`).value = {
-      text: "Dashboard territoire du RPC",
-      hyperlink: "https://app.covoiturage.beta.gouv.fr",
+      text: "Espace partenaire",
+      hyperlink: "https://partenaire.covoiturage.beta.gouv.fr",
     };
     ws.mergeCells("G35:L35");
     ws.getCell(`G35`).value = {

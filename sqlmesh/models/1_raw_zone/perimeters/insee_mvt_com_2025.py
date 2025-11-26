@@ -8,16 +8,19 @@ from utils.url import get_last_url
 
 # dictionnaire global des colonnes et types
 COLUMN_TYPES = {
-  "com": "VARCHAR",
-  "aom": "VARCHAR",
-  "l_aom": "VARCHAR",
+  "mod": "INTEGER",
+  "date_eff": "VARCHAR",
+  "typecom_av": "VARCHAR",
+  "typecom_ap": "VARCHAR",
+  "old_com": "VARCHAR",
+  "new_com": "VARCHAR",
 }
 
 @model(
-    "raw_zone.cerema_aom_2025",
-    kind="EXTERNAL",
+    "raw_zone.insee_mvt_com_2025",
+    kind="FULL",
     columns=COLUMN_TYPES,
-    tags=["raw","perimeters","cerema_aom_2025"],
+    tags=["raw","perimeters","insee_mvt_com_2025"],
 )
 def execute(
     context: ExecutionContext,
@@ -29,11 +32,13 @@ def execute(
     # --- Chargement des données ---
     df = load_dataset(
       path_or_bucket="geo-datasets-archives",
-      key="cerema_aom_2025.csv",
+      key="insee_mvt_com_2025.csv",
       file_type="csv",
       column_types=COLUMN_TYPES,
+      clean_col_name=True,
       rename_columns={
-        "code_insee": "com",
+        "COM_AV": "old_com",
+        "COM_AP": "new_com",
       },
     )
     return df

@@ -14,7 +14,7 @@ COLUMN_TYPES = {
 
 @model(
     "raw_zone.ign_ae_reg_2025",
-    kind="FULL",
+    kind="EXTERNAL",
     columns=COLUMN_TYPES,
     tags=["raw", "perimeters", "ign_ae_reg_2025"],
     post_statements=[f"ALTER TABLE @this_model ALTER COLUMN {GEOMETRY_COL} TYPE geometry USING ST_SetSRID(ST_GeomFromText({GEOMETRY_COL}, 4326), 4326);"],

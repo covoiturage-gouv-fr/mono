@@ -8,8 +8,8 @@ export default function TabUsers() {
     <>
       <UsersTable
         title={`Gestion des utilisateurs`}
-        territoryId={user?.territory_id}
-        operatorId={user?.operator_id}
+        territoryId={user?.territory_id ?? null}
+        operatorId={user?.operator_id ?? null}
       />
     </>
   );
