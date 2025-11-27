@@ -10,11 +10,13 @@ import { ValidatorExtension, ValidatorMiddleware } from "@/pdc/providers/validat
 import { TerritoryRepository } from "@/pdc/services/export/repositories/TerritoryRepository.ts";
 import { CreateActionV2 } from "./actions/CreateActionV2.ts";
 import { CreateActionV3 } from "./actions/CreateActionV3.ts";
+import { listAction } from "./actions/ListAction.ts";
 import { CreateCommand } from "./commands/CreateCommand.ts";
 import { DataGouvCommand } from "./commands/DataGouvCommand.ts";
 import { ProcessCommand } from "./commands/ProcessCommand.ts";
 import { config } from "./config/index.ts";
 import { bindingV2 as createBindingV2, bindingV3 as createBindingV3 } from "./contracts/create.schema.ts";
+import { binding as listBinding } from "./contracts/list.schema.ts";
 import { CampaignRepository } from "./repositories/CampaignRepository.ts";
 import { CarpoolRepository } from "./repositories/CarpoolRepository.ts";
 import { ExportRepository } from "./repositories/ExportRepository.ts";
@@ -61,11 +63,11 @@ const commands = [CreateCommand, DataGouvCommand, ProcessCommand];
 
 // Handlers are from the ./actions folder
 // and are used to implement the API endpoints (also called actions).
-const handlers = [CreateActionV2, CreateActionV3];
+const handlers = [CreateActionV2, CreateActionV3, listAction];
 
 // Validator bindings are from the @shared/export/*.schema.ts files
 // and are used to validate the input data using JSON Schema.
-const validators = [createBindingV2, createBindingV3];
+const validators = [createBindingV2, createBindingV3, listBinding];
 
 @serviceProvider({
   config,

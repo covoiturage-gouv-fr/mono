@@ -22,6 +22,9 @@ export abstract class TerritoryServiceInterfaceResolver {
   ): TerritorySelectorsInterface {
     throw new Error("Not implemented");
   }
+  public async getTerritoryNames(_geoSelector: TerritorySelectorsInterface | null): Promise<string[]> {
+    throw new Error("Not implemented");
+  }
 }
 
 @provider({
@@ -121,5 +124,30 @@ export class TerritoryService {
       });
       return acc;
     }, {} as TerritorySelectorsInterface);
+  }
+
+  /**
+   * Get all territory names from a geo_selector
+   *
+   * @param geoSelector
+   * @returns Array of territory names
+   */
+  public async getTerritoryNames(geoSelector: TerritorySelectorsInterface | null): Promise<string[]> {
+    if (!geoSelector) return [];
+
+    const names: string[] = [];
+    const types = Object.keys(geoSelector) as (keyof TerritorySelectorsInterface)[];
+
+    for (const type of types) {
+      const codes = geoSelector[type];
+      if (!codes) continue;
+
+      for (const code of codes) {
+        const name = await this.territoryRepository.getTerritoryName(type as string, code);
+        if (name) names.push(name);
+      }
+    }
+
+    return names;
   }
 }

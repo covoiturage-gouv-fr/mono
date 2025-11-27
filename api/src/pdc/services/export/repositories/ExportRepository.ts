@@ -1,8 +1,8 @@
-import { provider } from "@/ilos/common/index.ts";
-import { LegacyPostgresConnection } from "@/ilos/connection-postgres/index.ts";
-import { logger } from "@/lib/logger/index.ts";
-import sql, { raw } from "@/lib/pg/sql.ts";
-import { staleDelay } from "@/pdc/services/export/config/export.ts";
+import { provider } from "../../../../ilos/common/index.ts";
+import { LegacyPostgresConnection } from "../../../../ilos/connection-postgres/index.ts";
+import { logger } from "../../../../lib/logger/index.ts";
+import sql, { raw } from "../../../../lib/pg/sql.ts";
+import { staleDelay } from "../config/export.ts";
 import { Export, ExportStatus } from "../models/Export.ts";
 import { ExportRecipient } from "../models/ExportRecipient.ts";
 import { LogServiceInterfaceResolver } from "../services/LogService.ts";
@@ -11,7 +11,7 @@ export type ExportCreateData =
   & Pick<Export, "created_by" | "target" | "params">
   & { recipients: ExportRecipient[] };
 export type ExportUpdateData = Partial<
-  Pick<Export, "status" | "progress" | "download_url" | "error" | "stats">
+  Pick<Export, "status" | "progress" | "download_url" | "filename" | "file_size" | "error" | "stats">
 >;
 export type ExportProgress = (progress: number) => Promise<void>;
 
@@ -81,9 +81,10 @@ export abstract class ExportRepositoryInterfaceResolver {
    * @todo add pagination
    * @todo add filters (user_id, status, ...)
    *
+   * @param filters
    * @returns {Promise<Export[]>}
    */
-  public async list(): Promise<Export[]> {
+  public async list(filters?: { created_by?: number; days?: number }): Promise<Export[]> {
     throw new Error("Not implemented");
   }
 
@@ -231,9 +232,24 @@ export class ExportRepository {
     });
   }
 
-  public async list(): Promise<Export[]> {
+  public async list(filters?: { created_by?: number; days?: number }): Promise<Export[]> {
+    const conditions: string[] = [];
+    const values: any[] = [];
+
+    if (filters?.created_by) {
+      conditions.push(`created_by = $${values.length + 1}`);
+      values.push(filters.created_by);
+    }
+
+    if (filters?.days) {
+      conditions.push(`created_at >= NOW() - INTERVAL '${filters.days} days'`);
+    }
+
+    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+
     const { rows } = await this.connection.getClient().query({
-      text: `SELECT * FROM ${this.exportsTable}`,
+      text: `SELECT * FROM ${this.exportsTable} ${whereClause} ORDER BY created_at DESC`,
+      values,
     });
     return rows.map(Export.fromJSON);
   }
