@@ -163,6 +163,12 @@
       c.driver_operator_user_id,
       c.driver_phone,
       c.driver_phone_trunc,
+      coalesce(
+        c.driver_identity_key,
+        c.driver_operator_user_id,
+        c.driver_phone,
+        c.driver_phone_trunc
+      ) AS driver_id,
       c.driver_travelpass_name,
       c.driver_travelpass_user_id,
       c.driver_revenue,
@@ -170,6 +176,12 @@
       c.passenger_operator_user_id,
       c.passenger_phone,
       c.passenger_phone_trunc,
+      coalesce(
+        c.passenger_identity_key,
+        c.passenger_operator_user_id,
+        c.passenger_phone,
+        c.passenger_phone_trunc
+      ) AS passenger_id,
       c.passenger_travelpass_name,
       c.passenger_travelpass_user_id,
       c.passenger_over_18,
