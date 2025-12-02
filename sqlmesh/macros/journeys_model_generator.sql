@@ -158,6 +158,7 @@
       g.geo_errors,
       g.geo_updated_at,
       c.distance,
+      c.end_datetime - c.start_datetime AS duration,
       c.licence_plate,
       c.driver_identity_key,
       c.driver_operator_user_id,
