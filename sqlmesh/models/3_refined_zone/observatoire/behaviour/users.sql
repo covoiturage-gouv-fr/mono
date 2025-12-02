@@ -88,5 +88,3 @@ SELECT
     AS total_count
 FROM agg a
 LEFT JOIN refined_zone.obs_users t ON t.user_id = a.user_id;
-
-CREATE UNIQUE INDEX IF NOT EXISTS obs_users_pk ON refined_zone.obs_users (user_id);
