@@ -44,7 +44,20 @@ describe("MetadataRepositoryProvider", () => {
         value: 200n,
         datetime: new Date("2021-04-01"),
       },
+      {
+        policy_id: 1,
+        key: "bigint_key",
+        value: 2147483647n, // int4 max
+        datetime: new Date("2021-05-01"),
+      },
+      {
+        policy_id: 1,
+        key: "bigint_key",
+        value: 2147483647n + 2147483647n,
+        datetime: new Date("2021-06-01"),
+      },
     ];
+
     await repository.set(data);
 
     const rows = await db.connection.query(sql`
@@ -57,7 +70,7 @@ describe("MetadataRepositoryProvider", () => {
   });
 
   it("Should read meta", async () => {
-    const result = await repository.get(1, ["my_key", "my_key_2"]);
+    const result = await repository.get(1, ["my_key", "my_key_2", "bigint_key"]);
     assertEquals(result, [
       {
         policy_id: 1,
@@ -70,6 +83,12 @@ describe("MetadataRepositoryProvider", () => {
         key: "my_key_2",
         value: 500n,
         datetime: new Date("2021-02-01"),
+      },
+      {
+        policy_id: 1,
+        key: "bigint_key",
+        value: 2147483647n + 2147483647n,
+        datetime: new Date("2021-06-01"),
       },
     ]);
   });
