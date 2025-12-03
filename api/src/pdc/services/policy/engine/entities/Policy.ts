@@ -1,5 +1,5 @@
-import { logger } from "@/lib/logger/index.ts";
-import { Timezone } from "@/pdc/providers/validator/index.ts";
+import { logger } from "../../../../../lib/logger/index.ts";
+import { Timezone } from "../../../../providers/validator/index.ts";
 import { PolicyStatusEnum } from "../../contracts/common/interfaces/PolicyInterface.ts";
 import {
   CarpoolInterface,
@@ -32,7 +32,7 @@ export class Policy implements PolicyInterface {
     public tz: Timezone,
     public handler: PolicyHandlerInterface,
     public status: PolicyStatusEnum,
-    public incentive_sum: number,
+    public incentive_sum: bigint,
   ) {}
 
   static async import(data: SerializedPolicyInterface): Promise<Policy> {
@@ -72,7 +72,7 @@ export class Policy implements PolicyInterface {
       status: this.status,
       incentive_sum: this.incentive_sum,
       handler: (this.handler.constructor as PolicyHandlerStaticInterface).id,
-      max_amount: this.handler.max_amount,
+      max_amount: this.handler.max_amount!,
     };
   }
 
@@ -115,9 +115,7 @@ export class Policy implements PolicyInterface {
       await store.save(context.meta);
       return context.incentive;
     } catch (e) {
-      logger.error(
-        `Stateful incentive calculation failed for ${incentive._id}: ${e.message}`,
-      );
+      logger.error(`Stateful incentive calculation failed for ${incentive._id}: ${e.message}`);
       logger.debug(e);
       throw e;
     }

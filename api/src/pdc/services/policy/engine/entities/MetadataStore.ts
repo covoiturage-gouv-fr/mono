@@ -27,9 +27,7 @@ export class MetadataStore implements MetadataStoreInterface {
     protected readonly repository?: MetadataRepositoryProviderInterfaceResolver,
   ) {}
 
-  async load(
-    registry: MetadataRegistryInterface,
-  ): Promise<MetadataAccessorInterface> {
+  async load(registry: MetadataRegistryInterface): Promise<MetadataAccessorInterface> {
     const variables = registry.export();
     const keys = variables.map((v) => v.key);
 
@@ -37,20 +35,15 @@ export class MetadataStore implements MetadataStoreInterface {
       return MetadataAccessor.import(registry.datetime, new Map());
     }
 
-    const keysToQuery = keys.filter((k) =>
-      !this.cache.has(getCacheKey(registry.policy_id, k))
-    );
+    const keysToQuery = keys.filter((k) => !this.cache.has(getCacheKey(registry.policy_id, k)));
     const missingData = (await this.repository?.get(
       registry.policy_id,
       keysToQuery,
       registry.datetime,
     )) || [];
     for (const key of keysToQuery) {
-      const variableDefinition = getDefaultVariableDefinition(
-        variables.find((v) => v.key === key),
-      );
-      const value = missingData.find((k) => k.key === key)?.value ||
-        variableDefinition.initialValue || 0;
+      const variableDefinition = getDefaultVariableDefinition(variables.find((v) => v.key === key)!);
+      const value = missingData.find((k) => k.key === key)?.value || variableDefinition.initialValue || 0;
       this.cache.set(getCacheKey(registry.policy_id, key), {
         ...variableDefinition,
         policy_id: registry.policy_id,
@@ -94,13 +87,11 @@ export class MetadataStore implements MetadataStoreInterface {
     }
   }
 
-  async store(
-    lifetime: MetadataLifetime,
-  ): Promise<Array<SerializedStoredMetadataInterface>> {
+  async store(lifetime: MetadataLifetime): Promise<Array<SerializedStoredMetadataInterface>> {
     const dataToSave: Array<SerializedStoredMetadataInterface> = [];
     for (const uuid of this.cache.keys()) {
-      const data = this.cache.get(uuid);
-      if (data.lifetime > lifetime) {
+      const data = this.cache.get(uuid)!;
+      if (data.lifetime! > lifetime) {
         dataToSave.push({
           policy_id: data.policy_id,
           datetime: data.datetime,

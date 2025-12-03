@@ -1,7 +1,4 @@
-import {
-  MetadataRegistryInterface,
-  SerializedMetadataVariableDefinitionInterface,
-} from "../index.ts";
+import { MetadataRegistryInterface, SerializedMetadataVariableDefinitionInterface } from "../index.ts";
 
 export enum IncentiveStateEnum {
   Regular = "regular",

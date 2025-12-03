@@ -1,4 +1,4 @@
-import { assertEquals } from "@/dev_deps.ts";
+import { assertEquals } from "../../../../../dev_deps.ts";
 import { PolicyStatusEnum } from "../../contracts/common/interfaces/PolicyInterface.ts";
 import {
   CarpoolInterface,
@@ -17,15 +17,13 @@ interface ProcessParams {
   carpool: Array<Partial<CarpoolInterface>>;
   handler?: PolicyHandlerInterface;
   policy?: Partial<SerializedPolicyInterface>;
-  meta?: Array<
-    { key: string; value: number } & Partial<SerializedStoredMetadataInterface>
-  >;
+  meta?: Array<{ key: string; value: bigint } & Partial<SerializedStoredMetadataInterface>>;
   lifetime?: MetadataLifetime;
 }
 
 interface ProcessResult {
   incentive: Array<number>;
-  meta?: Array<{ key: string; value: number }>;
+  meta?: Array<{ key: string; value: bigint }>;
 }
 
 class MemoryMetadataRepository implements MetadataRepositoryProviderInterfaceResolver {
@@ -77,8 +75,8 @@ export const makeProcessHelper = (cp?: CarpoolInterface) => {
       status: PolicyStatusEnum.ACTIVE,
       tz: "Europe/Paris",
       handler: "",
-      incentive_sum: 0,
-      max_amount: 10_000_000_00,
+      incentive_sum: 0n,
+      max_amount: 10_000_000_00n,
       ...(input.policy || {}),
     };
 
@@ -106,15 +104,16 @@ export const makeProcessHelper = (cp?: CarpoolInterface) => {
       );
       incentives.push(statefulIncentive.export());
     }
+
     assertEquals(
       incentives.map((i) => i.statefulAmount),
       expected.incentive,
     );
+
     if (expected.meta) {
       assertEquals(
-        (await store.store(input.lifetime || MetadataLifetime.Day)).map((
-          m,
-        ) => ({ key: m.key, value: m.value })),
+        (await store.store(input.lifetime || MetadataLifetime.Day))
+          .map((m) => ({ key: m.key, value: m.value })),
         expected.meta.map((m) => ({ key: m.key, value: m.value })),
       );
     }
