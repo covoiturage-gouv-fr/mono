@@ -1,8 +1,10 @@
 name: "Quality - API"
 
 permissions:
-  contents: write
   actions: read
+  contents: read
+  security-events: write
+  pull-requests: read
 
 on:
   push:
