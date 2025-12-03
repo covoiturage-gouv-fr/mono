@@ -4,6 +4,7 @@ import {
   MetadataRegistryInterface,
   MetadataRepositoryProviderInterfaceResolver,
   MetadataStoreInterface,
+  SerializedAccessibleMetadataInterface,
   SerializedMetadataVariableDefinitionInterface,
   SerializedStoredMetadataInterface,
   StoredMetadataVariableInterface,
@@ -17,7 +18,7 @@ function getCacheKey(policy_id: number, key: string): string {
 function getDefaultVariableDefinition(
   definition: SerializedMetadataVariableDefinitionInterface,
 ): SerializedMetadataVariableDefinitionInterface {
-  return { initialValue: 0, lifetime: MetadataLifetime.Always, ...definition };
+  return { initialValue: 0n, lifetime: MetadataLifetime.Always, ...definition };
 }
 
 export class MetadataStore implements MetadataStoreInterface {
@@ -48,7 +49,7 @@ export class MetadataStore implements MetadataStoreInterface {
         ...variableDefinition,
         policy_id: registry.policy_id,
         datetime: registry.datetime,
-        value,
+        value: BigInt(value),
       });
     }
     const data = variables
@@ -69,7 +70,7 @@ export class MetadataStore implements MetadataStoreInterface {
           });
           return m;
         },
-        new Map(),
+        new Map<string, SerializedAccessibleMetadataInterface>(),
       );
 
     return MetadataAccessor.import(registry.datetime, data);

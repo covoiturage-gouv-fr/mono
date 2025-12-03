@@ -1,5 +1,5 @@
-import { assertEquals, assertNotEquals, it } from "@/dev_deps.ts";
-import { v4 as uuidV4 } from "@/lib/uuid/index.ts";
+import { assertEquals, assertNotEquals, it } from "../../../../../dev_deps.ts";
+import { v4 as uuidV4 } from "../../../../../lib/uuid/index.ts";
 import { OperatorsEnum } from "../../interfaces/index.ts";
 import { makeProcessHelper } from "../tests/macro.ts";
 import { Cotentin2023 as Handler } from "./20230101_Cotentin.ts";
@@ -12,7 +12,7 @@ const defaultPosition = {
   dep: "22",
   reg: "53",
   country: "XXXXX",
-  reseau: "194",
+  reseau: 194,
 };
 const defaultLat = 48.72565703413325;
 const defaultLon = 2.261827843187402;
@@ -96,7 +96,7 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 1350,
+            value: 1350n,
           },
         ],
       },
@@ -166,7 +166,7 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 1200,
+            value: 1200n,
           },
         ],
       },
@@ -174,7 +174,7 @@ it(
 );
 
 it("latest operator", () => {
-  const handler = new Handler(100);
+  const handler = new Handler(100n);
   const { operators } = handler.params();
   assertNotEquals(operators, undefined);
   assertNotEquals(operators, []);

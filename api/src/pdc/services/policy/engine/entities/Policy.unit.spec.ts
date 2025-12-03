@@ -12,14 +12,15 @@ class TestHandler implements PolicyHandlerInterface {
   async load(): Promise<void> {
     return;
   }
-  override processStateless(ctx: StatelessContextInterface): void {
+
+  processStateless(ctx: StatelessContextInterface): void {
     isOperatorClassOrThrow(ctx, ["C"]);
     ctx.incentive.set(perKm(ctx, { amount: 10 }));
     watchForGlobalMaxAmount(ctx, "max");
   }
 
   processStateful(ctx: StatefulContextInterface): void {
-    applyLimitOnStatefulStage(ctx, "max", 2000, watchForGlobalMaxAmount);
+    applyLimitOnStatefulStage(ctx, "max", 2000n, watchForGlobalMaxAmount);
   }
 
   describe() {
@@ -147,7 +148,7 @@ it(
   async () =>
     await process(
       {
-        handler: new MaxAmountPolicyHandler(60_000),
+        handler: new MaxAmountPolicyHandler(60_000n),
         carpool: [
           { distance: 10000, datetime: new Date("2022-01-01") },
           { distance: 10000, datetime: new Date("2022-12-01") },
@@ -158,7 +159,7 @@ it(
         incentive: [100, 100],
         meta: [{
           key: "max_amount_restriction.global.campaign.global",
-          value: 200,
+          value: 200n,
         }],
       },
     ),

@@ -1,5 +1,5 @@
-import { it } from "@/dev_deps.ts";
-import { v4 as uuidV4 } from "@/lib/uuid/index.ts";
+import { it } from "../../../../../dev_deps.ts";
+import { v4 as uuidV4 } from "../../../../../lib/uuid/index.ts";
 import { OperatorsEnum } from "../../interfaces/index.ts";
 import { makeProcessHelper } from "../tests/macro.ts";
 import { SiouleLimagne as Handler } from "./20240901_SiouleLimagne_2024_09.ts";
@@ -120,12 +120,12 @@ it(
   async () =>
     await process(
       {
-        policy: { handler: Handler.id, max_amount: 3_000_00 },
+        policy: { handler: Handler.id, max_amount: 3_000_00n },
         carpool: [{ distance: 5_000, driver_identity_key: "one" }],
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 2_998_00,
+            value: 2_998_00n,
           },
         ],
       },
@@ -134,7 +134,7 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 3_000_00,
+            value: 3_000_00n,
           },
         ],
       },
@@ -163,7 +163,7 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 1200,
+            value: 1200n,
           },
         ],
       },

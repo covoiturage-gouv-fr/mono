@@ -1,5 +1,5 @@
-import { it } from "@/dev_deps.ts";
-import { v4 as uuidV4 } from "@/lib/uuid/index.ts";
+import { it } from "../../../../../dev_deps.ts";
+import { v4 as uuidV4 } from "../../../../../lib/uuid/index.ts";
 import { OperatorsEnum } from "../../interfaces/index.ts";
 import { makeProcessHelper } from "../tests/macro.ts";
 import { ATMB202305 as Handler } from "./20230502_ATMB.ts";
@@ -12,7 +12,7 @@ const defaultPosition = {
   dep: "74",
   reg: "84",
   country: "XXXXX",
-  reseau: "142",
+  reseau: 142,
 };
 const defaultLat = 48.72565703413325;
 const defaultLon = 2.261827843187402;
@@ -141,11 +141,11 @@ it(
         meta: [
           {
             key: "max_amount_restriction.0-one.month.4-2023",
-            value: 2450,
+            value: 2450n,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 2450,
+            value: 2450n,
           },
         ],
       },
@@ -165,7 +165,7 @@ it(
         meta: [
           {
             key: "max_amount_restriction.0-one.month.4-2023",
-            value: 48_00,
+            value: 48_00n,
           },
         ],
       },
@@ -174,11 +174,11 @@ it(
         meta: [
           {
             key: "max_amount_restriction.0-one.month.4-2023",
-            value: 50_00,
+            value: 50_00n,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 200,
+            value: 200n,
           },
         ],
       },

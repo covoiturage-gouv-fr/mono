@@ -29,11 +29,7 @@ interface ProcessResult {
 class MemoryMetadataRepository implements MetadataRepositoryProviderInterfaceResolver {
   constructor(public data: SerializedStoredMetadataInterface[] = []) {}
 
-  async get(
-    policyId: number,
-    keys: string[],
-    datetime?: Date,
-  ): Promise<SerializedStoredMetadataInterface[]> {
+  async get(): Promise<SerializedStoredMetadataInterface[]> {
     return this.data;
   }
 

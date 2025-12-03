@@ -84,12 +84,12 @@ export const watchForPersonMaxAmountByMonth: LimitStatelessStageHelper = (() => 
   function fn(
     ctx: StatelessContextInterface,
     uuid: string,
-    target: LimitTargetEnum,
+    target?: LimitTargetEnum,
   ): void {
     ctx.meta.register({
       uuid,
       name: "max_amount_restriction",
-      scope: getTargetUuid(target, ctx),
+      scope: getTargetUuid(target!, ctx),
       lifetime: MetadataLifetime.Month,
     });
   }
@@ -102,12 +102,12 @@ export const watchForPersonMaxAmountByYear: LimitStatelessStageHelper = (() => {
   function fn(
     ctx: StatelessContextInterface,
     uuid: string,
-    target: LimitTargetEnum,
+    target?: LimitTargetEnum,
   ): void {
     ctx.meta.register({
       uuid,
       name: "max_amount_restriction",
-      scope: getTargetUuid(target, ctx),
+      scope: getTargetUuid(target!, ctx),
       lifetime: MetadataLifetime.Year,
     });
   }
@@ -133,12 +133,12 @@ export const watchForPersonMaxTripByMonth: LimitStatelessStageHelper = (() => {
   function fn(
     ctx: StatelessContextInterface,
     uuid: string,
-    target: LimitTargetEnum,
+    target?: LimitTargetEnum,
   ): void {
     ctx.meta.register({
       uuid,
       name: "max_trip_restriction",
-      scope: getTargetUuid(target, ctx),
+      scope: getTargetUuid(target!, ctx),
       lifetime: MetadataLifetime.Month,
     });
   }
@@ -151,12 +151,12 @@ export const watchForPersonMaxTripByDay: LimitStatelessStageHelper = (() => {
   function fn(
     ctx: StatelessContextInterface,
     uuid: string,
-    target: LimitTargetEnum,
+    target?: LimitTargetEnum,
   ): void {
     ctx.meta.register({
       uuid,
       name: "max_trip_restriction",
-      scope: getTargetUuid(target, ctx),
+      scope: getTargetUuid(target!, ctx),
       lifetime: MetadataLifetime.Day,
     });
   }

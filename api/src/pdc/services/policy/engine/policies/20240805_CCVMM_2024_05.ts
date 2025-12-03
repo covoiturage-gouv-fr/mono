@@ -19,6 +19,7 @@ import {
 } from "../helpers/limits.ts";
 import { onDistanceRange, onDistanceRangeOrThrow } from "../helpers/onDistanceRange.ts";
 import { perKm, perSeat } from "../helpers/per.ts";
+import { startsOrEndsAtOrThrow } from "../helpers/startsOrEndsAtOrThrow.ts";
 import { description } from "./20240805_CCVMM_2024_05.html.ts";
 import { AbstractPolicyHandler } from "./AbstractPolicyHandler.ts";
 
@@ -91,6 +92,7 @@ export const CCVMM202405: PolicyHandlerStaticInterface = class extends AbstractP
       onDistanceRangeOrThrow(ctx, { min: 2_000, max: 80_000 });
       isOperatorClassOrThrow(ctx, ["B", "C"]);
       isAdultOrThrow(ctx);
+      startsOrEndsAtOrThrow(ctx, { epci: ["200066645"] });
     } catch (e) {
       throw e;
     }

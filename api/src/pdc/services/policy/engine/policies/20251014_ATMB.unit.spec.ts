@@ -12,7 +12,6 @@ const defaultPosition = {
   dep: "74",
   reg: "84",
   country: "XXXXX",
-  reseau: 142,
 };
 const defaultLat = 48.72565703413325;
 const defaultLon = 2.261827843187402;

@@ -1,4 +1,4 @@
-import { v4 as uuidV4 } from "@/lib/uuid/index.ts";
+import { v4 as uuidV4 } from "../../../../../lib/uuid/index.ts";
 import {
   CarpoolInterface,
   IncentiveStateEnum,
@@ -14,7 +14,6 @@ const defaultPosition = {
   dep: "91",
   reg: "11",
   country: "XXXXX",
-  reseau: "232",
 };
 
 const defaultLat = 48.72565703413325;
@@ -64,9 +63,7 @@ const defaultIncentive: SerializedIncentiveInterface = {
   meta: [],
 };
 
-export function generateIncentive(
-  incentive: Partial<SerializedIncentiveInterface> = {},
-): SerializedIncentiveInterface {
+export function generateIncentive(incentive: Partial<SerializedIncentiveInterface> = {}): SerializedIncentiveInterface {
   return { ...defaultIncentive, ...incentive };
 }
 
@@ -104,24 +101,11 @@ export function generateIncentive(
  *     ],
  *   },
  * );
- *
- * @param {Number} count number of carpools to generate
- * @param {Date} date datetime of the first carpool
- * @returns {Partial<CarpoolInterface>[]}
  */
-export function generatePartialCarpools(
-  count = 75,
-  date = new Date("2022-01-01"),
-): Partial<CarpoolInterface>[] {
-  return [
-    ...Array(count + 1 + 1)
-      .slice(1)
-      .keys(),
-  ].map((x) => ({
+export function generatePartialCarpools(count = 75, date = new Date("2022-01-01")): Partial<CarpoolInterface>[] {
+  return [...Array(count + 1 + 1).slice(1).keys()].map((x) => ({
     // every 3rd carpool is the next day
-    datetime: x % 3 == 0
-      ? date.setDate(date.getDate() + 1) && new Date(date)
-      : new Date(date),
+    datetime: x % 3 == 0 ? date.setDate(date.getDate() + 1) && new Date(date) : new Date(date),
     distance: 25_000,
     driver_identity_key: "three",
     passenger_identity_key: uuidV4(),

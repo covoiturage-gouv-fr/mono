@@ -1,5 +1,5 @@
-import { it } from "@/dev_deps.ts";
-import { v4 as uuidV4 } from "@/lib/uuid/index.ts";
+import { it } from "../../../../../dev_deps.ts";
+import { v4 as uuidV4 } from "../../../../../lib/uuid/index.ts";
 import { OperatorsEnum } from "../../interfaces/index.ts";
 import { makeProcessHelper } from "../tests/macro.ts";
 import { CCPOA202410 as Handler } from "./20241015_CCPOA_orthe_et_arrigans_2024.ts";
@@ -12,7 +12,6 @@ const defaultPosition = {
   dep: "40",
   reg: "75",
   country: "XXXXX",
-  reseau: "269",
 };
 const defaultLat = 48.5905360901711;
 const defaultLon = 6.499392987670189;
@@ -77,15 +76,15 @@ it("should work basic with start/end inside aom", async () =>
       meta: [
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 1050,
+          value: 1050n,
         },
         {
           key: "max_amount_restriction.0-one.month.10-2024",
-          value: 450,
+          value: 450n,
         },
         {
           key: "max_amount_restriction.0-two.month.10-2024",
-          value: 600,
+          value: 600n,
         },
       ],
     },
@@ -94,12 +93,12 @@ it("should work basic with start/end inside aom", async () =>
 it("should work with global limits", async () =>
   await process(
     {
-      policy: { handler: Handler.id, max_amount: 15_000_00 },
+      policy: { handler: Handler.id, max_amount: 15_000_00n },
       carpool: [{ distance: 59_000, driver_identity_key: "one" }],
       meta: [
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 14_999_99,
+          value: 14_999_99n,
         },
       ],
     },
@@ -108,11 +107,11 @@ it("should work with global limits", async () =>
       meta: [
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 15_000_00,
+          value: 15_000_00n,
         },
         {
           key: "max_amount_restriction.0-one.month.10-2024",
-          value: 250,
+          value: 250n,
         },
       ],
     },
@@ -138,11 +137,11 @@ it("should work with 6 trips per day limit", async () =>
       meta: [
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 900,
+          value: 900n,
         },
         {
           key: "max_amount_restriction.0-one.month.10-2024",
-          value: 900,
+          value: 900n,
         },
       ],
     },

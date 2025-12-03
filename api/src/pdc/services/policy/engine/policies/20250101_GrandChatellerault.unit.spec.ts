@@ -1,5 +1,5 @@
-import { it } from "@/dev_deps.ts";
-import { v4 as uuidV4 } from "@/lib/uuid/index.ts";
+import { it } from "../../../../../dev_deps.ts";
+import { v4 as uuidV4 } from "../../../../../lib/uuid/index.ts";
 import { OperatorsEnum } from "../../interfaces/index.ts";
 import { makeProcessHelper } from "../tests/macro.ts";
 import { GrandChatellerault2025 as Handler } from "./20250101_GrandChatellerault.ts";
@@ -109,15 +109,15 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 600,
+            value: 600n,
           },
           {
             key: "max_amount_restriction.0-tom.month.0-2025",
-            value: 450,
+            value: 450n,
           },
           {
             key: "max_amount_restriction.0-nina.month.0-2025",
-            value: 150,
+            value: 150n,
           },
         ],
       },
@@ -129,12 +129,12 @@ it(
   async () =>
     await process(
       {
-        policy: { handler: Handler.id, max_amount: 2_200_000_00 },
+        policy: { handler: Handler.id, max_amount: 2_200_000_00n },
         carpool: [{ distance: 5_000, driver_identity_key: "one" }],
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 2_199_998_50,
+            value: 2_199_998_50n,
           },
         ],
       },
@@ -143,11 +143,11 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 2_200_000_00,
+            value: 2_200_000_00n,
           },
           {
             key: "max_amount_restriction.0-one.month.0-2025",
-            value: 150,
+            value: 150n,
           },
         ],
       },
@@ -204,11 +204,11 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 900,
+            value: 900n,
           },
           {
             key: "max_amount_restriction.0-one.month.0-2025",
-            value: 900,
+            value: 900n,
           },
         ],
       },
@@ -228,11 +228,11 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 0,
+            value: 0n,
           },
           {
             key: "max_amount_restriction.0-one.month.0-2025",
-            value: 118_50,
+            value: 118_50n,
           },
         ],
       },
@@ -241,11 +241,11 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 150,
+            value: 150n,
           },
           {
             key: "max_amount_restriction.0-one.month.0-2025",
-            value: 120_00,
+            value: 120_00n,
           },
         ],
       },

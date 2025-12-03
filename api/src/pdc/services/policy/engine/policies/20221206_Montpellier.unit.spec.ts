@@ -1,5 +1,5 @@
-import { it } from "@/dev_deps.ts";
-import { v4 as uuidV4 } from "@/lib/uuid/index.ts";
+import { it } from "../../../../../dev_deps.ts";
+import { v4 as uuidV4 } from "../../../../../lib/uuid/index.ts";
 import { OperatorsEnum } from "../../interfaces/index.ts";
 import { generatePartialCarpools } from "../tests/helpers.ts";
 import { makeProcessHelper } from "../tests/macro.ts";
@@ -13,7 +13,7 @@ const defaultPosition = {
   dep: "34",
   reg: "76",
   country: "XXXXX",
-  reseau: "76",
+  reseau: 76,
 };
 const defaultLat = 48.72565703413325;
 const defaultLon = 2.261827843187402;
@@ -75,11 +75,11 @@ it(
         meta: [
           {
             key: "max_amount_restriction.0-one.month.11-2022",
-            value: 1100,
+            value: 1100n,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 1100,
+            value: 1100n,
           },
         ],
       },
@@ -108,11 +108,11 @@ it(
         meta: [
           {
             key: "max_amount_restriction.0-two.month.11-2022",
-            value: 12_00,
+            value: 12_00n,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 12_00,
+            value: 12_00n,
           },
         ],
       },
@@ -133,11 +133,11 @@ it(
         meta: [
           {
             key: "max_amount_restriction.0-three.month.0-2022",
-            value: 150_00,
+            value: 150_00n,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 15000,
+            value: 15000n,
           },
         ],
       },
