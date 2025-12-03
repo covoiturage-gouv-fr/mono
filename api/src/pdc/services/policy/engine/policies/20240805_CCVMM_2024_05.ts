@@ -1,26 +1,27 @@
-import { Timezone } from "@/pdc/providers/validator/types.ts";
-import { getOperatorsAt, TimestampedOperators } from "@/pdc/services/policy/engine/helpers/getOperatorsAt.ts";
-import { isAdultOrThrow } from "@/pdc/services/policy/engine/helpers/isAdultOrThrow.ts";
-import { isOperatorClassOrThrow } from "@/pdc/services/policy/engine/helpers/isOperatorClassOrThrow.ts";
-import { isOperatorOrThrow } from "@/pdc/services/policy/engine/helpers/isOperatorOrThrow.ts";
-import {
-  LimitTargetEnum,
-  watchForGlobalMaxAmount,
-  watchForPersonMaxAmountByMonth,
-  watchForPersonMaxTripByDay,
-} from "@/pdc/services/policy/engine/helpers/limits.ts";
-import { onDistanceRange, onDistanceRangeOrThrow } from "@/pdc/services/policy/engine/helpers/onDistanceRange.ts";
-import { perKm, perSeat } from "@/pdc/services/policy/engine/helpers/per.ts";
-import { AbstractPolicyHandler } from "@/pdc/services/policy/engine/policies/AbstractPolicyHandler.ts";
-import { RunnableSlices } from "@/pdc/services/policy/interfaces/engine/PolicyInterface.ts";
+import { Timezone } from "../../../../providers/validator/types.ts";
+import { RunnableSlices } from "../../interfaces/engine/PolicyInterface.ts";
 import {
   OperatorsEnum,
   PolicyHandlerInterface,
   PolicyHandlerParamsInterface,
   PolicyHandlerStaticInterface,
   StatelessContextInterface,
-} from "@/pdc/services/policy/interfaces/index.ts";
+} from "../../interfaces/index.ts";
+import { getOperatorsAt, TimestampedOperators } from "../helpers/getOperatorsAt.ts";
+import { isAdultOrThrow } from "../helpers/isAdultOrThrow.ts";
+import { isOperatorClassOrThrow } from "../helpers/isOperatorClassOrThrow.ts";
+import { isOperatorOrThrow } from "../helpers/isOperatorOrThrow.ts";
+import {
+  LimitTargetEnum,
+  watchForGlobalMaxAmount,
+  watchForPersonMaxAmountByMonth,
+  watchForPersonMaxTripByDay,
+} from "../helpers/limits.ts";
+import { onDistanceRange, onDistanceRangeOrThrow } from "../helpers/onDistanceRange.ts";
+import { perKm, perSeat } from "../helpers/per.ts";
+import { startsOrEndsAtOrThrow } from "../helpers/startsOrEndsAtOrThrow.ts";
 import { description } from "./20240805_CCVMM_2024_05.html.ts";
+import { AbstractPolicyHandler } from "./AbstractPolicyHandler.ts";
 
 /* eslint-disable-next-line */
 export const CCVMM202405: PolicyHandlerStaticInterface = class extends AbstractPolicyHandler
@@ -57,7 +58,7 @@ export const CCVMM202405: PolicyHandlerStaticInterface = class extends AbstractP
     },
   ];
 
-  constructor(public policy_max_amount: number) {
+  constructor(public policy_max_amount: bigint) {
     super();
     this.limits = [
       [
@@ -91,6 +92,7 @@ export const CCVMM202405: PolicyHandlerStaticInterface = class extends AbstractP
       onDistanceRangeOrThrow(ctx, { min: 2_000, max: 80_000 });
       isOperatorClassOrThrow(ctx, ["B", "C"]);
       isAdultOrThrow(ctx);
+      startsOrEndsAtOrThrow(ctx, { epci: ["200066645"] });
     } catch (e) {
       throw e;
     }

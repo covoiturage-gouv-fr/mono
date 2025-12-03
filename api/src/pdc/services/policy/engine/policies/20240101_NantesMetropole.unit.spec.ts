@@ -1,7 +1,7 @@
-import { it, sinon } from "@/dev_deps.ts";
-import { v4 as uuidV4 } from "@/lib/uuid/index.ts";
-import { dateRange } from "@/pdc/services/policy/engine/helpers/dateRange.ts";
+import { it, sinon } from "../../../../../dev_deps.ts";
+import { v4 as uuidV4 } from "../../../../../lib/uuid/index.ts";
 import { OperatorsEnum } from "../../interfaces/index.ts";
+import { dateRange } from "../helpers/dateRange.ts";
 import { makeProcessHelper } from "../tests/macro.ts";
 import { NantesMetropole2024 as Handler } from "./20240101_NantesMetropole.ts";
 
@@ -15,6 +15,7 @@ const defaultPosition = {
   dep: "44",
   reg: "52",
   country: "XXXXX",
+  network: 44,
 };
 const defaultLat = 48.72565703413325;
 const defaultLon = 2.261827843187402;
@@ -104,23 +105,23 @@ it("should work basic", async () =>
       meta: [
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 1085,
+          value: 1085n,
         },
         {
           key: "max_amount_restriction.0-one.month.3-2024",
-          value: 225,
+          value: 225n,
         },
         {
           key: "max_amount_restriction.0-one.year.2024",
-          value: 225,
+          value: 225n,
         },
         {
           key: "max_amount_restriction.0-two.month.3-2024",
-          value: 860,
+          value: 860n,
         },
         {
           key: "max_amount_restriction.0-two.year.2024",
-          value: 860,
+          value: 860n,
         },
       ],
     },
@@ -129,12 +130,12 @@ it("should work basic", async () =>
 it("should work with global limits", async () =>
   await process(
     {
-      policy: { handler: Handler.id, max_amount: 2_200_000_00 },
+      policy: { handler: Handler.id, max_amount: 2_200_000_00n },
       carpool: [{ distance: 5_000, driver_identity_key: "one" }],
       meta: [
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 2_199_999_25,
+          value: 2_199_999_25n,
         },
       ],
     },
@@ -143,15 +144,15 @@ it("should work with global limits", async () =>
       meta: [
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 2_200_000_00,
+          value: 2_200_000_00n,
         },
         {
           key: "max_amount_restriction.0-one.month.3-2024",
-          value: 75,
+          value: 75n,
         },
         {
           key: "max_amount_restriction.0-one.year.2024",
-          value: 75,
+          value: 75n,
         },
       ],
     },
@@ -177,15 +178,15 @@ it("should work with day limits", async () =>
       meta: [
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 450,
+          value: 450n,
         },
         {
           key: "max_amount_restriction.0-one.month.3-2024",
-          value: 450,
+          value: 450n,
         },
         {
           key: "max_amount_restriction.0-one.year.2024",
-          value: 450,
+          value: 450n,
         },
       ],
     },
@@ -202,15 +203,15 @@ it("should work with driver month limits of 84 €", async () =>
       meta: [
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 100_00,
+          value: 100_00n,
         },
         {
           key: "max_amount_restriction.0-one.month.3-2024",
-          value: 83_25,
+          value: 83_25n,
         },
         {
           key: "max_amount_restriction.0-one.year.2024",
-          value: 83_25,
+          value: 83_25n,
         },
       ],
     },
@@ -219,15 +220,15 @@ it("should work with driver month limits of 84 €", async () =>
       meta: [
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 100_75,
+          value: 100_75n,
         },
         {
           key: "max_amount_restriction.0-one.month.3-2024",
-          value: 84_00,
+          value: 84_00n,
         },
         {
           key: "max_amount_restriction.0-one.year.2024",
-          value: 84_75,
+          value: 84_75n,
         },
       ],
     },
@@ -244,15 +245,15 @@ it("should work with driver year limits of 1008.00 €", async () =>
       meta: [
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 100_00,
+          value: 100_00n,
         },
         {
           key: "max_amount_restriction.0-one.month.3-2024",
-          value: 0,
+          value: 0n,
         },
         {
           key: "max_amount_restriction.0-one.year.2024",
-          value: 1007_25,
+          value: 1007_25n,
         },
       ],
     },
@@ -261,15 +262,15 @@ it("should work with driver year limits of 1008.00 €", async () =>
       meta: [
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 100_75,
+          value: 100_75n,
         },
         {
           key: "max_amount_restriction.0-one.month.3-2024",
-          value: 75,
+          value: 75n,
         },
         {
           key: "max_amount_restriction.0-one.year.2024",
-          value: 1008_00,
+          value: 1008_00n,
         },
       ],
     },

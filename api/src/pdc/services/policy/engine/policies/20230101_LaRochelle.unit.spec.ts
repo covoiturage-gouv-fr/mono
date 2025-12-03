@@ -1,5 +1,5 @@
-import { it } from "@/dev_deps.ts";
-import { v4 as uuidV4 } from "@/lib/uuid/index.ts";
+import { it } from "../../../../../dev_deps.ts";
+import { v4 as uuidV4 } from "../../../../../lib/uuid/index.ts";
 import { OperatorsEnum } from "../../interfaces/index.ts";
 import { makeProcessHelper } from "../tests/macro.ts";
 import { LaRochelle20232024 as Handler } from "./20230101_LaRochelle.ts";
@@ -12,7 +12,7 @@ const defaultPosition = {
   dep: "73",
   reg: "84",
   country: "XXXXX",
-  reseau: "76",
+  reseau: 76,
 };
 const defaultLat = 48.72565703413325;
 const defaultLon = 2.261827843187402;
@@ -69,15 +69,15 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 1970,
+            value: 1970n,
           },
           {
             key: "max_amount_restriction.0-driver_id_one.month.0-2023",
-            value: 1500,
+            value: 1500n,
           },
           {
             key: "max_amount_restriction.0-driver_id_one.month.5-2023",
-            value: 470,
+            value: 470n,
           },
         ],
       },
@@ -97,11 +97,11 @@ it(
         meta: [
           {
             key: "max_amount_restriction.0-driver_id_one.month.5-2023",
-            value: 79_00,
+            value: 79_00n,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 79_00,
+            value: 79_00n,
           },
         ],
       },
@@ -110,11 +110,11 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 80_00,
+            value: 80_00n,
           },
           {
             key: "max_amount_restriction.0-driver_id_one.month.5-2023",
-            value: 80_00,
+            value: 80_00n,
           },
         ],
       },

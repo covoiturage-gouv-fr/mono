@@ -1,25 +1,21 @@
-import { NotEligibleTargetException } from "@/pdc/services/policy/engine/exceptions/NotEligibleTargetException.ts";
-import { getOperatorsAt, TimestampedOperators } from "@/pdc/services/policy/engine/helpers/getOperatorsAt.ts";
-import { isOperatorClassOrThrow } from "@/pdc/services/policy/engine/helpers/isOperatorClassOrThrow.ts";
-import { isOperatorOrThrow } from "@/pdc/services/policy/engine/helpers/isOperatorOrThrow.ts";
-import {
-  LimitTargetEnum,
-  watchForGlobalMaxAmount,
-  watchForPersonMaxTripByDay,
-} from "@/pdc/services/policy/engine/helpers/limits.ts";
-import { onDistanceRange, onDistanceRangeOrThrow } from "@/pdc/services/policy/engine/helpers/onDistanceRange.ts";
-import { perKm, perSeat } from "@/pdc/services/policy/engine/helpers/per.ts";
-import { endsAt, startsAndEndsAt, startsAt } from "@/pdc/services/policy/engine/helpers/position.ts";
-import { description } from "@/pdc/services/policy/engine/policies/20210105_PaysDeLaLoire.html.ts";
-import { AbstractPolicyHandler } from "@/pdc/services/policy/engine/policies/AbstractPolicyHandler.ts";
-import { RunnableSlices } from "@/pdc/services/policy/interfaces/engine/PolicyInterface.ts";
+import { RunnableSlices } from "../../interfaces/engine/PolicyInterface.ts";
 import {
   OperatorsEnum,
   PolicyHandlerInterface,
   PolicyHandlerParamsInterface,
   PolicyHandlerStaticInterface,
   StatelessContextInterface,
-} from "@/pdc/services/policy/interfaces/index.ts";
+} from "../../interfaces/index.ts";
+import { NotEligibleTargetException } from "../exceptions/NotEligibleTargetException.ts";
+import { getOperatorsAt, TimestampedOperators } from "../helpers/getOperatorsAt.ts";
+import { isOperatorClassOrThrow } from "../helpers/isOperatorClassOrThrow.ts";
+import { isOperatorOrThrow } from "../helpers/isOperatorOrThrow.ts";
+import { LimitTargetEnum, watchForGlobalMaxAmount, watchForPersonMaxTripByDay } from "../helpers/limits.ts";
+import { onDistanceRange, onDistanceRangeOrThrow } from "../helpers/onDistanceRange.ts";
+import { perKm, perSeat } from "../helpers/per.ts";
+import { endsAt, startsAndEndsAt, startsAt } from "../helpers/position.ts";
+import { description } from "./20210105_PaysDeLaLoire.html.ts";
+import { AbstractPolicyHandler } from "./AbstractPolicyHandler.ts";
 
 // Politique de Pays de la Loire
 export const PaysDeLaLoire2021: PolicyHandlerStaticInterface = class extends AbstractPolicyHandler
@@ -51,7 +47,7 @@ export const PaysDeLaLoire2021: PolicyHandlerStaticInterface = class extends Abs
     },
   ];
 
-  constructor(public max_amount: number) {
+  constructor(public max_amount: bigint) {
     super();
     this.limits = [
       [

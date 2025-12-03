@@ -1,11 +1,11 @@
-import { afterEach, assertEquals, beforeEach, describe, it, sinon } from "@/dev_deps.ts";
-import { KernelInterfaceResolver } from "@/ilos/common/index.ts";
-import { NativeCursor } from "@/ilos/connection-postgres/LegacyPostgresConnection.ts";
-import { APDFNameProvider } from "@/pdc/providers/storage/index.ts";
-import { PolicyStatsInterface } from "@/pdc/services/apdf/contracts/interfaces/PolicySliceStatInterface.ts";
-import { PolicyStatusEnum } from "@/pdc/services/policy/contracts/common/interfaces/PolicyInterface.ts";
-import { SliceInterface } from "@/pdc/services/policy/contracts/common/interfaces/Slices.ts";
 import excel from "dep:excel";
+import { afterEach, assertEquals, beforeEach, describe, it, sinon } from "../../../../../dev_deps.ts";
+import { KernelInterfaceResolver } from "../../../../../ilos/common/index.ts";
+import { NativeCursor } from "../../../../../ilos/connection-postgres/LegacyPostgresConnection.ts";
+import { APDFNameProvider } from "../../../../providers/storage/index.ts";
+import { PolicyStatusEnum } from "../../../policy/contracts/common/interfaces/PolicyInterface.ts";
+import { SliceInterface } from "../../../policy/contracts/common/interfaces/Slices.ts";
+import { PolicyStatsInterface } from "../../contracts/interfaces/PolicySliceStatInterface.ts";
 import { CampaignSearchParamsInterface } from "../../interfaces/APDFRepositoryProviderInterface.ts";
 import { DataRepositoryProvider } from "../DataRepositoryProvider.ts";
 import { BuildExcel } from "./BuildExcel.ts";
@@ -34,7 +34,7 @@ describe("BuildExcel", () => {
     end_date: new Date("2022-02-01T00:00:00Z"),
     handler: "handler.js",
     status: PolicyStatusEnum.ACTIVE,
-    incentive_sum: 4000,
+    incentive_sum: 4000n,
     params: {
       slices: [
         { start: 2_000, end: 150_000 },

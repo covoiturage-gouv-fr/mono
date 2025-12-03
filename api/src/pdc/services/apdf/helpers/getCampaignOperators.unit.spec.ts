@@ -1,11 +1,11 @@
-import { afterEach, assertEquals, assertRejects, beforeEach, describe, it, sinon } from "@/dev_deps.ts";
-import { KernelInterfaceResolver, NotFoundException } from "@/ilos/common/index.ts";
+import { afterEach, assertEquals, assertRejects, beforeEach, describe, it, sinon } from "../../../../dev_deps.ts";
+import { KernelInterfaceResolver, NotFoundException } from "../../../../ilos/common/index.ts";
 import {
   ParamsInterface as FindByUuidParams,
   ResultInterface as FindByUuidResult,
-} from "@/pdc/services/operator/contracts/findbyuuid.contract.ts";
-import { PolicyStatusEnum } from "@/pdc/services/policy/contracts/common/interfaces/PolicyInterface.ts";
-import { ResultInterface as PolicyFindResult } from "@/pdc/services/policy/contracts/find.contract.ts";
+} from "../../operator/contracts/findbyuuid.contract.ts";
+import { PolicyStatusEnum } from "../../policy/contracts/common/interfaces/PolicyInterface.ts";
+import { ResultInterface as PolicyFindResult } from "../../policy/contracts/find.contract.ts";
 import { getCampaignOperators, getPolicyUuidList, uuidToOperatorId } from "./getCampaignOperators.helper.ts";
 
 describe("getCampaignOperator", () => {
@@ -130,7 +130,7 @@ describe("getCampaignOperator", () => {
       end_date: new Date("2020-02-08T00:00:00Z"),
       status: PolicyStatusEnum.ACTIVE,
       handler: `handler_${id}`,
-      incentive_sum: 100,
+      incentive_sum: 100n,
       params: {
         operators,
       },

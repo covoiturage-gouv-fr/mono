@@ -1,29 +1,29 @@
-import type { GeoJSON } from "@/pdc/services/geo/contracts/GeoJson.ts";
-import { NotEligibleTargetException } from "@/pdc/services/policy/engine/exceptions/NotEligibleTargetException.ts";
-import { getOperatorsAt, TimestampedOperators } from "@/pdc/services/policy/engine/helpers/getOperatorsAt.ts";
-import { isBefore } from "@/pdc/services/policy/engine/helpers/isBefore.ts";
-import { isOperatorClassOrThrow } from "@/pdc/services/policy/engine/helpers/isOperatorClassOrThrow.ts";
-import { isOperatorOrThrow } from "@/pdc/services/policy/engine/helpers/isOperatorOrThrow.ts";
-import { isStartAndEndInsideOrThrow } from "@/pdc/services/policy/engine/helpers/isStartAndEndInside.ts";
-import {
-  LimitTargetEnum,
-  watchForGlobalMaxAmount,
-  watchForPersonMaxAmountByMonth,
-  watchForPersonMaxTripByDay,
-} from "@/pdc/services/policy/engine/helpers/limits.ts";
-import { onDistanceRange, onDistanceRangeOrThrow } from "@/pdc/services/policy/engine/helpers/onDistanceRange.ts";
-import { perKm, perSeat } from "@/pdc/services/policy/engine/helpers/per.ts";
-import { endsAt } from "@/pdc/services/policy/engine/helpers/position.ts";
-import { AbstractPolicyHandler } from "@/pdc/services/policy/engine/policies/AbstractPolicyHandler.ts";
-import { RunnableSlices } from "@/pdc/services/policy/interfaces/engine/PolicyInterface.ts";
+import type { GeoJSON } from "../../../geo/contracts/GeoJson.ts";
+import { RunnableSlices } from "../../interfaces/engine/PolicyInterface.ts";
 import {
   OperatorsEnum,
   PolicyHandlerInterface,
   PolicyHandlerParamsInterface,
   PolicyHandlerStaticInterface,
   StatelessContextInterface,
-} from "@/pdc/services/policy/interfaces/index.ts";
+} from "../../interfaces/index.ts";
+import { NotEligibleTargetException } from "../exceptions/NotEligibleTargetException.ts";
+import { getOperatorsAt, TimestampedOperators } from "../helpers/getOperatorsAt.ts";
+import { isBefore } from "../helpers/isBefore.ts";
+import { isOperatorClassOrThrow } from "../helpers/isOperatorClassOrThrow.ts";
+import { isOperatorOrThrow } from "../helpers/isOperatorOrThrow.ts";
+import { isStartAndEndInsideOrThrow } from "../helpers/isStartAndEndInside.ts";
+import {
+  LimitTargetEnum,
+  watchForGlobalMaxAmount,
+  watchForPersonMaxAmountByMonth,
+  watchForPersonMaxTripByDay,
+} from "../helpers/limits.ts";
+import { onDistanceRange, onDistanceRangeOrThrow } from "../helpers/onDistanceRange.ts";
+import { perKm, perSeat } from "../helpers/per.ts";
+import { endsAt } from "../helpers/position.ts";
 import { description } from "./20250101_Rennes.html.ts";
+import { AbstractPolicyHandler } from "./AbstractPolicyHandler.ts";
 
 // INSERT INTO policy.policies (territory_id, start_date, end_date, name, unit, status, handler, max_amount)
 // VALUES (
@@ -373,7 +373,7 @@ export const Rennes2025: PolicyHandlerStaticInterface = class extends AbstractPo
     },
   ];
 
-  constructor(public max_amount: number) {
+  constructor(public max_amount: bigint) {
     super();
     this.limits = [
       [

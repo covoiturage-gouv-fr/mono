@@ -20,7 +20,7 @@ export interface PolicyInterface {
   end_date: Date;
   status: PolicyStatusEnum;
   handler: string;
-  incentive_sum: number;
+  incentive_sum: bigint;
   params: {
     slices?: BoundedSlices | UnboundedSlices;
     operators?: Array<string>;

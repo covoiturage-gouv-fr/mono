@@ -1,5 +1,5 @@
-import { it } from "@/dev_deps.ts";
-import { v4 as uuidV4 } from "@/lib/uuid/index.ts";
+import { it } from "../../../../../dev_deps.ts";
+import { v4 as uuidV4 } from "../../../../../lib/uuid/index.ts";
 import { CarpoolInterface, OperatorsEnum } from "../../interfaces/index.ts";
 import { makeProcessHelper } from "../tests/macro.ts";
 import { LannionTregor2024 as Handler } from "./20240401_LannionTregor.ts";
@@ -13,7 +13,7 @@ const defaultPosition = {
   dep: "22",
   reg: "53",
   country: "XXXXX",
-  reseau: "194",
+  reseau: 194,
 };
 
 const defaultLat = 48.81387693883991;
@@ -148,7 +148,7 @@ it(
         meta: [
           {
             key: "max_amount_restriction.0-one.month.3-2024",
-            value: 148_50,
+            value: 148_50n,
           },
         ],
       },
@@ -157,11 +157,11 @@ it(
         meta: [
           {
             key: "max_amount_restriction.0-one.month.3-2024",
-            value: 150_00,
+            value: 150_00n,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 150,
+            value: 150n,
           },
         ],
       },
@@ -186,7 +186,7 @@ it(
         meta: [
           {
             key: "max_amount_restriction.0-one.month.3-2024",
-            value: 0,
+            value: 0n,
           },
         ],
       },
@@ -195,11 +195,11 @@ it(
         meta: [
           {
             key: "max_amount_restriction.0-one.month.3-2024",
-            value: 900,
+            value: 900n,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 900,
+            value: 900n,
           },
         ],
       },

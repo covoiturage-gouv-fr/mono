@@ -1,5 +1,5 @@
-import { it } from "@/dev_deps.ts";
-import { v4 as uuidV4 } from "@/lib/uuid/index.ts";
+import { it } from "../../../../../dev_deps.ts";
+import { v4 as uuidV4 } from "../../../../../lib/uuid/index.ts";
 import { OperatorsEnum } from "../../interfaces/index.ts";
 import { makeProcessHelper } from "../tests/macro.ts";
 import { LaRochelle2024 as Handler } from "./20240101_LaRochelle.ts";
@@ -12,7 +12,7 @@ const defaultPosition = {
   dep: "73",
   reg: "84",
   country: "XXXXX",
-  reseau: "76",
+  reseau: 76,
 };
 const defaultLat = 48.72565703413325;
 const defaultLon = 2.261827843187402;
@@ -80,11 +80,11 @@ it("should work basic", async () =>
       meta: [
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 900,
+          value: 900n,
         },
         {
           key: "max_amount_restriction.0-driver_id_one.month.0-2024",
-          value: 900,
+          value: 900n,
         },
       ],
     },
@@ -101,11 +101,11 @@ it("should work with driver month limits of 80 €", async () =>
       meta: [
         {
           key: "max_amount_restriction.0-driver_id_one.month.0-2024",
-          value: 79_00,
+          value: 79_00n,
         },
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 79_00,
+          value: 79_00n,
         },
       ],
     },
@@ -114,11 +114,11 @@ it("should work with driver month limits of 80 €", async () =>
       meta: [
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 80_00,
+          value: 80_00n,
         },
         {
           key: "max_amount_restriction.0-driver_id_one.month.0-2024",
-          value: 80_00,
+          value: 80_00n,
         },
       ],
     },

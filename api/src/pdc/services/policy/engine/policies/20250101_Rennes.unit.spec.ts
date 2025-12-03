@@ -1,7 +1,7 @@
-import { it } from "@/dev_deps.ts";
-import { v4 as uuidV4 } from "@/lib/uuid/index.ts";
-import { makeProcessHelper } from "@/pdc/services/policy/engine/tests/macro.ts";
-import { CarpoolInterface, OperatorsEnum, TerritoryCodeInterface } from "@/pdc/services/policy/interfaces/index.ts";
+import { it } from "../../../../../dev_deps.ts";
+import { v4 as uuidV4 } from "../../../../../lib/uuid/index.ts";
+import { CarpoolInterface, OperatorsEnum, TerritoryCodeInterface } from "../../interfaces/index.ts";
+import { makeProcessHelper } from "../tests/macro.ts";
 import { Rennes2025 as Handler } from "./20250101_Rennes.ts";
 
 const defaultPosition: TerritoryCodeInterface = {
@@ -186,7 +186,7 @@ it("should work with driver month limits", async () =>
       meta: [
         {
           key: "max_amount_restriction.0-one.month.3-2025",
-          value: 149_50,
+          value: 149_50n,
         },
       ],
     },
@@ -195,11 +195,11 @@ it("should work with driver month limits", async () =>
       meta: [
         {
           key: "max_amount_restriction.0-one.month.3-2025",
-          value: 150_00,
+          value: 150_00n,
         },
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 50,
+          value: 50n,
         },
       ],
     },

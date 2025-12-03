@@ -1,8 +1,11 @@
 version: "1.0"
+threshold: medium
 scopeconfig:
   - scope: node
   - scope: python
 fileignoreconfig:
+  - filename: api/src/db/migrations/*.sql
+    ignore_detectors: [filename, filecontent]
   - filename: api/src/lib/pg/sql.ts
     checksum: 34a1d26889326c6bd576b22b2b4de9ef2a10dcc6d36ee915b3c99028d378bd39
   - filename: .github/workflows/quality-api.yml
@@ -30,14 +33,14 @@ fileignoreconfig:
     checksum: 26708491073bd3546e9c811ed788218e7a0e28551e311b25325f870d8eea0a6a
   - filename: api/src/config/connections.ts
     checksum: 243b7f3ec0caaedd588841b5310b9de50fdbe6a81aaf66737bacd57d724f3aa7
-  - filename: api/src/pdc/services/policy/engine/policies/*.html.ts
-    allowed_patterns: [pass]
   - filename: api/src/lib/crypto/index.ts
     allowed_patterns: [key]
   - filename: api/src/pdc/services/policy/providers/*.ts
     allowed_patterns: [key]
-  - filename: api/src/pdc/services/policy/engine/policies/*.ts
+  - filename: api/src/pdc/services/policy/engine/**/*.ts
     ignore_detectors: [filecontent]
+  - filename: api/src/pdc/services/policy/engine/policies/*.html.ts
+    allowed_patterns: [pass]
   - filename: notebooks/cerema/*.sql
     ignore_detectors: [filename]
   - filename: flake.nix

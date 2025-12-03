@@ -1,5 +1,5 @@
-import { describe, it, sinon } from "@/dev_deps.ts";
-import { v4 as uuidV4 } from "@/lib/uuid/index.ts";
+import { describe, it, sinon } from "../../../../../dev_deps.ts";
+import { v4 as uuidV4 } from "../../../../../lib/uuid/index.ts";
 import { OperatorsEnum, TerritoryCodeInterface } from "../../interfaces/index.ts";
 import { makeProcessHelper } from "../tests/macro.ts";
 import { PaysDeLaLoire2024 as Handler } from "./20240101_PaysDeLaLoire.ts";
@@ -167,23 +167,23 @@ describe("PaysDeLaLoire2024", () => {
       meta: [
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 685,
+          value: 685n,
         },
         {
           key: "max_amount_restriction.0-one.month.3-2024",
-          value: 225,
+          value: 225n,
         },
         {
           key: "max_amount_restriction.0-one.year.2024",
-          value: 225,
+          value: 225n,
         },
         {
           key: "max_amount_restriction.0-two.month.3-2024",
-          value: 460,
+          value: 460n,
         },
         {
           key: "max_amount_restriction.0-two.year.2024",
-          value: 460,
+          value: 460n,
         },
       ],
     }));
@@ -207,12 +207,12 @@ describe("PaysDeLaLoire2024", () => {
 
   it("should work with global limits", async () =>
     await process({
-      policy: { handler: Handler.id, max_amount: 2_200_000_00 },
+      policy: { handler: Handler.id, max_amount: 2_200_000_00n },
       carpool: [{ distance: 5_000, driver_identity_key: "one" }],
       meta: [
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 2_199_999_25,
+          value: 2_199_999_25n,
         },
       ],
     }, {
@@ -220,15 +220,15 @@ describe("PaysDeLaLoire2024", () => {
       meta: [
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 2_200_000_00,
+          value: 2_200_000_00n,
         },
         {
           key: "max_amount_restriction.0-one.month.3-2024",
-          value: 75,
+          value: 75n,
         },
         {
           key: "max_amount_restriction.0-one.year.2024",
-          value: 75,
+          value: 75n,
         },
       ],
     }));
@@ -251,15 +251,15 @@ describe("PaysDeLaLoire2024", () => {
       meta: [
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 450,
+          value: 450n,
         },
         {
           key: "max_amount_restriction.0-one.month.3-2024",
-          value: 450,
+          value: 450n,
         },
         {
           key: "max_amount_restriction.0-one.year.2024",
-          value: 450,
+          value: 450n,
         },
       ],
     }));
@@ -274,11 +274,11 @@ describe("PaysDeLaLoire2024", () => {
       meta: [
         {
           key: "max_amount_restriction.0-one.month.3-2024",
-          value: 83_25,
+          value: 83_25n,
         },
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 83_25,
+          value: 83_25n,
         },
       ],
     }, {
@@ -286,15 +286,15 @@ describe("PaysDeLaLoire2024", () => {
       meta: [
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 84_00,
+          value: 84_00n,
         },
         {
           key: "max_amount_restriction.0-one.month.3-2024",
-          value: 84_00,
+          value: 84_00n,
         },
         {
           key: "max_amount_restriction.0-one.year.2024",
-          value: 150,
+          value: 150n,
         },
       ],
     }));
@@ -310,15 +310,15 @@ describe("PaysDeLaLoire2024", () => {
       meta: [
         {
           key: "max_amount_restriction.0-one.month.3-2024",
-          value: 83_25,
+          value: 83_25n,
         },
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 83_25,
+          value: 83_25n,
         },
         {
           key: "max_amount_restriction.0-one.year.2024",
-          value: 1007_99,
+          value: 1007_99n,
         },
       ],
     }, {
@@ -326,15 +326,15 @@ describe("PaysDeLaLoire2024", () => {
       meta: [
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 83_26,
+          value: 83_26n,
         },
         {
           key: "max_amount_restriction.0-one.month.3-2024",
-          value: 83_26,
+          value: 83_26n,
         },
         {
           key: "max_amount_restriction.0-one.year.2024",
-          value: 1008_00,
+          value: 1008_00n,
         },
       ],
     }));

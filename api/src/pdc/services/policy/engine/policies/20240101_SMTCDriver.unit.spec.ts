@@ -1,5 +1,5 @@
-import { it } from "@/dev_deps.ts";
-import { v4 as uuidV4 } from "@/lib/uuid/index.ts";
+import { it } from "../../../../../dev_deps.ts";
+import { v4 as uuidV4 } from "../../../../../lib/uuid/index.ts";
 import { OperatorsEnum } from "../../interfaces/index.ts";
 import { makeProcessHelper } from "../tests/macro.ts";
 import { SMTC2024Driver as Handler } from "./20240101_SMTCDriver.ts";
@@ -12,7 +12,7 @@ const defaultPosition = {
   dep: "74",
   reg: "84",
   country: "XXXXX",
-  reseau: "142",
+  reseau: 142,
 };
 const defaultLat = 48.72565703413325;
 const defaultLon = 2.261827843187402;
@@ -80,15 +80,15 @@ it(
         meta: [
           {
             key: "max_amount_restriction.0-one.month.4-2024",
-            value: 600,
+            value: 600n,
           },
           {
             key: "max_amount_restriction.0-one.year.2024",
-            value: 600,
+            value: 600n,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 600,
+            value: 600n,
           },
         ],
       },
@@ -108,11 +108,11 @@ it(
         meta: [
           {
             key: "max_amount_restriction.0-one.month.4-2024",
-            value: 88_50,
+            value: 88_50n,
           },
           {
             key: "max_amount_restriction.0-one.year.2024",
-            value: 88_50,
+            value: 88_50n,
           },
         ],
       },
@@ -121,17 +121,17 @@ it(
         meta: [
           {
             key: "max_amount_restriction.0-one.month.4-2024",
-            value: 90_00,
+            value: 90_00n,
           },
           // La limite à l'année est incrémentée de 1,50 €
           // mais la limite au mois prévaut, la 2ème incitation de 1,5€ ne sera pas attribuée
           {
             key: "max_amount_restriction.0-one.year.2024",
-            value: 91_50,
+            value: 91_50n,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 150,
+            value: 150n,
           },
         ],
       },
@@ -151,7 +151,7 @@ it(
         meta: [
           {
             key: "max_amount_restriction.0-one.year.2024",
-            value: 538_50,
+            value: 538_50n,
           },
         ],
       },
@@ -160,15 +160,15 @@ it(
         meta: [
           {
             key: "max_amount_restriction.0-one.month.4-2024",
-            value: 150,
+            value: 150n,
           },
           {
             key: "max_amount_restriction.0-one.year.2024",
-            value: 540_00,
+            value: 540_00n,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 150,
+            value: 150n,
           },
         ],
       },

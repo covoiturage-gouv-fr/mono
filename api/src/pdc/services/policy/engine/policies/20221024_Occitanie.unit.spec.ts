@@ -1,5 +1,5 @@
-import { it } from "@/dev_deps.ts";
-import { v4 as uuidV4 } from "@/lib/uuid/index.ts";
+import { it } from "../../../../../dev_deps.ts";
+import { v4 as uuidV4 } from "../../../../../lib/uuid/index.ts";
 import { CarpoolInterface, OperatorsEnum } from "../../interfaces/index.ts";
 import { makeProcessHelper } from "../tests/macro.ts";
 import { Occitanie20232024 as Handler } from "./20221024_Occitanie.ts";
@@ -12,7 +12,7 @@ const defaultPosition = {
   dep: "46",
   reg: "76",
   country: "XXXXX",
-  reseau: "465",
+  reseau: 465,
 };
 const defaultLat = 48.72565703413325;
 const defaultLon = 2.261827843187402;
@@ -83,7 +83,7 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 580,
+            value: 580n,
           },
         ],
       },
@@ -112,7 +112,7 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 590,
+            value: 590n,
           },
         ],
       },
@@ -124,12 +124,12 @@ it(
   async () =>
     await process(
       {
-        policy: { handler: Handler.id, max_amount: 70_000_00 },
+        policy: { handler: Handler.id, max_amount: 70_000_00n },
         carpool: [{ distance: 5_000, driver_identity_key: "one" }],
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 69_999_00,
+            value: 69_999_00n,
           },
         ],
       },
@@ -138,7 +138,7 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 70_000_00,
+            value: 70_000_00n,
           },
         ],
       },
@@ -195,7 +195,7 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 1140,
+            value: 1140n,
           },
         ],
       },
@@ -232,7 +232,7 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 380,
+            value: 380n,
           },
         ],
       },
