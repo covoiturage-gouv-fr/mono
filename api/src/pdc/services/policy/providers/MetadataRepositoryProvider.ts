@@ -52,9 +52,15 @@ export class MetadataRepositoryProvider implements MetadataRepositoryProviderInt
       [[], [], [], []] as [number[], string[], bigint[], Date[]],
     );
 
+    const [ids, keys, vals, dates] = args;
     const query = sql`
       INSERT INTO ${raw(this.table)} (policy_id, key, value, datetime)
-      SELECT * FROM UNNEST(${args[0]}::int[], ${args[1]}::varchar[], ${args[2]}::bigint[], ${args[3]}::timestamp[])
+      SELECT * FROM UNNEST(
+        ${ids}::int[],
+        ${keys}::varchar[],
+        ${vals}::bigint[],
+        ${dates}::timestamp[]
+      )
     `;
 
     await this.connection.query(query);

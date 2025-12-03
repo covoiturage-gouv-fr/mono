@@ -14,7 +14,7 @@ export enum LimitCounterTypeEnum {
 
 export type ConfiguredLimitInterface = [
   string,
-  bigint | number,
+  bigint,
   LimitStatelessStageHelper,
   LimitTargetEnum?,
 ];
@@ -201,19 +201,19 @@ export function applyLimitOnStatefulStage(
 
   switch (helper.counter) {
     case LimitCounterTypeEnum.Trip: {
-      ctx.meta.set(uuid, BigInt(state) + 1n);
+      ctx.meta.set(uuid, state + 1n);
       return;
     }
     case LimitCounterTypeEnum.Amount: {
-      const incentive = BigInt(ctx.incentive.get());
-      const delta = BigInt(state) + incentive;
+      const incBigInt = BigInt(ctx.incentive.get());
+      const delta = state + incBigInt;
       if (delta >= max) {
         // limit will be reached, get diff
         ctx.meta.set(uuid, max);
-        ctx.incentive.set(Number(BigInt(max) - BigInt(state)));
+        ctx.incentive.set(Number(max - state));
         return;
       }
-      ctx.meta.set(uuid, BigInt(state) + BigInt(incentive));
+      ctx.meta.set(uuid, state + incBigInt);
       return;
     }
     case LimitCounterTypeEnum.Other: {
@@ -221,7 +221,7 @@ export function applyLimitOnStatefulStage(
       if (!raw.carpoolValue) {
         throw new MisconfigurationException("Missing carpool value");
       }
-      ctx.meta.set(uuid, BigInt(state) + BigInt(raw.carpoolValue));
+      ctx.meta.set(uuid, state + BigInt(raw.carpoolValue));
       return;
     }
   }

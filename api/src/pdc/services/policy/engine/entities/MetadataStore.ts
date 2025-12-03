@@ -42,9 +42,10 @@ export class MetadataStore implements MetadataStoreInterface {
       keysToQuery,
       registry.datetime,
     )) || [];
+
     for (const key of keysToQuery) {
       const variableDefinition = getDefaultVariableDefinition(variables.find((v) => v.key === key)!);
-      const value = missingData.find((k) => k.key === key)?.value || variableDefinition.initialValue || 0;
+      const value = missingData.find((k) => k.key === key)?.value || variableDefinition.initialValue || 0n;
       this.cache.set(getCacheKey(registry.policy_id, key), {
         ...variableDefinition,
         policy_id: registry.policy_id,
@@ -52,26 +53,22 @@ export class MetadataStore implements MetadataStoreInterface {
         value: BigInt(value),
       });
     }
-    const data = variables
-      .map((v) => [v, this.cache.get(getCacheKey(registry.policy_id, v.key))])
-      .reduce(
-        (
-          m,
-          [v, i]: [
-            SerializedMetadataVariableDefinitionInterface,
-            StoredMetadataVariableInterface,
-          ],
-        ) => {
-          m.set(v.uuid, {
-            policy_id: i.policy_id,
-            key: i.key,
-            value: i.value,
-            ...(v.carpoolValue ? { carpoolValue: v.carpoolValue } : {}),
-          });
-          return m;
-        },
-        new Map<string, SerializedAccessibleMetadataInterface>(),
-      );
+
+    const mapped: Array<[
+      SerializedMetadataVariableDefinitionInterface,
+      StoredMetadataVariableInterface | undefined,
+    ]> = variables.map((v) => [v, this.cache.get(getCacheKey(registry.policy_id, v.key))]);
+    const data = new Map<string, SerializedAccessibleMetadataInterface>();
+
+    for (const [v, i] of mapped) {
+      if (!v || !i) continue;
+      data.set(v.uuid, {
+        policy_id: i.policy_id,
+        key: i.key,
+        value: i.value,
+        ...(v.carpoolValue ? { carpoolValue: v.carpoolValue } : {}),
+      });
+    }
 
     return MetadataAccessor.import(registry.datetime, data);
   }
