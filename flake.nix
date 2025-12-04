@@ -83,9 +83,9 @@
             export PRE_COMMIT_ALLOW_NO_CONFIG=1
             export GH_REPO=covoiturage-gouv-fr/mono
             export DENO_NO_UPDATE_CHECK=true
+            export DENO_DIR="$PWD/api/.cache"
             export SEVEN_ZIP_BIN_PATH=$(which 7z)
             export LESS="-SRXF"
-
             export LD_LIBRARY_PATH="${pkgs.stdenv.cc.cc.lib.outPath}/lib:${pkgs.pythonManylinuxPackages.manylinux2014Package}/lib:$LD_LIBRARY_PATH";
             test -d .nix-venv || uv venv .nix-venv --no-project --no-managed-python --no-python-downloads
             source .nix-venv/bin/activate
