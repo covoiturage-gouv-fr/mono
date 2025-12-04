@@ -16,7 +16,7 @@ import { TerritoriesInterface } from "../../../interfaces/dataInterface";
 import { useAuth } from "../../../providers/AuthProvider";
 
 export default function TabCampaigns() {
-  const [campaignId, setCampaignId] = useState<number>();
+  const [campaignId] = useState<number>();
   const { user } = useAuth();
   const { search, debouncedSearch, onChangeSearch: setSearchValue } = useUrlSearch();
   const router = useRouter();
