@@ -1,6 +1,6 @@
-import { NotFoundException, provider } from "@/ilos/common/index.ts";
-import { LegacyPostgresConnection } from "@/ilos/connection-postgres/index.ts";
-import { logger } from "@/lib/logger/index.ts";
+import { NotFoundException, provider } from "../../../../ilos/common/index.ts";
+import { LegacyPostgresConnection } from "../../../../ilos/connection-postgres/index.ts";
+import { logger } from "../../../../lib/logger/index.ts";
 import { PolicyStatusEnum } from "../contracts/common/interfaces/PolicyInterface.ts";
 import { toISOString } from "../helpers/index.ts";
 import { PolicyRepositoryProviderInterfaceResolver, SerializedPolicyInterface } from "../interfaces/index.ts";
@@ -11,6 +11,7 @@ import { PolicyRepositoryProviderInterfaceResolver, SerializedPolicyInterface } 
 export class PolicyRepositoryProvider implements PolicyRepositoryProviderInterfaceResolver {
   public readonly table = "policy.policies";
   public readonly getTerritorySelectorFn = "territory.get_selector_by_territory_id";
+  private readonly tableTerritory = "territory.territory_group";
 
   constructor(protected connection: LegacyPostgresConnection) {}
 
@@ -21,6 +22,7 @@ export class PolicyRepositoryProvider implements PolicyRepositoryProviderInterfa
           pp._id,
           sel.selector as territory_selector,
           pp.name,
+          pp.descriptive_sheet_url,
           pp.start_date,
           pp.end_date,
           pp.tz,
@@ -139,6 +141,25 @@ export class PolicyRepositoryProvider implements PolicyRepositoryProviderInterfa
     return;
   }
 
+  async updateDescriptiveSheetUrl(id: number, descriptiveSheetUrl: string | null): Promise<void>{
+    const query = {
+      text: `
+      UPDATE ${this.table}
+        SET descriptive_sheet_url = $2
+        WHERE _id = $1
+        AND deleted_at IS NULL
+        RETURNING _id
+      `,
+      values: [id, descriptiveSheetUrl],
+    };
+
+    const result = await this.connection.getClient().query(query);
+
+    if (result.rowCount !== 1) {
+      throw new NotFoundException(`Campaign not found (${id})`);
+    }
+  }
+
   async listApplicablePoliciesId(): Promise<number[]> {
     const results = await this.connection.getClient().query({
       text: "SELECT _id FROM policy.policies WHERE status = $1",
@@ -154,9 +175,10 @@ export class PolicyRepositoryProvider implements PolicyRepositoryProviderInterfa
     status?: PolicyStatusEnum;
     datetime?: Date;
     ends_in_the_future?: boolean;
+    search?: string;
   }): Promise<SerializedPolicyInterface[]> {
     const values = [];
-    const whereClauses = ["deleted_at IS NULL and handler is not null"];
+    const whereClauses = ["pp.deleted_at IS NULL and handler is not null"];
     for (const key of Reflect.ownKeys(search)) {
       switch (key) {
         case "_id":
@@ -191,6 +213,10 @@ export class PolicyRepositoryProvider implements PolicyRepositoryProviderInterfa
         case "ends_in_the_future":
           whereClauses.push(`pp.end_date ${search[key] ? ">" : "<"} NOW()`);
           break;
+        case "search":
+          values.push(`%${search[key]}%`);
+          whereClauses.push(`(pp.name ILIKE $${values.length} OR tg.name ILIKE $${values.length})`);
+          break;
         default:
           break;
       }
@@ -202,6 +228,7 @@ export class PolicyRepositoryProvider implements PolicyRepositoryProviderInterfa
           pp._id,
           sel.selector as territory_selector,
           pp.name,
+          pp.descriptive_sheet_url,
           pp.start_date,
           pp.end_date,
           pp.handler,
@@ -209,8 +236,9 @@ export class PolicyRepositoryProvider implements PolicyRepositoryProviderInterfa
           pp.territory_id,
           pp.incentive_sum,
           pp.max_amount
-        FROM ${this.table} as pp,
-        LATERAL (
+        FROM ${this.table} as pp
+        LEFT JOIN ${this.tableTerritory} as tg ON tg._id = pp.territory_id
+        CROSS JOIN LATERAL (
           SELECT * FROM ${this.getTerritorySelectorFn}(ARRAY[pp.territory_id])
         ) as sel
         WHERE ${whereClauses.join(" AND ")}
@@ -286,7 +314,7 @@ export class PolicyRepositoryProvider implements PolicyRepositoryProviderInterfa
     const { _id: key_id, datetime } = res.rows[0];
 
     // compute incentive_sum
-    const resSum = await this.connection.getClient().query<{ incentive_sum: number }>({
+    const resSum = await this.connection.getClient().query<{ incentive_sum: bigint }>({
       text: `
           WITH latest_incentive AS (
             SELECT MAX(datetime)

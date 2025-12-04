@@ -14,6 +14,8 @@
   "deno.enablePaths": [
     "./api"
   ],
+  "deno.cache": "./api/.cache",
+  "deno.cacheOnSave": true,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
@@ -36,6 +38,7 @@
     "**/*.postman_collection.json": true,
     "**/dist": true,
     "**/node_modules": true,
+    "api/.cache": true,
     "db": true
   },
   "files.watcherExclude": {

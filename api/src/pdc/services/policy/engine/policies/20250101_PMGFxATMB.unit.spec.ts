@@ -1,7 +1,7 @@
-import { it } from "@/dev_deps.ts";
-import { v4 as uuidV4 } from "@/lib/uuid/index.ts";
-import { makeProcessHelper } from "@/pdc/services/policy/engine/tests/macro.ts";
-import { OperatorsEnum } from "@/pdc/services/policy/interfaces/index.ts";
+import { it } from "../../../../../dev_deps.ts";
+import { v4 as uuidV4 } from "../../../../../lib/uuid/index.ts";
+import { OperatorsEnum } from "../../interfaces/index.ts";
+import { makeProcessHelper } from "../tests/macro.ts";
 import { PMGFxATMB2025 as Handler } from "./20250101_PMGFxATMB.ts";
 
 const defaultPosition = {
@@ -12,7 +12,6 @@ const defaultPosition = {
   dep: "74",
   reg: "84",
   country: "XXXXX",
-  reseau: 1,
 };
 
 const defaultLat = 46.313355215729146;
@@ -327,7 +326,7 @@ it("should work with driver month limits", async () =>
       meta: [
         {
           key: "max_amount_restriction.0-one.month.3-2025",
-          value: 48_50,
+          value: 48_50n,
         },
       ],
     },
@@ -336,11 +335,11 @@ it("should work with driver month limits", async () =>
       meta: [
         {
           key: "max_amount_restriction.0-one.month.3-2025",
-          value: 50_00,
+          value: 50_00n,
         },
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 150,
+          value: 150n,
         },
       ],
     },

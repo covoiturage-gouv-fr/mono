@@ -1,10 +1,10 @@
-import { BoundedSlices, UnboundedSlices } from './Slices';
+import { BoundedSlices, UnboundedSlices } from "./Slices";
 
 export enum PolicyStatusEnum {
-  ACTIVE = 'active',
-  DRAFT = 'draft',
-  TEMPLATE = 'template',
-  FINISHED = 'finished',
+  ACTIVE = "active",
+  DRAFT = "draft",
+  TEMPLATE = "template",
+  FINISHED = "finished",
 }
 
 export const policyStatusValues: PolicyStatusEnum[] = Object.values(PolicyStatusEnum);
@@ -18,7 +18,7 @@ export interface PolicyInterface {
   end_date: Date;
   status: PolicyStatusEnum;
   handler: string;
-  incentive_sum: number;
+  incentive_sum: bigint;
   params: {
     slices?: BoundedSlices | UnboundedSlices;
     operators?: Array<string>;

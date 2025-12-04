@@ -1,5 +1,5 @@
-import { describe, it } from "@/dev_deps.ts";
-import { v4 as uuidV4 } from "@/lib/uuid/index.ts";
+import { describe, it } from "../../../../../dev_deps.ts";
+import { v4 as uuidV4 } from "../../../../../lib/uuid/index.ts";
 import { OperatorsEnum } from "../../interfaces/index.ts";
 import { makeProcessHelper } from "../tests/macro.ts";
 import { IDFMPeriodeNormale2021 as Handler } from "./20210520_IDFM.ts";
@@ -107,31 +107,31 @@ describe("IDFM campaign", () => {
           meta: [
             {
               key: "max_amount_restriction.0-one.month.4-2021",
-              value: 450,
+              value: 450n,
             },
             {
               key: "max_amount_restriction.global.campaign.global",
-              value: 1675,
+              value: 1675n,
             },
             {
               key: "max_amount_restriction.0-two.month.4-2021",
-              value: 250,
+              value: 250n,
             },
             {
               key: "max_amount_restriction.0-two.month.2-2022",
-              value: 375,
+              value: 375n,
             },
             {
               key: "max_amount_restriction.0-three.month.4-2021",
-              value: 300,
+              value: 300n,
             },
             {
               key: "max_amount_restriction.0-four.month.2-2023",
-              value: 150,
+              value: 150n,
             },
             {
               key: "max_amount_restriction.0-four.month.4-2021",
-              value: 150,
+              value: 150n,
             },
           ],
         },
@@ -198,35 +198,35 @@ describe("IDFM campaign", () => {
           meta: [
             {
               key: "max_amount_restriction.0-1.month.1-2023",
-              value: 359,
+              value: 359n,
             },
             {
               key: "max_amount_restriction.global.campaign.global",
-              value: 2384,
+              value: 2384n,
             },
             {
               key: "max_amount_restriction.0-2.month.1-2023",
-              value: 450,
+              value: 450n,
             },
             {
               key: "max_amount_restriction.0-3.month.1-2023",
-              value: 450,
+              value: 450n,
             },
             {
               key: "max_amount_restriction.0-4.month.1-2023",
-              value: 225,
+              value: 225n,
             },
             {
               key: "max_amount_restriction.0-5.month.1-2023",
-              value: 225,
+              value: 225n,
             },
             {
               key: "max_amount_restriction.0-6.month.11-2024",
-              value: 225,
+              value: 225n,
             },
             {
               key: "max_amount_restriction.0-6.month.2-2025",
-              value: 450,
+              value: 450n,
             },
           ],
         },
@@ -238,12 +238,12 @@ describe("IDFM campaign", () => {
     async () =>
       await process(
         {
-          policy: { handler: Handler.id, max_amount: 10_300_000_00 },
+          policy: { handler: Handler.id, max_amount: 10_300_000_00n },
           carpool: [{ distance: 5_000, driver_identity_key: "one" }],
           meta: [
             {
               key: "max_amount_restriction.global.campaign.global",
-              value: 10_299_999_50,
+              value: 10_299_999_50n,
             },
           ],
         },
@@ -252,11 +252,11 @@ describe("IDFM campaign", () => {
           meta: [
             {
               key: "max_amount_restriction.0-one.month.4-2021",
-              value: 150,
+              value: 150n,
             },
             {
               key: "max_amount_restriction.global.campaign.global",
-              value: 10_300_000_00,
+              value: 10_300_000_00n,
             },
           ],
         },
@@ -273,7 +273,7 @@ describe("IDFM campaign", () => {
           meta: [
             {
               key: "max_amount_restriction.0-one.month.4-2021",
-              value: 149_00,
+              value: 149_00n,
             },
           ],
         },
@@ -282,11 +282,11 @@ describe("IDFM campaign", () => {
           meta: [
             {
               key: "max_amount_restriction.0-one.month.4-2021",
-              value: 150_00,
+              value: 150_00n,
             },
             {
               key: "max_amount_restriction.global.campaign.global",
-              value: 100,
+              value: 100n,
             },
           ],
         },
@@ -315,11 +315,11 @@ describe("IDFM campaign", () => {
           meta: [
             {
               key: "max_amount_restriction.0-one.month.4-2021",
-              value: 900,
+              value: 900n,
             },
             {
               key: "max_amount_restriction.global.campaign.global",
-              value: 900,
+              value: 900n,
             },
           ],
         },

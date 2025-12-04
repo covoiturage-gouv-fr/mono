@@ -1,9 +1,9 @@
-import { ConnectionInterface, DestroyHookInterface, InitHookInterface } from "@/ilos/common/index.ts";
-import { env_or_default, env_or_false } from "@/lib/env/index.ts";
-import { logger } from "@/lib/logger/index.ts";
-import sql, { Sql } from "@/lib/pg/sql.ts";
 import { ClientOptions, Pool } from "dep:postgres";
 import { array, assert, boolean, number, object, pattern, refine, string, union } from "dep:superstruct";
+import { env_or_default, env_or_false } from "../../lib/env/index.ts";
+import { logger } from "../../lib/logger/index.ts";
+import sql, { Sql } from "../../lib/pg/sql.ts";
+import { ConnectionInterface, DestroyHookInterface, InitHookInterface } from "../common/index.ts";
 
 export class DenoPostgresConnection
   implements ConnectionInterface<Pool>, InitHookInterface, DestroyHookInterface, AsyncDisposable {
@@ -82,9 +82,9 @@ export class DenoPostgresConnection
           queryInError: debugString.includes("queryinerror"),
         },
         decoders: {
-          // BigInt are kept as strings for compatibility with node-postgres
-          // TODO: migrate the code to BigInt (remove the custom decoder)
-          20: (value: string): string => value,
+          //   // BigInt are kept as strings for compatibility with node-postgres
+          //   // TODO: migrate the code to BigInt (remove the custom decoder)
+          //   20: (value: string): string => value,
         },
       },
       ...config,

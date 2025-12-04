@@ -1,5 +1,5 @@
-import { it } from "@/dev_deps.ts";
-import { v4 as uuidV4 } from "@/lib/uuid/index.ts";
+import { it } from "../../../../../dev_deps.ts";
+import { v4 as uuidV4 } from "../../../../../lib/uuid/index.ts";
 import { OperatorsEnum } from "../../interfaces/index.ts";
 import { makeProcessHelper } from "../tests/macro.ts";
 import { PetrLunevilloisS12023 as Handler } from "./20240108_PetrLunevillois.ts";
@@ -12,7 +12,7 @@ const defaultPosition = {
   dep: "54",
   reg: "44",
   country: "XXXXX",
-  reseau: "269",
+  reseau: 269,
 };
 const defaultLat = 48.5905360901711;
 const defaultLon = 6.499392987670189;
@@ -82,7 +82,7 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 546,
+            value: 546n,
           },
         ],
       },
@@ -173,7 +173,7 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 9_999_99,
+            value: 9_999_99n,
           },
         ],
       },
@@ -182,7 +182,7 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 10_000_00,
+            value: 10_000_00n,
           },
         ],
       },
@@ -208,7 +208,7 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 42,
+            value: 42n,
           },
         ],
       },

@@ -5,6 +5,7 @@ import { getApiUrl } from "@/helpers/api";
 import { enumRoles, getRolesList, labelRole } from "@/helpers/auth";
 import { useActionsModal } from "@/hooks/useActionsModal";
 import { useApi } from "@/hooks/useApi";
+import { useUrlSearch } from "@/hooks/useUrlSearch";
 import { type OperatorsInterface, type TerritoriesInterface, type UsersInterface } from "@/interfaces/dataInterface";
 import { useAuth } from "@/providers/AuthProvider";
 import { fr } from "@codegouvfr/react-dsfr";
@@ -19,10 +20,15 @@ import { z } from "zod";
 export default function UsersTable(props: { title: string; territoryId: number | null; operatorId: number | null }) {
   const { user, simulatedRole } = useAuth();
   const [currentPage, setCurrentPage] = useState(1);
+  const { search, debouncedSearch, onChangeSearch: setSearchValue } = useUrlSearch();
   const modal = useActionsModal<UsersInterface["data"][0]>();
   const [alert, setAlert] = useState<"create" | "update" | "delete" | "error">();
   const onChangePage = (id: number) => {
     setCurrentPage(id);
+  };
+  const onChangeSearch = (search: string) => {
+    setSearchValue(search);
+    setCurrentPage(1);
   };
   const url = useMemo(() => {
     const urlObj = new URL(getApiUrl("v3", "dashboard/users"));
@@ -34,11 +40,15 @@ export default function UsersTable(props: { title: string; territoryId: number |
     if (currentPage !== 1) {
       urlObj.searchParams.set("page", currentPage.toString());
     }
+    if (debouncedSearch !== "") {
+      urlObj.searchParams.set("search", debouncedSearch);
+    }
     return urlObj.toString();
-  }, [props.territoryId, props.operatorId, currentPage]);
+  }, [props.territoryId, props.operatorId, currentPage, debouncedSearch]);
 
   const { data, refetch: refetchUsers } = useApi<UsersInterface>(url);
   const totalPages = data?.meta.totalPages ?? 1;
+  const totalRecords = data?.meta.total ?? 0;
 
   const headers = ["Prénom", "Nom", "Adresse mail", "Rôle", "Opérateur", "Territoire", "Actions"];
   const operatorsApiUrl = getApiUrl("v3", `dashboard/operators?limit=100`);
@@ -177,7 +187,7 @@ export default function UsersTable(props: { title: string; territoryId: number |
 
       <h3 className={fr.cx("fr-callout__title")}>{props.title}</h3>
       {user?.role.split(".")[1] === "admin" && (
-        <>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "1rem" }}>
           <Button
             iconId="fr-icon-add-circle-line"
             onClick={() => {
@@ -198,9 +208,23 @@ export default function UsersTable(props: { title: string; territoryId: number |
           >
             Ajouter
           </Button>
-        </>
+          <Input
+            label="Rechercher"
+            state={search !== "" ? (totalRecords <= 0 ? "error" : "success") : "default"}
+            stateRelatedMessage={totalRecords + " résultats"}
+            hintText="Nom / Prénom / Adresse mail / Opérateur / Territoire"
+            nativeInputProps={{
+              type: "text",
+              value: search ?? "",
+              onChange: (e) =>
+                onChangeSearch(
+                  e.target.value,
+                ),
+            }}
+          />
+      </div>
       )}
-      <Table data={dataTable} headers={headers} colorVariant="blue-ecume" />
+      <Table data={dataTable} headers={headers} colorVariant="blue-ecume" fixed />
       <Pagination count={totalPages} defaultPage={currentPage} onChange={onChangePage} />
       <Modal
         open={modal.openModal}

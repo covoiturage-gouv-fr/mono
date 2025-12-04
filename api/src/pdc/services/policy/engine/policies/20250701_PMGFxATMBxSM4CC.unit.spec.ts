@@ -12,7 +12,6 @@ const defaultPosition = {
   dep: "74",
   reg: "84",
   country: "XXXXX",
-  reseau: 1,
 };
 
 const defaultLat = 46.313355215729146;
@@ -231,7 +230,7 @@ it("should work with driver month limits", async () =>
       meta: [
         {
           key: "max_amount_restriction.0-one.month.6-2025",
-          value: 48_50,
+          value: 48_50n,
         },
       ],
     },
@@ -240,11 +239,11 @@ it("should work with driver month limits", async () =>
       meta: [
         {
           key: "max_amount_restriction.0-one.month.6-2025",
-          value: 50_00,
+          value: 50_00n,
         },
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 150,
+          value: 150n,
         },
       ],
     },

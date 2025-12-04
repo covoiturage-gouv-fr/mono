@@ -1,12 +1,12 @@
-import { handler, KernelInterfaceResolver } from "@/ilos/common/index.ts";
-import { Action as AbstractAction } from "@/ilos/core/index.ts";
-import { logger } from "@/lib/logger/index.ts";
-import { internalOnlyMiddlewares } from "@/pdc/providers/middleware/index.ts";
+import { handler, KernelInterfaceResolver } from "../../../../ilos/common/index.ts";
+import { Action as AbstractAction } from "../../../../ilos/core/index.ts";
+import { logger } from "../../../../lib/logger/index.ts";
+import { internalOnlyMiddlewares } from "../../../providers/middleware/index.ts";
 import {
   ParamsInterface as GeoParamsInterface,
   ResultInterface as GeoResultInterface,
   signature as geoSignature,
-} from "@/pdc/services/territory/contracts/findGeoBySiren.contract.ts";
+} from "../../territory/contracts/findGeoBySiren.contract.ts";
 import { PolicyStatusEnum } from "../contracts/common/interfaces/PolicyInterface.ts";
 import { handlerConfig, ParamsInterface, ResultInterface } from "../contracts/simulateOnPastGeo.contract.ts";
 import { alias } from "../contracts/simulateOnPastGeo.schema.ts";
@@ -48,9 +48,9 @@ export class SimulateOnPastByGeoAction extends AbstractAction {
       tz: "Europe/Paris",
       status: PolicyStatusEnum.ACTIVE,
       handler: params.policy_template_id,
-      incentive_sum: 0,
+      incentive_sum: 0n,
       territory_id: 0,
-      max_amount: 10_000_000_00,
+      max_amount: 10_000_000_00n,
       territory_selector: {
         ...(params.territory_insee === geoResult.aom_siren &&
           { aom: [geoResult.aom_siren] }),
