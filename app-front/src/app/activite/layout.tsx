@@ -52,7 +52,6 @@ export default function ActiviteLayout({ children }: { children: React.ReactNode
   const handleTabChange = (tabId: string) => {
     const route = tabIdToRoute[tabId];
     if (route) {
-      setActiveTab(tabId);
       router.push(route);
     }
   };

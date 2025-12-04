@@ -71,7 +71,6 @@ export default function AdministrationLayout({ children }: { children: React.Rea
   const handleTabChange = (tabId: string) => {
     const route = tabIdToRoute[tabId];
     if (route) {
-      setActiveTab(tabId);
       router.push(route);
     }
   };
