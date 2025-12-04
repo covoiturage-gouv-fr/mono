@@ -1,3 +1,4 @@
+"use client";
 import SelectOperator from "@/components/common/SelectOperator";
 import SelectTerritory from "@/components/common/SelectTerritory";
 import { labelRole } from "@/helpers/auth";
@@ -7,7 +8,7 @@ import { RadioButtons } from "@codegouvfr/react-dsfr/RadioButtons";
 import { ToggleSwitch } from "@codegouvfr/react-dsfr/ToggleSwitch";
 import { useEffect } from "react";
 
-export default function TabProfil() {
+export default function ProfilPage() {
   const {
     user,
     simulate,

@@ -1,3 +1,4 @@
+"use client";
 import { useAuth } from "@/providers/AuthProvider";
 import OperatorsTable from "../tables/OperatorsTable";
 

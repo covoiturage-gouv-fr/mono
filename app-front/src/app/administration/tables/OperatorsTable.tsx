@@ -4,6 +4,7 @@ import Pagination from "@/components/common/Pagination";
 import { getApiUrl } from "@/helpers/api";
 import { useActionsModal } from "@/hooks/useActionsModal";
 import { useApi } from "@/hooks/useApi";
+import { useUrlSearch } from "@/hooks/useUrlSearch";
 import { type OperatorsInterface } from "@/interfaces/dataInterface";
 import { useAuth } from "@/providers/AuthProvider";
 import { fr } from "@codegouvfr/react-dsfr";
@@ -17,10 +18,15 @@ import { z } from "zod";
 export default function OperatorsTable(props: { title: string; id: number | null }) {
   const { user } = useAuth();
   const [currentPage, setCurrentPage] = useState(1);
+  const { search, debouncedSearch, onChangeSearch: setSearchValue } = useUrlSearch();
   const modal = useActionsModal<OperatorsInterface["data"][0]>();
   const [alert, setAlert] = useState<"create" | "update" | "delete" | "error">();
   const onChangePage = (id: number) => {
     setCurrentPage(id);
+  };
+  const onChangeSearch = (search: string) => {
+    setSearchValue(search);
+    setCurrentPage(1);
   };
   const url = useMemo(() => {
     const urlObj = new URL(getApiUrl("v3", "dashboard/operators"));
@@ -30,10 +36,14 @@ export default function OperatorsTable(props: { title: string; id: number | null
     if (currentPage !== 1) {
       urlObj.searchParams.set("page", currentPage.toString());
     }
+    if (debouncedSearch !== "") {
+      urlObj.searchParams.set("search", debouncedSearch);
+    }
     return urlObj.toString();
-  }, [props.id, currentPage]);
+  }, [props.id, currentPage, debouncedSearch]);
   const { data, refetch: refetchOperators } = useApi<OperatorsInterface>(url);
   const totalPages = data?.meta.totalPages ?? 1;
+  const totalRecords = data?.meta.total ?? 0;
   const headers = ["Identifiant", "Nom", "Siret", "Actions"];
   const dataTable =
     data?.data.map((d) => [
@@ -109,24 +119,39 @@ export default function OperatorsTable(props: { title: string; id: number | null
         />
       )}
       <h3 className={fr.cx("fr-callout__title")}>{props.title}</h3>
-      {user?.role === "registry.admin" && (
-        <>
-          <Button
-            iconId="fr-icon-add-circle-line"
-            onClick={() => {
-              modal.setCurrentRow({ name: "", siret: "" });
-              modal.setOpenModal(true);
-              modal.setErrors({});
-              modal.setTypeModal("create");
-            }}
-            title="Ajouter un opérateur"
-            size="small"
-          >
-            Ajouter
-          </Button>
-        </>
-      )}
-      <Table data={dataTable} headers={headers} colorVariant="blue-ecume" />
+        {user?.role === "registry.admin" && (
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "1rem" }}>
+              <Button
+                iconId="fr-icon-add-circle-line"
+                onClick={() => {
+                  modal.setCurrentRow({ name: "", siret: "" });
+                  modal.setOpenModal(true);
+                  modal.setErrors({});
+                  modal.setTypeModal("create");
+                }}
+                title="Ajouter un opérateur"
+                size="small"
+              >
+                Ajouter
+              </Button>
+              <Input
+                label="Rechercher"
+                state={search !== "" ? (totalRecords <= 0 ? "error" : "success") : "default"}
+                stateRelatedMessage={totalRecords + " résultats"}
+                hintText="Nom / SIRET"
+                nativeInputProps={{
+                  type: "text",
+                  value: search ?? "",
+                  onChange: (e) =>
+                    onChangeSearch(
+                      e.target.value,
+                    ),
+                }}
+              />
+          </div>
+        )}
+      
+      <Table data={dataTable} headers={headers} colorVariant="blue-ecume" fixed />
       <Pagination count={totalPages} defaultPage={currentPage} onChange={onChangePage} />
       <Modal
         open={modal.openModal}

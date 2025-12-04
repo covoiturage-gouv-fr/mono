@@ -6,6 +6,9 @@ import { fr } from "@codegouvfr/react-dsfr";
 import { Download } from "@codegouvfr/react-dsfr/Download";
 import Table from "@codegouvfr/react-dsfr/Table";
 import { type ReactNode, useMemo } from "react";
+import Loading from "../../../../../components/layout/Loading";
+import { ApdfRecord } from "../../../../../interfaces/apdfInterface";
+import { OperatorResult } from "../../../../../interfaces/operatorInterface";
 
 export default function ApdfTable(props: { title: string; campaignId: number; operatorId: number | null }) {
   const { user, simulate } = useAuth();
@@ -28,13 +31,13 @@ export default function ApdfTable(props: { title: string; campaignId: number; op
       }),
     };
   }, [props.campaignId, props.operatorId]);
-  const { data } = useApi<{
-    id: number;
-    result: { meta: null; data: Record<string, string | number>[] };
-    jsonrpc: string;
-  }>(url, false, init);
+  const { data, loading, error } = useApi<{ id: number; result: { meta: null; data: ApdfRecord[] }; jsonrpc: string }>(
+    url,
+    false,
+    init,
+  );
   const operatorsApiUrl = getApiUrl("v3", `dashboard/operators`);
-  const operatorsList = useApi<{ data: Record<string, string | number>[] }>(operatorsApiUrl);
+  const operatorsList = useApi<{ data: OperatorResult[] }>(operatorsApiUrl);
   const isRegistryAdmin = user?.role === "registry.admin" && simulate === false;
 
   const headers: string[] = isRegistryAdmin
@@ -50,7 +53,7 @@ export default function ApdfTable(props: { title: string; campaignId: number; op
 
   const dataTable = data?.result.data
     ?.map((d, i) => {
-      const baseCols: ReactNode[] = [(d.datetime as string).slice(0, 7), operatorName(d.operator_id)];
+      const baseCols: ReactNode[] = [d.datetime.slice(0, 7), operatorName(d.operator_id)];
 
       const adminCols: ReactNode[] = isRegistryAdmin ? [d.trips.toLocaleString()] : [];
 
@@ -61,7 +64,7 @@ export default function ApdfTable(props: { title: string; campaignId: number; op
           key={i}
           details={`xlsx - ${formatSize(d.size)}`}
           label="Télécharger"
-          linkProps={{ href: d.signed_url as string }}
+          linkProps={{ href: d.signed_url }}
         />,
       ];
 
@@ -69,12 +72,13 @@ export default function ApdfTable(props: { title: string; campaignId: number; op
     })
     .reverse();
 
+  if (loading) return <Loading />;
+  if (error) return <div>Erreur lors du chargement des données</div>;
   if (!dataTable) return <>Pas d&apos;APDF...</>;
-
   return (
     <div className={fr.cx("fr-my-4w")}>
       <h3 className={fr.cx("fr-callout__title")}>{props.title}</h3>
-      <Table data={dataTable} headers={headers} colorVariant="blue-ecume" />
+      <Table data={dataTable} headers={headers} colorVariant="blue-ecume" fixed />
     </div>
   );
 }
