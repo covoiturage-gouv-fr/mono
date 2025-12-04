@@ -1,14 +1,14 @@
-import { assertEquals, beforeEach, describe, it, sinon, SinonStub } from "@/dev_deps.ts";
-import { ResultInterface as OperatorResultInterface } from "@/pdc/services/operator/contracts/find.contract.ts";
+import { assertEquals, beforeEach, describe, it, sinon, SinonStub } from "../../../../dev_deps.ts";
+import { ResultInterface as OperatorResultInterface } from "../../operator/contracts/find.contract.ts";
 
-import { ContextType, KernelInterfaceResolver } from "@/ilos/common/index.ts";
+import { ContextType, KernelInterfaceResolver } from "../../../../ilos/common/index.ts";
+import { PolicyStatusEnum } from "../contracts/common/interfaces/PolicyInterface.ts";
+import { ParamsInterface, ResultInterface } from "../contracts/find.contract.ts";
 import {
   OperatorsEnum,
   PolicyRepositoryProviderInterfaceResolver,
   SerializedPolicyInterface,
-} from "@/pdc/services/policy/interfaces/index.ts";
-import { PolicyStatusEnum } from "../contracts/common/interfaces/PolicyInterface.ts";
-import { ParamsInterface, ResultInterface } from "../contracts/find.contract.ts";
+} from "../interfaces/index.ts";
 import { FindAction } from "./FindAction.ts";
 
 describe("FindAction", () => {
@@ -107,7 +107,7 @@ describe("FindAction", () => {
       tz: "Europe/Paris",
       handler: "pdll_2024",
       status: PolicyStatusEnum.ACTIVE,
-      incentive_sum: 100,
+      incentive_sum: 100n,
     };
     const operator: OperatorResultInterface = {
       name: "Klaxit",
@@ -141,7 +141,7 @@ describe("FindAction", () => {
       tz: "Europe/Paris",
       handler: "pmgf_late_2023",
       status: PolicyStatusEnum.FINISHED,
-      incentive_sum: 100,
+      incentive_sum: 100n,
     };
 
     const operator: OperatorResultInterface = {

@@ -1,19 +1,17 @@
-import { afterAll, assertEquals, beforeAll, describe, it } from "@/dev_deps.ts";
-import { LegacyDbContext, makeLegacyDbBeforeAfter } from "@/pdc/providers/test/index.ts";
-
+import { afterAll, assertEquals, beforeAll, describe, it } from "../../../../dev_deps.ts";
+import sql, { raw } from "../../../../lib/pg/sql.ts";
+import { DenoDbContext, makeDenoDbBeforeAfter } from "../../../providers/test/dbMacro.ts";
 import { MetadataRepositoryProvider } from "./MetadataRepositoryProvider.ts";
 
 describe("MetadataRepositoryProvider", () => {
-  let db: LegacyDbContext;
+  let db: DenoDbContext;
   let repository: MetadataRepositoryProvider;
 
-  const { before, after } = makeLegacyDbBeforeAfter();
+  const { before, after } = makeDenoDbBeforeAfter();
 
   beforeAll(async () => {
     db = await before();
-    repository = new MetadataRepositoryProvider(
-      db.connection,
-    );
+    repository = new MetadataRepositoryProvider(db.connection);
   });
 
   afterAll(async () => {
@@ -25,54 +23,72 @@ describe("MetadataRepositoryProvider", () => {
       {
         policy_id: 1,
         key: "my_key",
-        value: 0,
+        value: 0n,
         datetime: new Date("2021-01-01"),
       },
       {
         policy_id: 1,
         key: "my_key_2",
-        value: 500,
+        value: 500n,
         datetime: new Date("2021-02-01"),
       },
       {
         policy_id: 1,
         key: "my_key",
-        value: 100,
+        value: 100n,
         datetime: new Date("2021-03-01"),
       },
       {
         policy_id: 1,
         key: "my_key",
-        value: 200,
+        value: 200n,
         datetime: new Date("2021-04-01"),
       },
+      {
+        policy_id: 1,
+        key: "bigint_key",
+        value: 2147483647n, // int4 max
+        datetime: new Date("2021-05-01"),
+      },
+      {
+        policy_id: 1,
+        key: "bigint_key",
+        value: 2147483647n + 2147483647n,
+        datetime: new Date("2021-06-01"),
+      },
     ];
+
     await repository.set(data);
-    const result = await db.connection.getClient().query({
-      text: `
+
+    const rows = await db.connection.query(sql`
       SELECT policy_id, key, value, datetime
-      FROM ${repository.table}
-      WHERE policy_id = $1 ORDER BY datetime
-    `,
-      values: [1],
-    });
-    assertEquals(result.rows, data);
+      FROM ${raw(repository.table)}
+      WHERE policy_id = 1 ORDER BY datetime
+    `);
+
+    assertEquals(rows, data);
   });
 
   it("Should read meta", async () => {
-    const result = await repository.get(1, ["my_key", "my_key_2"]);
+    const result = await repository.get(1, ["my_key", "my_key_2", "bigint_key"]);
     assertEquals(result, [
       {
         policy_id: 1,
         key: "my_key",
-        value: 200,
+        value: 200n,
         datetime: new Date("2021-04-01"),
       },
       {
         policy_id: 1,
         key: "my_key_2",
-        value: 500,
+        value: 500n,
         datetime: new Date("2021-02-01"),
+      },
+      {
+        policy_id: 1,
+        key: "bigint_key",
+        value: 2147483647n + 2147483647n,
+        datetime: new Date("2021-06-01"),
       },
     ]);
   });
@@ -87,13 +103,13 @@ describe("MetadataRepositoryProvider", () => {
       {
         policy_id: 1,
         key: "my_key",
-        value: 100,
+        value: 100n,
         datetime: new Date("2021-03-01"),
       },
       {
         policy_id: 1,
         key: "my_key_2",
-        value: 500,
+        value: 500n,
         datetime: new Date("2021-02-01"),
       },
     ]);
@@ -109,7 +125,7 @@ describe("MetadataRepositoryProvider", () => {
       {
         policy_id: 1,
         key: "my_key",
-        value: 0,
+        value: 0n,
         datetime: new Date("2021-01-01"),
       },
     ]);
@@ -120,25 +136,22 @@ describe("MetadataRepositoryProvider", () => {
       {
         policy_id: 1,
         key: "my_key",
-        value: 0,
+        value: 0n,
         datetime: new Date("2021-01-01"),
       },
       {
         policy_id: 1,
         key: "my_key_2",
-        value: 500,
+        value: 500n,
         datetime: new Date("2021-02-01"),
       },
     ];
     await repository.delete(1, new Date("2021-03-01"));
-    const result = await db.connection.getClient().query({
-      text: `
+    const rows = await db.connection.query(sql`
       SELECT policy_id, key, value, datetime
-      FROM ${repository.table}
-      WHERE policy_id = $1 ORDER BY datetime
-    `,
-      values: [1],
-    });
-    assertEquals(result.rows, data);
+      FROM ${raw(repository.table)}
+      WHERE policy_id = 1 ORDER BY datetime
+    `);
+    assertEquals(rows, data);
   });
 });

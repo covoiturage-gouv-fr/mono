@@ -5,6 +5,7 @@ import { Config } from "@/config";
 import { getApiUrl } from "@/helpers/api";
 import { formatErrors, useActionsModal } from "@/hooks/useActionsModal";
 import { useApi } from "@/hooks/useApi";
+import { useUrlSearch } from "@/hooks/useUrlSearch";
 import type { Company, TerritoriesInterface, TerritorySelectorsInterface } from "@/interfaces/dataInterface";
 import { useAuth } from "@/providers/AuthProvider";
 import { fr } from "@codegouvfr/react-dsfr";
@@ -18,11 +19,16 @@ import { z } from "zod";
 export default function TerritoriesTable(props: { title: string; id: number | null }) {
   const { user } = useAuth();
   const [currentPage, setCurrentPage] = useState(1);
+  const { search, debouncedSearch, onChangeSearch: setSearchValue } = useUrlSearch();
   const [selector, setSelector] = useState<TerritorySelectorsInterface>();
   const modal = useActionsModal<TerritoriesInterface["data"][0]>();
   const [alert, setAlert] = useState<"create" | "update" | "delete" | "error">();
   const onChangePage = (page: number) => {
     setCurrentPage(page);
+  };
+  const onChangeSearch = (search: string) => {
+    setSearchValue(search);
+    setCurrentPage(1);
   };
   const url = useMemo(() => {
     const urlObj = new URL(getApiUrl("v3", "dashboard/territories?limit=25"));
@@ -32,8 +38,11 @@ export default function TerritoriesTable(props: { title: string; id: number | nu
     if (currentPage !== 1) {
       urlObj.searchParams.set("offset", ((currentPage - 1) * 25).toString());
     }
+    if (debouncedSearch !== "") {
+      urlObj.searchParams.set("search", debouncedSearch);
+    }
     return urlObj.toString();
-  }, [props.id, currentPage]);
+  }, [props.id, currentPage, debouncedSearch]);
   const { data, refetch: refetchTerritories } = useApi<TerritoriesInterface>(url);
   const totalPages = () => {
     if (data) {
@@ -41,6 +50,7 @@ export default function TerritoriesTable(props: { title: string; id: number | nu
     }
     return 1;
   };
+  const totalRecords = data?.meta.pagination.total ?? 0;
   const headers = ["Identifiant", "Nom", "Siret", "Actions"];
   const dataTable =
     data?.data.map((d) => [
@@ -218,7 +228,7 @@ export default function TerritoriesTable(props: { title: string; id: number | nu
       )}
       <h3 className={fr.cx("fr-callout__title")}>{props.title}</h3>
       {user?.role === "registry.admin" && (
-        <>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "1rem" }}>
           <Button
             iconId="fr-icon-add-circle-line"
             onClick={() => {
@@ -232,9 +242,23 @@ export default function TerritoriesTable(props: { title: string; id: number | nu
           >
             Ajouter
           </Button>
-        </>
+          <Input
+            label="Rechercher"
+            state={search !== "" ? (totalRecords <= 0 ? "error" : "success") : "default"}
+            stateRelatedMessage={totalRecords + " résultats"}
+            hintText="Nom / SIRET"
+            nativeInputProps={{
+              type: "text",
+              value: search ?? "",
+              onChange: (e) =>
+                onChangeSearch(
+                  e.target.value,
+                ),
+            }}
+          />
+        </div>
       )}
-      <Table data={dataTable} headers={headers} colorVariant="blue-ecume" />
+      <Table data={dataTable} headers={headers} colorVariant="blue-ecume" fixed />
       <Pagination count={totalPages()} defaultPage={currentPage} onChange={onChangePage} />
       <Modal
         open={modal.openModal}

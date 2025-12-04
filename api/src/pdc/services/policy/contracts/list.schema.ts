@@ -21,6 +21,9 @@ export const schema = {
     datetime: {
       macro: 'timestamp',
     },
+    search: {
+      type: 'string',
+    },
   },
 };
 

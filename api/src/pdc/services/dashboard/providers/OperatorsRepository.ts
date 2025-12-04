@@ -30,6 +30,9 @@ export class OperatorsRepository implements OperatorsRepositoryInterface {
     if (params.id) {
       filters.push(sql`_id=${params.id}`);
     }
+    if (params.search) {
+      filters.push(sql`(name ILIKE ${`%${params.search}%`} OR SIRET ILIKE ${`%${params.search}%`})`);
+    }
     const limit = params.limit || 25;
     const page = params.page || 1;
     const offset = (page - 1) * limit;

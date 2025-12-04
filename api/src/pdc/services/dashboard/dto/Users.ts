@@ -5,6 +5,7 @@ export const Users = object({
   id: optional(Id),
   territory_id: optional(Id),
   operator_id: optional(Id),
+  search: optional(Varchar),
   page: optional(Id),
   limit: optional(Id),
 });

@@ -1,9 +1,9 @@
-import { handler } from "@/ilos/common/index.ts";
-import { RedisConnection } from "@/ilos/connection-redis/index.ts";
-import { Action as AbstractAction } from "@/ilos/core/index.ts";
-import { logger } from "@/lib/logger/index.ts";
-import { copyGroupIdAndApplyGroupPermissionMiddlewares } from "@/pdc/providers/middleware/index.ts";
 import { RedisKey } from "dep:redis";
+import { handler } from "../../../../ilos/common/index.ts";
+import { RedisConnection } from "../../../../ilos/connection-redis/index.ts";
+import { Action as AbstractAction } from "../../../../ilos/core/index.ts";
+import { logger } from "../../../../lib/logger/index.ts";
+import { copyGroupIdAndApplyGroupPermissionMiddlewares } from "../../../providers/middleware/index.ts";
 import { PolicyStatusEnum } from "../contracts/common/interfaces/PolicyInterface.ts";
 import { handlerConfig, ParamsInterface, ResultInterface } from "../contracts/simulateOnPast.contract.ts";
 import { alias } from "../contracts/simulateOnPast.schema.ts";
@@ -61,9 +61,9 @@ export class SimulateOnPastAction extends AbstractAction {
       start_date,
       end_date: today,
       tz: "Europe/Paris",
-      incentive_sum: 0,
+      incentive_sum: 0n,
       territory_selector,
-      max_amount: 10_000_000_00,
+      max_amount: 10_000_000_00n,
       _id: 1,
     };
     const policy = await Policy.import(serialized_policy);

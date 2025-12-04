@@ -13,12 +13,14 @@ export abstract class PolicyRepositoryProviderInterfaceResolver {
     data: SerializedPolicyInterface,
   ): Promise<SerializedPolicyInterface>;
   abstract delete(id: number): Promise<void>;
+  abstract updateDescriptiveSheetUrl(id: number, descriptiveSheetUrl: string | null): Promise<void>;
   abstract findWhere(search: {
     _id?: number;
     territory_id?: number | null | number[];
     status?: PolicyStatusEnum;
     datetime?: Date;
     ends_in_the_future?: boolean;
+    search?: string;
   }): Promise<SerializedPolicyInterface[]>;
   abstract listApplicablePoliciesId(): Promise<number[]>;
   abstract activeOperators(policy_id: number): Promise<number[]>;

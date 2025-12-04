@@ -1,12 +1,15 @@
+import DescriptiveSheetUrlEditor from "@/components/campaign/DescriptiveSheetUrlEditor";
 import Loading from "@/components/layout/Loading";
 import { Config } from "@/config";
 import { getApiUrl } from "@/helpers/api";
 import { useApi } from "@/hooks/useApi";
+import { useUrlSearch } from "@/hooks/useUrlSearch";
 import { type TerritoriesInterface } from "@/interfaces/dataInterface";
 import { useAuth } from "@/providers/AuthProvider";
 import { fr } from "@codegouvfr/react-dsfr";
 import Alert from "@codegouvfr/react-dsfr/Alert";
 import Button from "@codegouvfr/react-dsfr/Button";
+import Input from '@codegouvfr/react-dsfr/Input';
 import Pagination from "@codegouvfr/react-dsfr/Pagination";
 import { Table } from "@codegouvfr/react-dsfr/Table";
 import { type ReactNode, useEffect, useMemo, useState } from "react";
@@ -21,13 +24,20 @@ export default function CampaignsTable(props: {
 }) {
   const [campaignId, setCampaignId] = useState<number>();
   const { user, simulatedRole } = useAuth();
+  const { search, debouncedSearch, onChangeSearch: setSearchValue } = useUrlSearch();
   const pageSize = 15;
   const [page, setPage] = useState(1);
   const url = `${Config.get<string>("auth.domain")}/rpc?methods=campaign:list`;
+
+  const onChangeSearch = (search: string) => {
+    setSearchValue(search);
+  };
+
   const init = useMemo(() => {
     const params = {
       ...(props.territoryId && { territory_id: props.territoryId }),
       ...(props.operatorId && { operator_id: props.operatorId }),
+      ...(debouncedSearch && { search: debouncedSearch })
     };
     return {
       method: "POST",
@@ -41,7 +51,7 @@ export default function CampaignsTable(props: {
         id: 1,
       }),
     };
-  }, [props.territoryId, props.operatorId]);
+  }, [props.territoryId, props.operatorId, debouncedSearch]);
   const { data, loading } = useApi<{
     id: number;
     result: { meta: null; data: Record<string, string | number>[] };
@@ -90,6 +100,7 @@ export default function CampaignsTable(props: {
   ]) as ReactNode[][];
   const pageCount = Math.max(1, Math.ceil(dataTableFull.length / pageSize));
   const dataTable = dataTableFull.slice((page - 1) * pageSize, page * pageSize);
+  const totalRecords = dataTableFull.length;
 
   // ⚠️ si les données changent, on revient à la première page
   useEffect(() => {
@@ -108,42 +119,60 @@ export default function CampaignsTable(props: {
   ];
 
   const currentCampaign = data?.result.data.find((d) => Number(d._id) === campaignId);
+
   if (loading) return <Loading />;
   return (
     <>
       {!campaignId && (
         <>
-          {dataTable.length > 0 ? (
-            <>
-              <h3 className={fr.cx("fr-callout__title")}>{props.title}</h3>
-              <Table data={dataTable} headers={headers} colorVariant="blue-ecume" />
-              <div className={fr.cx("fr-grid-row", "fr-mt-5w")}>
-                <div className={fr.cx("fr-mx-auto")}>
-                  <Pagination
-                    defaultPage={page}
-                    count={pageCount}
-                    getPageLinkProps={(value) => ({
-                      onClick: () => setPage(value),
-                      href: "#",
-                    })}
-                    showFirstLast
-                  />
-                </div>
+        {!props.territoryId ? (
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "1rem" }}>
+          <h3 className={fr.cx("fr-callout__title")}>{props.title}</h3>
+          <Input
+            label="Rechercher"
+            state={search !== "" ? (totalRecords <= 0 ? "error" : "success") : "default"}
+            stateRelatedMessage={totalRecords + " résultats"}
+            hintText="Nom de la campagne / Territoire"
+            nativeInputProps={{
+              type: "text",
+              value: search ?? "",
+              onChange: (e) =>
+                onChangeSearch(
+                  e.target.value,
+                ),
+            }}
+          />
+        </div>) : (null)}
+        {dataTable.length > 0 || search !== "" ? (
+          <>
+            <Table data={dataTable} headers={headers} colorVariant="blue-ecume" fixed />
+            <div className={fr.cx("fr-grid-row", "fr-mt-5w")}>
+              <div className={fr.cx("fr-mx-auto")}>
+                <Pagination
+                  defaultPage={page}
+                  count={pageCount}
+                  getPageLinkProps={(value) => ({
+                    onClick: () => setPage(value),
+                    href: "#",
+                  })}
+                  showFirstLast
+                />
               </div>
-            </>
-          ) : (
-            <Alert
-              title={"Pas de campagnes en cours"}
-              severity="info"
-              description={
-                <p>
-                  A date, nous n&apos;effectuons pas le suivi de vos campagnes d&apos;incitations financières,
-                  n&apos;hésitez pas à nous contacter en cas de besoin. Vous avez par contre accès à la fonctionnalité
-                  d&apos;export de données.
-                </p>
-              }
-            />
-          )}
+            </div>
+          </>
+        ) : (
+          <Alert
+            title={"Pas de campagnes en cours"}
+            severity="info"
+            description={
+              <p>
+                A date, nous n&apos;effectuons pas le suivi de vos campagnes d&apos;incitations financières,
+                n&apos;hésitez pas à nous contacter en cas de besoin. Vous avez par contre accès à la fonctionnalité
+                d&apos;export de données.
+              </p>
+            }
+          />
+        )}
         </>
       )}
       {campaignId && currentCampaign && (
@@ -174,6 +203,10 @@ export default function CampaignsTable(props: {
               * A noter que le budget est le montant dédié aux incitations uniquement et qu’il s’agit ici d’une
               estimation de la consommation en quasi temps réel.{" "}
             </i>
+            <DescriptiveSheetUrlEditor
+              campaignId={campaignId}
+              initialValue={currentCampaign.descriptive_sheet_url as string}
+            />
           </div>
           <JourneysGraph title="Evolution des trajets" campaignId={campaignId} />
           {["registry", "territory"].includes(user?.role.split(".")[0] ?? "") && simulatedRole !== "operator" && (
