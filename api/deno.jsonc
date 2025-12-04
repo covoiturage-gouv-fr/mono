@@ -85,10 +85,7 @@
     //      emitDecoratorMetadata is required for inversify
     "experimentalDecorators": true,
     // /!\  but not supported by standard decorators
-    "emitDecoratorMetadata": true,
-    "types": [
-      "geojson"
-    ]
+    "emitDecoratorMetadata": true
   },
   "nodeModulesDir": "none",
   "fmt": {
