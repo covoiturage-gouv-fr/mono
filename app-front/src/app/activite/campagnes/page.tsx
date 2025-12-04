@@ -88,7 +88,13 @@ export default function TabCampaigns() {
     d.name,
     `${(Number(d.incentive_sum) / 100).toLocaleString()} €`,
     `${(Number(d.max_amount) / 100).toLocaleString()} €`,
-    <Button key={i} size="small" onClick={() => setCampaignId(Number(d._id))}>
+    <Button
+      key={i}
+      size="small"
+      linkProps={{
+        href: "/activite/campagnes/details/" + d._id,
+      }}
+    >
       Détails
     </Button>,
   ]) as ReactNode[][];

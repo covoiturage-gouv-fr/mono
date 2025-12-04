@@ -6,4 +6,5 @@ export interface Campaign {
   end_date: string;
   incentive_sum: number;
   max_amount: number;
+  descriptive_sheet_url: string;
 }
