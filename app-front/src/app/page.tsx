@@ -32,18 +32,18 @@ export default function Home() {
             <ButtonsGroup
               buttons={[
                 {
-                  children: "Collectivité, contactez-nous",
+                  children: "Collectivité, découvrez les étapes pour créer un compte territoire et/ou utilisateur",
                   linkProps: {
-                    href: "mailto:contact@covoiturage.beta.gouv.fr",
-                    title: `Collectivité, contactez-nous`,
-                    "aria-label": `Collectivité, contactez-nous`,
+                    href: "https://doc.covoiturage.beta.gouv.fr/nos-services/le-registre-de-preuve-de-covoiturage/comment-fonctionne-lespace-partenaire/ouvrir-son-compte",
+                    title: `Collectivité, découvrez les étapes pour créer un compte territoire et/ou utilisateur`,
+                    "aria-label": `Collectivité, découvrez les étapes pour créer un compte territoire et/ou utilisateur`,
                   },
-                  priority: "secondary",
+                  priority: "primary",
                 },
                 {
                   children: "Opérateurs, découvrez les étapes",
                   linkProps: {
-                    href: "https://covoiturage.beta.gouv.fr/devenir-partenaire",
+                    href: "https://doc.covoiturage.beta.gouv.fr/vous-etes/je-suis-un-operateur/se-connecter#id-3.1-se-creer-un-compte-proconnect",
                     title: `Devenir partenaire - nouvelle fenêtre`,
                     "aria-label": `Devenir partenaire  - nouvelle fenêtre`,
                     target: "_blank",
