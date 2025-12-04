@@ -107,7 +107,6 @@ export default function DescriptiveSheetUrlEditor({ campaignId, initialValue }: 
             }}
             disabled={!initialValue || !isURL(initialValue)}
           >
-            {initialValue}
             Voir la fiche descriptive
           </Button>
         </div>

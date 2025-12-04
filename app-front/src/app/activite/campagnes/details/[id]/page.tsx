@@ -4,7 +4,6 @@ import { fr } from "@codegouvfr/react-dsfr";
 import { notFound, useParams, useRouter } from "next/navigation";
 
 import { useMemo } from "react";
-import DescriptiveSheetUrlEditor from "../../../../../components/campaign/DescriptiveSheetUrlEditor";
 import Loading from "../../../../../components/layout/Loading";
 import { Config } from "../../../../../config";
 import { useApi } from "../../../../../hooks/useApi";
@@ -79,10 +78,13 @@ export default function CampaignDetails() {
           * A noter que le budget est le montant dédié aux incitations uniquement et qu’il s’agit ici d’une estimation
           de la consommation en quasi temps réel.{" "}
         </i>
+        {/*
+        Will be re-enabled when a mechanism to get a fresh download URL
         <DescriptiveSheetUrlEditor
           campaignId={currentCampaign._id}
           initialValue={currentCampaign.descriptive_sheet_url}
         />
+        */}
       </div>
       <JourneysGraph title="Evolution des trajets" campaignId={currentCampaign._id} />
       {["registry", "territory"].includes(user?.role.split(".")[0] ?? "") && simulatedRole !== "operator" && (
