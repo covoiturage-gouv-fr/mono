@@ -20,44 +20,61 @@ import {
 })
 export class UsersRepository implements UsersRepositoryInterface {
   private readonly table = "auth.users";
+  private readonly tableTerritory = "territory.territory_group";
+  private readonly tableOperator = "operator.operators";
+
 
   constructor(private pgConnection: DenoPostgresConnection) {}
 
   async getUsers(
     params: UsersParamsInterface,
   ): Promise<UsersResultInterface> {
-    const filters = [sql`hidden = false`];
+    const filters = [sql`users.hidden = false`];
     if (params.id) {
-      filters.push(sql`_id = ${params.id}`);
+      filters.push(sql`users._id = ${params.id}`);
     }
     if (params.operator_id) {
-      filters.push(sql`operator_id = ${params.operator_id}`);
+      filters.push(sql`users.operator_id = ${params.operator_id}`);
     }
     if (params.territory_id) {
-      filters.push(sql`territory_id = ${params.territory_id}`);
+      filters.push(sql`users.territory_id = ${params.territory_id}`);
+    }
+    if (params.search) {
+      filters.push(sql`(
+        users.firstname ILIKE ${`%${params.search}%`} 
+        OR users.lastname ILIKE ${`%${params.search}%`} 
+        OR users.email ILIKE ${`%${params.search}%`} 
+        OR o.name ILIKE ${`%${params.search}%`}
+        OR tg.name ILIKE ${`%${params.search}%`}
+        )`);
     }
     const limit = params.limit || 25;
     const page = params.page || 1;
     const offset = (page - 1) * limit;
     const query = sql`
-      SELECT 
-        _id as id,
-        firstname,
-        lastname,
-        email,
-        operator_id,
-        territory_id,
-        role
-      FROM ${raw(this.table)}
+      SELECT
+        users._id as id,
+        users.firstname,
+        users.lastname,
+        users.email,
+        users.operator_id,
+        users.territory_id,
+        users.role
+      FROM ${raw(this.table)} AS users
+      ${params.search ?
+        sql`LEFT JOIN ${raw(this.tableTerritory)} tg ON tg._id = users.territory_id LEFT JOIN ${raw(this.tableOperator)} o ON o._id = users.operator_id` : sql``
+      }
       WHERE ${join(filters, " AND ")}
-      ORDER BY _id
+      ORDER BY users._id
       LIMIT ${limit} OFFSET ${offset}
     `;
     const rows = await this.pgConnection.query<UserResult>(query);
     // Calcul du nombre total d'éléments
     const countQuery = sql`
       SELECT COUNT(*) as total
-      FROM ${raw(this.table)}
+      FROM ${raw(this.table)} AS users
+      ${params.search ?  sql`LEFT JOIN ${raw(this.tableTerritory)} tg ON tg._id = users.territory_id` : sql``}
+      LEFT JOIN ${raw(this.tableOperator)} o ON o._id = users.operator_id
       WHERE ${join(filters, " AND ")}
     `;
     const countResponse = await this.pgConnection.query<{ total: string }>(countQuery);

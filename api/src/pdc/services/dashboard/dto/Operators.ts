@@ -3,6 +3,7 @@ import { Id, Siret, Varchar } from "@/pdc/providers/superstruct/shared/index.ts"
 
 export const Operators = object({
   id: optional(Id),
+  search: optional(Varchar),
   page: optional(Id),
   limit: optional(Id),
 });

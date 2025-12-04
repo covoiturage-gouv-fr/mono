@@ -19,6 +19,7 @@ export abstract class PolicyRepositoryProviderInterfaceResolver {
     status?: PolicyStatusEnum;
     datetime?: Date;
     ends_in_the_future?: boolean;
+    search?: string;
   }): Promise<SerializedPolicyInterface[]>;
   abstract listApplicablePoliciesId(): Promise<number[]>;
   abstract activeOperators(policy_id: number): Promise<number[]>;
