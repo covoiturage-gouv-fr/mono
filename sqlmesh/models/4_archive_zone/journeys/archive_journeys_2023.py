@@ -1,4 +1,3 @@
-import io
 import typing as t
 import pandas as pd
 from sqlmesh import ExecutionContext, model
