@@ -38,9 +38,9 @@ incentives_agg AS (
     start_geo_code,
     end_geo_code,
     journey_date,
-    COUNT(*) FILTER (WHERE siret_type = 'collectivite') AS total_incentive_collectivite,
-    COUNT(*) FILTER (WHERE siret_type = 'operator')     AS total_incentive_operator,
-    COUNT(*) FILTER (WHERE siret_type = 'other')        AS total_incentive_others
+    COUNT(*) FILTER (WHERE siret_type = 'collectivite') AS incentive_collectivite,
+    COUNT(*) FILTER (WHERE siret_type = 'operator')     AS incentive_operator,
+    COUNT(*) FILTER (WHERE siret_type = 'other')        AS incentive_others
   FROM unnested_sirets
   GROUP BY 1,2,3
 ),
@@ -50,12 +50,12 @@ SELECT
   start_geo_code,
   end_geo_code,
   start_datetime_tz::date AS journey_date,
-  count(DISTINCT _id)::int AS total_journeys_count,
-  count(DISTINCT driver_id)::int AS total_drivers,
-  count(DISTINCT passenger_id)::int AS total_passengers,
-  sum(passenger_seats)::int AS total_passenger_seats,
-  sum(distance)::int AS total_distance,
-  sum(duration) AS total_duration
+  count(DISTINCT _id)::int AS journeys,
+  count(DISTINCT driver_id)::int AS drivers,
+  count(DISTINCT passenger_id)::int AS passengers,
+  sum(passenger_seats)::int AS passenger_seats,
+  sum(distance)::int AS distance,
+  sum(duration) AS duration
 FROM trusted_zone.journeys
 WHERE valid_acquisition_status = true
 AND start_datetime_tz BETWEEN @start_ds AND @end_ds
@@ -66,16 +66,18 @@ SELECT
   j.start_geo_code,
   j.end_geo_code,
   j.journey_date,
-  j.total_journeys_count,
-  j.total_drivers,
-  j.total_passengers,
-  j.total_passenger_seats,
-  j.total_distance,
-  j.total_duration,
-  COALESCE(i.total_incentive_collectivite, 0) AS total_incentive_collectivite,
-  COALESCE(i.total_incentive_operator, 0)     AS total_incentive_operator,
-  COALESCE(i.total_incentive_others, 0)       AS total_incentive_others
+  j.journeys,
+  j.drivers,
+  j.passengers,
+  j.passenger_seats,
+  j.distance,
+  j.duration,
+  COALESCE(i.incentive_collectivite, 0) AS incentive_collectivite,
+  COALESCE(i.incentive_operator, 0)     AS incentive_operator,
+  COALESCE(i.incentive_others, 0)       AS incentive_others
 FROM journeys_agg j
 LEFT JOIN incentives_agg i ON j.start_geo_code = i.start_geo_code
   AND j.end_geo_code   = i.end_geo_code
   AND j.journey_date  = i.journey_date;
+
+CREATE UNIQUE INDEX IF NOT EXISTS obs_journeys_by_day_pk ON refined_zone.obs_journeys_by_day (start_geo_code, end_geo_code, journey_date);
