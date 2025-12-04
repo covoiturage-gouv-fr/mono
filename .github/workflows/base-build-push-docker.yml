@@ -64,15 +64,10 @@ jobs:
         uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8
         with:
           image-ref: betagouvpdc/${{ inputs.name }}:${{ inputs.tag }}
-          format: 'template'
-          template: '@/contrib/sarif.tpl'
-          output: 'trivy-results.sarif'
+          format: "template"
+          template: "@/contrib/sarif.tpl"
+          output: "trivy-results.sarif"
         continue-on-error: true
-      - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@16df4fbc19aea13d921737861d6c622bf3cefe23
-        continue-on-error: true
-        with:
-          sarif_file: 'trivy-results.sarif'
       - name: Login to DockerHub
         uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1
         with:

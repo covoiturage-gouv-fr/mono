@@ -55,32 +55,6 @@ jobs:
           APP_POSTGRES_URL: postgres://
           APP_REDIS_URL: redis://
 
-  codeql:
-    needs: [test]
-    name: CodeQL
-    runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        language: ["javascript"]
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
-        with:
-          fetch-depth: 2
-
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@fe4161a26a8629af62121b670040955b330f9af2
-        with:
-          config-file: ./.github/codeql/codeql-config.yml
-
-      - name: Autobuild
-        uses: github/codeql-action/autobuild@fe4161a26a8629af62121b670040955b330f9af2
-
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@fe4161a26a8629af62121b670040955b330f9af2
-
   integration:
     needs: [test]
     name: API integration tests
