@@ -30,7 +30,10 @@ WITH journeys AS (
     a.passengers,
     a.passenger_seats,
     a.distance,
-    a.duration
+    a.duration,
+    a.incentive_collectivite,
+    a.incentive_operator,
+    a.incentive_others
   FROM refined_zone.obs_journeys_by_day AS a
   LEFT JOIN trusted_zone.perimeters AS ps ON a.start_geo_code = ps.arr AND ps.year = EXTRACT(YEAR FROM a.journey_date)
   LEFT JOIN trusted_zone.perimeters AS pe ON a.end_geo_code = pe.arr AND pe.year = EXTRACT(YEAR FROM a.journey_date)
@@ -47,6 +50,9 @@ directions AS (
     j.passengers,
     j.passenger_seats,
     j.distance,
+    j.incentive_collectivite,
+    j.incentive_operator,
+    j.incentive_others,
     CASE 
       WHEN intra_start IS NOT NULL 
        AND intra_start = intra_end
@@ -86,7 +92,10 @@ SELECT
   SUM(drivers) AS drivers,
   SUM(passengers) AS passengers,
   SUM(passenger_seats) AS passenger_seats,
-  SUM(distance) AS distance
+  SUM(distance) AS distance,
+  SUM(incentive_collectivite) AS incentive_collectivite,
+  SUM(incentive_operator)     AS incentive_operator,
+  SUM(incentive_others)       AS incentive_others
 FROM directions
 WHERE code IS NOT NULL
 GROUP BY 1,2,3,4
@@ -101,7 +110,10 @@ SELECT
   SUM(drivers) - COALESCE(SUM(drivers) FILTER (WHERE is_intra = TRUE), 0) AS drivers,
   SUM(passengers) - COALESCE(SUM(passengers) FILTER (WHERE is_intra = TRUE), 0) AS passengers,
   SUM(passenger_seats) - COALESCE(SUM(passenger_seats) FILTER (WHERE is_intra = TRUE), 0) AS passenger_seats,
-  SUM(distance) - COALESCE(SUM(distance) FILTER (WHERE is_intra = TRUE), 0) AS distance
+  SUM(distance) - COALESCE(SUM(distance) FILTER (WHERE is_intra = TRUE), 0) AS distance,
+  SUM(incentive_collectivite) - COALESCE(SUM(incentive_collectivite) FILTER (WHERE is_intra = TRUE), 0) AS incentive_collectivite,
+  SUM(incentive_operator) - COALESCE(SUM(incentive_operator) FILTER (WHERE is_intra = TRUE), 0) AS incentive_operator,
+  SUM(incentive_others) - COALESCE(SUM(incentive_others) FILTER (WHERE is_intra = TRUE), 0) AS incentive_others
 FROM directions
 WHERE code IS NOT NULL
 GROUP BY 1,2,3;
