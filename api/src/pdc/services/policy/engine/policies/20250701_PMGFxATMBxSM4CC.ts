@@ -44,7 +44,7 @@ export const PMGFxATMBxSM4CCx2025: PolicyHandlerStaticInterface = class extends 
     },
   ];
 
-  constructor(public max_amount: number) {
+  constructor(public max_amount: bigint) {
     super();
     this.limits = [
       [

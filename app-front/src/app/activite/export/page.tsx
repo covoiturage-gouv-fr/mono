@@ -72,6 +72,9 @@ interface ResultInterfaceV3 {
 export default function TabExport() {
   const { user, simulate, simulatedRole } = useAuth();
   const [territoryId, setTerritoryId] = useState(user?.territory_id);
+  {
+    /*const [refreshTrigger, setRefreshTrigger] = useState(0);*/
+  }
   const forceHour = (input: Date | Dayjs, range: "start" | "end"): Date => {
     const d = dayjs(input);
     const date =
@@ -119,6 +122,9 @@ export default function TabExport() {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const result: ResultInterfaceV3 = await res.json();
         setResponse(result);
+        {
+          /*setRefreshTrigger((prev) => prev + 1);*/
+        }
       }
     } catch (err) {
       if (err instanceof Error) {
@@ -176,116 +182,119 @@ export default function TabExport() {
           </ul>
         }
       />
-      {user && (
-        <div className={fr.cx("fr-mt-4w")}>
-          {canChoose && (
-            <RadioButtons
-              legend="Périmètre de l'export"
-              name="radio"
-              options={[
-                {
-                  label: "Périmètre géographique",
-                  nativeInputProps: {
-                    checked: geoSelector === "geo",
-                    onChange: () => setGeoSelector("geo"),
-                  },
+      <div className={fr.cx("fr-mt-4w")}>
+        {canChoose && (
+          <RadioButtons
+            legend="Périmètre de l'export"
+            name="radio"
+            options={[
+              {
+                label: "Périmètre géographique",
+                nativeInputProps: {
+                  checked: geoSelector === "geo",
+                  onChange: () => setGeoSelector("geo"),
                 },
-                {
-                  label: "Périmètre campagne",
-                  nativeInputProps: {
-                    checked: geoSelector === "campaign",
-                    onChange: () => setGeoSelector("campaign"),
-                  },
+              },
+              {
+                label: "Périmètre campagne",
+                nativeInputProps: {
+                  checked: geoSelector === "campaign",
+                  onChange: () => setGeoSelector("campaign"),
                 },
-              ]}
-              orientation="horizontal"
+              },
+            ]}
+            orientation="horizontal"
+          />
+        )}
+        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="fr">
+          {showGeoSelector && <SelectGeo onChange={onChangeGeo} />}
+          {showCampaignSelector && (
+            <SelectTerritory
+              defaultValue={user.territory_id}
+              onChange={(v) => {
+                setTerritoryId(v);
+              }}
             />
           )}
-          <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="fr">
-            {showGeoSelector && <SelectGeo onChange={onChangeGeo} />}
-            {showCampaignSelector && (
-              <SelectTerritory
-                defaultValue={user.territory_id}
-                onChange={(v) => {
-                  setTerritoryId(v);
+          {(!!territoryId || !!territorySelectors) && (
+            <div className="fr-mt-4w">
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  flexWrap: "wrap",
+                  gap: "16px",
                 }}
-              />
-            )}
-            {(!!territoryId || !!territorySelectors) && (
-              <div className="fr-mt-4w">
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "row",
-                    flexWrap: "wrap",
-                    gap: "16px",
+              >
+                <DatePicker
+                  sx={{
+                    maxWidth: "200px",
                   }}
+                  label="Début"
+                  value={startDate}
+                  onChange={(v) => v && setStartDate(v)}
+                  minDate={dayjs().subtract(2, "years")}
+                  maxDate={endDate}
+                />
+
+                <DatePicker
+                  sx={{
+                    maxWidth: "200px",
+                  }}
+                  label="Fin"
+                  value={endDate}
+                  onChange={(v) => v && setEndDate(v)}
+                  minDate={startDate}
+                  maxDate={dayjs().subtract(5, "days")}
+                />
+              </div>
+
+              <div>
+                <Button
+                  disabled={loading}
+                  style={{
+                    marginTop: fr.spacing("5v"),
+                  }}
+                  className="fr-btn"
+                  size="large"
+                  onClick={() => void handleExport()}
                 >
-                  <DatePicker
-                    sx={{
-                      maxWidth: "200px",
-                    }}
-                    label="Début"
-                    value={startDate}
-                    onChange={(v) => setStartDate(v!)}
-                    minDate={dayjs().subtract(2, "years")}
-                    maxDate={endDate}
-                  />
-
-                  <DatePicker
-                    sx={{
-                      maxWidth: "200px",
-                    }}
-                    label="Fin"
-                    value={endDate}
-                    onChange={(v) => setEndDate(v!)}
-                    minDate={startDate}
-                    maxDate={dayjs().subtract(5, "days")}
-                  />
-                </div>
-
-                <div>
-                  <Button
-                    disabled={loading}
+                  Exporter
+                </Button>
+                {error && (
+                  <Alert
                     style={{
                       marginTop: fr.spacing("5v"),
                     }}
-                    className="fr-btn"
-                    size="large"
-                    onClick={() => void handleExport()}
-                  >
-                    Exporter
-                  </Button>
-                  {error && (
-                    <Alert
-                      style={{
-                        marginTop: fr.spacing("5v"),
-                      }}
-                      closable
-                      onClose={() => setError(null)}
-                      severity="warning"
-                      title="Une erreur est survenue"
-                      description={error}
-                    />
-                  )}
-                  {response && (
-                    <Alert
-                      style={{
-                        marginTop: fr.spacing("5v"),
-                      }}
-                      severity="success"
-                      title="Succès"
-                      description="Vous allez recevoir un email avec le lien de téléchargement prochainement"
-                      closable
-                      onClose={() => setResponse(null)}
-                    />
-                  )}
-                </div>
+                    closable
+                    onClose={() => setError(null)}
+                    severity="warning"
+                    title="Une erreur est survenue"
+                    description={error}
+                  />
+                )}
+                {response && (
+                  <Alert
+                    style={{
+                      marginTop: fr.spacing("5v"),
+                    }}
+                    severity="success"
+                    title="Succès"
+                    description="Vous allez recevoir un email avec le lien de téléchargement prochainement"
+                    closable
+                    onClose={() => setResponse(null)}
+                  />
+                )}
               </div>
-            )}
-          </LocalizationProvider>
-        </div>
-      )}
+            </div>
+          )}
+        </LocalizationProvider>
+      </div>
+
+      {/*
+        Will be re-enabled when a mechanism to get a fresh download URL
+      <ExportList refreshTrigger={refreshTrigger} days={30} pageSize={10} />
+      */}
     </>
   );
 }

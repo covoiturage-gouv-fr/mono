@@ -1,16 +1,16 @@
-import { command, CommandInterface } from "@/ilos/common/index.ts";
-import { getPerformanceTimer, logger } from "@/lib/logger/index.ts";
-import { staleDelay } from "@/pdc/services/export/config/export.ts";
-import { CarpoolListType } from "@/pdc/services/export/repositories/queries/carpoolListQuery.ts";
-import { NotificationService } from "@/pdc/services/export/services/NotificationService.ts";
-import { StorageService } from "@/pdc/services/export/services/StorageService.ts";
+import { command, CommandInterface } from "../../../../ilos/common/index.ts";
+import { getPerformanceTimer, logger } from "../../../../lib/logger/index.ts";
+import { staleDelay } from "../config/export.ts";
 import { CSVWriter } from "../models/CSVWriter.ts";
 import { Export, ExportStatus } from "../models/Export.ts";
 import { ExportRepositoryInterfaceResolver } from "../repositories/ExportRepository.ts";
+import { CarpoolListType } from "../repositories/queries/carpoolListQuery.ts";
 import { FieldServiceInterfaceResolver } from "../services/FieldService.ts";
 import { FileCreatorServiceInterfaceResolver } from "../services/FileCreatorService.ts";
 import { LogServiceInterfaceResolver } from "../services/LogService.ts";
 import { NameServiceInterfaceResolver } from "../services/NameService.ts";
+import { NotificationService } from "../services/NotificationService.ts";
+import { StorageService } from "../services/StorageService.ts";
 
 @command({
   signature: "export:process",
@@ -68,10 +68,18 @@ export class ProcessCommand implements CommandInterface {
       // upload to storage
       await this.exportRepository.status(_id, ExportStatus.UPLOADING);
 
+      const fileInfo = await Deno.stat(filepath);
+      const finalFilename = filepath.split("/").pop() || filename.split(".").pop();
+
       const key = await this.storage.upload(filepath);
       const url = await this.storage.getPublicUrl(key);
       // await this.storage.cleanup(filepath);
 
+      await this.exportRepository.update(_id, {
+        download_url: url,
+        filename: finalFilename,
+        file_size: fileInfo.size,
+      });
       await this.exportRepository.status(_id, ExportStatus.UPLOADED);
 
       // notify the user

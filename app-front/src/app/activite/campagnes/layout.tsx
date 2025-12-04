@@ -1,11 +1,8 @@
 "use client";
-import { useAuth } from "@/providers/AuthProvider";
 import { fr } from "@codegouvfr/react-dsfr";
 import Alert from "@codegouvfr/react-dsfr/Alert";
-import CampaignsTable from "../tables/CampaignsTable";
 
-export default function TabCampaigns() {
-  const { user } = useAuth();
+export default function CampaignsLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
       <Alert
@@ -39,15 +36,7 @@ export default function TabCampaigns() {
           </>
         }
       />
-      {user && (
-        <div className={fr.cx("fr-mt-4w")}>
-          <CampaignsTable
-            title={`Campagnes d'incitation`}
-            territoryId={user?.territory_id ?? null}
-            operatorId={user?.operator_id ?? null}
-          />
-        </div>
-      )}
+      <div className={fr.cx("fr-mt-4w")}>{children}</div>
     </>
   );
 }

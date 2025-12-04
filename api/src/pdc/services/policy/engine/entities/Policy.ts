@@ -1,5 +1,5 @@
-import { logger } from "@/lib/logger/index.ts";
-import { Timezone } from "@/pdc/providers/validator/index.ts";
+import { logger } from "../../../../../lib/logger/index.ts";
+import { Timezone } from "../../../../providers/validator/index.ts";
 import { PolicyStatusEnum } from "../../contracts/common/interfaces/PolicyInterface.ts";
 import {
   CarpoolInterface,
@@ -32,7 +32,8 @@ export class Policy implements PolicyInterface {
     public tz: Timezone,
     public handler: PolicyHandlerInterface,
     public status: PolicyStatusEnum,
-    public incentive_sum: number,
+    public incentive_sum: bigint,
+    public descriptive_sheet_url?: string,
   ) {}
 
   static async import(data: SerializedPolicyInterface): Promise<Policy> {
@@ -55,6 +56,7 @@ export class Policy implements PolicyInterface {
       hler,
       data.status,
       data.incentive_sum,
+      data.descriptive_sheet_url,
     );
 
     return pcy;
@@ -66,13 +68,14 @@ export class Policy implements PolicyInterface {
       territory_id: this.territory_id,
       territory_selector: this.territory_selector,
       name: this.name,
+      descriptive_sheet_url: this.descriptive_sheet_url,
       start_date: this.start_date,
       end_date: this.end_date,
       tz: this.tz,
       status: this.status,
       incentive_sum: this.incentive_sum,
       handler: (this.handler.constructor as PolicyHandlerStaticInterface).id,
-      max_amount: this.handler.max_amount,
+      max_amount: this.handler.max_amount!,
     };
   }
 
@@ -115,9 +118,7 @@ export class Policy implements PolicyInterface {
       await store.save(context.meta);
       return context.incentive;
     } catch (e) {
-      logger.error(
-        `Stateful incentive calculation failed for ${incentive._id}: ${e.message}`,
-      );
+      logger.error(`Stateful incentive calculation failed for ${incentive._id}: ${e.message}`);
       logger.debug(e);
       throw e;
     }

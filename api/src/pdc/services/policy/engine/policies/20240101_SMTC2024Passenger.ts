@@ -1,23 +1,19 @@
-import { getOperatorsAt, TimestampedOperators } from "@/pdc/services/policy/engine/helpers/getOperatorsAt.ts";
-import { isOperatorClassOrThrow } from "@/pdc/services/policy/engine/helpers/isOperatorClassOrThrow.ts";
-import { isOperatorOrThrow } from "@/pdc/services/policy/engine/helpers/isOperatorOrThrow.ts";
-import {
-  LimitTargetEnum,
-  watchForGlobalMaxAmount,
-  watchForPersonMaxTripByDay,
-} from "@/pdc/services/policy/engine/helpers/limits.ts";
-import { onDistanceRange, onDistanceRangeOrThrow } from "@/pdc/services/policy/engine/helpers/onDistanceRange.ts";
-import { perKm, perSeat } from "@/pdc/services/policy/engine/helpers/per.ts";
-import { AbstractPolicyHandler } from "@/pdc/services/policy/engine/policies/AbstractPolicyHandler.ts";
-import { RunnableSlices } from "@/pdc/services/policy/interfaces/engine/PolicyInterface.ts";
+import { RunnableSlices } from "../../interfaces/engine/PolicyInterface.ts";
 import {
   OperatorsEnum,
   PolicyHandlerInterface,
   PolicyHandlerParamsInterface,
   PolicyHandlerStaticInterface,
   StatelessContextInterface,
-} from "@/pdc/services/policy/interfaces/index.ts";
+} from "../../interfaces/index.ts";
+import { getOperatorsAt, TimestampedOperators } from "../helpers/getOperatorsAt.ts";
+import { isOperatorClassOrThrow } from "../helpers/isOperatorClassOrThrow.ts";
+import { isOperatorOrThrow } from "../helpers/isOperatorOrThrow.ts";
+import { LimitTargetEnum, watchForGlobalMaxAmount, watchForPersonMaxTripByDay } from "../helpers/limits.ts";
+import { onDistanceRange, onDistanceRangeOrThrow } from "../helpers/onDistanceRange.ts";
+import { perKm, perSeat } from "../helpers/per.ts";
 import { description } from "./20240101_SMTC2024Passenger.html.ts";
+import { AbstractPolicyHandler } from "./AbstractPolicyHandler.ts";
 
 // Politique Syndicat Mixte des Transports en Commun de l’Agglomération Clermontoise (SMTC)
 // aom = 256300120
@@ -32,7 +28,7 @@ export const SMTC2024Passenger: PolicyHandlerStaticInterface = class extends Abs
   ];
   protected operator_class = ["B", "C"];
 
-  constructor(public max_amount: number) {
+  constructor(public max_amount: bigint) {
     super();
     this.limits = [
       [

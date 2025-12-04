@@ -1,6 +1,6 @@
-import { afterAll, assertEquals, beforeAll, describe, it } from "@/dev_deps.ts";
-import { env_or_fail } from "@/lib/env/index.ts";
-import sql from "@/lib/pg/sql.ts";
+import { afterAll, assertEquals, beforeAll, describe, it } from "../../../dev_deps.ts";
+import { env_or_fail } from "../../../lib/env/index.ts";
+import sql from "../../../lib/pg/sql.ts";
 import { DenoMigrator } from "./DenoMigrator.ts";
 
 describe("seed", () => {
@@ -18,7 +18,7 @@ describe("seed", () => {
   });
 
   it("should seed territories", async () => {
-    const rows = await mig.testConn.query<{ count: string }>(sql`SELECT count(*) FROM geo.perimeters`);
-    assertEquals(rows[0].count, "17");
+    const rows = await mig.testConn.query<{ count: bigint }>(sql`SELECT count(*) FROM geo.perimeters`);
+    assertEquals(rows[0].count, 17n);
   });
 });

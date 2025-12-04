@@ -1,5 +1,5 @@
-import { it } from "@/dev_deps.ts";
-import { v4 as uuidV4 } from "@/lib/uuid/index.ts";
+import { it } from "../../../../../dev_deps.ts";
+import { v4 as uuidV4 } from "../../../../../lib/uuid/index.ts";
 import { OperatorsEnum } from "../../interfaces/index.ts";
 import { makeProcessHelper } from "../tests/macro.ts";
 import { PaysDeLaLoire2023 as Handler } from "./20230201_PaysDeLaLoire.ts";
@@ -12,7 +12,7 @@ const defaultPosition = {
   dep: "85",
   reg: "52",
   country: "XXXXX",
-  reseau: "430",
+  reseau: 430,
 };
 const defaultLat = 48.72565703413325;
 const defaultLon = 2.261827843187402;
@@ -109,19 +109,19 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 1600,
+            value: 1600n,
           },
           {
             key: "max_amount_restriction.0-one.month.3-2023",
-            value: 300,
+            value: 300n,
           },
           {
             key: "max_amount_restriction.0-two.month.3-2023",
-            value: 1150,
+            value: 1150n,
           },
           {
             key: "max_amount_restriction.0-two.month.4-2023",
-            value: 150,
+            value: 150n,
           },
         ],
       },
@@ -133,12 +133,12 @@ it(
   async () =>
     await process(
       {
-        policy: { handler: Handler.id, max_amount: 500_000_00 },
+        policy: { handler: Handler.id, max_amount: 500_000_00n },
         carpool: [{ distance: 5_000, driver_identity_key: "one" }],
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 499_999_50,
+            value: 499_999_50n,
           },
         ],
       },
@@ -147,11 +147,11 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 500_000_00,
+            value: 500_000_00n,
           },
           {
             key: "max_amount_restriction.0-one.month.3-2023",
-            value: 100,
+            value: 100n,
           },
         ],
       },
@@ -180,11 +180,11 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 600,
+            value: 600n,
           },
           {
             key: "max_amount_restriction.0-one.month.3-2023",
-            value: 600,
+            value: 600n,
           },
         ],
       },

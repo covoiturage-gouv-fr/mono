@@ -1,3 +1,4 @@
+"use client"
 import { useAuth } from "@/providers/AuthProvider";
 import { useState } from "react";
 import OperatorCredentialsTable from "../tables/OperatorCredentialsTable";

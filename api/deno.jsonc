@@ -61,10 +61,10 @@
     "dep:mjml": "npm:mjml@^4.15",
     "dep:helmet": "npm:helmet@^7.1",
     "dep:nodemailer": "npm:nodemailer@^6.9",
-    "dep:semver": "jsr:@std/semver@1",
-    "dep:collections": "jsr:@std/collections@1",
-    "dep:crypto": "jsr:@std/crypto@1",
-    "dep:encoding": "jsr:@std/encoding@1",
+    "dep:semver": "jsr:@std/semver@^1",
+    "dep:collections": "jsr:@std/collections@*",
+    "dep:crypto": "jsr:@std/crypto@^1",
+    "dep:encoding": "jsr:@std/encoding@^1",
     "dep:openid-client": "jsr:@panva/openid-client@6.3.4",
     "dep:datetime": "https://deno.land/std@0.224.0/datetime/mod.ts",
     "dep:log": "https://deno.land/std@0.224.0/log/mod.ts",
@@ -85,10 +85,7 @@
     //      emitDecoratorMetadata is required for inversify
     "experimentalDecorators": true,
     // /!\  but not supported by standard decorators
-    "emitDecoratorMetadata": true,
-    "types": [
-      "geojson"
-    ]
+    "emitDecoratorMetadata": true
   },
   "nodeModulesDir": "none",
   "fmt": {

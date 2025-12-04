@@ -1,5 +1,5 @@
-import { it } from "@/dev_deps.ts";
-import { v4 as uuidV4 } from "@/lib/uuid/index.ts";
+import { it } from "../../../../../dev_deps.ts";
+import { v4 as uuidV4 } from "../../../../../lib/uuid/index.ts";
 import { OperatorsEnum } from "../../interfaces/index.ts";
 import { makeProcessHelper } from "../tests/macro.ts";
 import { CCVMM202405 as Handler } from "./20240805_CCVMM_2024_05.ts";
@@ -56,12 +56,11 @@ it(
           { operator_class: "A" },
           { operator_uuid: OperatorsEnum.KAROS },
 
-          // // OD hors AOM
+          // OD hors AOM
           {
             start: { ...defaultPosition, epci: "244900015" },
             end: { ...defaultPosition, epci: "244900015" },
           },
-
           { passenger_is_over_18: false },
         ],
         meta: [],
@@ -123,12 +122,12 @@ it(
   async () =>
     await process(
       {
-        policy: { handler: Handler.id, max_amount: 2_200_000_00 },
+        policy: { handler: Handler.id, max_amount: 2_200_000_00n },
         carpool: [{ distance: 5_000, driver_identity_key: "one" }],
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 2_199_999_00,
+            value: 2_199_999_00n,
           },
         ],
       },
@@ -137,11 +136,11 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 2_200_000_00,
+            value: 2_200_000_00n,
           },
           {
             key: "max_amount_restriction.0-one.month.4-2024",
-            value: 150,
+            value: 150n,
           },
         ],
       },
@@ -170,11 +169,11 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 900,
+            value: 900n,
           },
           {
             key: "max_amount_restriction.0-driver_A.month.4-2024",
-            value: 900,
+            value: 900n,
           },
         ],
       },
@@ -194,11 +193,11 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 100_00,
+            value: 100_00n,
           },
           {
             key: "max_amount_restriction.0-one.month.4-2024",
-            value: 119_00,
+            value: 119_00n,
           },
         ],
       },
@@ -207,11 +206,11 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 101_00,
+            value: 101_00n,
           },
           {
             key: "max_amount_restriction.0-one.month.4-2024",
-            value: 120_00,
+            value: 120_00n,
           },
         ],
       },

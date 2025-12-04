@@ -1,16 +1,20 @@
 {
-  "[deno_dependencies_files]": {
-    "editor.formatOnSave": false
-  },
   "[jsonc]": {
     "editor.defaultFormatter": "vscode.json-language-features"
   },
-  "[typescript][javascript]": {
+  "[typescript]": {
     "editor.defaultFormatter": "denoland.vscode-deno",
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "never",
+      "source.sortImports": "explicit"
+    }
   },
-  "deno.config": "./api/deno.jsonc",
+  "typescript.validate.enable": false,
+  "typescript.format.enable": false,
   "deno.enable": true,
+  "deno.cache": "./api/.cache",
+  "deno.cacheOnSave": true,
   "deno.enablePaths": [
     "./api"
   ],
@@ -31,11 +35,15 @@
   "files.associations": {
     "*deps.ts": "deno_dependencies_files"
   },
+  "[deno_dependencies_files]": {
+    "editor.formatOnSave": false
+  },
   "files.exclude": {
     "**/*.d.ts": true,
     "**/*.postman_collection.json": true,
     "**/dist": true,
     "**/node_modules": true,
+    "api/.cache": true,
     "db": true
   },
   "files.watcherExclude": {
@@ -44,7 +52,6 @@
     "dashboard/.angular": true,
     "public/.next": true
   },
-  "javascript.preferences.quoteStyle": "single",
   "search.exclude": {
     "**/*.d.ts": true,
     "**/.nyc_output": true,
@@ -59,9 +66,5 @@
     "dashboard/src/app/core/entities/api/shared": true,
     "public/.next": true,
     "tmp/*": true
-  },
-  "typescript.preferences.importModuleSpecifier": "relative",
-  "typescript.preferences.quoteStyle": "single",
-  "typescript.updateImportsOnFileMove.enabled": "always",
-  "dbt.enableNewLineagePanel": true
+  }
 }

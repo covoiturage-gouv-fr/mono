@@ -1,5 +1,5 @@
-import { it } from "@/dev_deps.ts";
-import { v4 as uuidV4 } from "@/lib/uuid/index.ts";
+import { it } from "../../../../../dev_deps.ts";
+import { v4 as uuidV4 } from "../../../../../lib/uuid/index.ts";
 import { OperatorsEnum } from "../../interfaces/index.ts";
 import { makeProcessHelper } from "../tests/macro.ts";
 import { PMGFxATMB2024 as Handler } from "./20240401_PMGFxATMB.ts";
@@ -12,7 +12,6 @@ const defaultPosition = {
   dep: "74",
   reg: "84",
   country: "XXXXX",
-  reseau: null,
 };
 
 const defaultLat = 46.313355215729146;
@@ -208,7 +207,7 @@ it(
         meta: [
           {
             key: "max_amount_restriction.0-one.month.3-2024",
-            value: 48_50,
+            value: 48_50n,
           },
         ],
       },
@@ -217,11 +216,11 @@ it(
         meta: [
           {
             key: "max_amount_restriction.0-one.month.3-2024",
-            value: 50_00,
+            value: 50_00n,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 150,
+            value: 150n,
           },
         ],
       },

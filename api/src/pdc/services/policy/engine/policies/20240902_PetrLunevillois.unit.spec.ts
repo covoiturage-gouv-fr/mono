@@ -1,5 +1,5 @@
-import { it } from "@/dev_deps.ts";
-import { v4 as uuidV4 } from "@/lib/uuid/index.ts";
+import { it } from "../../../../../dev_deps.ts";
+import { v4 as uuidV4 } from "../../../../../lib/uuid/index.ts";
 import { OperatorsEnum } from "../../interfaces/index.ts";
 import { makeProcessHelper } from "../tests/macro.ts";
 import { PetrLunevillois092024032025 as Handler } from "./20240902_PetrLunevillois.ts";
@@ -12,7 +12,6 @@ const defaultPosition = {
   dep: "54",
   reg: "44",
   country: "XXXXX",
-  reseau: "269",
 };
 const defaultLat = 48.5905360901711;
 const defaultLon = 6.499392987670189;
@@ -77,7 +76,7 @@ it("should work basic with start/end inside aom", async () =>
       meta: [
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 546,
+          value: 546n,
         },
       ],
     },
@@ -126,7 +125,7 @@ it("should work for normal trips (start)", async () =>
     meta: [
       {
         key: "max_amount_restriction.global.campaign.global",
-        value: 546,
+        value: 546n,
       },
     ],
   }));
@@ -174,7 +173,7 @@ it("should work for normal trips (end)", async () =>
     meta: [
       {
         key: "max_amount_restriction.global.campaign.global",
-        value: 546,
+        value: 546n,
       },
     ],
   }));
@@ -182,12 +181,12 @@ it("should work for normal trips (end)", async () =>
 it("should work with global limits", async () =>
   await process(
     {
-      policy: { handler: Handler.id, max_amount: 10_000_00 },
+      policy: { handler: Handler.id, max_amount: 10_000_00n },
       carpool: [{ distance: 59_000, driver_identity_key: "one" }],
       meta: [
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 9_999_99,
+          value: 9_999_99n,
         },
       ],
     },
@@ -196,7 +195,7 @@ it("should work with global limits", async () =>
       meta: [
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 10_000_00,
+          value: 10_000_00n,
         },
       ],
     },
@@ -219,7 +218,7 @@ it("should work with 2 trips per day limit", async () =>
       meta: [
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 42,
+          value: 42n,
         },
       ],
     },

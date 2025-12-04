@@ -1,5 +1,5 @@
-import { afterAll, assert, assertEquals, beforeAll, describe, it } from "@/dev_deps.ts";
-import { LegacyDbContext, makeLegacyDbBeforeAfter } from "@/pdc/providers/test/index.ts";
+import { afterAll, assert, assertEquals, beforeAll, describe, it } from "../../../../dev_deps.ts";
+import { LegacyDbContext, makeLegacyDbBeforeAfter } from "../../../providers/test/index.ts";
 import { PolicyStatusEnum } from "../contracts/common/interfaces/PolicyInterface.ts";
 import { Policy } from "../engine/entities/Policy.ts";
 import { IDFMPeriodeNormale2021 } from "../engine/policies/20210520_IDFM.ts";
@@ -35,8 +35,8 @@ describe.skip("TripRepositoryProvider", () => {
       name: "Policy",
       handler: IDFMPeriodeNormale2021.id,
       status: PolicyStatusEnum.ACTIVE,
-      incentive_sum: 5000,
-      max_amount: 10_000_000_00,
+      incentive_sum: 5000n,
+      max_amount: 10_000_000_00n,
     });
 
     const cursor = repository.findTripByPolicy(

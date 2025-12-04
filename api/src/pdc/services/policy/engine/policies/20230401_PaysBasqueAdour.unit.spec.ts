@@ -1,5 +1,5 @@
-import { it } from "@/dev_deps.ts";
-import { v4 as uuidV4 } from "@/lib/uuid/index.ts";
+import { it } from "../../../../../dev_deps.ts";
+import { v4 as uuidV4 } from "../../../../../lib/uuid/index.ts";
 import { OperatorsEnum } from "../../interfaces/index.ts";
 import { makeProcessHelper } from "../tests/macro.ts";
 import { PaysBasque20232024 as Handler } from "./20230401_PaysBasqueAdour.ts";
@@ -12,7 +12,7 @@ const defaultPosition = {
   dep: "64",
   reg: "75",
   country: "XXXXX",
-  reseau: "15",
+  reseau: 15,
 };
 const defaultLat = 48.72565703413325;
 const defaultLon = 2.261827843187402;
@@ -112,15 +112,15 @@ it(
         meta: [
           {
             key: "max_amount_restriction.0-one.month.3-2023",
-            value: 1950,
+            value: 1950n,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 2250,
+            value: 2250n,
           },
           {
             key: "max_amount_restriction.0-one.month.11-2023",
-            value: 300,
+            value: 300n,
           },
         ],
       },
@@ -132,12 +132,12 @@ it(
   async () =>
     await process(
       {
-        policy: { handler: Handler.id, max_amount: 60_000_00 },
+        policy: { handler: Handler.id, max_amount: 60_000_00n },
         carpool: [{ distance: 5_000, driver_identity_key: "one" }],
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 49_998_00,
+            value: 49_998_00n,
           },
         ],
       },
@@ -146,11 +146,11 @@ it(
         meta: [
           {
             key: "max_amount_restriction.0-one.month.3-2023",
-            value: 200,
+            value: 200n,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 50_000_00,
+            value: 50_000_00n,
           },
         ],
       },
@@ -179,11 +179,11 @@ it(
         meta: [
           {
             key: "max_amount_restriction.0-one.month.3-2023",
-            value: 1200,
+            value: 1200n,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 12_00,
+            value: 12_00n,
           },
         ],
       },
