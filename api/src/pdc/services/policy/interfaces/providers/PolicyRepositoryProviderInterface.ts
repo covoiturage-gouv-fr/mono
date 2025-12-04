@@ -13,6 +13,7 @@ export abstract class PolicyRepositoryProviderInterfaceResolver {
     data: SerializedPolicyInterface,
   ): Promise<SerializedPolicyInterface>;
   abstract delete(id: number): Promise<void>;
+  abstract updateDescriptiveSheetUrl(id: number, descriptiveSheetUrl: string | null): Promise<void>;
   abstract findWhere(search: {
     _id?: number;
     territory_id?: number | null | number[];

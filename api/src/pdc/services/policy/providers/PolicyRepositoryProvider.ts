@@ -22,6 +22,7 @@ export class PolicyRepositoryProvider implements PolicyRepositoryProviderInterfa
           pp._id,
           sel.selector as territory_selector,
           pp.name,
+          pp.descriptive_sheet_url,
           pp.start_date,
           pp.end_date,
           pp.tz,
@@ -140,6 +141,25 @@ export class PolicyRepositoryProvider implements PolicyRepositoryProviderInterfa
     return;
   }
 
+  async updateDescriptiveSheetUrl(id: number, descriptiveSheetUrl: string | null): Promise<void>{
+    const query = {
+      text: `
+      UPDATE ${this.table}
+        SET descriptive_sheet_url = $2
+        WHERE _id = $1
+        AND deleted_at IS NULL
+        RETURNING _id
+      `,
+      values: [id, descriptiveSheetUrl],
+    };
+
+    const result = await this.connection.getClient().query(query);
+
+    if (result.rowCount !== 1) {
+      throw new NotFoundException(`Campaign not found (${id})`);
+    }
+  }
+
   async listApplicablePoliciesId(): Promise<number[]> {
     const results = await this.connection.getClient().query({
       text: "SELECT _id FROM policy.policies WHERE status = $1",
@@ -208,6 +228,7 @@ export class PolicyRepositoryProvider implements PolicyRepositoryProviderInterfa
           pp._id,
           sel.selector as territory_selector,
           pp.name,
+          pp.descriptive_sheet_url,
           pp.start_date,
           pp.end_date,
           pp.handler,
