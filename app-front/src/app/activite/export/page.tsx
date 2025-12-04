@@ -1,6 +1,5 @@
 "use client";
 import SelectGeo from "@/components/common/SelectGeo";
-import ExportList from "@/components/export/ExportList";
 import { getApiUrl } from "@/helpers/api";
 import { useAuth } from "@/providers/AuthProvider";
 import { fr } from "@codegouvfr/react-dsfr";
@@ -287,7 +286,11 @@ export default function TabExport() {
           )}
         </LocalizationProvider>
       </div>
+
+      {/*
+        Will be re-enabled when a mechanism to get a fresh download URL
       <ExportList refreshTrigger={refreshTrigger} days={30} pageSize={10} />
+      */}
     </>
   );
 }
