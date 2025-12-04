@@ -1,6 +1,6 @@
-import { DenoPostgresConnection, LegacyPostgresConnection } from "@/ilos/connection-postgres/index.ts";
-import { env_or_fail, env_or_false } from "@/lib/env/index.ts";
-import { logger } from "@/lib/logger/index.ts";
+import { DenoPostgresConnection, LegacyPostgresConnection } from "../../../ilos/connection-postgres/index.ts";
+import { env_or_fail, env_or_false } from "../../../lib/env/index.ts";
+import { logger } from "../../../lib/logger/index.ts";
 import { DenoMigrator, LegacyMigrator } from "../migration/index.ts";
 
 interface Config {
@@ -30,10 +30,10 @@ export interface LegacyDbBeforeAfter {
  * APP_POSTGRES_URL environment variable.
  *
  * @example
- * import { DbContext, makeLegacyDbBeforeAfter } from "@/pdc/providers/test/dbMacro.ts";
+ * import { DenoDbContext, makeLegacyDbBeforeAfter } from "@/pdc/providers/test/dbMacro.ts";
  *
  * const { before, after } = makeLegacyDbBeforeAfter();
- * let db: DbContext;
+ * let db: DenoDbContext;
  *
  * beforeAll(async () => {
  *    db = await before();

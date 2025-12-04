@@ -1,7 +1,7 @@
-import { it } from "@/dev_deps.ts";
-import { v4 as uuidV4 } from "@/lib/uuid/index.ts";
-import { makeProcessHelper } from "@/pdc/services/policy/engine/tests/macro.ts";
-import { OperatorsEnum } from "@/pdc/services/policy/interfaces/index.ts";
+import { it } from "../../../../../dev_deps.ts";
+import { v4 as uuidV4 } from "../../../../../lib/uuid/index.ts";
+import { OperatorsEnum } from "../../interfaces/index.ts";
+import { makeProcessHelper } from "../tests/macro.ts";
 import { MetropoleSavoie as Handler } from "./20230124_MetropoleSavoie.ts";
 
 const defaultPosition = {
@@ -12,7 +12,7 @@ const defaultPosition = {
   dep: "73",
   reg: "84",
   country: "XXXXX",
-  reseau: "76",
+  reseau: 76,
 };
 const defaultLat = 48.72565703413325;
 const defaultLon = 2.261827843187402;
@@ -73,7 +73,7 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 3200,
+            value: 3200n,
           },
         ],
       },
@@ -85,12 +85,12 @@ it(
   async () =>
     await process(
       {
-        policy: { handler: Handler.id, max_amount: 150_000_00 },
+        policy: { handler: Handler.id, max_amount: 150_000_00n },
         carpool: [{ distance: 5_000, driver_identity_key: "one" }],
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 149_999_50,
+            value: 149_999_50n,
           },
         ],
       },
@@ -99,7 +99,7 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 150_000_00,
+            value: 150_000_00n,
           },
         ],
       },

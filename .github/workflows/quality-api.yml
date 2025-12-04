@@ -1,8 +1,10 @@
 name: "Quality - API"
 
 permissions:
-  contents: read
   actions: read
+  contents: read
+  security-events: write
+  pull-requests: read
 
 on:
   push:
@@ -69,15 +71,15 @@ jobs:
           fetch-depth: 2
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@16df4fbc19aea13d921737861d6c622bf3cefe23
+        uses: github/codeql-action/init@fe4161a26a8629af62121b670040955b330f9af2
         with:
           config-file: ./.github/codeql/codeql-config.yml
 
       - name: Autobuild
-        uses: github/codeql-action/autobuild@16df4fbc19aea13d921737861d6c622bf3cefe23
+        uses: github/codeql-action/autobuild@fe4161a26a8629af62121b670040955b330f9af2
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@16df4fbc19aea13d921737861d6c622bf3cefe23
+        uses: github/codeql-action/analyze@fe4161a26a8629af62121b670040955b330f9af2
 
   integration:
     needs: [test]

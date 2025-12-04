@@ -96,16 +96,15 @@ export class Incentive<T> {
   }
 }
 
-export class StatelessIncentive extends Incentive<undefined>
-  implements StatelessIncentiveInterface {
-  export(): SerializedIncentiveInterface<undefined> {
+export class StatelessIncentive extends Incentive<undefined> implements StatelessIncentiveInterface {
+  // @ts-ignore undefined vs. unknown
+  override export(): SerializedIncentiveInterface<undefined> {
     return super.export();
   }
 }
 
-export class StatefulIncentive extends Incentive<number>
-  implements StatefulIncentiveInterface {
-  export(): SerializedIncentiveInterface<number> {
+export class StatefulIncentive extends Incentive<number> implements StatefulIncentiveInterface {
+  override export(): SerializedIncentiveInterface<number> {
     return super.export();
   }
 }

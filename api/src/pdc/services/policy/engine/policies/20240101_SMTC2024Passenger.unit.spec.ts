@@ -1,5 +1,5 @@
-import { it } from "@/dev_deps.ts";
-import { v4 as uuidV4 } from "@/lib/uuid/index.ts";
+import { it } from "../../../../../dev_deps.ts";
+import { v4 as uuidV4 } from "../../../../../lib/uuid/index.ts";
 import { OperatorsEnum } from "../../interfaces/index.ts";
 import { makeProcessHelper } from "../tests/macro.ts";
 import { SMTC2024Passenger as Handler } from "./20240101_SMTC2024Passenger.ts";
@@ -12,7 +12,7 @@ const defaultPosition = {
   dep: "74",
   reg: "84",
   country: "XXXXX",
-  reseau: "142",
+  reseau: 142,
 };
 const defaultLat = 48.72565703413325;
 const defaultLon = 2.261827843187402;
@@ -80,7 +80,7 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 450,
+            value: 450n,
           },
         ],
       },

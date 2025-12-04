@@ -1,7 +1,7 @@
-import { afterAll, assert, beforeAll, describe, it } from "@/dev_deps.ts";
-import { env } from "@/lib/env/index.ts";
-import sql from "@/lib/pg/sql.ts";
 import { ClientOptions, PostgresError, TransactionError } from "dep:postgres";
+import { afterAll, assert, beforeAll, describe, it } from "../../dev_deps.ts";
+import { env } from "../../lib/env/index.ts";
+import sql from "../../lib/pg/sql.ts";
 import { DenoPostgresConnection } from "./DenoPostgresConnection.ts";
 
 describe("DenoPostgresConnection - connection", () => {
@@ -158,6 +158,8 @@ describe("DenoPostgresConnection - debug levels", () => {
     connection = new DenoPostgresConnection();
     assert(typeof connection.poolConfig.controls!.debug === "boolean");
     assert(connection.poolConfig.controls!.debug as boolean === true);
+
+    Deno.env.delete("APP_POSTGRES_DEBUG");
   });
 });
 

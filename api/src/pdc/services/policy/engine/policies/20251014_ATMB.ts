@@ -34,7 +34,7 @@ export const ATMB2025: PolicyHandlerStaticInterface = class extends AbstractPoli
 
   protected readonly operator_class = ["B", "C"];
 
-  constructor(public max_amount: number) {
+  constructor(public max_amount: bigint) {
     super();
     this.limits = [
       [

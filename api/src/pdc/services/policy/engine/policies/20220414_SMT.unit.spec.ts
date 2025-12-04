@@ -1,5 +1,5 @@
-import { it } from "@/dev_deps.ts";
-import { v4 as uuidV4 } from "@/lib/uuid/index.ts";
+import { it } from "../../../../../dev_deps.ts";
+import { v4 as uuidV4 } from "../../../../../lib/uuid/index.ts";
 import { OperatorsEnum } from "../../interfaces/index.ts";
 import { makeProcessHelper } from "../tests/macro.ts";
 import { SMT2022 as Handler } from "./20220414_SMT.ts";
@@ -12,7 +12,7 @@ const defaultPosition = {
   dep: "37",
   reg: "24",
   country: "XXXXX",
-  reseau: "96",
+  reseau: 96,
 };
 const defaultLat = 48.72565703413325;
 const defaultLon = 2.261827843187402;
@@ -83,7 +83,7 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 1500,
+            value: 1500n,
           },
         ],
       },
@@ -95,12 +95,12 @@ it(
   async () =>
     await process(
       {
-        policy: { handler: Handler.id, max_amount: 40_000_00 },
+        policy: { handler: Handler.id, max_amount: 40_000_00n },
         carpool: [{ distance: 5_000, driver_identity_key: "one" }],
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 39_999_50,
+            value: 39_999_50n,
           },
         ],
       },
@@ -109,7 +109,7 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 40_000_00,
+            value: 40_000_00n,
           },
         ],
       },
@@ -138,7 +138,7 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 12_00,
+            value: 12_00n,
           },
         ],
       },

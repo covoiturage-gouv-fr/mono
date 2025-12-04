@@ -1,6 +1,6 @@
-import { PolicyStatusEnum } from "@/pdc/services/policy/contracts/common/interfaces/PolicyInterface.ts";
-import { ResultInterface as GetCampaignResultInterface } from "@/pdc/services/policy/contracts/find.contract.ts";
 import { faker } from "dep:faker";
+import { PolicyStatusEnum } from "../../policy/contracts/common/interfaces/PolicyInterface.ts";
+import { ResultInterface as GetCampaignResultInterface } from "../../policy/contracts/find.contract.ts";
 
 export const createGetCampaignResult = (
   status: PolicyStatusEnum,
@@ -19,6 +19,6 @@ export const createGetCampaignResult = (
     start_date: start_date ? start_date : faker.date.past({ years: 1 }),
     end_date: end_date ? end_date : faker.date.future({ years: 1 }),
     status,
-    incentive_sum: faker.number.int(),
+    incentive_sum: faker.number.bigInt(),
   };
 };

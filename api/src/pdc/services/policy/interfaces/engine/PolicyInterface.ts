@@ -1,4 +1,4 @@
-import { Timezone } from "@/pdc/providers/validator/index.ts";
+import { Timezone } from "../../../../providers/validator/index.ts";
 import { PolicyStatusEnum } from "../../contracts/common/interfaces/PolicyInterface.ts";
 import {
   BoundedSlices,
@@ -49,8 +49,8 @@ export interface SerializedPolicyInterface {
   tz: Timezone;
   handler: string;
   status: PolicyStatusEnum;
-  incentive_sum: number;
-  max_amount: number;
+  incentive_sum: bigint;
+  max_amount: bigint;
 }
 
 export interface PolicyHandlerStaticInterface {
@@ -61,7 +61,7 @@ export interface PolicyHandlerStaticInterface {
   /**
    * Optional max amount to spend for the policy
    */
-  new (max_amount: number): PolicyHandlerInterface;
+  new (max_amount: bigint): PolicyHandlerInterface;
 }
 
 export interface PolicyHandlerParamsInterface {
@@ -69,19 +69,15 @@ export interface PolicyHandlerParamsInterface {
   slices?: RunnableSlices | BoundedSlices;
   operators?: Array<OperatorsEnum>;
   allTimeOperators?: Array<OperatorsEnum>;
-  limits?: {
-    glob?: number;
-  };
+  limits?: { glob?: bigint };
   booster_dates?: Array<string>;
   extras?: unknown;
 }
 
 export interface PolicyHandlerInterface {
-  max_amount?: number;
+  max_amount?: bigint;
   load(): Promise<void>;
-  processStateless(
-    context: StatelessContextInterface,
-  ): void;
+  processStateless(context: StatelessContextInterface): void;
   processStateful(context: StatefulContextInterface): void;
   params(): PolicyHandlerParamsInterface;
   describe(): string;
@@ -103,7 +99,7 @@ export interface StatelessContextInterface {
   meta: MetadataRegistryInterface;
   carpool: CarpoolInterface;
   policy_territory_selector?: TerritorySelectorsInterface;
-  policy_max_amount?: number;
+  policy_max_amount?: bigint;
 }
 
 /**

@@ -1,11 +1,10 @@
-import { ExtensionInterface, NewableType, serviceProvider } from "@/ilos/common/index.ts";
-import { ServiceProvider as AbstractServiceProvider } from "@/ilos/core/index.ts";
-import { defaultMiddlewareBindings } from "@/pdc/providers/middleware/index.ts";
-import { ValidatorExtension, ValidatorMiddleware } from "@/pdc/providers/validator/index.ts";
-
-import { FetchCommand } from "@/pdc/services/company/commands/FetchCommand.ts";
+import { ExtensionInterface, NewableType, serviceProvider } from "../../../ilos/common/index.ts";
+import { ServiceProvider as AbstractServiceProvider } from "../../../ilos/core/index.ts";
+import { defaultMiddlewareBindings } from "../../providers/middleware/index.ts";
+import { ValidatorExtension, ValidatorMiddleware } from "../../providers/validator/index.ts";
 import { FetchAction } from "./actions/FetchAction.ts";
 import { FindAction } from "./actions/FindAction.ts";
+import { FetchCommand } from "./commands/FetchCommand.ts";
 import { config } from "./config/index.ts";
 import { binding as fetchBinding } from "./contracts/fetch.schema.ts";
 import { binding as findBinding } from "./contracts/find.schema.ts";
@@ -24,5 +23,5 @@ import { CompanyRepositoryProvider } from "./providers/CompanyRepositoryProvider
   commands: [FetchCommand],
 })
 export class CompanyServiceProvider extends AbstractServiceProvider {
-  readonly extensions: NewableType<ExtensionInterface>[] = [ValidatorExtension];
+  override readonly extensions: NewableType<ExtensionInterface>[] = [ValidatorExtension];
 }

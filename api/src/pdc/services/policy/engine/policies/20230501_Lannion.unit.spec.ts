@@ -1,5 +1,5 @@
-import { it } from "@/dev_deps.ts";
-import { v4 as uuidV4 } from "@/lib/uuid/index.ts";
+import { it } from "../../../../../dev_deps.ts";
+import { v4 as uuidV4 } from "../../../../../lib/uuid/index.ts";
 import { OperatorsEnum } from "../../interfaces/index.ts";
 import { makeProcessHelper } from "../tests/macro.ts";
 import { Lannion202305 as Handler } from "./20230501_Lannion.ts";
@@ -12,7 +12,7 @@ const defaultPosition = {
   dep: "22",
   reg: "53",
   country: "XXXXX",
-  reseau: "194",
+  reseau: 194,
 };
 const defaultLat = 48.72565703413325;
 const defaultLon = 2.261827843187402;
@@ -96,7 +96,7 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 1350,
+            value: 1350n,
           },
         ],
       },
@@ -108,16 +108,16 @@ it(
   async () =>
     await process(
       {
-        policy: { handler: Handler.id, max_amount: 60_684_87 },
+        policy: { handler: Handler.id, max_amount: 60_684_87n },
         carpool: [{ distance: 5_000, driver_identity_key: "one" }],
         meta: [
           {
             key: "max_trip_restriction.global.campaign.global",
-            value: 2,
+            value: 2n,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 60_684_00,
+            value: 60_684_00n,
           },
         ],
       },
@@ -126,7 +126,7 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 60_684_87,
+            value: 60_684_87n,
           },
         ],
       },
@@ -196,7 +196,7 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 1200,
+            value: 1200n,
           },
         ],
       },

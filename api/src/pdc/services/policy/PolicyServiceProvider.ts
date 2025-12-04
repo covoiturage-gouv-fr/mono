@@ -1,8 +1,8 @@
-import { ExtensionInterface, NewableType, serviceProvider } from "@/ilos/common/index.ts";
-import { ServiceProvider as AbstractServiceProvider } from "@/ilos/core/index.ts";
-import { defaultMiddlewareBindings } from "@/pdc/providers/middleware/index.ts";
-import { APDFNameProvider } from "@/pdc/providers/storage/index.ts";
-import { ValidatorExtension, ValidatorMiddleware } from "@/pdc/providers/validator/index.ts";
+import { ExtensionInterface, NewableType, serviceProvider } from "../../../ilos/common/index.ts";
+import { ServiceProvider as AbstractServiceProvider } from "../../../ilos/core/index.ts";
+import { defaultMiddlewareBindings } from "../../providers/middleware/index.ts";
+import { APDFNameProvider } from "../../providers/storage/index.ts";
+import { ValidatorExtension, ValidatorMiddleware } from "../../providers/validator/index.ts";
 import { ApplyAction } from "./actions/ApplyAction.ts";
 import { FinalizeAction } from "./actions/FinalizeAction.ts";
 import { FindAction } from "./actions/FindAction.ts";
@@ -77,5 +77,5 @@ import { TripRepositoryProvider } from "./providers/TripRepositoryProvider.ts";
   ]],
 })
 export class PolicyServiceProvider extends AbstractServiceProvider {
-  readonly extensions: NewableType<ExtensionInterface>[] = [ValidatorExtension];
+  override readonly extensions: NewableType<ExtensionInterface>[] = [ValidatorExtension];
 }
