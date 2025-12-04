@@ -33,6 +33,7 @@ export class Policy implements PolicyInterface {
     public handler: PolicyHandlerInterface,
     public status: PolicyStatusEnum,
     public incentive_sum: bigint,
+    public descriptive_sheet_url?: string,
   ) {}
 
   static async import(data: SerializedPolicyInterface): Promise<Policy> {
@@ -55,6 +56,7 @@ export class Policy implements PolicyInterface {
       hler,
       data.status,
       data.incentive_sum,
+      data.descriptive_sheet_url,
     );
 
     return pcy;
@@ -66,6 +68,7 @@ export class Policy implements PolicyInterface {
       territory_id: this.territory_id,
       territory_selector: this.territory_selector,
       name: this.name,
+      descriptive_sheet_url: this.descriptive_sheet_url,
       start_date: this.start_date,
       end_date: this.end_date,
       tz: this.tz,

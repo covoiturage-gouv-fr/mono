@@ -78,7 +78,7 @@ export default function ApdfTable(props: { title: string; campaignId: number; op
   return (
     <div className={fr.cx("fr-my-4w")}>
       <h3 className={fr.cx("fr-callout__title")}>{props.title}</h3>
-      <Table data={dataTable} headers={headers} colorVariant="blue-ecume" />
+      <Table data={dataTable} headers={headers} colorVariant="blue-ecume" fixed />
     </div>
   );
 }

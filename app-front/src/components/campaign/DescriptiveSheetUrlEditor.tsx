@@ -4,8 +4,8 @@ import { fr } from "@codegouvfr/react-dsfr";
 import Button from "@codegouvfr/react-dsfr/Button";
 import Input from "@codegouvfr/react-dsfr/Input";
 import { useState } from "react";
-import isURL from 'validator/lib/isURL';
-import { useAuth } from '../../providers/AuthProvider';
+import isURL from "validator/lib/isURL";
+import { useAuth } from "../../providers/AuthProvider";
 
 interface DescriptiveSheetUrlEditorProps {
   campaignId: number;
@@ -13,10 +13,7 @@ interface DescriptiveSheetUrlEditorProps {
   onSuccess?: () => void;
 }
 
-export default function DescriptiveSheetUrlEditor({
-  campaignId,
-  initialValue
-}: DescriptiveSheetUrlEditorProps) {
+export default function DescriptiveSheetUrlEditor({ campaignId, initialValue }: DescriptiveSheetUrlEditorProps) {
   const [descriptiveSheetUrl, setDescriptiveSheetUrl] = useState<string>(initialValue ?? "");
   const [error, setError] = useState<string | null>(null);
   const [alert, setAlert] = useState<"success" | "error">();
@@ -24,7 +21,7 @@ export default function DescriptiveSheetUrlEditor({
 
   const handleUpdateDescriptiveSheetUrl = async () => {
     if (!campaignId) return;
-    if(descriptiveSheetUrl != "" && !isURL(descriptiveSheetUrl)) {
+    if (descriptiveSheetUrl != "" && !isURL(descriptiveSheetUrl)) {
       setError("Merci de renseigner une URL valide.");
       return;
     }
@@ -46,21 +43,18 @@ export default function DescriptiveSheetUrlEditor({
         }),
       });
 
-      const result = await response.json() as { error?: { message: string } };
+      const result = (await response.json()) as { error?: { message: string } };
       if (result.error) {
         setAlert("error");
         return;
       }
 
-      setError(null)
+      setError(null);
       setAlert("success");
     } catch {
       setAlert("error");
     }
-
-   
   };
-
 
   return (
     <div className={fr.cx("fr-mt-4w")}>
@@ -82,33 +76,29 @@ export default function DescriptiveSheetUrlEditor({
       )}
       {["registry", "territory"].includes(user?.role.split(".")[0] ?? "") && !simulatedRole ? (
         <>
-      <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters")}>
-        <div className={fr.cx("fr-col", "fr-col-md", "fr-text--bold")}>
-          <Input
-            label="Description complète du paramètrage de la campagne :"
-            state={error ? "error" : "default"}
-            stateRelatedMessage={error ?? ""}
-            hintText="URL de la fiche descriptive"
-            nativeInputProps={{
-              value: descriptiveSheetUrl,
-              onChange: (e) => setDescriptiveSheetUrl(e.target.value),
-              placeholder: "https://...",
-              type: "url",
-            }}
-          />
-        </div>
-        <div className={fr.cx("fr-col", "fr-col-md")} style={{ display: "flex", alignItems: "flex-end" }}>
-          <Button onClick={() => void handleUpdateDescriptiveSheetUrl()} >
-            Enregistrer ou modifier l'URL
-          </Button>
-        </div>
-      </div></>
+          <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters")}>
+            <div className={fr.cx("fr-col", "fr-col-md", "fr-text--bold")}>
+              <Input
+                label="Description complète du paramètrage de la campagne :"
+                state={error ? "error" : "default"}
+                stateRelatedMessage={error ?? ""}
+                hintText="URL de la fiche descriptive"
+                nativeInputProps={{
+                  value: descriptiveSheetUrl,
+                  onChange: (e) => setDescriptiveSheetUrl(e.target.value),
+                  placeholder: "https://...",
+                  type: "url",
+                }}
+              />
+            </div>
+            <div className={fr.cx("fr-col", "fr-col-md")} style={{ display: "flex", alignItems: "flex-end" }}>
+              <Button onClick={() => void handleUpdateDescriptiveSheetUrl()}>Enregistrer ou modifier l'URL</Button>
+            </div>
+          </div>
+        </>
       ) : (
-        
         <div className={fr.cx("fr-col", "fr-col-md")}>
-          <p className={"fr-text--bold"}>
-            Description complète du paramètrage de la campagne :
-          </p>
+          <p className={"fr-text--bold"}>Description complète du paramètrage de la campagne :</p>
           <Button
             onClick={() => {
               if (initialValue && isURL(initialValue)) {
@@ -117,10 +107,11 @@ export default function DescriptiveSheetUrlEditor({
             }}
             disabled={!initialValue || !isURL(initialValue)}
           >
+            {initialValue}
             Voir la fiche descriptive
           </Button>
-          </div>
-        )} 
+        </div>
+      )}
     </div>
   );
 }
