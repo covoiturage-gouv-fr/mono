@@ -1,6 +1,6 @@
 "use client";
 import { type AuthContextProps } from "@/interfaces/providersInterface";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useState } from "react";
 import { Config } from "../config";
 
@@ -12,6 +12,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [simulatedRole, setSimulatedRole] = useState<"operator" | "territory" | undefined>(undefined);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const pathname = usePathname();
 
   const checkAuth = async () => {
     const response = await fetch(`${Config.get<string>("auth.domain")}/auth/me`, { credentials: "include" });
@@ -32,16 +33,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     void checkAuth();
   }, []);
 
-  // Redirect to default /activite page after login
   useEffect(() => {
     if (!loading) {
       if (!isAuth) {
         router.push("/");
-      } else {
+      } else if (isAuth && pathname === "/") {
         router.push("/activite");
       }
     }
-  }, [loading, isAuth]);
+  }, [loading, isAuth, pathname, router]);
 
   // clean up user on simulatedRole reset
   useEffect(() => {
