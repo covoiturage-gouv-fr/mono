@@ -1,6 +1,6 @@
-import { NotFoundException, provider } from "@/ilos/common/index.ts";
-import { LegacyPostgresConnection } from "@/ilos/connection-postgres/index.ts";
-import { logger } from "@/lib/logger/index.ts";
+import { NotFoundException, provider } from "../../../../ilos/common/index.ts";
+import { LegacyPostgresConnection } from "../../../../ilos/connection-postgres/index.ts";
+import { logger } from "../../../../lib/logger/index.ts";
 import { PolicyStatusEnum } from "../contracts/common/interfaces/PolicyInterface.ts";
 import { toISOString } from "../helpers/index.ts";
 import { PolicyRepositoryProviderInterfaceResolver, SerializedPolicyInterface } from "../interfaces/index.ts";
@@ -293,7 +293,7 @@ export class PolicyRepositoryProvider implements PolicyRepositoryProviderInterfa
     const { _id: key_id, datetime } = res.rows[0];
 
     // compute incentive_sum
-    const resSum = await this.connection.getClient().query<{ incentive_sum: number }>({
+    const resSum = await this.connection.getClient().query<{ incentive_sum: bigint }>({
       text: `
           WITH latest_incentive AS (
             SELECT MAX(datetime)

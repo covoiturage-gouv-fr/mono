@@ -60,8 +60,7 @@ it("should watchForPersonMaxAmountByMonth", async () => {
   assertEquals(ctx.meta.export(), [
     {
       uuid: "1",
-      key:
-        `max_amount_restriction.${LimitTargetEnum.Passenger}-${ctx.carpool.passenger_identity_key}.month.0-2019`,
+      key: `max_amount_restriction.${LimitTargetEnum.Passenger}-${ctx.carpool.passenger_identity_key}.month.0-2019`,
       initialValue: undefined,
       lifetime: MetadataLifetime.Month,
     },
@@ -74,8 +73,7 @@ it("should watchForPersonMaxAmountByYear", async () => {
   assertEquals(ctx.meta.export(), [
     {
       uuid: "1",
-      key:
-        `max_amount_restriction.${LimitTargetEnum.Passenger}-${ctx.carpool.passenger_identity_key}.year.2019`,
+      key: `max_amount_restriction.${LimitTargetEnum.Passenger}-${ctx.carpool.passenger_identity_key}.year.2019`,
       initialValue: undefined,
       lifetime: MetadataLifetime.Year,
     },
@@ -88,8 +86,7 @@ it("should watchForPersonMaxTripByMonth", async () => {
   assertEquals(ctx.meta.export(), [
     {
       uuid: "1",
-      key:
-        `max_trip_restriction.${LimitTargetEnum.Passenger}-${ctx.carpool.passenger_identity_key}.month.0-2019`,
+      key: `max_trip_restriction.${LimitTargetEnum.Passenger}-${ctx.carpool.passenger_identity_key}.month.0-2019`,
       initialValue: undefined,
       lifetime: MetadataLifetime.Month,
     },
@@ -102,8 +99,7 @@ it("should watchForPersonMaxTripByDay", async () => {
   assertEquals(ctx.meta.export(), [
     {
       uuid: "1",
-      key:
-        `max_trip_restriction.${LimitTargetEnum.Driver}-${ctx.carpool.driver_identity_key}.day.15-0-2019`,
+      key: `max_trip_restriction.${LimitTargetEnum.Driver}-${ctx.carpool.driver_identity_key}.day.15-0-2019`,
       initialValue: undefined,
       lifetime: MetadataLifetime.Day,
     },
@@ -119,13 +115,13 @@ it("should drop incentive if max is reached", async () => {
       },
     ],
   });
-  ctx.meta.set("uuid", 10);
-  applyLimitOnStatefulStage(ctx, "uuid", 10, watchForGlobalMaxAmount);
+  ctx.meta.set("uuid", 10n);
+  applyLimitOnStatefulStage(ctx, "uuid", 10n, watchForGlobalMaxAmount);
   assertEquals(ctx.incentive.get(), 0);
   assertEquals(ctx.meta.export(), [{
     policy_id: 1,
     key: "max_amount_restriction.global.campaign.global",
-    value: 10,
+    value: 10n,
   }]);
 });
 
@@ -138,13 +134,13 @@ it("should partially drop incentive if max will be reached", async () => {
       },
     ],
   });
-  ctx.meta.set("uuid", 30);
-  applyLimitOnStatefulStage(ctx, "uuid", 100, watchForGlobalMaxAmount);
+  ctx.meta.set("uuid", 30n);
+  applyLimitOnStatefulStage(ctx, "uuid", 100n, watchForGlobalMaxAmount);
   assertEquals(ctx.incentive.get(), 70);
   assertEquals(ctx.meta.export(), [{
     policy_id: 1,
     key: "max_amount_restriction.global.campaign.global",
-    value: 100,
+    value: 100n,
   }]);
 });
 
@@ -157,13 +153,13 @@ it("should increase meta if incentive is not null", async () => {
       },
     ],
   });
-  ctx.meta.set("uuid", 30);
-  applyLimitOnStatefulStage(ctx, "uuid", 200, watchForGlobalMaxAmount);
+  ctx.meta.set("uuid", 30n);
+  applyLimitOnStatefulStage(ctx, "uuid", 200n, watchForGlobalMaxAmount);
   assertEquals(ctx.incentive.get(), 100);
   assertEquals(ctx.meta.export(), [{
     policy_id: 1,
     key: "max_amount_restriction.global.campaign.global",
-    value: 130,
+    value: 130n,
   }]);
 });
 
@@ -205,7 +201,7 @@ it("should watch and apply", async () => {
     {
       policy_id: 1,
       key: "max_amount_restriction.global.campaign.global",
-      value: 0,
+      value: 0n,
     },
   ]);
   applyLimitsOnStatefulStage([limit], ctxStateful);
@@ -214,7 +210,7 @@ it("should watch and apply", async () => {
     {
       policy_id: 1,
       key: "max_amount_restriction.global.campaign.global",
-      value: 100,
+      value: 100n,
     },
   ]);
   await store.save(ctxStateful.meta);
@@ -223,7 +219,7 @@ it("should watch and apply", async () => {
       key: "max_amount_restriction.global.campaign.global",
       datetime: carpool.datetime,
       policy_id: 1,
-      value: 100,
+      value: 100n,
     },
   ]);
   applyLimitsOnStatefulStage([limit], ctxStateful);
@@ -232,7 +228,7 @@ it("should watch and apply", async () => {
     {
       policy_id: 1,
       key: "max_amount_restriction.global.campaign.global",
-      value: 150,
+      value: 150n,
     },
   ]);
   await store.save(ctxStateful.meta);
@@ -241,7 +237,7 @@ it("should watch and apply", async () => {
       key: "max_amount_restriction.global.campaign.global",
       datetime: carpool.datetime,
       policy_id: 1,
-      value: 150,
+      value: 150n,
     },
   ]);
 });
@@ -257,8 +253,7 @@ it("should watch and apply for custom data", async () => {
   assertEquals(ctxStateless.meta.export(), [
     {
       uuid: "uuid",
-      key:
-        `max_passenger_restriction.${carpool.operator_id}.${carpool.operator_trip_id}.day.15-0-2019`,
+      key: `max_passenger_restriction.${carpool.operator_id}.${carpool.operator_trip_id}.day.15-0-2019`,
       initialValue: undefined,
       lifetime: MetadataLifetime.Day,
       carpoolValue: 1,
@@ -285,9 +280,8 @@ it("should watch and apply for custom data", async () => {
   assertEquals(ctxStateful.meta.export(), [
     {
       policy_id: 1,
-      key:
-        `max_passenger_restriction.${carpool.operator_id}.${carpool.operator_trip_id}.day.15-0-2019`,
-      value: 0,
+      key: `max_passenger_restriction.${carpool.operator_id}.${carpool.operator_trip_id}.day.15-0-2019`,
+      value: 0n,
       carpoolValue: 1,
     },
   ]);
@@ -297,9 +291,8 @@ it("should watch and apply for custom data", async () => {
   assertEquals(ctxStateful.meta.export(), [
     {
       policy_id: 1,
-      key:
-        `max_passenger_restriction.${carpool.operator_id}.${carpool.operator_trip_id}.day.15-0-2019`,
-      value: 1,
+      key: `max_passenger_restriction.${carpool.operator_id}.${carpool.operator_trip_id}.day.15-0-2019`,
+      value: 1n,
       carpoolValue: 1,
     },
   ]);
@@ -311,9 +304,8 @@ it("should watch and apply for custom data", async () => {
   assertEquals(ctxStateful.meta.export(), [
     {
       policy_id: 1,
-      key:
-        `max_passenger_restriction.${carpool.operator_id}.${carpool.operator_trip_id}.day.15-0-2019`,
-      value: 2,
+      key: `max_passenger_restriction.${carpool.operator_id}.${carpool.operator_trip_id}.day.15-0-2019`,
+      value: 2n,
       carpoolValue: 1,
     },
   ]);

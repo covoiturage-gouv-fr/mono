@@ -1,5 +1,5 @@
-import { it } from "@/dev_deps.ts";
-import { v4 as uuidV4 } from "@/lib/uuid/index.ts";
+import { it } from "../../../../../dev_deps.ts";
+import { v4 as uuidV4 } from "../../../../../lib/uuid/index.ts";
 import { OperatorsEnum } from "../../interfaces/index.ts";
 import { generatePartialCarpools } from "../tests/helpers.ts";
 import { makeProcessHelper } from "../tests/macro.ts";
@@ -15,7 +15,6 @@ const defaultPosition = {
   dep: "86",
   reg: "75",
   country: "XXXXX",
-  reseau: "142",
 };
 const defaultLat = 46.575171256996086;
 const defaultLon = 0.36385131640839713;
@@ -93,15 +92,15 @@ it("should work basic", async () =>
       meta: [
         {
           key: "max_amount_restriction.0-one.month.0-2025",
-          value: 450,
+          value: 450n,
         },
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 600,
+          value: 600n,
         },
         {
           key: "max_amount_restriction.0-two.month.0-2025",
-          value: 150,
+          value: 150n,
         },
       ],
     },
@@ -118,11 +117,11 @@ it("should work with driver month limits", async () =>
       meta: [
         {
           key: "max_amount_restriction.0-one.month.0-2025",
-          value: 119_00,
+          value: 119_00n,
         },
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 119_00,
+          value: 119_00n,
         },
       ],
     },
@@ -131,11 +130,11 @@ it("should work with driver month limits", async () =>
       meta: [
         {
           key: "max_amount_restriction.0-one.month.0-2025",
-          value: 120_00,
+          value: 120_00n,
         },
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 120_00,
+          value: 120_00n,
         },
       ],
     },
@@ -196,11 +195,11 @@ it("should work with driver day limits", async () =>
       meta: [
         {
           key: "max_amount_restriction.0-11.month.0-2025",
-          value: 900,
+          value: 900n,
         },
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 900,
+          value: 900n,
         },
       ],
     },
@@ -237,11 +236,11 @@ it("should work with passenger day limits", async () =>
       meta: [
         {
           key: "max_amount_restriction.0-11.month.0-2025",
-          value: 300,
+          value: 300n,
         },
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 300,
+          value: 300n,
         },
       ],
     },
@@ -259,11 +258,11 @@ it("should work with driver amount month limits", async () =>
       meta: [
         {
           key: "max_amount_restriction.0-three.month.0-2025",
-          value: 120_00,
+          value: 120_00n,
         },
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 120_00,
+          value: 120_00n,
         },
       ],
     },

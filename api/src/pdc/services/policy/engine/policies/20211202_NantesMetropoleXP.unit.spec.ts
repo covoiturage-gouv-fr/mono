@@ -1,5 +1,5 @@
-import { it } from "@/dev_deps.ts";
-import { v4 as uuidV4 } from "@/lib/uuid/index.ts";
+import { it } from "../../../../../dev_deps.ts";
+import { v4 as uuidV4 } from "../../../../../lib/uuid/index.ts";
 import { OperatorsEnum } from "../../interfaces/index.ts";
 import { makeProcessHelper } from "../tests/macro.ts";
 import { NantesMetropoleXPCovoitan2021 as Handler } from "./20211202_NantesMetropoleXP.ts";
@@ -12,7 +12,7 @@ const defaultPosition = {
   dep: "44",
   reg: "52",
   country: "XXXXX",
-  reseau: "67",
+  reseau: 67,
 };
 const defaultLat = 48.72565703413325;
 const defaultLon = 2.261827843187402;
@@ -100,11 +100,11 @@ it(
         meta: [
           {
             key: "max_trip_restriction.global.campaign.global",
-            value: 4,
+            value: 4n,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 1350,
+            value: 1350n,
           },
         ],
       },
@@ -116,16 +116,16 @@ it(
   async () =>
     await process(
       {
-        policy: { handler: Handler.id, max_amount: 10_000_000_00 },
+        policy: { handler: Handler.id, max_amount: 10_000_000_00n },
         carpool: [{ distance: 5_000, driver_identity_key: "one" }],
         meta: [
           {
             key: "max_trip_restriction.global.campaign.global",
-            value: 2,
+            value: 2n,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 9_999_999_50,
+            value: 9_999_999_50n,
           },
         ],
       },
@@ -134,11 +134,11 @@ it(
         meta: [
           {
             key: "max_trip_restriction.global.campaign.global",
-            value: 3,
+            value: 3n,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 10_000_000_00,
+            value: 10_000_000_00n,
           },
         ],
       },
@@ -158,11 +158,11 @@ it(
         meta: [
           {
             key: "max_trip_restriction.global.campaign.global",
-            value: 9_999_999,
+            value: 9_999_999n,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 50,
+            value: 50n,
           },
         ],
       },
@@ -171,11 +171,11 @@ it(
         meta: [
           {
             key: "max_trip_restriction.global.campaign.global",
-            value: 10_000_000,
+            value: 10_000_000n,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 250,
+            value: 250n,
           },
         ],
       },
@@ -233,11 +233,11 @@ it(
         meta: [
           {
             key: "max_trip_restriction.global.campaign.global",
-            value: 4,
+            value: 4n,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 800,
+            value: 800n,
           },
         ],
       },
@@ -295,11 +295,11 @@ it(
         meta: [
           {
             key: "max_trip_restriction.global.campaign.global",
-            value: 4,
+            value: 4n,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 800,
+            value: 800n,
           },
         ],
       },
@@ -346,11 +346,11 @@ it(
         meta: [
           {
             key: "max_trip_restriction.global.campaign.global",
-            value: 2,
+            value: 2n,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 600,
+            value: 600n,
           },
         ],
       },

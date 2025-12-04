@@ -5,4 +5,4 @@ dist
 .env
 coverage
 .nyc_output
-.nx/cache
+.cache

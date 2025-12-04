@@ -1,5 +1,5 @@
-import { it } from "@/dev_deps.ts";
-import { v4 as uuidV4 } from "@/lib/uuid/index.ts";
+import { it } from "../../../../../dev_deps.ts";
+import { v4 as uuidV4 } from "../../../../../lib/uuid/index.ts";
 import { OperatorsEnum } from "../../interfaces/index.ts";
 import { makeProcessHelper } from "../tests/macro.ts";
 import { PMGF2022 as Handler } from "./20221102_PMGF.ts";
@@ -12,7 +12,7 @@ const defaultPosition = {
   dep: "74",
   reg: "84",
   country: "XXXXX",
-  reseau: "10",
+  reseau: 10,
 };
 const defaultLat = 48.72565703413325;
 const defaultLon = 2.261827843187402;
@@ -82,15 +82,15 @@ it(
         meta: [
           {
             key: "max_amount_restriction.0-one.month.10-2022",
-            value: 600,
+            value: 600n,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 1750,
+            value: 1750n,
           },
           {
             key: "max_amount_restriction.0-two.month.10-2022",
-            value: 1150,
+            value: 1150n,
           },
         ],
       },
@@ -139,15 +139,15 @@ it(
         meta: [
           {
             key: "max_amount_restriction.0-one.month.10-2022",
-            value: 300,
+            value: 300n,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 1050,
+            value: 1050n,
           },
           {
             key: "max_amount_restriction.0-two.month.10-2022",
-            value: 750,
+            value: 750n,
           },
         ],
       },
@@ -159,12 +159,12 @@ it(
   async () =>
     await process(
       {
-        policy: { handler: Handler.id, max_amount: 100_000_00 },
+        policy: { handler: Handler.id, max_amount: 100_000_00n },
         carpool: [{ distance: 5_000, driver_identity_key: "one" }],
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 99_999_50,
+            value: 99_999_50n,
           },
         ],
       },
@@ -173,11 +173,11 @@ it(
         meta: [
           {
             key: "max_amount_restriction.0-one.month.10-2022",
-            value: 200,
+            value: 200n,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 100_000_00,
+            value: 100_000_00n,
           },
         ],
       },
@@ -205,11 +205,11 @@ it(
         meta: [
           {
             key: "max_amount_restriction.0-one.month.0-2023",
-            value: 200,
+            value: 200n,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 200,
+            value: 200n,
           },
         ],
       },
@@ -231,7 +231,7 @@ it(
         meta: [
           {
             key: "max_amount_restriction.0-one.month.10-2022",
-            value: 11500,
+            value: 11500n,
           },
         ],
       },
@@ -240,11 +240,11 @@ it(
         meta: [
           {
             key: "max_amount_restriction.0-one.month.10-2022",
-            value: 12000,
+            value: 12000n,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 500,
+            value: 500n,
           },
         ],
       },

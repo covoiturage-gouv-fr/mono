@@ -51,7 +51,7 @@ export const HauteCorreze2026: PolicyHandlerStaticInterface = class extends Abst
     },
   ];
 
-  constructor(public max_amount: number) {
+  constructor(public max_amount: bigint) {
     super();
     this.limits = [
       [

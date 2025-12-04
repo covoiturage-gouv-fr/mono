@@ -1,28 +1,28 @@
-import { Timezone } from "@/pdc/providers/validator/types.ts";
-import { NotEligibleTargetException } from "@/pdc/services/policy/engine/exceptions/NotEligibleTargetException.ts";
-import { getOperatorsAt, TimestampedOperators } from "@/pdc/services/policy/engine/helpers/getOperatorsAt.ts";
-import { isAdultOrThrow } from "@/pdc/services/policy/engine/helpers/isAdultOrThrow.ts";
-import { isOperatorClassOrThrow } from "@/pdc/services/policy/engine/helpers/isOperatorClassOrThrow.ts";
-import { isOperatorOrThrow } from "@/pdc/services/policy/engine/helpers/isOperatorOrThrow.ts";
-import {
-  LimitTargetEnum,
-  watchForGlobalMaxAmount,
-  watchForPersonMaxAmountByMonth,
-  watchForPersonMaxTripByDay,
-} from "@/pdc/services/policy/engine/helpers/limits.ts";
-import { onDistanceRange, onDistanceRangeOrThrow } from "@/pdc/services/policy/engine/helpers/onDistanceRange.ts";
-import { perSeat } from "@/pdc/services/policy/engine/helpers/per.ts";
-import { endsAt, startsAt } from "@/pdc/services/policy/engine/helpers/position.ts";
-import { AbstractPolicyHandler } from "@/pdc/services/policy/engine/policies/AbstractPolicyHandler.ts";
-import { RunnableSlices } from "@/pdc/services/policy/interfaces/engine/PolicyInterface.ts";
+import { Timezone } from "../../../../providers/validator/types.ts";
+import { RunnableSlices } from "../../interfaces/engine/PolicyInterface.ts";
 import {
   OperatorsEnum,
   PolicyHandlerInterface,
   PolicyHandlerParamsInterface,
   PolicyHandlerStaticInterface,
   StatelessContextInterface,
-} from "@/pdc/services/policy/interfaces/index.ts";
+} from "../../interfaces/index.ts";
+import { NotEligibleTargetException } from "../exceptions/NotEligibleTargetException.ts";
+import { getOperatorsAt, TimestampedOperators } from "../helpers/getOperatorsAt.ts";
+import { isAdultOrThrow } from "../helpers/isAdultOrThrow.ts";
+import { isOperatorClassOrThrow } from "../helpers/isOperatorClassOrThrow.ts";
+import { isOperatorOrThrow } from "../helpers/isOperatorOrThrow.ts";
+import {
+  LimitTargetEnum,
+  watchForGlobalMaxAmount,
+  watchForPersonMaxAmountByMonth,
+  watchForPersonMaxTripByDay,
+} from "../helpers/limits.ts";
+import { onDistanceRange, onDistanceRangeOrThrow } from "../helpers/onDistanceRange.ts";
+import { perSeat } from "../helpers/per.ts";
+import { endsAt, startsAt } from "../helpers/position.ts";
 import { description } from "./20250101_GrandChatellerault.html.ts";
+import { AbstractPolicyHandler } from "./AbstractPolicyHandler.ts";
 
 // Politique de Grand Chatellerault 2025
 // INSERT INTO policy.policies (territory_id, start_date, end_date, name, unit, status, handler, max_amount)
@@ -61,7 +61,7 @@ export const GrandChatellerault2025: PolicyHandlerStaticInterface = class extend
     },
   ];
 
-  constructor(public max_amount: number) {
+  constructor(public max_amount: bigint) {
     super();
     this.limits = [
       [

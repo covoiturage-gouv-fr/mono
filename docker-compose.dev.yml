@@ -31,10 +31,12 @@ services:
       APP_POSTGRES_TIMEOUT: 0
       APP_REQUEST_TIMEOUT: 0
       APP_APDF_S3_UPLOAD_ENABLED: false
+      DENO_DIR: /app/api/.cache
     ports:
       - ${PORT:-8080}:${PORT:-8080}
     volumes:
       - ./api:/app/api
+      - ./api/.cache:/app/api/.cache:rw
       - ./tmp:/tmp
 
   # cms:
