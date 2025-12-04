@@ -2,6 +2,7 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import Alert from "@codegouvfr/react-dsfr/Alert";
 import Button from "@codegouvfr/react-dsfr/Button";
+import Input from "@codegouvfr/react-dsfr/Input";
 import Pagination from "@codegouvfr/react-dsfr/Pagination";
 import Table from "@codegouvfr/react-dsfr/Table";
 import { usePathname, useRouter } from "next/navigation";
@@ -10,21 +11,27 @@ import Loading from "../../../components/layout/Loading";
 import { Config } from "../../../config";
 import { getApiUrl } from "../../../helpers/api";
 import { useApi } from "../../../hooks/useApi";
+import { useUrlSearch } from "../../../hooks/useUrlSearch";
 import { TerritoriesInterface } from "../../../interfaces/dataInterface";
 import { useAuth } from "../../../providers/AuthProvider";
 
 export default function TabCampaigns() {
   const [campaignId, setCampaignId] = useState<number>();
   const { user } = useAuth();
+  const { search, debouncedSearch, onChangeSearch: setSearchValue } = useUrlSearch();
   const router = useRouter();
   const pathname = usePathname();
   const pageSize = 15;
   const [page, setPage] = useState(1);
   const url = `${Config.get<string>("auth.domain")}/rpc?methods=campaign:list`;
+  const onChangeSearch = (search: string) => {
+    setSearchValue(search);
+  };
   const init = useMemo(() => {
     const params = {
       ...(user?.territory_id && { territory_id: user?.territory_id }),
       ...(user?.operator_id && { operator_id: user?.operator_id }),
+      ...(debouncedSearch && { search: debouncedSearch }),
     };
     return {
       method: "POST",
@@ -38,7 +45,7 @@ export default function TabCampaigns() {
         id: 1,
       }),
     };
-  }, [user?.territory_id, user?.operator_id]);
+  }, [user?.territory_id, user?.operator_id, debouncedSearch]);
   const { data, loading } = useApi<{
     id: number;
     result: { meta: null; data: Record<string, string | number>[] };
@@ -87,6 +94,7 @@ export default function TabCampaigns() {
   ]) as ReactNode[][];
   const pageCount = Math.max(1, Math.ceil(dataTableFull.length / pageSize));
   const dataTable = dataTableFull.slice((page - 1) * pageSize, page * pageSize);
+  const totalRecords = dataTableFull.length;
 
   // ⚠️ si les données changent, on revient à la première page
   useEffect(() => {
@@ -115,36 +123,57 @@ export default function TabCampaigns() {
   if (loading) return <Loading />;
   return (
     <>
-      {dataTable.length > 0 ? (
+      {!campaignId && (
         <>
-          <h3 className={fr.cx("fr-callout__title")}>Campagnes d'incitation</h3>
-          <Table data={dataTable} headers={headers} colorVariant="blue-ecume" />
-          <div className={fr.cx("fr-grid-row", "fr-mt-5w")}>
-            <div className={fr.cx("fr-mx-auto")}>
-              <Pagination
-                defaultPage={page}
-                count={pageCount}
-                getPageLinkProps={(value) => ({
-                  onClick: () => setPage(value),
-                  href: "#",
-                })}
-                showFirstLast
+          {!user?.territory_id ? (
+            <div
+              style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "1rem" }}
+            >
+              <h3 className={fr.cx("fr-callout__title")}>Campagnes d'incitation</h3>
+              <Input
+                label="Rechercher"
+                state={search !== "" ? (totalRecords <= 0 ? "error" : "success") : "default"}
+                stateRelatedMessage={totalRecords + " résultats"}
+                hintText="Nom de la campagne / Territoire"
+                nativeInputProps={{
+                  type: "text",
+                  value: search ?? "",
+                  onChange: (e) => onChangeSearch(e.target.value),
+                }}
               />
             </div>
-          </div>
+          ) : null}
+          {dataTable.length > 0 || search !== "" ? (
+            <>
+              <Table data={dataTable} headers={headers} colorVariant="blue-ecume" fixed />
+              <div className={fr.cx("fr-grid-row", "fr-mt-5w")}>
+                <div className={fr.cx("fr-mx-auto")}>
+                  <Pagination
+                    defaultPage={page}
+                    count={pageCount}
+                    getPageLinkProps={(value) => ({
+                      onClick: () => setPage(value),
+                      href: "#",
+                    })}
+                    showFirstLast
+                  />
+                </div>
+              </div>
+            </>
+          ) : (
+            <Alert
+              title={"Pas de campagnes en cours"}
+              severity="info"
+              description={
+                <p>
+                  A date, nous n&apos;effectuons pas le suivi de vos campagnes d&apos;incitations financières,
+                  n&apos;hésitez pas à nous contacter en cas de besoin. Vous avez par contre accès à la fonctionnalité
+                  d&apos;export de données.
+                </p>
+              }
+            />
+          )}
         </>
-      ) : (
-        <Alert
-          title={"Pas de campagnes en cours"}
-          severity="info"
-          description={
-            <p>
-              A date, nous n&apos;effectuons pas le suivi de vos campagnes d&apos;incitations financières,
-              n&apos;hésitez pas à nous contacter en cas de besoin. Vous avez par contre accès à la fonctionnalité
-              d&apos;export de données.
-            </p>
-          }
-        />
       )}
     </>
   );
