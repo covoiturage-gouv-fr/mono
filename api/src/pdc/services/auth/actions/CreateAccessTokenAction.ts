@@ -17,7 +17,7 @@ import { DexOIDCProvider } from "../providers/DexOIDCProvider.ts";
     public: true,
     rateLimiter: {
       key: "rl-auth",
-      limit: 5,
+      limit: 20,
       windowMinute: 1,
     },
     successHttpCode: 201,
