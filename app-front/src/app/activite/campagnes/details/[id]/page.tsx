@@ -1,98 +1,26 @@
-"use client";
-export const dynamicParams = true;
-import { fr } from "@codegouvfr/react-dsfr";
-import { notFound, useParams, useRouter } from "next/navigation";
+import CampaignDetailsClient from "./CampaignDetailsClient";
 
-import { useMemo } from "react";
-import DescriptiveSheetUrlEditor from "../../../../../components/campaign/DescriptiveSheetUrlEditor";
-import Loading from "../../../../../components/layout/Loading";
-import { Config } from "../../../../../config";
-import { useApi } from "../../../../../hooks/useApi";
-import { Campaign } from "../../../../../interfaces/campaignInterface";
-import { useAuth } from "../../../../../providers/AuthProvider";
-import ApdfTable from "./ApdfTable";
-import JourneysGraph from "./graphs/JourneysGraph";
-import OperatorsGraph from "./graphs/OperatorsGraph";
+export async function generateStaticParams() {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  const response = await fetch(`${apiUrl}/v3/campaigns/build/list`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
 
-export default function CampaignDetails() {
-  const { user, simulatedRole } = useAuth();
-  const router = useRouter();
-  const params = useParams();
+  const campaigns = (await response.json()) as { _id: number }[];
 
-  const formatDate = (dateStr: string): string => {
-    const date = new Date(dateStr);
-    return isNaN(date.getTime()) ? "Date invalide" : date.toLocaleDateString("fr-FR");
-  };
+  return campaigns.map((campaign) => ({
+    id: campaign._id.toString(),
+  }));
+}
 
-  const url = `${Config.get<string>("auth.domain")}/rpc?methods=campaign:find`;
-  const init = useMemo(
-    () => ({
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        jsonrpc: "2.0",
-        method: "campaign:find",
-        params: { _id: Number(params.id) },
-        id: 1,
-      }),
-    }),
-    [params.id],
-  );
+interface Props {
+  params: Promise<{ id: string }>;
+}
 
-  const { data, loading, error } = useApi<{
-    id: number;
-    result: { meta: null; data: Campaign };
-    jsonrpc: string;
-  }>(url, false, init);
-
-  const currentCampaign = data?.result?.data;
-
-  if (loading) return <Loading />;
-  if (!currentCampaign || error) notFound();
-  return (
-    <>
-      <a
-        href="#"
-        className={fr.cx("fr-link", "fr-icon-arrow-right-line", "fr-link--icon-right")}
-        target="_self"
-        onClick={() => router.push("/activite/campagnes")}
-      >
-        Revenir à toutes les campagnes
-      </a>
-      <h3 className={fr.cx("fr-callout__title", "fr-mt-2w")}>Campagne {currentCampaign.name}</h3>
-      <div className={fr.cx("fr-callout")}>
-        <div className={fr.cx("fr-callout__title")}>{currentCampaign.territory_name}</div>
-        <div>
-          <b>Nom de la campagne :</b> {currentCampaign.name}
-        </div>
-        <div>
-          <b>Durée de la campagne :</b> Du {formatDate(currentCampaign.start_date)} au{" "}
-          {formatDate(currentCampaign.end_date)}
-        </div>
-        <div>
-          <b>Estimation de la consommation du budget* :</b>{" "}
-          {`${(Number(currentCampaign?.incentive_sum) / 100).toLocaleString()} € sur ${(Number(currentCampaign.max_amount) / 100).toLocaleString()} €`}
-        </div>
-        <i>
-          * A noter que le budget est le montant dédié aux incitations uniquement et qu’il s’agit ici d’une estimation
-          de la consommation en quasi temps réel.{" "}
-        </i>
-        <DescriptiveSheetUrlEditor
-          campaignId={currentCampaign._id}
-          initialValue={currentCampaign.descriptive_sheet_url}
-        />
-      </div>
-      <JourneysGraph title="Evolution des trajets" campaignId={currentCampaign._id} />
-      {["registry", "territory"].includes(user?.role.split(".")[0] ?? "") && simulatedRole !== "operator" && (
-        <OperatorsGraph title="Evolution des trajets par opérateurs" campaignId={currentCampaign._id} />
-      )}
-      <ApdfTable
-        title="Fichiers d’appels de fonds recalculés par covoiturage.beta.gouv"
-        campaignId={currentCampaign._id}
-        operatorId={user?.operator_id ?? null}
-      />
-    </>
-  );
+export default async function CampaignDetails({ params }: Props) {
+  const { id } = await params;
+  return <CampaignDetailsClient id={id} />;
 }
