@@ -13,7 +13,7 @@ SELECT
   'com' AS type,
   l_arr       AS libelle,
   geom_simple AS geom,
-  geom_centroid AS centroid
+  centroid
 FROM trusted_zone.perimeters
 UNION ALL
 SELECT
@@ -25,7 +25,7 @@ SELECT
   ST_PointOnSurface(ST_Union(geom_simple)) AS centroid
 FROM trusted_zone.perimeters
 WHERE epci IS NOT NULL
-GROUP BY year, epci
+GROUP BY year, epci, l_epci
 UNION ALL
 SELECT
   year,
@@ -36,7 +36,7 @@ SELECT
   ST_PointOnSurface(ST_Union(geom_simple)) AS centroid
 FROM trusted_zone.perimeters
 WHERE aom IS NOT NULL
-GROUP BY year, aom
+GROUP BY year, aom, l_aom
 UNION ALL
 SELECT
   year,
@@ -47,7 +47,7 @@ SELECT
   ST_PointOnSurface(ST_Union(geom_simple)) AS centroid
 FROM trusted_zone.perimeters
 WHERE dep IS NOT NULL
-GROUP BY year, dep
+GROUP BY year, dep, l_dep
 UNION ALL
 SELECT
   year,
@@ -58,14 +58,15 @@ SELECT
   ST_PointOnSurface(ST_Union(geom_simple)) AS centroid
 FROM trusted_zone.perimeters
 WHERE reg IS NOT NULL
-GROUP BY year, reg
+GROUP BY year, reg, l_reg
 UNION ALL
 SELECT
   year,
   country AS code,
   'country' AS type,
+  l_country AS libelle,
   ST_Multi(ST_Union(geom_simple)) AS geom,
   ST_PointOnSurface(ST_Union(geom_simple)) AS centroid
 FROM trusted_zone.perimeters
 WHERE country IS NOT NULL
-GROUP BY year, country;
+GROUP BY year, country, l_country;
