@@ -4,7 +4,7 @@ MODEL (
   start '2020-01-01',
   cron '@yearly',
   grain ['id','year','arr'],
-  tags ['trusted', 'perimeters']
+  tags ['trusted','geo', 'perimeters']
 );
 
 WITH old_perimeters AS (
