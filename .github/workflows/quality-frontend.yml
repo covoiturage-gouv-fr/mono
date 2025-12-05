@@ -62,6 +62,7 @@ jobs:
   build-dashboard:
     name: Build Dashboard
     runs-on: ubuntu-latest
+    environment: production
     steps:
       - name: Checkout code
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
@@ -86,3 +87,5 @@ jobs:
       - name: Run build
         working-directory: app-front
         run: npm run build
+        env:
+          NEXT_PUBLIC_API_URL: ${{ vars.API_ROOT_URL }}

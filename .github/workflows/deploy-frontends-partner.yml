@@ -1,18 +1,18 @@
-name: Deploy frontends (public)
+name: Deploy Espace Partenaires
 on:
   release:
     types: [published]
   workflow_dispatch:
 jobs:
   deploy:
-    name: Deploy public
+    name: Deploy Espace Partenaires
     strategy:
       matrix:
         env: [demo, production]
     environment: ${{ matrix.env }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout 🛎️
+      - name: Checkout
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
         with:
           persist-credentials: false
@@ -20,32 +20,31 @@ jobs:
       - name: Install NodeJS
         uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
         with:
-          node-version: '24'
-          cache: 'npm'
+          node-version: "24"
+          cache: "npm"
           cache-dependency-path: public/package-lock.json
 
       - name: Install and Build 🔧
         env:
           DEPLOY_ENV: ${{ matrix.env }}
-          NEXT_PUBLIC_API_URL: ${{ vars.API_URL }}
-          NEXT_PUBLIC_CMS_URL: ${{ vars.CMS_URL }}
-          NEXT_PUBLIC_CMS_TOKEN: ${{ secrets.CMS_API_KEY }}
+          NEXT_PUBLIC_PC_USER_URI: ${{ vars.NEXT_PUBLIC_PC_USER_URI }}
+          NEXT_PUBLIC_API_REDIRECT: ${{ vars.NEXT_PUBLIC_API_REDIRECT }}
+          NEXT_PUBLIC_API_URL: ${{ vars.API_ROOT_URL }}
           NEXT_PUBLIC_SEARCH_URL: ${{ vars.API_SEARCH_URL }}
           NEXT_PUBLIC_SEARCH_TOKEN: ${{ secrets.MEILISEARCH_API_KEY }}
         run: |
-          cd public
+          cd app-front
           npm ci
-          NODE_OPTIONS=--openssl-legacy-provider npm run build
-          cp -R out/_next out/startup-etat/_next
+          npm run build
 
       - name: Deploy to bucket
         uses: jakejarvis/s3-sync-action@be0c4ab89158cac4278689ebedd8407dd5f35a83
         with:
           args: --acl public-read --follow-symlinks --delete
         env:
-          AWS_S3_BUCKET: ${{ vars.PUBLIC_BUCKET_NAME }}
+          AWS_S3_BUCKET: ${{ vars.DASHBOARD_BUCKET_NAME }}
           AWS_ACCESS_KEY_ID: ${{ secrets.BUCKET_ACCESS_KEY }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.BUCKET_SECRET_KEY }}
           AWS_S3_ENDPOINT: ${{ vars.BUCKET_ENDPOINT }}
           AWS_REGION: ${{ vars.BUCKET_REGION }}
-          SOURCE_DIR: public/out
+          SOURCE_DIR: app-front/out
