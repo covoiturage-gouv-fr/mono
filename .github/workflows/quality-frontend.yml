@@ -86,3 +86,6 @@ jobs:
       - name: Run build
         working-directory: app-front
         run: npm run build
+        env:
+          DEPLOY_ENV: production
+          NEXT_PUBLIC_API_URL: ${{ vars.API_ROOT_URL }}
