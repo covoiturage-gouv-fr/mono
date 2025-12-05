@@ -12,7 +12,7 @@ jobs:
   deploy-doc:
     name: Deploy
     runs-on: ubuntu-latest
-  
+
     # add files here
     strategy:
       matrix:

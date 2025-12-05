@@ -27,13 +27,14 @@ jobs:
       - name: Install and Build 🔧
         env:
           DEPLOY_ENV: ${{ matrix.env }}
-          NEXT_PUBLIC_PC_USER_URI: ${{ vars.NEXT_PUBLIC_PC_USER_URI}}
-          NEXT_PUBLIC_API_REDIRECT: ${{ vars.NEXT_PUBLIC_API_REDIRECT}}
-          NEXT_PUBLIC_API_URL: ${{ vars.API_ROOT_URL}}
-          NEXT_PUBLIC_SEARCH_URL: ${{ vars.API_SEARCH_URL}}
-          NEXT_PUBLIC_SEARCH_TOKEN: ${{ secrets.MEILISEARCH_API_KEY}}
+          NEXT_PUBLIC_PC_USER_URI: ${{ vars.NEXT_PUBLIC_PC_USER_URI }}
+          NEXT_PUBLIC_API_REDIRECT: ${{ vars.NEXT_PUBLIC_API_REDIRECT }}
+          NEXT_PUBLIC_API_URL: ${{ vars.API_ROOT_URL }}
+          NEXT_PUBLIC_SEARCH_URL: ${{ vars.API_SEARCH_URL }}
+          NEXT_PUBLIC_SEARCH_TOKEN: ${{ secrets.MEILISEARCH_API_KEY }}
         run: |
           cd app-front
+          env | grep NEXT_PUBLIC_ | grep -v TOKEN | sort
           npm ci
           npm run build
 
