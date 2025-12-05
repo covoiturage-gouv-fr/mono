@@ -26,9 +26,9 @@ WITH old_perimeters AS (
     a.l_country,
     a.pop, 
     a.surface,
-    b.geometry AS geom,
-    a.geometry AS geom_simple,
-    c.geometry AS centroid
+    ST_SetSRID(ST_GeomFromText(b.geometry, 4326), 4326) AS geom,
+    ST_SetSRID(ST_GeomFromText(a.geometry, 4326), 4326) AS geom_simple,
+    ST_SetSRID(ST_GeomFromText(c.geometry, 4326), 4326) AS centroid
   FROM raw_zone.old_perimeters_simple a
   LEFT JOIN raw_zone.old_perimeters_full b ON a.year = b.year AND a.arr = b.arr
   LEFT JOIN raw_zone.old_perimeters_centroid c ON a.year = c.year AND a.arr = c.arr
@@ -52,9 +52,9 @@ new_com AS (
     'France' AS l_country,
     a.population AS pop,
     ST_Area(f.geometry::geography) / 1000000 AS surface,
-    f.geometry AS geom,
-    a.geometry AS geom_simple,
-    g.geometry AS centroid
+    ST_SetSRID(ST_GeomFromText(f.geometry, 4326), 4326) AS geom,
+    ST_SetSRID(ST_GeomFromText(a.geometry, 4326), 4326) AS geom_simple,
+    ST_SetSRID(ST_GeomFromText(g.geometry, 4326), 4326) AS centroid
   FROM raw_zone.ign_aecarto_com_2025 a
   LEFT JOIN raw_zone.ign_aecarto_epci_2025 b ON a.epci = b.epci
   LEFT JOIN raw_zone.ign_aecarto_dep_2025 c ON a.dep = c.dep
@@ -82,9 +82,9 @@ new_arr AS (
     b.l_country,
     a.population AS pop,
     ST_Area(c.geometry::geography) / 1000000 AS surface,
-    c.geometry AS geom,
-    a.geometry AS geom_simple,
-    d.geometry AS centroid
+    ST_SetSRID(ST_GeomFromText(c.geometry, 4326), 4326) AS geom,
+    ST_SetSRID(ST_GeomFromText(a.geometry, 4326), 4326) AS geom_simple,
+    ST_SetSRID(ST_GeomFromText(d.geometry, 4326), 4326) AS centroid
   FROM raw_zone.ign_aecarto_arr_2025 a
   LEFT JOIN new_com b ON a.com = b.arr
   LEFT JOIN raw_zone.ign_ae_arr_2025 c ON a.arr = c.arr

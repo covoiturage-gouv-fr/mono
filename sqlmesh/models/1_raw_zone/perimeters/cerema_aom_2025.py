@@ -3,8 +3,6 @@ from datetime import datetime
 import pandas as pd
 from sqlmesh import ExecutionContext, model
 from utils.loading import load_dataset
-from utils.cleaning import clean_columns
-from utils.url import get_last_url
 
 # dictionnaire global des colonnes et types
 COLUMN_TYPES = {
@@ -15,7 +13,7 @@ COLUMN_TYPES = {
 
 @model(
     "raw_zone.cerema_aom_2025",
-    kind="EXTERNAL",
+    kind="FULL",
     columns=COLUMN_TYPES,
     tags=["raw","perimeters","cerema_aom_2025"],
 )
