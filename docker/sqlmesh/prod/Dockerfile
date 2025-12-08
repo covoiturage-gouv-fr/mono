@@ -39,6 +39,17 @@ COPY . /data
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --locked --no-dev
 
+# #########################################################################
+# Looking to add python dependencies to SQLMesh?
+# Instead of modifying this Dockerfile directly, please add them to the
+# `pyproject.toml` and `uv.lock` files at the root of the repository.
+#
+# ```shell
+# cd sqlmesh
+# uv add <package-name>
+# ```
+# #########################################################################
+
 # Place executables in the environment at the front of the path
 ENV PATH="/data/.venv/bin:$PATH"
 
