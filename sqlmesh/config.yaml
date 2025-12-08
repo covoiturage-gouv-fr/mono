@@ -6,25 +6,26 @@ gateways:
       # https://sqlmesh.readthedocs.io/en/stable/reference/configuration/#connection
       # https://sqlmesh.readthedocs.io/en/stable/integrations/engines/postgres/#connection-options
       type: postgres
-      host: {{ env_var('MESHPGHOST') }}
-      user: {{ env_var('MESHPGUSER') }}
-      password: {{ env_var('MESHPGPASSWORD') }}
-      port: {{ env_var('MESHPGPORT') }}
-      database: {{ env_var('MESHPGDBNAME') }}
+      host: { { env_var('MESHPGHOST') } }
+      user: { { env_var('MESHPGUSER') } }
+      password: { { env_var('MESHPGPASSWORD') } }
+      port: { { env_var('MESHPGPORT') } }
+      database: { { env_var('MESHPGDBNAME') } }
       # concurrent_tasks: 4
       # register_comments: True
       # pre_ping: True
       # pretty_sql: False
-      # schema_differ_overrides: 
-      # keepalives_idle: 
+      # schema_differ_overrides:
+      # keepalives_idle:
       # connect_timeout: 10
-      # role: 
-      # sslmode: 
-      # application_name: 
+      # role:
+      # sslmode:
+      # application_name:
 physical_schema_mapping:
   raw_zone: raw_zone
   trusted_zone: trusted_zone
   refined_zone: refined_zone
+  archive_zone: archive_zone
 physical_table_naming_convention: table_only
 
 default_gateway: postgres
@@ -35,7 +36,7 @@ default_gateway: postgres
 model_defaults:
   dialect: postgres
   start: 2025-09-03 # Start date for backfill history
-  cron: '@daily'    # Run models daily at 12am UTC (can override per model)
+  cron: "@daily" # Run models daily at 12am UTC (can override per model)
 
 # --- Linting Rules ---
 # Enforce standards for your team
