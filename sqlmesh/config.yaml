@@ -1,3 +1,4 @@
+# yaml-language-server: disable
 # --- Gateway Connection ---
 gateways:
   postgres:
@@ -6,11 +7,11 @@ gateways:
       # https://sqlmesh.readthedocs.io/en/stable/reference/configuration/#connection
       # https://sqlmesh.readthedocs.io/en/stable/integrations/engines/postgres/#connection-options
       type: postgres
-      host: { { env_var('MESHPGHOST') } }
-      user: { { env_var('MESHPGUSER') } }
-      password: { { env_var('MESHPGPASSWORD') } }
-      port: { { env_var('MESHPGPORT') } }
-      database: { { env_var('MESHPGDBNAME') } }
+      host: {{ env_var('MESHPGHOST') }}
+      user: {{ env_var('MESHPGUSER') }}
+      password: {{ env_var('MESHPGPASSWORD') }}
+      port: {{ env_var('MESHPGPORT') }}
+      database: {{ env_var('MESHPGDBNAME') }}
       # concurrent_tasks: 4
       # register_comments: True
       # pre_ping: True
