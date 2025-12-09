@@ -22,6 +22,7 @@ env:
 jobs:
   build:
     name: Build ${{ matrix.name }} image
+    runs-on: ubuntu-latest
     steps:
       - name: Build ${{ matrix.name }}
         uses: ./.github/actions/build-image

@@ -31,6 +31,7 @@ jobs:
 
   build:
     needs: tag
+    runs-on: ubuntu-latest
     steps:
       - name: Build DBT
         uses: ./.github/actions/build-image
