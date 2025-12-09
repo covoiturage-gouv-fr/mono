@@ -105,3 +105,9 @@ fileignoreconfig:
     checksum: e64b7f7bce2d048709d23cc99735ef5d1616e521f5d52ede660d5d03b98ae7e9
   - filename: app-front/src/app/administration/tables/OperatorsTable.tsx
     checksum: 452b87beff16e55df299abe7c6094361508e43d368b3b56b08473d6029cfeb57
+  - filename: sqlmesh/.env.example
+    checksum: ff13bf7998aa7ecff77fd58a0c305ed5f16fbf27d14eeda570306c1d02b4c499
+  - filename: sqlmesh/models/2_trusted_zone/perimeters.sql
+    checksum: ac106872e48c275810c85484a19a771f6cf4cf4256d5e9c7292cddab9d11c6d2
+  - filename: sqlmesh/models/3_refined_zone/opendata/datagouv_journeys.sql
+    checksum: a8f9d736473abdab68d3d3901a7d7088517a7e3450225af889826e6969b16bf6

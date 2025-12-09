@@ -49,4 +49,3 @@ def execute(
     geometry_col=GEOMETRY_COL,
     target_crs="EPSG:4326"
   )
-
