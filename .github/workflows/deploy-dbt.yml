@@ -32,12 +32,9 @@ jobs:
   build:
     needs: tag
     name: Build dbt tool
-    uses: ./.github/workflows/base-build-push-docker.yml
+    uses: ./.github/actions/build-image
     with:
       name: dbt
       context: ./dbt
       tag: ${{ needs.tag.outputs.value }}
       dockerfile: ./docker/dbt/prod/Dockerfile
-    secrets:
-      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}

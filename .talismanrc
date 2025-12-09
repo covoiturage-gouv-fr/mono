@@ -6,7 +6,7 @@ scopeconfig:
 fileignoreconfig:
   - filename: api/src/db/migrations/*.sql
     ignore_detectors: [filename, filecontent]
-  - filename: .github/actions/*.yml
+  - filename: .github/actions/*/action.yml
     ignore_detectors: [filename, filecontent]
   - filename: .github/workflows/*.yml
     ignore_detectors: [filename, filecontent]

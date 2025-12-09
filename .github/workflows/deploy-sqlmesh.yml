@@ -32,12 +32,9 @@ jobs:
   build:
     needs: tag
     name: Build and Push SQLMesh Docker Image
-    uses: ./.github/workflows/base-build-push-docker.yml
+    uses: ./.github/actions/build-image
     with:
       name: sqlmesh
       context: ./sqlmesh
       tag: ${{ needs.tag.outputs.value }}
       dockerfile: ./docker/sqlmesh/prod/Dockerfile
-    secrets:
-      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}

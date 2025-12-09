@@ -22,15 +22,12 @@ env:
 jobs:
   build:
     name: Build ${{ matrix.name }}
-    uses: ./.github/workflows/base-build-push-docker.yml
+    uses: ./.github/actions/build-image
     with:
       name: ${{ matrix.name }}
       context: .
       tag: ${{ github.ref_type == 'tag' && github.ref_name || github.sha }}
       dockerfile: ${{ matrix.dockerfile }}
-    secrets:
-      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
     strategy:
       matrix:
         name: ["api", "data"]

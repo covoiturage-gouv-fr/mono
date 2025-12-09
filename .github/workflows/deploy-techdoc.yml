@@ -32,7 +32,7 @@ jobs:
           persist-credentials: false
 
       - name: Verify OpenAPI files
-        run: |
+        run: | # zizmor: ignore[template-injection]
           file="api/specs/api-${{ matrix.version }}.yaml"
           if [ ! -f "$file" ]; then
             echo "Error: $file does not exist"
