@@ -19,6 +19,12 @@ inputs:
     required: true
     type: string
 
+secrets:
+  DOCKER_USERNAME:
+    required: true
+  DOCKER_PASSWORD:
+    required: true
+
 runs:
   using: "composite"
   steps:
@@ -28,6 +34,7 @@ runs:
         persist-credentials: false
 
     - name: Validate context input
+      shell: bash
       run: | # zizmor: ignore[template-injection]
         ALLOWED=".,./cms,./sqlmesh,./dbt"
         if ! echo "$ALLOWED" | grep -qw "${{ inputs.context }}"; then

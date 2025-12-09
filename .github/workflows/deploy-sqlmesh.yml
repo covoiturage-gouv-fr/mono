@@ -44,3 +44,6 @@ jobs:
           context: ./sqlmesh
           tag: ${{ needs.tag.outputs.value }}
           dockerfile: ./docker/sqlmesh/prod/Dockerfile
+        secrets:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
