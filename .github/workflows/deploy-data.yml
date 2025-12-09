@@ -1,0 +1,35 @@
+name: Deploy Notebooks (data)
+description: Build and push a Python image for notebooks (data).
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "notebooks/**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
+        with:
+          persist-credentials: false
+      - name: Build and Push DATA Docker Image
+        uses: ./.github/actions/build-image
+        with:
+          name: data
+          context: .
+          tag: ${{ github.ref_type == 'tag' && github.ref_name || github.sha }}
+          dockerfile: ./docker/data/Dockerfile
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
