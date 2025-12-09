@@ -27,6 +27,7 @@ jobs:
         run: echo "value=$(date +'%F.%H%M')" >> $GITHUB_OUTPUT
 
   build:
+    name: Build and Push DBT Docker Image
     needs: tag
     runs-on: ubuntu-latest
     steps:
