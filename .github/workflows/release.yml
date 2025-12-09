@@ -2,6 +2,9 @@ name: "Release"
 
 permissions:
   contents: read
+  actions: read
+  security-events: write
+  pull-requests: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -13,11 +16,6 @@ on:
 
 jobs:
   release:
-    permissions:
-      contents: read
-      actions: read
-      security-events: write
-      pull-requests: read
     name: Release
     runs-on: ubuntu-latest
     steps:
@@ -27,11 +25,6 @@ jobs:
           persist-credentials: false # otherwise, the token used is GITHUB_TOKEN, instead of your personal token
       - name: Semantic Release
         uses: cycjimmy/semantic-release-action@9cc899c47e6841430bbaedb43de1560a568dfd16
-        permissions:
-          contents: read
-          actions: read
-          security-events: write
-          pull-requests: read
         with:
           branches: ["main"]
         env:
