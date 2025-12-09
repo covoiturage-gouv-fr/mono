@@ -2,7 +2,7 @@
 MODEL (
   name opendata_zone.datagouv_journeys,
   kind INCREMENTAL_BY_TIME_RANGE (
-    time_column start_datetime
+    time_column journey_start_datetime
   ),
   dialect postgres,
   tags ['opendata', 'journeys', 'export'],
