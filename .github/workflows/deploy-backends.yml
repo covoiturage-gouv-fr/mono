@@ -1,4 +1,11 @@
-name: 'Deploy docker images'
+name: Deploy backend images
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 on:
   release:
@@ -26,9 +33,9 @@ jobs:
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
     strategy:
       matrix:
-        name: ['api', 'data']
+        name: ["api", "data"]
         include:
-        - name: api
-          dockerfile: './docker/api/Dockerfile'
-        - name: data
-          dockerfile: './docker/data/Dockerfile'
+          - name: api
+            dockerfile: "./docker/api/Dockerfile"
+          - name: data
+            dockerfile: "./docker/data/Dockerfile"
