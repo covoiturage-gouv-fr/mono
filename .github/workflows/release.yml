@@ -2,9 +2,6 @@ name: "Release"
 
 permissions:
   contents: read
-  actions: read
-  security-events: write
-  pull-requests: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -20,10 +17,10 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      actions: read
-      issues: write
-      security-events: write
-      pull-requests: read
+      actions: read # required by semantic-release
+      issues: write # required by semantic-release
+      security-events: write # required by semantic-release
+      pull-requests: read # required by semantic-release
     steps:
       - name: Checkout
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
