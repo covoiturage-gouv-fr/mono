@@ -13,13 +13,13 @@ on:
 
 jobs:
   release:
-    name: Release
-    runs-on: ubuntu-latest
     permissions:
       contents: read
       actions: read
       security-events: write
       pull-requests: read
+    name: Release
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
@@ -33,9 +33,6 @@ jobs:
           security-events: write
           pull-requests: read
         with:
-          branches: |
-            [
-              'main'
-            ]
+          branches: ["main"]
         env:
           GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN_RELEASE }}
