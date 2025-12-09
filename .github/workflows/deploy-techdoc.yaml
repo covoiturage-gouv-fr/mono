@@ -1,6 +1,12 @@
 name: Deploy API documentation
+
 permissions:
   contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 on:
   workflow_dispatch:
   release:
@@ -8,27 +14,16 @@ on:
   push:
     branches:
       - chore/update-techdoc
+
 jobs:
-  deploy-doc:
-    name: Deploy
+  deploy:
+    name: Deploy API documentation
     runs-on: ubuntu-latest
 
-    # add files here
     strategy:
       matrix:
-        include:
-          - doc: api
-            version: v3.3
-            token: BUMP_TOKEN_API
-          - doc: api
-            version: v3.2
-            token: BUMP_TOKEN_API
-          # - doc: api
-          #   version: v3.1
-          #   token: BUMP_TOKEN_API
-          # - doc: api
-          #   version: v3.0
-          #   token: BUMP_TOKEN_API
+        # List all versions of the API documentation to deploy
+        version: [v3.2, v3.3]
 
     steps:
       - name: Checkout
@@ -38,7 +33,7 @@ jobs:
 
       - name: Verify OpenAPI files
         run: |
-          file="api/specs/${{ matrix.doc }}-${{ matrix.version }}.yaml"
+          file="api/specs/api-${{ matrix.version }}.yaml"
           if [ ! -f "$file" ]; then
             echo "Error: $file does not exist"
             exit 1
@@ -47,12 +42,12 @@ jobs:
       - name: Validate OpenAPI syntax
         uses: swaggerexpert/swagger-editor-validate@264fd875d3c6e1bf65da1f0a63e095cbe41ffef3
         with:
-          definition-file: api/specs/${{ matrix.doc }}-${{ matrix.version }}.yaml
+          definition-file: api/specs/api-${{ matrix.version }}.yaml
 
       - name: Deploy
         uses: bump-sh/github-action@590e36a25548cb10a8efb1ca9e5b1e111ad67120
         with:
-          doc: ${{ matrix.doc }}
-          token: ${{ secrets[matrix.token] }}
-          file: api/specs/${{ matrix.doc }}-${{ matrix.version }}.yaml
+          doc: api
+          token: ${{ secrets.BUMP_TOKEN_API }}
+          file: api/specs/api-${{ matrix.version }}.yaml
           branch: ${{ matrix.version }}
