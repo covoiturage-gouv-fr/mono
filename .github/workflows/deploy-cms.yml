@@ -31,10 +31,11 @@ jobs:
 
   build:
     needs: tag
-    name: Build cms
-    uses: ./.github/actions/build-image
-    with:
-      name: cms
-      context: ./cms
-      tag: ${{ needs.tag.outputs.value }}
-      dockerfile: ./docker/cms/prod/Dockerfile
+    steps:
+      - name: Build CMS
+        uses: ./.github/actions/build-image
+        with:
+          name: cms
+          context: ./cms
+          tag: ${{ needs.tag.outputs.value }}
+          dockerfile: ./docker/cms/prod/Dockerfile

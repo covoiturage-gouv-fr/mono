@@ -31,10 +31,11 @@ jobs:
 
   build:
     needs: tag
-    name: Build and Push SQLMesh Docker Image
-    uses: ./.github/actions/build-image
-    with:
-      name: sqlmesh
-      context: ./sqlmesh
-      tag: ${{ needs.tag.outputs.value }}
-      dockerfile: ./docker/sqlmesh/prod/Dockerfile
+    steps:
+      - name: Build and Push SQLMesh Docker Image
+        uses: ./.github/actions/build-image
+        with:
+          name: sqlmesh
+          context: ./sqlmesh
+          tag: ${{ needs.tag.outputs.value }}
+          dockerfile: ./docker/sqlmesh/prod/Dockerfile

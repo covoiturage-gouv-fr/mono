@@ -31,10 +31,11 @@ jobs:
 
   build:
     needs: tag
-    name: Build dbt tool
-    uses: ./.github/actions/build-image
-    with:
-      name: dbt
-      context: ./dbt
-      tag: ${{ needs.tag.outputs.value }}
-      dockerfile: ./docker/dbt/prod/Dockerfile
+    steps:
+      - name: Build DBT
+        uses: ./.github/actions/build-image
+        with:
+          name: dbt
+          context: ./dbt
+          tag: ${{ needs.tag.outputs.value }}
+          dockerfile: ./docker/dbt/prod/Dockerfile
