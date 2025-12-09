@@ -15,10 +15,6 @@ on:
     paths:
       - "cms/**"
 
-defaults:
-  run:
-    shell: bash
-
 jobs:
   tag:
     name: Set deployment tag
@@ -27,6 +23,7 @@ jobs:
       value: ${{ steps.set_tag.outputs.value }}
     steps:
       - id: set_tag
+        shell: bash
         run: echo "value=$(date +'%F.%H%M')" >> $GITHUB_OUTPUT
 
   build:
@@ -44,3 +41,5 @@ jobs:
           context: ./cms
           tag: ${{ needs.tag.outputs.value }}
           dockerfile: ./docker/cms/prod/Dockerfile
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}

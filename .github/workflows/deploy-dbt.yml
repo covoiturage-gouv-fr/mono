@@ -15,10 +15,6 @@ on:
     paths:
       - "dbt/**"
 
-defaults:
-  run:
-    shell: bash
-
 jobs:
   tag:
     name: Set deployment tag
@@ -27,6 +23,7 @@ jobs:
       value: ${{ steps.set_tag.outputs.value }}
     steps:
       - id: set_tag
+        shell: bash
         run: echo "value=$(date +'%F.%H%M')" >> $GITHUB_OUTPUT
 
   build:
@@ -37,10 +34,12 @@ jobs:
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
         with:
           persist-credentials: false
-      - name: Build DBT
+      - name: Build and push DBT
         uses: ./.github/actions/build-image
         with:
           name: dbt
           context: ./dbt
           tag: ${{ needs.tag.outputs.value }}
           dockerfile: ./docker/dbt/prod/Dockerfile
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}

@@ -15,10 +15,6 @@ on:
     paths:
       - "sqlmesh/**"
 
-defaults:
-  run:
-    shell: bash
-
 jobs:
   tag:
     name: Set deployment tag
@@ -27,6 +23,7 @@ jobs:
       value: ${{ steps.set_tag.outputs.value }}
     steps:
       - id: set_tag
+        shell: bash
         run: echo "value=$(date +'%F.%H%M')" >> $GITHUB_OUTPUT
 
   build:
