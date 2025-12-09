@@ -48,7 +48,7 @@ export class OccupationRepositoryProvider implements OccupationRepositoryInterfa
     const perimTableQuery = sql`
       SELECT ${raw(observeParam)} 
       FROM (
-        SELECT com, epci, aom, dep, reg, country 
+        SELECT arr as com, epci, aom, dep, reg, country 
         FROM ${raw(this.perim_table)} 
         WHERE year = geo.get_latest_millesime_or(${params.year}::smallint)
       ) t 
@@ -142,7 +142,7 @@ export class OccupationRepositoryProvider implements OccupationRepositoryInterfa
     const perimTableQuery = sql`
       SELECT ${raw(observeParam)} 
       FROM (
-        SELECT com, epci, aom, dep, reg, country 
+        SELECT arr as com, epci, aom, dep, reg, country 
         FROM ${raw(this.perim_table)} 
         WHERE year = geo.get_latest_millesime_or(${params.year}::smallint)
       ) t 
