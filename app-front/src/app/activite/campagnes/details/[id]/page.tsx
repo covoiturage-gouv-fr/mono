@@ -11,6 +11,8 @@ export async function generateStaticParams() {
 
   const campaigns = (await response.json()) as { _id: number }[];
 
+  if (campaigns.length <= 0) return [{ id: "0" }];
+
   return campaigns.map((campaign) => ({
     id: campaign._id.toString(),
   }));
