@@ -1,6 +1,9 @@
 name: Build stack
 description: Build the stack for testing
 
+permissions:
+  contents: read
+
 runs:
   using: "composite"
   steps:
@@ -76,7 +79,7 @@ runs:
         just create_bucket "local-pdc-export"
         just create_bucket "local-pdc-appels-de-fonds"
         just create_bucket "local-pdc-public"
-      
+
     - name: Wait for the API to be ready
       working-directory: api
       shell: bash

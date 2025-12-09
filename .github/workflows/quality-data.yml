@@ -1,5 +1,12 @@
 name: "Quality - Data"
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
     branches: [main]
@@ -16,6 +23,8 @@ jobs:
     steps:
       - name: Check out master
         uses: actions/checkout@61b9e3751b92087fd0b06925ba6dd6314e06f089
+        with:
+          persist-credentials: false
 
       - name: Security vulnerabilities scan
         uses: pyupio/safety-action@2591cf2f3e67ba68b923f4c92f0d36e281c65023

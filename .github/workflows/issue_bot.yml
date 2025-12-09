@@ -1,10 +1,19 @@
-name: 'Close stale issues and PRs'
+name: "Close stale issues and PRs"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 on:
   schedule:
-    - cron: '23 */12 * 1-6,9-12 *' 
+    - cron: "23 */12 * 1-6,9-12 *"
 
 jobs:
   stale:
+    name: Close stale issues and PRs
     runs-on: ubuntu-latest
     steps:
       - uses: actions/stale@3a9db7e6a41a89f618792c92c0e97cc736e1b13f
@@ -15,7 +24,6 @@ jobs:
           close-pr-message: "Cette PR a été fermée car cela fait 5 jours qu'elle a été marquée comme obsolète sans activité"
           days-before-stale: 60
           days-before-close: 5
-          exempt-issue-labels: 'keep' 
+          exempt-issue-labels: "keep"
           enable-statistics: false
           operations-per-run: 100
-

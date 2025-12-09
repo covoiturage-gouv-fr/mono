@@ -1,15 +1,21 @@
-name: Deploy Espace Partenaires
+name: Deploy Attestation
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 on:
   release:
     types: [published]
   workflow_dispatch:
+
 jobs:
   deploy:
-    name: Deploy Espace Partenaires
-    strategy:
-      matrix:
-        env: [demo, production]
-    environment: ${{ matrix.env }}
+    name: Deploy Attestation
+    environment: production
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -26,25 +32,20 @@ jobs:
 
       - name: Install and Build 🔧
         env:
-          DEPLOY_ENV: ${{ matrix.env }}
-          NEXT_PUBLIC_PC_USER_URI: ${{ vars.NEXT_PUBLIC_PC_USER_URI }}
-          NEXT_PUBLIC_API_REDIRECT: ${{ vars.NEXT_PUBLIC_API_REDIRECT }}
-          NEXT_PUBLIC_API_URL: ${{ vars.API_ROOT_URL }}
-          NEXT_PUBLIC_SEARCH_URL: ${{ vars.API_SEARCH_URL }}
-          NEXT_PUBLIC_SEARCH_TOKEN: ${{ secrets.MEILISEARCH_API_KEY }}
+          DEPLOY_ENV: production
         run: |
-          cd app-front
+          cd attestation
           npm ci
-          npm run build
+          NODE_OPTIONS=--openssl-legacy-provider npm run build
 
       - name: Deploy to bucket
         uses: jakejarvis/s3-sync-action@be0c4ab89158cac4278689ebedd8407dd5f35a83
         with:
           args: --acl public-read --follow-symlinks --delete
         env:
-          AWS_S3_BUCKET: ${{ vars.DASHBOARD_BUCKET_NAME }}
+          AWS_S3_BUCKET: ${{ vars.ATTESTATION_BUCKET_NAME }}
           AWS_ACCESS_KEY_ID: ${{ secrets.BUCKET_ACCESS_KEY }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.BUCKET_SECRET_KEY }}
           AWS_S3_ENDPOINT: ${{ vars.BUCKET_ENDPOINT }}
           AWS_REGION: ${{ vars.BUCKET_REGION }}
-          SOURCE_DIR: app-front/out
+          SOURCE_DIR: attestation/dist/attestation
