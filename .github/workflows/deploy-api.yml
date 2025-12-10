@@ -15,6 +15,8 @@ on:
       - main
     paths:
       - "api/**"
+  release:
+    types: [published]
 
 jobs:
   build:
