@@ -12,9 +12,9 @@ fileignoreconfig:
     ignore_detectors: [filename, filecontent]
   - filename: api/src/lib/pg/sql.ts
     checksum: 34a1d26889326c6bd576b22b2b4de9ef2a10dcc6d36ee915b3c99028d378bd39
-  - filename: attestation/src/app/services/pdfLimited.service.ts
+  - filename: app-attestation/src/app/services/pdfLimited.service.ts
     checksum: b26661547756ef686b92ff195f1a9d2ebe4348d3b09264f80a1a28adcbd168d9
-  - filename: attestation/src/app/services/pdfPublic.service.ts
+  - filename: app-attestation/src/app/services/pdfPublic.service.ts
     checksum: 5c8511305a8806cf773f0e0b92c4576e6a8f7ab3e3e27e138f474466d6ff79e8
   - filename: api/deno.lock
     allowed_patterns:
