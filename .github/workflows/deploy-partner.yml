@@ -31,7 +31,7 @@ jobs:
         with:
           node-version: "24"
           cache: "npm"
-          cache-dependency-path: public/package-lock.json
+          cache-dependency-path: app-partners/package-lock.json
 
       - name: Install and Build 🔧
         env:
@@ -42,7 +42,7 @@ jobs:
           NEXT_PUBLIC_SEARCH_URL: ${{ vars.API_SEARCH_URL }}
           NEXT_PUBLIC_SEARCH_TOKEN: ${{ secrets.MEILISEARCH_API_KEY }}
         run: |
-          cd app-front
+          cd app-partners
           npm ci
           npm run build
 
@@ -56,4 +56,4 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.BUCKET_SECRET_KEY }}
           AWS_S3_ENDPOINT: ${{ vars.BUCKET_ENDPOINT }}
           AWS_REGION: ${{ vars.BUCKET_REGION }}
-          SOURCE_DIR: app-front/out
+          SOURCE_DIR: app-partners/out

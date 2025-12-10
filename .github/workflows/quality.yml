@@ -137,7 +137,7 @@ jobs:
 
       - name: "Audit public site dependencies"
         run: npm audit --audit-level moderate && exit 0 || $([[ $? -ge 8 ]] && exit 1 || exit 0)
-        working-directory: app-front
+        working-directory: app-partners
 
   front-lint:
     name: (front) lint
@@ -154,11 +154,11 @@ jobs:
           node-version: "24"
 
       - name: Install dependencies
-        working-directory: app-front
+        working-directory: app-partners
         run: npm ci
 
       - name: Run lint
-        working-directory: app-front
+        working-directory: app-partners
         run: npm run lint
 
   front-smoke:
@@ -178,11 +178,11 @@ jobs:
           node-version: "24"
 
       - name: Install dependencies
-        working-directory: app-front
+        working-directory: app-partners
         run: npm ci
 
       - name: Run build
-        working-directory: app-front
+        working-directory: app-partners
         run: npm run build
         env:
           NEXT_PUBLIC_API_URL: ${{ vars.API_ROOT_URL }}
