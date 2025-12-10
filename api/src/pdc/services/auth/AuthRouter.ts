@@ -5,6 +5,7 @@ import express, { NextFunction, Request, Response } from "dep:express";
 import { session } from "../../../config/proxy.ts";
 import { authGuard } from "../../proxy/middlewares/authGuard.ts";
 import { sessionMiddleware } from "../../proxy/middlewares/sessionMiddleware.ts";
+import { getPermissions } from "./config/permissions.ts";
 
 @injectable()
 export class AuthRouter {
@@ -104,5 +105,55 @@ export class AuthRouter {
         return res.json(req.session?.user);
       },
     );
+
+    /**
+     * Test-only login route to create a session without going through OIDC.
+     * This route should only be available in test environments.
+     */
+    if (["demo", "production"].includes(this.config.get("env")) === false) {
+      this.app.post(
+        "/auth/test/login",
+        asyncHandler(async (req: Request, res: Response) => {
+          const { email } = req.body;
+
+          if (!email) {
+            return res.status(400).json({
+              id: 1,
+              jsonrpc: "2.0",
+              error: {
+                code: 400,
+                data: "Bad Request",
+                message: "Missing email in request body",
+              },
+            });
+          }
+
+          // Create a mock user based on the email
+          const kind = email.includes("admin") ? "registry" : email.includes("operator") ? "operator" : "territory";
+          const user = {
+            email,
+            name: `Test ${kind} user`,
+            role: `${kind}.admin`,
+            permissions: getPermissions(`${kind}.admin`),
+          };
+
+          if (kind === "operator") {
+            // @ts-ignore no-type
+            user["operator_id"] = 1;
+          }
+          if (kind === "territory") {
+            // @ts-ignore no-type
+            user["territory_id"] = 1;
+          }
+
+          // Create session
+          req.session = req.session || {};
+          req.session.auth = { test_login: true };
+          req.session.user = user;
+
+          return res.json(req.session.user);
+        }),
+      );
+    }
   }
 }

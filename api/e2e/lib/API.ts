@@ -80,8 +80,8 @@ export class API {
   public async login<T = unknown>(email: string, password: string): Promise<T> {
     await this.logout();
 
-    const loginResponse = await this.post<RPCResponse<T>>("/login", { email, password });
-    if (!("result" in loginResponse.body)) {
+    const loginResponse = await this.post<RPCResponse<T>>("/auth/test/login", { email, password });
+    if (!loginResponse.ok) {
       throw new UnauthorizedException();
     }
 
@@ -92,7 +92,7 @@ export class API {
 
     this.#sessionCookie = cookie.split(";")[0];
 
-    return loginResponse.body.result.data as T;
+    return loginResponse.body as T;
   }
 
   public clearSessionCookie(): void {

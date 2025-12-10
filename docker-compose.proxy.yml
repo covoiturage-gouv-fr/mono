@@ -58,16 +58,6 @@ services:
       - 'traefik.http.routers.api-http.entrypoints=web'
       - 'traefik.http.services.api.loadbalancer.server.port=${PORT:-8080}'
 
-  # dashboard:
-  #   expose:
-  #     - 4200
-  #   labels:
-  #     - 'traefik.enable=true'
-  #     - 'traefik.http.routers.dashboard-https.tls=true'
-  #     - 'traefik.http.routers.dashboard-https.rule=Host(`app.covoiturage.test`)'
-  #     - 'traefik.http.routers.dashboard-https.entrypoints=websecure'
-  #     - 'traefik.http.services.dashboard.loadbalancer.server.port=4200'
-
   s3:
     environment:
       MINIO_DOMAIN: s3.covoiturage.test
