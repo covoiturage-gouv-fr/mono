@@ -5,6 +5,7 @@ import * as dex from "./dex.ts";
 import * as jwt from "./jwt.ts";
 import * as permissions from "./permissions.ts";
 import * as proconnect from "./proconnect.ts";
+import * as test from "./test.ts";
 
 export const env = env_or_fail("NODE_ENV", "local");
 export const app_url = env_or_fail("APP_DASHBOARD_V2_URL");
@@ -17,4 +18,5 @@ export const config = {
   permissions,
   proconnect,
   proxy,
+  test,
 };
