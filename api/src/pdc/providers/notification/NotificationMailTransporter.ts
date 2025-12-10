@@ -1,10 +1,9 @@
 import { ConfigInterfaceResolver, provider } from "@/ilos/common/index.ts";
+import { logger } from "@/lib/logger/index.ts";
+import { exit } from "@/lib/process/index.ts";
 import { TemplateInterface, TemplateProviderInterfaceResolver } from "@/pdc/providers/template/index.ts";
 import mjml2html from "dep:mjml";
 import mailer, { MailOptions } from "dep:nodemailer";
-
-import { logger } from "@/lib/logger/index.ts";
-import { exit } from "@/lib/process/index.ts";
 import {
   MailTemplateNotificationInterface,
   NotificationTransporterInterface,

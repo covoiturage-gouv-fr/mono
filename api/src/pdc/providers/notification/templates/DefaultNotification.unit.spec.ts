@@ -1,15 +1,7 @@
-import {
-  assert,
-  assertEquals,
-  beforeEach,
-  describe,
-  it,
-  sinon,
-} from "@/dev_deps.ts";
+import { assert, assertEquals, beforeEach, describe, it, sinon } from "@/dev_deps.ts";
 import { Extensions } from "@/ilos/core/index.ts";
 import { HandlebarsTemplateProvider } from "@/pdc/providers/template/index.ts";
 import { Mail } from "dep:nodemailer";
-
 import {
   DefaultNotification,
   DefaultTemplateData,
@@ -23,7 +15,7 @@ describe("default notification", () => {
 
   beforeEach(async () => {
     class NotificationOverride extends NotificationMailTransporter {
-      async init() {
+      override async init() {
         super.setOptionsFromConfig();
         await super.createTransport(false);
       }
@@ -59,11 +51,8 @@ describe("default notification", () => {
   it("should work", async () => {
     const sendTo = "toto <toto@example.com>";
     const sendMessage = "Tout va bien.";
-    const notification = new DefaultNotification(sendTo, {
-      message_text: sendMessage,
-    });
-    const notificationCtor = notification
-      .constructor as StaticMailTemplateNotificationInterface;
+    const notification = new DefaultNotification(sendTo, { message_text: sendMessage });
+    const notificationCtor = notification.constructor as StaticMailTemplateNotificationInterface;
 
     await transporter.send(notification);
     assert(stub.sendMail.calledOnce);
@@ -91,11 +80,8 @@ describe("default notification", () => {
     }
     const sendTo = "toto <toto@example.com>";
     const sendMessage = "Tout va bien.";
-    const notification = new TestNotification(sendTo, {
-      message_text: sendMessage,
-    });
-    const notificationCtor = notification
-      .constructor as StaticMailTemplateNotificationInterface;
+    const notification = new TestNotification(sendTo, { message_text: sendMessage });
+    const notificationCtor = notification.constructor as StaticMailTemplateNotificationInterface;
 
     await transporter.send(notification);
     assert(stub.sendMail.calledOnce);
@@ -107,12 +93,8 @@ describe("default notification", () => {
     assert((text as string).search(sendMessage) > -1);
     assert((html as string).search(sendMessage) > -1);
 
-    assert(
-      (text as string).search("https://dev.covoiturage.beta.gouv.fr") > -1,
-    );
-    assert(
-      (html as string).search("https://dev.covoiturage.beta.gouv.fr") > -1,
-    );
+    assert((text as string).search("https://dev.covoiturage.beta.gouv.fr") > -1);
+    assert((html as string).search("https://dev.covoiturage.beta.gouv.fr") > -1);
 
     assert((text as string).search("contact@covoiturage.beta.gouv.fr") > -1);
     assert((html as string).search("contact@covoiturage.beta.gouv.fr") > -1);
