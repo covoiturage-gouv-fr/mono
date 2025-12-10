@@ -54,10 +54,6 @@ services:
   #     NODE_ENV: dev
   #     DATABASE_NAME: local
 
-  # dashboard:
-  #   ports:
-  #     - 4200:4200
-
   s3:
     ports:
       - 9000:9000

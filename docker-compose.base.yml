@@ -62,7 +62,6 @@ services:
       # Exposed Services URLs
       APP_API_URL: ${APP_API_URL:-http://localhost:8080}
       APP_APP_URL: ${APP_APP_URL:-http://localhost:4200}
-      APP_DASHBOARD_URL: ${APP_DASHBOARD_URL:-http://localhost:4200}
       APP_DASHBOARD_V2_URL: ${APP_DASHBOARD_V2_URL:-http://localhost:4200}
 
       # Internal Services URLs
@@ -135,18 +134,6 @@ services:
     networks:
       - back
       - front
-
-  # dashboard:
-  #   build:
-  #     dockerfile: ./docker/dashboard/Dockerfile
-  #     context: .
-  #   command: ["npx", "ng", "serve", "--disable-host-check", "--host", "0.0.0.0", "--port", "4200"]
-  #   volumes:
-  #     - ./dashboard:/app/dashboard
-  #     - ./docker/dashboard/ci.env.js:/app/dashboard/src/assets/env.js:ro
-  #     - ./shared:/app/shared:ro
-  #   networks:
-  #     - front
 
   s3:
     image: minio/minio:edge
