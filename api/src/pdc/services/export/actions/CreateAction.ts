@@ -8,7 +8,7 @@ import {
   validateDateMiddleware,
 } from "@/pdc/providers/middleware/middlewares.ts";
 import { maxEndDefault, minStartDefault } from "../config/export.ts";
-import { handlerConfigV3, ParamsInterfaceV3, ResultInterfaceV3 } from "../contracts/create.contract.ts";
+import { handlerConfig, ParamsInterface, ResultInterface } from "../contracts/create.contract.ts";
 import { aliasV3 } from "../contracts/create.schema.ts";
 import { Export } from "../models/Export.ts";
 import { ExportParams } from "../models/ExportParams.ts";
@@ -18,7 +18,7 @@ import { RecipientServiceInterfaceResolver } from "../services/RecipientService.
 import { TerritoryServiceInterfaceResolver } from "../services/TerritoryService.ts";
 
 @handler({
-  ...handlerConfigV3,
+  ...handlerConfig,
   middlewares: [
     hasPermissionMiddleware("common.export.create"),
     ["timezone", DefaultTimezoneMiddleware],
@@ -54,9 +54,9 @@ export class CreateActionV3 extends AbstractAction {
   }
 
   protected override async handle(
-    params: ParamsInterfaceV3,
+    params: ParamsInterface,
     context: ContextType,
-  ): Promise<ResultInterfaceV3> {
+  ): Promise<ResultInterface> {
     const paramTarget = Export.target(context);
 
     // make sure we have at least one recipient

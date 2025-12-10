@@ -32,7 +32,7 @@ import { Export, ExportStatus, ExportTarget } from "@/pdc/services/export/models
 import { ExportParams } from "@/pdc/services/export/models/ExportParams.ts";
 import { UserServiceProvider as UserSP } from "@/pdc/services/user/UserServiceProvider.ts";
 import { faker } from "dep:faker";
-import { handlerConfigV3, ParamsInterfaceV3, ResultInterfaceV3 } from "../contracts/create.contract.ts";
+import { handlerConfig, ParamsInterface, ResultInterface } from "../contracts/create.contract.ts";
 
 const { before: kernelBefore, after: kernelAfter } = makeKernelBeforeAfter(UserSP, ExportSP);
 const { before: denoDbBefore, after: denoDbAfter } = makeDenoDbBeforeAfter();
@@ -122,7 +122,7 @@ describe("CreateAction V3", () => {
     const start_at = "2024-01-01T00:00:00+0100";
     const end_at = "2024-01-02T00:00:00+0100";
 
-    const params: AJVParamsInterface<ParamsInterfaceV3, "start_at" | "end_at"> = {
+    const params: AJVParamsInterface<ParamsInterface, "start_at" | "end_at"> = {
       tz: "Europe/Paris",
       start_at,
       end_at,
@@ -130,7 +130,7 @@ describe("CreateAction V3", () => {
     };
 
     // UUID is omitted as we have no way to predict it
-    const expected: Omit<ResultInterfaceV3, "uuid"> = {
+    const expected: Omit<ResultInterface, "uuid"> = {
       // uuid: "uuid",
       target: ExportTarget.TERRITORY,
       status: ExportStatus.PENDING,
@@ -141,9 +141,9 @@ describe("CreateAction V3", () => {
     await assertHandler(
       kc,
       defaultContext,
-      handlerConfigV3,
+      handlerConfig,
       params,
-      async (response: ResultInterfaceV3) => {
+      async (response: ResultInterface) => {
         // assert the response
         const { uuid: _uuid, ...actual } = response;
         assertEquals(actual, expected);
@@ -168,7 +168,7 @@ describe("CreateAction V3", () => {
     ];
 
     const params: AJVParamsInterface<
-      ParamsInterfaceV3,
+      ParamsInterface,
       "start_at" | "end_at"
     > = {
       tz: "Europe/Paris",
@@ -181,7 +181,7 @@ describe("CreateAction V3", () => {
     await assertHandler(
       kc,
       defaultContext,
-      handlerConfigV3,
+      handlerConfig,
       params,
       async () => {
         const last = (await fetchExports()).pop();
@@ -196,7 +196,7 @@ describe("CreateAction V3", () => {
     const recipients: string[] = [];
 
     const params: AJVParamsInterface<
-      ParamsInterfaceV3,
+      ParamsInterface,
       "start_at" | "end_at"
     > = {
       tz: "Europe/Paris",
@@ -209,7 +209,7 @@ describe("CreateAction V3", () => {
     await assertHandler(
       kc,
       defaultContext,
-      handlerConfigV3,
+      handlerConfig,
       params,
       async () => {
         const last = (await fetchExports()).pop();
@@ -220,7 +220,7 @@ describe("CreateAction V3", () => {
 
   it("should create a super-admin export for a territory", async () => {
     const params: AJVParamsInterface<
-      ParamsInterfaceV3,
+      ParamsInterface,
       "start_at" | "end_at"
     > = {
       tz: "Europe/Paris",
@@ -234,16 +234,16 @@ describe("CreateAction V3", () => {
     await assertHandler(
       kc,
       defaultContext,
-      handlerConfigV3,
+      handlerConfig,
       params,
-      (response: ResultInterfaceV3) => {
+      (response: ResultInterface) => {
         assertEquals(response.target, ExportTarget.TERRITORY);
       },
     );
   });
 
   it("should create a territory export for admin", async () => {
-    const params: AJVParamsInterface<ParamsInterfaceV3, "start_at" | "end_at"> = {
+    const params: AJVParamsInterface<ParamsInterface, "start_at" | "end_at"> = {
       tz: "Europe/Paris",
       start_at: "2024-01-01T00:00:00+0100",
       end_at: "2024-01-02T00:00:00+0100",
@@ -253,9 +253,9 @@ describe("CreateAction V3", () => {
     await assertHandler(
       kc,
       set(defaultContext, "call.user.territory_id", 1),
-      handlerConfigV3,
+      handlerConfig,
       params,
-      async (response: ResultInterfaceV3) => {
+      async (response: ResultInterface) => {
         // assert response
         assertEquals(response.target, ExportTarget.TERRITORY);
 
@@ -274,7 +274,7 @@ describe("CreateAction V3", () => {
   });
 
   it("should create an operator export as operator", async () => {
-    const params: AJVParamsInterface<ParamsInterfaceV3, "start_at" | "end_at"> = {
+    const params: AJVParamsInterface<ParamsInterface, "start_at" | "end_at"> = {
       tz: "Europe/Paris",
       start_at: "2024-01-01T00:00:00+0100",
       end_at: "2024-01-02T00:00:00+0100",
@@ -284,9 +284,9 @@ describe("CreateAction V3", () => {
     await assertHandler(
       kc,
       set(defaultContext, "call.user.operator_id", 1),
-      handlerConfigV3,
+      handlerConfig,
       params,
-      async (response: ResultInterfaceV3) => {
+      async (response: ResultInterface) => {
         // assert response
         assertEquals(response.target, ExportTarget.OPERATOR);
 

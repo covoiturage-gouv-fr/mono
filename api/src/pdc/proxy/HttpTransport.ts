@@ -34,14 +34,12 @@ import {
   ResultInterface as GetAuthorizedCodesResult,
   signature as getAuthorizedCodesSignature,
 } from "@/pdc/services/territory/contracts/getAuthorizedCodes.contract.ts";
-import { UserInterface } from "@/pdc/services/user/contracts/common/interfaces/UserInterface.ts";
 import { asyncHandler } from "./helpers/asyncHandler.ts";
 import { createRPCPayload } from "./helpers/createRPCPayload.ts";
 import { healthCheckFactory } from "./helpers/healthCheckFactory.ts";
 import { injectContext } from "./helpers/injectContext.ts";
 import { mapStatusCode } from "./helpers/mapStatusCode.ts";
 import { prometheusMetricsFactory } from "./helpers/prometheusMetricsFactory.ts";
-import { authGuard } from "./middlewares/authGuard.ts";
 import { CacheMiddleware, cacheMiddleware } from "./middlewares/cacheMiddleware.ts";
 import { dataWrapMiddleware, errorHandlerMiddleware } from "./middlewares/index.ts";
 import { metricsMiddleware } from "./middlewares/metricsMiddleware.ts";
@@ -99,7 +97,6 @@ export class HttpTransport implements TransportInterface {
     this.registerMetrics();
     this.registerGlobalMiddlewares();
     this.registerCache();
-    this.registerLegacyExportRoutes();
     this.registerNestedRoutes();
     this.registerLegacyAuthRoutes();
     this.registerApplicationRoutes();
@@ -266,31 +263,6 @@ export class HttpTransport implements TransportInterface {
       "/metrics",
       metricsMiddleware("metrics"),
       prometheusMetricsFactory(),
-    );
-  }
-
-  private registerLegacyExportRoutes(): void {
-    // Routes have been migrated to apiRoute annotations in the action handlers
-    /**
-     * Export trips from a V2 payload to a V3 output file.
-     *
-     * The V2 way to handle exports is done throught the /rpc route calling
-     * the trip:export method.
-     *
-     * @deprecated This should be removed when the dashboard is updated.
-     */
-    this.app.post(
-      "/v2/exports",
-      rateLimiter(),
-      authGuard(this.kernel),
-      asyncHandler(async (req: Request, res: Response) => {
-        const user = get(req, "session.user", {}) as Partial<UserInterface>;
-        const action = `export:createVersionTwo`;
-        const response = await this.kernel.handle(
-          createRPCPayload(action, req.body, user, { req }),
-        );
-        this.send(res, response);
-      }),
     );
   }
 
