@@ -1,4 +1,4 @@
-name: "Close stale issues and PRs"
+name: Issues cleanup
 
 permissions:
   contents: read

@@ -10,6 +10,11 @@ concurrency:
 on:
   push:
     branches: [main]
+  workflow_run: # Triggered when those are finished
+    workflows:
+      - Quality - API
+      - Quality - Frontend
+      - Quality - GHA
 
 jobs:
   release:

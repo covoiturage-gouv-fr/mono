@@ -8,9 +8,9 @@ concurrency:
   cancel-in-progress: true
 
 on:
+  workflow_dispatch:
   release:
     types: [published]
-  workflow_dispatch:
 
 jobs:
   deploy:

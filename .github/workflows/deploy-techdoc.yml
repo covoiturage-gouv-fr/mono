@@ -11,9 +11,6 @@ on:
   workflow_dispatch:
   release:
     types: [published]
-  push:
-    branches:
-      - chore/update-techdoc
 
 jobs:
   deploy:
