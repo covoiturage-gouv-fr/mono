@@ -28,13 +28,13 @@ jobs:
         with:
           node-version: "24"
           cache: "npm"
-          cache-dependency-path: public/package-lock.json
+          cache-dependency-path: app-attestation/package-lock.json
 
       - name: Install and Build 🔧
         env:
           DEPLOY_ENV: production
         run: |
-          cd attestation
+          cd app-attestation
           npm ci
           NODE_OPTIONS=--openssl-legacy-provider npm run build
 
@@ -48,4 +48,4 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.BUCKET_SECRET_KEY }}
           AWS_S3_ENDPOINT: ${{ vars.BUCKET_ENDPOINT }}
           AWS_REGION: ${{ vars.BUCKET_REGION }}
-          SOURCE_DIR: attestation/dist/attestation
+          SOURCE_DIR: app-attestation/dist/app-attestation

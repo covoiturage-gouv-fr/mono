@@ -12,9 +12,9 @@ fileignoreconfig:
     ignore_detectors: [filename, filecontent]
   - filename: api/src/lib/pg/sql.ts
     checksum: 34a1d26889326c6bd576b22b2b4de9ef2a10dcc6d36ee915b3c99028d378bd39
-  - filename: attestation/src/app/services/pdfLimited.service.ts
+  - filename: app-attestation/src/app/services/pdfLimited.service.ts
     checksum: b26661547756ef686b92ff195f1a9d2ebe4348d3b09264f80a1a28adcbd168d9
-  - filename: attestation/src/app/services/pdfPublic.service.ts
+  - filename: app-attestation/src/app/services/pdfPublic.service.ts
     checksum: 5c8511305a8806cf773f0e0b92c4576e6a8f7ab3e3e27e138f474466d6ff79e8
   - filename: api/deno.lock
     allowed_patterns:
@@ -89,7 +89,7 @@ fileignoreconfig:
         "(?i)password",
         "(?i)secret",
       ]
-  - filename: app-front/.env.example
+  - filename: app-partners/.env.example
     checksum: 36c5d64bf21daf6fb29fe15a98ece709414d3c7c3b0d350c150aee16354fae0d
   - filename: api/src/pdc/services/auth/providers/DexClient.ts
     checksum: dc93dad663156e6b9924148218a02e909a59194e18a3f9c0793ac9ace711e9de
@@ -103,7 +103,7 @@ fileignoreconfig:
     checksum: 1a256ae8d37e81643b202fc4b1dff89482bddb54420ac38c4c34253c96041841
   - filename: api/src/pdc/services/apdf/providers/StorageRepositoryProvider.ts
     checksum: e64b7f7bce2d048709d23cc99735ef5d1616e521f5d52ede660d5d03b98ae7e9
-  - filename: app-front/src/app/administration/tables/OperatorsTable.tsx
+  - filename: app-partners/src/app/administration/tables/OperatorsTable.tsx
     checksum: 452b87beff16e55df299abe7c6094361508e43d368b3b56b08473d6029cfeb57
   - filename: sqlmesh/.env.example
     checksum: ff13bf7998aa7ecff77fd58a0c305ed5f16fbf27d14eeda570306c1d02b4c499

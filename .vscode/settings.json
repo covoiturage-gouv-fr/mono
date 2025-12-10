@@ -49,8 +49,8 @@
   "files.watcherExclude": {
     "**/dist/**": true,
     "**/node_modules": true,
-    "dashboard/.angular": true,
-    "public/.next": true
+    "app-landing/.next": true,
+    "app-partners/.next": true
   },
   "search.exclude": {
     "**/*.d.ts": true,
@@ -62,9 +62,8 @@
     "api/deno.lock": true,
     "api/providers/*/src/shared": true,
     "api/src/shared": true,
-    "dashboard/.angular": true,
-    "dashboard/src/app/core/entities/api/shared": true,
-    "public/.next": true,
+    "app-landing/.next": true,
+    "app-partners/.next": true,
     "tmp/*": true
   }
 }
