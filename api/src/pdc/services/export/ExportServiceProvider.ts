@@ -7,7 +7,7 @@ import { DataGouvMetadataProvider } from "../../providers/datagouv/DataGouvMetad
 import { defaultMiddlewareBindings } from "../../providers/middleware/index.ts";
 import { S3StorageProvider } from "../../providers/storage/index.ts";
 import { ValidatorExtension, ValidatorMiddleware } from "../../providers/validator/index.ts";
-import { CreateActionV3 } from "./actions/CreateAction.ts";
+import { CreateAction } from "./actions/CreateAction.ts";
 import { listAction } from "./actions/ListAction.ts";
 import { CreateCommand } from "./commands/CreateCommand.ts";
 import { DataGouvCommand } from "./commands/DataGouvCommand.ts";
@@ -21,6 +21,7 @@ import { ExportRepository } from "./repositories/ExportRepository.ts";
 import { LogRepository } from "./repositories/LogRepository.ts";
 import { RecipientRepository } from "./repositories/RecipientRepository.ts";
 import { TerritoryRepository } from "./repositories/TerritoryRepository.ts";
+import { UserRepository } from "./repositories/UserRepository.ts";
 import { DataGouvFileCreatorService } from "./services/DataGouvFileCreatorService.ts";
 import { FieldService } from "./services/FieldService.ts";
 import { FileCreatorService } from "./services/FileCreatorService.ts";
@@ -51,6 +52,7 @@ const repositories = [
   LogRepository,
   RecipientRepository,
   TerritoryRepository,
+  UserRepository,
 ];
 
 // External providers are from the @pdc namespace
@@ -62,7 +64,7 @@ const commands = [CreateCommand, DataGouvCommand, ProcessCommand];
 
 // Handlers are from the ./actions folder
 // and are used to implement the API endpoints (also called actions).
-const handlers = [CreateActionV3, listAction];
+const handlers = [CreateAction, listAction];
 
 // Validator bindings are from the @shared/export/*.schema.ts files
 // and are used to validate the input data using JSON Schema.

@@ -44,7 +44,7 @@ import { TerritoryServiceInterfaceResolver } from "../services/TerritoryService.
     successHttpCode: 201,
   },
 })
-export class CreateActionV3 extends AbstractAction {
+export class CreateAction extends AbstractAction {
   constructor(
     protected exportRepository: ExportRepositoryInterfaceResolver,
     protected territoryService: TerritoryServiceInterfaceResolver,
@@ -66,9 +66,7 @@ export class CreateActionV3 extends AbstractAction {
     );
 
     if (!recipients.length) {
-      throw new InvalidParamsException(
-        'No recipient found! You must set "created_by" or "recipients"',
-      );
+      throw new InvalidParamsException('No recipient found! You must set "created_by" or "recipients"');
     }
 
     // Create the export request

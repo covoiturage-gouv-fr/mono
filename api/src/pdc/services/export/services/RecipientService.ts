@@ -1,6 +1,7 @@
-import { KernelInterfaceResolver, provider } from "@/ilos/common/index.ts";
+import { provider } from "@/ilos/common/index.ts";
 import { logger } from "@/lib/logger/index.ts";
 import { ExportRecipient } from "../models/ExportRecipient.ts";
+import { UserRepository } from "../repositories/UserRepository.ts";
 
 export abstract class RecipientServiceInterfaceResolver {
   /**
@@ -8,13 +9,13 @@ export abstract class RecipientServiceInterfaceResolver {
    *
    * @todo check the evolution of the user's service
    *
-   * @param {ExportRecipient[]} recipients
-   * @param {number} created_by
+   * @param {ExportRecipient[]} _recipients
+   * @param {number} _created_by
    * @returns {Promise<ExportRecipient[]>}
    */
   public maybeAddCreator(
-    recipients: ExportRecipient[],
-    created_by: number,
+    _recipients: ExportRecipient[],
+    _created_by: number,
   ): Promise<ExportRecipient[]> {
     throw new Error("Not implemented");
   }
@@ -24,22 +25,14 @@ export abstract class RecipientServiceInterfaceResolver {
   identifier: RecipientServiceInterfaceResolver,
 })
 export class RecipientService {
-  constructor(protected kernel: KernelInterfaceResolver) {}
+  constructor(protected userRepository: UserRepository) {}
 
   public async maybeAddCreator(recipients: ExportRecipient[], created_by: number): Promise<ExportRecipient[]> {
     if (recipients.length) return recipients;
 
     try {
-      const creator = await this.kernel.call(
-        "user:find",
-        { _id: created_by },
-        {
-          call: { user: { permissions: ["registry.user.find"] } },
-          channel: { service: "export" },
-        },
-      );
-
-      return creator ? [ExportRecipient.fromEmail(`${creator.firstname} ${creator.lastname} <${creator.email}>`)] : [];
+      const creator = await this.userRepository.find(created_by);
+      return creator ? [ExportRecipient.fromEmail(`${creator.fullname} <${creator.email}>`)] : [];
     } catch (e) {
       if (Error.isError(e)) {
         logger.error(`[RecipientService:maybeAddCreator] Error while fetching creator_id ${created_by}: ${e.message}`);

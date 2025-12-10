@@ -30,11 +30,10 @@ import {
 import { ExportServiceProvider as ExportSP } from "@/pdc/services/export/ExportServiceProvider.ts";
 import { Export, ExportStatus, ExportTarget } from "@/pdc/services/export/models/Export.ts";
 import { ExportParams } from "@/pdc/services/export/models/ExportParams.ts";
-import { UserServiceProvider as UserSP } from "@/pdc/services/user/UserServiceProvider.ts";
 import { faker } from "dep:faker";
 import { handlerConfig, ParamsInterface, ResultInterface } from "../contracts/create.contract.ts";
 
-const { before: kernelBefore, after: kernelAfter } = makeKernelBeforeAfter(UserSP, ExportSP);
+const { before: kernelBefore, after: kernelAfter } = makeKernelBeforeAfter(ExportSP);
 const { before: denoDbBefore, after: denoDbAfter } = makeDenoDbBeforeAfter();
 
 /**

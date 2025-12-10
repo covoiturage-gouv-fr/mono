@@ -16,10 +16,10 @@ export type CreateRecipientData = Pick<
 >;
 
 export abstract class RecipientRepositoryInterfaceResolver {
-  public async create(data: CreateRecipientData): Promise<number> {
+  public async create(_data: CreateRecipientData): Promise<number> {
     throw new Error("Not implemented");
   }
-  public async anonymize(export_id: number): Promise<void> {
+  public async anonymize(_export_id: number): Promise<void> {
     throw new Error("Not implemented");
   }
 }

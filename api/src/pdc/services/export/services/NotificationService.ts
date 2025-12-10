@@ -4,11 +4,7 @@ import { ContextType, KernelInterfaceResolver } from "@/ilos/common/index.ts";
 import { Export } from "@/pdc/services/export/models/Export.ts";
 import { ExportRecipient } from "@/pdc/services/export/models/ExportRecipient.ts";
 import { ExportRepositoryInterfaceResolver } from "@/pdc/services/export/repositories/ExportRepository.ts";
-import { ExportCSVSupportTemplateData } from "@/pdc/services/user/notifications/ExportCSVSupportNotification.ts";
-import {
-  ParamsInterface as NotifyParamsInterface,
-  signature as notifySignature,
-} from "../../user/contracts/notify.contract.ts";
+import { ExportCSVSupportTemplateData } from "../notifications/ExportCSVSupportNotification.ts";
 
 export type NotificationProvider = {
   success(exp: Export, url: string): Promise<void>;
@@ -17,13 +13,13 @@ export type NotificationProvider = {
 };
 
 export abstract class NotificationProviderResolver implements NotificationProvider {
-  public async success(exp: Export, url: string): Promise<void> {
+  public async success(_exp: Export, _url: string): Promise<void> {
     throw new Error("Not implemented");
   }
-  public async error(exp: Export): Promise<void> {
+  public async error(_exp: Export): Promise<void> {
     throw new Error("Not implemented");
   }
-  public async support(exp: Export): Promise<void> {
+  public async support(_exp: Export): Promise<void> {
     throw new Error("Not implemented");
   }
 }
@@ -101,13 +97,13 @@ export class NotificationService {
     });
   }
 
-  protected async notify<T = unknown>(
-    payload: NotifyParamsInterface<T>,
-  ): Promise<void> {
-    await this.kernel.call<NotifyParamsInterface<T>>(
-      notifySignature,
-      payload,
-      this.defaultContext,
-    );
+  protected async notify<T = unknown>(_payload: unknown): Promise<void> {
+    // TODO migrate to provider
+
+    // await this.kernel.call<NotifyParamsInterface<T>>(
+    //   notifySignature,
+    //   payload,
+    //   this.defaultContext,
+    // );
   }
 }

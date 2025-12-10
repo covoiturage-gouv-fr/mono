@@ -20,7 +20,6 @@ import { ObservatoryServiceProvider } from "../services/observatory/ObservatoryS
 import { OperatorServiceProvider } from "../services/operator/OperatorServiceProvider.ts";
 import { PolicyServiceProvider } from "../services/policy/PolicyServiceProvider.ts";
 import { TerritoryServiceProvider } from "../services/territory/TerritoryServiceProvider.ts";
-import { UserServiceProvider } from "../services/user/UserServiceProvider.ts";
 import { config } from "./config/index.ts";
 
 @kernel({
@@ -38,7 +37,6 @@ import { config } from "./config/index.ts";
     OperatorServiceProvider,
     PolicyServiceProvider,
     TerritoryServiceProvider,
-    UserServiceProvider,
     ObservatoryServiceProvider,
     DashboardServiceProvider,
     GeoServiceProvider,
