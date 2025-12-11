@@ -49,7 +49,7 @@
   "files.watcherExclude": {
     "**/dist/**": true,
     "**/node_modules": true,
-    "app-landing/.next": true,
+    "app-observatory/.next": true,
     "app-partners/.next": true
   },
   "search.exclude": {
@@ -62,7 +62,7 @@
     "api/deno.lock": true,
     "api/providers/*/src/shared": true,
     "api/src/shared": true,
-    "app-landing/.next": true,
+    "app-observatory/.next": true,
     "app-partners/.next": true,
     "tmp/*": true
   }
