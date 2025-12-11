@@ -42,17 +42,21 @@ export class NotificationMailTransporter
   }
 
   protected setOptionsFromConfig(): void {
-    const fromFullname = this.config.get("notification.mail.from.name");
-    const fromEmail = this.config.get("notification.mail.from.email");
-    const toFullname = this.config.get("notification.mail.to.name");
-    const toEmail = this.config.get("notification.mail.to.email");
-    const debug = this.config.get("notification.mail.debug", false) as boolean;
+    try {
+      const fromFullname = this.config.get("notification.mail.from.name");
+      const fromEmail = this.config.get("notification.mail.from.email");
+      const toFullname = this.config.get("notification.mail.to.name");
+      const toEmail = this.config.get("notification.mail.to.email");
+      const debug = this.config.get("notification.mail.debug", false) as boolean;
 
-    this.options = {
-      from: `${fromFullname} <${fromEmail}>`,
-      debugToOverride: `${toFullname} <${toEmail}>`,
-      debug,
-    };
+      this.options = {
+        from: `${fromFullname} <${fromEmail}>`,
+        debugToOverride: `${toFullname} <${toEmail}>`,
+        debug,
+      };
+    } catch (e) {
+      console.log(e.stack);
+    }
   }
 
   protected async createTransport(verify = false): Promise<void> {
