@@ -1,4 +1,10 @@
 import { DefaultNotification, DefaultTemplateData } from "@/pdc/providers/notification/index.ts";
+import { Export } from "../models/Export.ts";
+
+export interface ExportCSVErrorTemplateData extends Pick<Export, "_id" | "uuid" | "target" | "status"> {
+  fullname: string;
+  action_href: string;
+}
 
 const defaultData: Partial<DefaultTemplateData> = {
   hero_alt: "Export des données",
@@ -25,10 +31,7 @@ Les données sont au format CSV compressé dans un fichier ZIP.
 
 export class ExportCSVNotification extends DefaultNotification {
   static override readonly subject = "Export des données";
-  constructor(to: string, data: Partial<DefaultTemplateData>) {
-    super(to, {
-      ...defaultData,
-      ...data,
-    });
+  constructor(to: string, data: Partial<ExportCSVErrorTemplateData>) {
+    super(to, { ...defaultData, ...data });
   }
 }

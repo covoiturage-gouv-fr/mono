@@ -1,4 +1,9 @@
 import { DefaultNotification, DefaultTemplateData } from "@/pdc/providers/notification/index.ts";
+import { Export, ExportError } from "../models/Export.ts";
+
+export interface ExportCSVErrorTemplateData extends Pick<Export, "_id" | "uuid" | "target" | "status"> {
+  error: ExportError;
+}
 
 const defaultData: Partial<DefaultTemplateData> = {
   hero_alt: "Export des données",
@@ -25,10 +30,7 @@ Nous vous invitons à relancer un export ultérieurement ou nous contacter par m
 
 export class ExportCSVErrorNotification extends DefaultNotification {
   static override readonly subject = "Erreur d'export des données";
-  constructor(to: string, data: Partial<DefaultTemplateData>) {
-    super(to, {
-      ...defaultData,
-      ...data,
-    });
+  constructor(to: string, data: Partial<ExportCSVErrorTemplateData>) {
+    super(to, { ...defaultData, ...data });
   }
 }

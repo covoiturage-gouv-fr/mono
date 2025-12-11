@@ -1,10 +1,16 @@
 import { support } from "@/config/contacts.ts";
 import { provider } from "@/ilos/common/Decorators.ts";
 import { ContextType, KernelInterfaceResolver } from "@/ilos/common/index.ts";
+import {
+  MailTemplateNotificationInterface,
+  NotificationTransporterInterfaceResolver,
+} from "@/pdc/providers/notification/index.ts";
 import { Export } from "@/pdc/services/export/models/Export.ts";
 import { ExportRecipient } from "@/pdc/services/export/models/ExportRecipient.ts";
 import { ExportRepositoryInterfaceResolver } from "@/pdc/services/export/repositories/ExportRepository.ts";
-import { ExportCSVSupportTemplateData } from "../notifications/ExportCSVSupportNotification.ts";
+import { ExportCSVErrorNotification } from "../notifications/ExportCSVErrorNotification.ts";
+import { ExportCSVNotification } from "../notifications/ExportCSVNotification.ts";
+import { ExportCSVSupportNotification } from "../notifications/ExportCSVSupportNotification.ts";
 
 export type NotificationProvider = {
   success(exp: Export, url: string): Promise<void>;
@@ -36,58 +42,50 @@ export class NotificationService {
   public constructor(
     protected kernel: KernelInterfaceResolver,
     protected exportRepository: ExportRepositoryInterfaceResolver,
+    protected emailer: NotificationTransporterInterfaceResolver<MailTemplateNotificationInterface>,
   ) {}
 
   /**
    * Send the download link to the recipient
-   *
-   * @param exp
-   * @param url
    */
   public async success(exp: Export, url: string): Promise<void> {
     const recipients = await this.recipients(exp);
     for (const { email, fullname } of recipients) {
-      await this.notify({
-        template: "ExportCSVNotification",
-        to: `${fullname} <${email}>`,
-        data: { fullname, action_href: url },
-      });
+      const notification = new ExportCSVNotification(
+        `${fullname} <${email}>`,
+        { fullname, action_href: url },
+      );
+      await this.emailer.send(notification);
     }
   }
 
   /**
    * Send an error message to the recipient
-   *
-   * @param exp
    */
   public async error(exp: Export): Promise<void> {
     const recipients = await this.recipients(exp);
     for (const { email, fullname } of recipients) {
-      await this.notify({
-        template: "ExportCSVErrorNotification",
-        to: `${fullname} <${email}>`,
-        data: { fullname },
-      });
+      const notification = new ExportCSVErrorNotification(
+        `${fullname} <${email}>`,
+        { ...exp, error: exp.error },
+      );
+      await this.emailer.send(notification);
     }
   }
 
   /**
    * Notify the technical support about an error
-   *
-   * @param exp
    */
   public async support(exp: Export): Promise<void> {
     const { email, fullname } = support;
-    await this.notify<ExportCSVSupportTemplateData>({
-      template: "ExportCSVSupportNotification",
-      to: `${fullname} <${email}>`,
-      data: { ...exp, error: exp.error },
-    });
+    const notification = new ExportCSVSupportNotification(
+      `${fullname} <${email}>`,
+      { ...exp, error: exp.error },
+    );
+    await this.emailer.send(notification);
   }
 
-  protected async recipients(
-    exp: Export,
-  ): Promise<Pick<ExportRecipient, "email" | "fullname">[]> {
+  protected async recipients(exp: Export): Promise<Pick<ExportRecipient, "email" | "fullname">[]> {
     const recipients = await this.exportRepository.recipients(exp._id);
     return recipients.map((recipient: ExportRecipient) => {
       return {
@@ -95,15 +93,5 @@ export class NotificationService {
         fullname: recipient.fullname,
       };
     });
-  }
-
-  protected async notify<T = unknown>(_payload: unknown): Promise<void> {
-    // TODO migrate to provider
-
-    // await this.kernel.call<NotifyParamsInterface<T>>(
-    //   notifySignature,
-    //   payload,
-    //   this.defaultContext,
-    // );
   }
 }

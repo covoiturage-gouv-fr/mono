@@ -17,16 +17,16 @@ import { IncentiveStatusEnum } from "@/pdc/services/policy/interfaces/index.ts";
 import { datagouvListQuery, DataGouvListType } from "./queries/datagouvListQuery.ts";
 
 export abstract class CarpoolRepositoryInterfaceResolver {
-  public async list(params: ExportParams, fileWriter: CSVWriter<CarpoolListType>): Promise<void> {
+  public async list(_params: ExportParams, _fileWriter: CSVWriter<CarpoolListType>): Promise<void> {
     throw new Error("Not implemented");
   }
-  public async listCount(params: ExportParams): Promise<number> {
+  public async listCount(_params: ExportParams): Promise<number> {
     throw new Error("Not implemented");
   }
-  public async dataGouvList(params: ExportParams, fileWriter: CSVWriter<DataGouvListType>): Promise<void> {
+  public async dataGouvList(_params: ExportParams, _fileWriter: CSVWriter<DataGouvListType>): Promise<void> {
     throw new Error("Not implemented");
   }
-  public async dataGouvStats(params: ExportParams): Promise<DataGouvStatsType> {
+  public async dataGouvStats(_params: ExportParams): Promise<DataGouvStatsType> {
     throw new Error("Not implemented");
   }
 }
@@ -77,11 +77,10 @@ export class CarpoolRepository {
         if (progress && total) await progress(((done / total) * 100) | 0);
       }
     } catch (e) {
-      if (e instanceof Error) {
-        logger.error(`[export:CarpoolRepository] ${e.message}`);
-      } else {
-        logger.error(`[export:CarpoolRepository]`, e);
-      }
+      // e instanceof AggregateError && console.error(e.errors);
+      const message = e instanceof Error ? e.message : String(e);
+      logger.error(`[export:CarpoolRepository] ${message}`);
+      // e instanceof Error && logger.error(e.stack);
       throw e;
     }
   }

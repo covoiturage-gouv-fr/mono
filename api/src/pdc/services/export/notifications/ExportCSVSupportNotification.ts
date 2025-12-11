@@ -33,7 +33,7 @@ error: {{ error }}
 
 export class ExportCSVSupportNotification extends DefaultNotification {
   static override readonly subject = "Erreur d'export";
-  constructor(to: string, data: Partial<DefaultTemplateData>) {
+  constructor(to: string, data: Partial<ExportCSVSupportTemplateData>) {
     super(to, { ...defaultData, ...data });
   }
 }

@@ -1,7 +1,7 @@
 import { provider } from "@/ilos/common/index.ts";
 import { DenoPostgresConnection } from "@/ilos/connection-postgres/index.ts";
 import { logger } from "@/lib/logger/index.ts";
-import sql, { raw } from "@/lib/pg/sql.ts";
+import sql, { join, raw } from "@/lib/pg/sql.ts";
 import { staleDelay } from "../config/export.ts";
 import { Export, ExportStatus } from "../models/Export.ts";
 import { ExportRecipient } from "../models/ExportRecipient.ts";
@@ -214,11 +214,13 @@ export class ExportRepository {
   }
 
   public async update(id: number, data: ExportUpdateData): Promise<void> {
-    await this.connection.query(sql`
+    const props = Object.keys(data).map((key) => sql`${raw(key)} = ${data[key as keyof ExportUpdateData]}`);
+    const query = sql`
       UPDATE ${raw(this.exportsTable)}
-      SET ${Object.keys(data).map((key) => `${raw(key)} = ${data[key as keyof ExportUpdateData]}`).join(", ")}
+      SET ${join(props)}
       WHERE _id = ${id}
-    `);
+    `;
+    await this.connection.query(query);
   }
 
   public async delete(id: number): Promise<void> {

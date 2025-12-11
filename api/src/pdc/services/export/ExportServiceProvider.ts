@@ -1,12 +1,12 @@
-import { CommandExtension } from "../../../ilos/cli/index.ts";
-import { ExtensionInterface, NewableType, serviceProvider } from "../../../ilos/common/index.ts";
-import { ServiceProvider as AbstractServiceProvider } from "../../../ilos/core/index.ts";
-import { DefaultTimezoneMiddleware } from "../../middlewares/DefaultTimezoneMiddleware.ts";
-import { DataGouvAPIProvider } from "../../providers/datagouv/DataGouvAPIProvider.ts";
-import { DataGouvMetadataProvider } from "../../providers/datagouv/DataGouvMetadataProvider.ts";
-import { defaultMiddlewareBindings } from "../../providers/middleware/index.ts";
-import { S3StorageProvider } from "../../providers/storage/index.ts";
-import { ValidatorExtension, ValidatorMiddleware } from "../../providers/validator/index.ts";
+import { CommandExtension } from "@/ilos/cli/index.ts";
+import { ExtensionInterface, NewableType, serviceProvider } from "@/ilos/common/index.ts";
+import { ServiceProvider as AbstractServiceProvider } from "@/ilos/core/index.ts";
+import { DefaultTimezoneMiddleware } from "@/pdc/middlewares/DefaultTimezoneMiddleware.ts";
+import { DataGouvAPIProvider } from "@/pdc/providers/datagouv/DataGouvAPIProvider.ts";
+import { DataGouvMetadataProvider } from "@/pdc/providers/datagouv/DataGouvMetadataProvider.ts";
+import { defaultMiddlewareBindings } from "@/pdc/providers/middleware/index.ts";
+import { S3StorageProvider } from "@/pdc/providers/storage/index.ts";
+import { ValidatorExtension, ValidatorMiddleware } from "@/pdc/providers/validator/index.ts";
 import { CreateAction } from "./actions/CreateAction.ts";
 import { listAction } from "./actions/ListAction.ts";
 import { CreateCommand } from "./commands/CreateCommand.ts";
@@ -56,7 +56,11 @@ const repositories = [
 ];
 
 // External providers are from the @pdc namespace
-const externalProviders = [S3StorageProvider, DataGouvAPIProvider, DataGouvMetadataProvider];
+const externalProviders = [
+  S3StorageProvider,
+  DataGouvAPIProvider,
+  DataGouvMetadataProvider,
+];
 
 // Commands are from the ./commands folder
 // and are used to implement the CLI commands.
