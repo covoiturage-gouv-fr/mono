@@ -23,10 +23,7 @@ describe.skip("Notification", () => {
           port: env_or_int("INTEGRATION_MAILER_SMTP_PORT", 1025),
           secure: env_or_false("INTEGRATION_MAILER_SMTP_SECURE"),
           auth: {
-            user: env_or_fail(
-              "INTEGRATION_MAILER_SMTP_USER",
-              "test@example.com",
-            ),
+            user: env_or_fail("INTEGRATION_MAILER_SMTP_USER", "test@example.com"),
             pass: env_or_fail("INTEGRATION_MAILER_SMTP_PASS", "password"),
           },
         },
