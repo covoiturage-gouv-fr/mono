@@ -150,8 +150,8 @@ export class TerritoryRepositoryProvider implements TerritoryRepositoryProviderI
     values.push(offset);
     const query = {
       text: `
-        SELECT tg._id, tg.name ${search ? `, cc.siret`:``} FROM ${this.table} as tg
-        ${search ? `JOIN company.companies cc ON cc._id = tg.company_id` : ``}
+        SELECT tg._id, tg.name, cc.siret FROM ${this.table} as tg
+        JOIN company.companies cc ON cc._id = tg.company_id
         WHERE tg.deleted_at IS NULL ${whereClauses.length ? `AND ${whereClauses.join(" AND ")}` : ""}
         ORDER BY tg.name ASC
         LIMIT $${whereClauses.length + 1}
