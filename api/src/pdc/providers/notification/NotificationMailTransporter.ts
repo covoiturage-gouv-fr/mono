@@ -1,5 +1,4 @@
-import { config } from "@/config/index.ts";
-import { provider } from "@/ilos/common/index.ts";
+import { ConfigInterfaceResolver, provider } from "@/ilos/common/index.ts";
 import { logger } from "@/lib/logger/index.ts";
 import { exit } from "@/lib/process/index.ts";
 import { TemplateInterface, TemplateProviderInterfaceResolver } from "@/pdc/providers/template/index.ts";
@@ -26,11 +25,14 @@ export class NotificationMailTransporter
   transporter: mailer.Transporter | null = null;
   protected options: NotificationOptions = {} as NotificationOptions;
 
-  constructor(protected templateProvider: TemplateProviderInterfaceResolver) {}
+  constructor(
+    protected config: ConfigInterfaceResolver,
+    protected templateProvider: TemplateProviderInterfaceResolver,
+  ) {}
 
   async init(): Promise<void> {
     this.setOptionsFromConfig();
-    await this.createTransport(config.get("notifications.mail.verifySmtp", false) as boolean);
+    await this.createTransport(this.config.get("notification.mail.verifySmtp", false) as boolean);
   }
 
   async destroy(): Promise<void> {
@@ -40,11 +42,11 @@ export class NotificationMailTransporter
   }
 
   protected setOptionsFromConfig(): void {
-    const fromFullname = config.get("notifications.mail.from.name");
-    const fromEmail = config.get("notifications.mail.from.email");
-    const toFullname = config.get("notifications.mail.to.name");
-    const toEmail = config.get("notifications.mail.to.email");
-    const debug = config.get("notifications.mail.debug", false) as boolean;
+    const fromFullname = this.config.get("notification.mail.from.name");
+    const fromEmail = this.config.get("notification.mail.from.email");
+    const toFullname = this.config.get("notification.mail.to.name");
+    const toEmail = this.config.get("notification.mail.to.email");
+    const debug = this.config.get("notification.mail.debug", false) as boolean;
 
     this.options = {
       from: `${fromFullname} <${fromEmail}>`,
@@ -55,7 +57,7 @@ export class NotificationMailTransporter
 
   protected async createTransport(verify = false): Promise<void> {
     if (!this.transporter) {
-      const smtp = config.get("notifications.mail.smtp");
+      const smtp = this.config.get("notification.mail.smtp");
       this.transporter = mailer.createTransport(smtp);
       if (verify) {
         try {
