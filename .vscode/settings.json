@@ -43,6 +43,7 @@
     "**/*.postman_collection.json": true,
     "**/dist": true,
     "**/node_modules": true,
+    ".nix-venv": true,
     "api/.cache": true,
     "db": true
   },
