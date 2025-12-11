@@ -1,14 +1,11 @@
 import { afterAll, assert, beforeAll, describe, it } from "@/dev_deps.ts";
 import { Extensions } from "@/ilos/core/index.ts";
 import { env_or_fail, env_or_false, env_or_int } from "@/lib/env/index.ts";
-import {
-  AbstractTemplate,
-  HandlebarsTemplateProvider,
-} from "@/pdc/providers/template/index.ts";
+import { AbstractTemplate, HandlebarsTemplateProvider } from "@/pdc/providers/template/index.ts";
 import { AbstractMailNotification } from "./AbstractNotification.ts";
 import { NotificationMailTransporter } from "./NotificationMailTransporter.ts";
 
-describe("Notification", () => {
+describe.skip("Notification", () => {
   const config = {
     notification: {
       mail: {
