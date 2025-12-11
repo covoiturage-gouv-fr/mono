@@ -307,9 +307,12 @@ jobs:
       - api-unit
       - api-integration
       - api-e2e
-      - front-audit
-      - front-lint
-      - front-smoke
+      - partners-audit
+      - partners-lint
+      - partners-smoke
+      - observatory-audit
+      - observatory-lint
+      - observatory-smoke
       - zizmor
     permissions:
       contents: read
