@@ -15,6 +15,12 @@ on:
     branches: [main]
 
 jobs:
+  # ###########################################################################################
+  #
+  #  API
+  #
+  # ###########################################################################################
+
   api-lint:
     name: (api) Lint
     runs-on: ubuntu-latest
@@ -121,8 +127,14 @@ jobs:
         env:
           APIE2E_API_URL: https://api.covoiturage.test
 
-  front-audit:
-    name: (front) audit
+  # ###########################################################################################
+  #
+  #  Espace Partenaires
+  #
+  # ###########################################################################################
+
+  partners-audit:
+    name: (partners) audit
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -139,8 +151,8 @@ jobs:
         run: npm audit --audit-level moderate && exit 0 || $([[ $? -ge 8 ]] && exit 1 || exit 0)
         working-directory: app-partners
 
-  front-lint:
-    name: (front) lint
+  partners-lint:
+    name: (partners) lint
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -161,9 +173,9 @@ jobs:
         working-directory: app-partners
         run: npm run lint
 
-  front-smoke:
-    needs: [front-lint, front-audit]
-    name: (front) smoke tests
+  partners-smoke:
+    needs: [partners-lint, partners-audit]
+    name: (partners) smoke tests
     runs-on: ubuntu-latest
     environment: production
     steps:
@@ -187,6 +199,84 @@ jobs:
         env:
           NEXT_PUBLIC_API_URL: ${{ vars.API_ROOT_URL }}
 
+  # ###########################################################################################
+  #
+  #  Observatory
+  #
+  # ###########################################################################################
+
+  observatory-audit:
+    name: (observatory) audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
+        with:
+          persist-credentials: false
+
+      - name: Install NodeJS
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
+        with:
+          node-version: "24"
+
+      - name: "Audit public site dependencies"
+        run: npm audit --audit-level moderate && exit 0 || $([[ $? -ge 8 ]] && exit 1 || exit 0)
+        working-directory: app-observatory
+
+  observatory-lint:
+    name: (observatory) lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
+        with:
+          persist-credentials: false
+
+      - name: Install NodeJS
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
+        with:
+          node-version: "24"
+
+      - name: Install dependencies
+        working-directory: app-observatory
+        run: npm ci
+
+      - name: Run lint
+        working-directory: app-observatory
+        run: npm run lint
+
+  observatory-smoke:
+    needs: [observatory-lint, observatory-audit]
+    name: (observatory) smoke tests
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
+        with:
+          persist-credentials: false
+
+      - name: Install NodeJS
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
+        with:
+          node-version: "24"
+
+      - name: Install dependencies
+        working-directory: app-observatory
+        run: npm ci
+
+      - name: Run build
+        working-directory: app-observatory
+        run: npm run build
+        env:
+          NEXT_PUBLIC_API_URL: ${{ vars.API_ROOT_URL }}
+
+  # ###########################################################################################
+  #
+  #  Github Actions security
+  #
+  # ###########################################################################################
+
   zizmor:
     name: (chore) GHA security
     runs-on: ubuntu-latest
@@ -202,6 +292,12 @@ jobs:
 
       - name: Run zizmor 🌈
         uses: zizmorcore/zizmor-action@e639db99335bc9038abc0e066dfcd72e23d26fb4 # v0.3.0
+
+  # ###########################################################################################
+  #
+  #  Semantic Release
+  #
+  # ###########################################################################################
 
   release:
     name: (chore) release
