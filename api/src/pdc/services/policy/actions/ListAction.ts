@@ -21,6 +21,10 @@ import { PolicyRepositoryProviderInterfaceResolver } from "../interfaces/index.t
     copyFromContextMiddleware(`call.user.operator_id`, "operator_id"),
     ["validate", alias],
   ],
+  apiRoute: {
+    path: "/campaign/list",
+    method: "POST",
+  },
 })
 export class ListAction extends AbstractAction {
   constructor(

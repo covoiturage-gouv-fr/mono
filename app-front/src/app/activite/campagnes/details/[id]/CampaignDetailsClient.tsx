@@ -1,13 +1,10 @@
 "use client";
+import { useCampaignFind } from "@/hooks/api";
+import { useAuth } from "@/providers/AuthProvider";
 import { fr } from "@codegouvfr/react-dsfr";
 import { notFound, useRouter } from "next/navigation";
-import { useMemo } from "react";
 import DescriptiveSheetUrlEditor from "../../../../../components/campaign/DescriptiveSheetUrlEditor";
 import Loading from "../../../../../components/layout/Loading";
-import { Config } from "../../../../../config";
-import { useApi } from "../../../../../hooks/useApi";
-import { Campaign } from "../../../../../interfaces/campaignInterface";
-import { useAuth } from "../../../../../providers/AuthProvider";
 import ApdfTable from "./ApdfTable";
 import JourneysGraph from "./graphs/JourneysGraph";
 import OperatorsGraph from "./graphs/OperatorsGraph";
@@ -21,30 +18,7 @@ export default function CampaignDetailsClient({ id }: { id: string }) {
     return isNaN(date.getTime()) ? "Date invalide" : date.toLocaleDateString("fr-FR");
   };
 
-  const url = `${Config.get<string>("auth.domain")}/rpc?methods=campaign:find`;
-  const init = useMemo(
-    () => ({
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        jsonrpc: "2.0",
-        method: "campaign:find",
-        params: { _id: Number(id) },
-        id: 1,
-      }),
-    }),
-    [id],
-  );
-
-  const { data, loading, error } = useApi<{
-    id: number;
-    result: { meta: null; data: Campaign };
-    jsonrpc: string;
-  }>(url, false, init);
-
-  const currentCampaign = data?.result?.data;
+  const { data: currentCampaign, loading, error } = useCampaignFind({ id: Number(id) });
 
   if (loading) return <Loading />;
   if (!currentCampaign || error) notFound();

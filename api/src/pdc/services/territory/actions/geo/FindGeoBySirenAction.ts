@@ -17,7 +17,11 @@ import { GeoRepositoryProviderInterfaceResolver } from "../../interfaces/GeoRepo
     hasPermissionMiddleware("common.territory.list"),
     ["validate", alias],
     contentBlacklistMiddleware(...blacklist),
-  ]
+  ],
+  apiRoute: {
+    path: "/territory/findGeoBySiren",
+    method: "POST",
+  },
 })
 export class FindGeoBySirenAction extends AbstractAction {
   constructor(private geoRepository: GeoRepositoryProviderInterfaceResolver) {

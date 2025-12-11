@@ -1,6 +1,5 @@
 import Loading from "@/components/layout/Loading";
-import { Config } from "@/config";
-import { useApi } from "@/hooks/useApi";
+import { useExportsList } from "@/hooks/api";
 import { fr } from "@codegouvfr/react-dsfr";
 import Badge from "@codegouvfr/react-dsfr/Badge";
 import Download from "@codegouvfr/react-dsfr/Download";
@@ -17,8 +16,6 @@ interface ExportListItemInterface {
   file_size: number;
   status: string;
 }
-
-type ExportListInterface = ExportListItemInterface[];
 
 const formatFileSize = (bytes: number): string => {
   if (!bytes || bytes === 0) return "Taille inconnue";
@@ -39,7 +36,11 @@ const getStatusBadge = (status: string) => {
   };
 
   const config = statusConfig[status] || { severity: "info" as const, label: status };
-  return <Badge severity={config.severity} small>{config.label}</Badge>;
+  return (
+    <Badge severity={config.severity} small>
+      {config.label}
+    </Badge>
+  );
 };
 
 interface ExportListProps {
@@ -51,27 +52,10 @@ interface ExportListProps {
 export default function ExportList({ refreshTrigger, days = 30, pageSize = 25 }: ExportListProps) {
   const [page, setPage] = useState(1);
 
-  const url = `${Config.get<string>("auth.domain")}/rpc?methods=exports:list`;
-  const init = useMemo(
-    () => ({
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        jsonrpc: "2.0",
-        method: "exports:list",
-        params: { days },
-        id: 1,
-      }),
-    }),
-    [refreshTrigger, days]
-  );
-
-  const { data, loading } = useApi<{id: number;result: { meta: null; data: ExportListInterface };jsonrpc: string;}>(url, false, init);
+  const { data, loading } = useExportsList({ days, refreshTrigger });
 
   const allData = useMemo(() => {
-    return data?.result?.data ?? [];
+    return data ?? [];
   }, [data]);
 
   const dataTableFull = allData.map((d: ExportListItemInterface) => [

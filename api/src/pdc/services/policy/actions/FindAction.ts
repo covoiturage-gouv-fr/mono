@@ -22,6 +22,10 @@ import { PolicyRepositoryProviderInterfaceResolver } from "../interfaces/index.t
     }),
     ["validate", alias],
   ],
+  apiRoute: {
+    path: "/campaign/find",
+    method: "POST",
+  },
 })
 export class FindAction extends AbstractAction {
   constructor(

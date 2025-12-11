@@ -1,5 +1,4 @@
-import { getApiUrl } from "@/helpers/api";
-import { useApi } from "@/hooks/useApi";
+import { useIncentiveGraph } from "@/hooks/api";
 import { fr } from "@codegouvfr/react-dsfr";
 import { Tag } from "@codegouvfr/react-dsfr/Tag";
 import {
@@ -20,8 +19,7 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, T
 
 export default function JourneysGraph(props: { title: string; campaignId: number }) {
   const [period, setPeriod] = useState<"month" | "day">("month");
-  const url = getApiUrl("v3", `dashboard/incentive/${period}/?campaign_id=${props.campaignId}`);
-  const { data } = useApi<Record<string, string | number>[]>(url);
+  const { data } = useIncentiveGraph({ ...(props.campaignId && { campaign_id: props.campaignId }), period });
   if (!data || data.length === 0) {
     return <p>Pas de campagnes pour ce territoire...</p>;
   }
