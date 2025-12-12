@@ -1,4 +1,4 @@
-import { type enumRoles } from "../helpers/auth";
+import { type enumRoles } from "@helpers/auth";
 
 export interface AuthContextProps {
   isAuth: boolean;

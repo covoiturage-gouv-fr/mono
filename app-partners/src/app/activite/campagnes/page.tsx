@@ -1,4 +1,5 @@
 "use client";
+import Loading from "@/components/layout/Loading";
 import { useCampaignList, useTerritoriesList } from "@/hooks/api";
 import { useUrlSearch } from "@/hooks/useUrlSearch";
 import { TerritoriesInterface } from "@/interfaces/dataInterface";
@@ -11,7 +12,6 @@ import Pagination from "@codegouvfr/react-dsfr/Pagination";
 import Table from "@codegouvfr/react-dsfr/Table";
 import { usePathname, useRouter } from "next/navigation";
 import { ReactNode, useEffect, useState } from "react";
-import Loading from "../../../components/layout/Loading";
 
 export default function TabCampaigns() {
   const [campaignId] = useState<number>();

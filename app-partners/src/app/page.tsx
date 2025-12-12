@@ -1,9 +1,9 @@
+import Anonymous from "@/components/common/Anonymous";
 import PageTitle from "@/components/common/PageTitle";
 import { fr } from "@codegouvfr/react-dsfr";
 import { ButtonsGroup } from "@codegouvfr/react-dsfr/ButtonsGroup";
 import { type Metadata } from "next";
 import Image from "next/image";
-import Anonymous from "../components/common/Anonymous";
 
 export const metadata: Metadata = {
   title: "Accueil | app.covoiturage.gouv.fr",
@@ -20,13 +20,7 @@ export default function Home() {
           <p>Pour exporter les données des trajets</p>
           <p>Pour un suivi des campagnes d’incitation</p>
         </div>
-        <div
-          className={fr.cx(
-            "fr-grid-row",
-            "fr-grid-row--gutters",
-            "fr-grid-row--center",
-          )}
-        >
+        <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters", "fr-grid-row--center")}>
           <div className={fr.cx("fr-col-12", "fr-col-md-6")}>
             <div className={fr.cx("fr-h2")}>Comment devenir partenaire ?</div>
             <ButtonsGroup

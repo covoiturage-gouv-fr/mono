@@ -1,7 +1,7 @@
 "use client";
+import { useAuth } from "@/providers/AuthProvider";
 import { MainNavigation } from "@codegouvfr/react-dsfr/MainNavigation";
 import { usePathname } from "next/navigation";
-import { useAuth } from "../../providers/AuthProvider";
 
 export default function Navigation() {
   const pathname = usePathname();
@@ -56,8 +56,7 @@ export default function Navigation() {
             href: "https://observatoire.covoiturage.gouv.fr/observatoire/territoire/",
             target: "_blank",
             title: "Tableau de bord de l'observatoire | nouvelle fenêtre",
-            "aria-label":
-              "Tableau de bord de l'observatoire | nouvelle fenêtre",
+            "aria-label": "Tableau de bord de l'observatoire | nouvelle fenêtre",
           },
           text: "Tableau de bord de l'observatoire",
         },
