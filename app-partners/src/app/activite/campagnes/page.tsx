@@ -168,7 +168,7 @@ export default function TabCampaigns() {
             </>
           ) : (
             <Alert
-              title={"Pas de campagnes en cours"}
+              title={"Pas de campagne en cours"}
               severity="info"
               description={
                 <p>

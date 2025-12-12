@@ -23,7 +23,7 @@ export default function JourneysGraph(props: { title: string; campaignId: number
   const url = getApiUrl("v3", `dashboard/incentive/${period}/?campaign_id=${props.campaignId}`);
   const { data } = useApi<Record<string, string | number>[]>(url);
   if (!data || data.length === 0) {
-    return <p>Pas de campagnes pour ce territoire...</p>;
+    return null;
   }
   const name = ["Trajets avec Origine OU destination sur le territoire", "Trajets incités et validés par le RPC"];
   const colors = ["#6a6af4", "#000091"];

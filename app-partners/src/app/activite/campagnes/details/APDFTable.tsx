@@ -1,16 +1,16 @@
+import Loading from "@/components/layout/Loading";
 import { Config } from "@/config";
 import { getApiUrl } from "@/helpers/api";
 import { useApi } from "@/hooks/useApi";
+import { ApdfRecord } from "@/interfaces/apdfInterface";
+import { OperatorResult } from "@/interfaces/operatorInterface";
 import { useAuth } from "@/providers/AuthProvider";
 import { fr } from "@codegouvfr/react-dsfr";
 import { Download } from "@codegouvfr/react-dsfr/Download";
 import Table from "@codegouvfr/react-dsfr/Table";
 import { type ReactNode, useMemo } from "react";
-import Loading from "../../../../components/layout/Loading";
-import { ApdfRecord } from "../../../../interfaces/apdfInterface";
-import { OperatorResult } from "../../../../interfaces/operatorInterface";
 
-export default function ApdfTable(props: { title: string; campaignId: number; operatorId: number | null }) {
+export default function APDFTable(props: { title: string; campaignId: number; operatorId: number | null }) {
   const { user, simulate } = useAuth();
   const url = `${Config.get<string>("auth.domain")}/rpc?methods=apdf:list`;
   const init = useMemo(() => {
@@ -73,8 +73,8 @@ export default function ApdfTable(props: { title: string; campaignId: number; op
     .reverse();
 
   if (loading) return <Loading />;
-  if (error) return <div>Erreur lors du chargement des données</div>;
-  if (!dataTable) return <>Pas d&apos;APDF...</>;
+  if (error) return <div>Erreur lors du chargement des APDF</div>;
+  if (!dataTable) return <>Pas d&apos;APDF disponibles</>;
   return (
     <div className={fr.cx("fr-my-4w")}>
       <h3 className={fr.cx("fr-callout__title")}>{props.title}</h3>

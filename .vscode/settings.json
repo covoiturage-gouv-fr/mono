@@ -63,8 +63,8 @@
     "api/deno.lock": true,
     "api/providers/*/src/shared": true,
     "api/src/shared": true,
-    "app-observatory/.next": true,
-    "app-partners/.next": true,
+    "*/.next": true,
+    "*/out": true,
     "tmp/*": true
   }
 }
