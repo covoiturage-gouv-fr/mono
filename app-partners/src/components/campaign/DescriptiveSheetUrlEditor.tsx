@@ -1,5 +1,7 @@
 import AlertMessage from "@/components/common/AlertMessage";
 import { getApiUrl } from "@/helpers/api";
+import { isRegistry, isTerritory } from "@/helpers/auth";
+import { AuthContextProps } from "@/interfaces/auth";
 import { useAuth } from "@/providers/AuthProvider";
 import { fr } from "@codegouvfr/react-dsfr";
 import Button from "@codegouvfr/react-dsfr/Button";
@@ -17,7 +19,7 @@ export default function DescriptiveSheetUrlEditor({ campaignId, initialValue }: 
   const [descriptiveSheetUrl, setDescriptiveSheetUrl] = useState<string>(initialValue ?? "");
   const [error, setError] = useState<string | null>(null);
   const [alert, setAlert] = useState<"success" | "error">();
-  const { user, simulatedRole } = useAuth();
+  const { user, simulatedRole }: AuthContextProps = useAuth();
 
   const handleUpdateDescriptiveSheetUrl = async () => {
     if (!campaignId) return;
@@ -68,7 +70,7 @@ export default function DescriptiveSheetUrlEditor({ campaignId, initialValue }: 
           onClose={() => setAlert(undefined)}
         />
       )}
-      {["registry", "territory"].includes(user?.role.split(".")[0] ?? "") && !simulatedRole ? (
+      {user?.role && (isRegistry(user.role) || isTerritory(user.role)) && !simulatedRole ? (
         <>
           <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters")}>
             <div className={fr.cx("fr-col", "fr-col-md", "fr-text--bold")}>

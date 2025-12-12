@@ -1,5 +1,11 @@
 import { Config } from "@/config";
-import { type AuthContextProps } from "@/interfaces/providersInterface";
+import {
+  type AuthContextProps,
+  type Role,
+  type RoleKind,
+  type RoleLevel,
+  roles,
+} from "@/interfaces/auth";
 import crypto from "crypto";
 
 export const generateNonce = () => {
@@ -34,24 +40,15 @@ export const labelRole = (role: string) => {
   }
 };
 
-export const enumRoles = [
-  "anonymous",
-  "registry.admin",
-  "territory.user",
-  "territory.admin",
-  "operator.user",
-  "operator.admin",
-] as const;
-
-export const getRolesList = (role: (typeof enumRoles)[number]) => {
+export const getRolesList = (role: Role) => {
   const group = role.split(".")[0];
   switch (group) {
     case "registry":
-      return enumRoles;
+      return roles;
     case "territory":
-      return enumRoles.filter((r) => r.startsWith("territory"));
+      return roles.filter((r) => r.startsWith("territory"));
     case "operator":
-      return enumRoles.filter((r) => r.startsWith("operator"));
+      return roles.filter((r) => r.startsWith("operator"));
     default:
       return [];
   }
@@ -88,3 +85,37 @@ export const getUserSession = async () => {
   });
   return (await response.json()) as AuthContextProps["user"];
 };
+
+export function splitRole(role: unknown): [RoleKind, RoleLevel] {
+  if (!role || typeof role !== "string") {
+    throw new Error("Invalid role");
+  }
+
+  const [kind, level] = role.toLowerCase().trim().split(".");
+  return [kind as RoleKind, level as RoleLevel];
+}
+
+export function isRegistry(role: string | undefined): boolean {
+  const [kind] = splitRole(role);
+  return kind === "registry";
+}
+
+export function isTerritory(role: string | undefined): boolean {
+  const [kind] = splitRole(role);
+  return kind === "territory";
+}
+
+export function isOperator(role: string | undefined): boolean {
+  const [kind] = splitRole(role);
+  return kind === "operator";
+}
+
+export function isAdmin(role: string | undefined): boolean {
+  const [, level] = splitRole(role);
+  return level === "admin";
+}
+
+export function isUser(role: string | undefined): boolean {
+  const [, level] = splitRole(role);
+  return level === "user";
+}

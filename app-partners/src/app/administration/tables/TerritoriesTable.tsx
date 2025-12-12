@@ -5,6 +5,7 @@ import { getApiUrl } from "@/helpers/api";
 import { formatErrors, useActionsModal } from "@/hooks/useActionsModal";
 import { useApi } from "@/hooks/useApi";
 import { useUrlSearch } from "@/hooks/useUrlSearch";
+import { type AuthContextProps } from "@/interfaces/auth";
 import type { Company, TerritoriesInterface, TerritorySelectorsInterface } from "@/interfaces/dataInterface";
 import { useAuth } from "@/providers/AuthProvider";
 import { fr } from "@codegouvfr/react-dsfr";
@@ -16,7 +17,7 @@ import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 
 export default function TerritoriesTable(props: { title: string; id: number | null }) {
-  const { user } = useAuth();
+  const { user }: AuthContextProps = useAuth();
   const [currentPage, setCurrentPage] = useState(1);
   const { search, debouncedSearch, onChangeSearch: setSearchValue } = useUrlSearch();
   const [selector, setSelector] = useState<TerritorySelectorsInterface>();
@@ -144,7 +145,7 @@ export default function TerritoriesTable(props: { title: string; id: number | nu
     }
     const response = await fetch(request.url, request.params);
     if (!response.ok) {
-      const res = await response.json();
+      const res = (await response.json()) as { message?: string };
       throw new Error(res?.message ?? "Une erreur est survenue");
     }
     return;
@@ -155,13 +156,13 @@ export default function TerritoriesTable(props: { title: string; id: number | nu
       if (!modal.errors?.siret && modal.currentRow.siret) {
         const geoResponse = await findGeoBySiren(modal.currentRow.siret as string);
         if (geoResponse.ok) {
-          const body = await geoResponse.json();
+          const body = (await geoResponse.json()) as { aom_siren: string; aom_name: string };
           if (body.aom_siren && body.aom_name) {
             modal.setCurrentRow({
               ...modal.currentRow,
               name: body.aom_name,
             });
-            modal.validateInputChange(formSchema, "name", body.aom_name as string);
+            modal.validateInputChange(formSchema, "name", body.aom_name);
             setSelector({
               aom: [body.aom_siren],
             });
@@ -207,7 +208,7 @@ export default function TerritoriesTable(props: { title: string; id: number | nu
         />
       )}
       <h3 className={fr.cx("fr-callout__title")}>{props.title}</h3>
-      {user?.role === "registry.admin" && (
+      {user && user.role === "registry.admin" && (
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "1rem" }}>
           <Button
             iconId="fr-icon-add-circle-line"
@@ -276,9 +277,10 @@ export default function TerritoriesTable(props: { title: string; id: number | nu
               />
             </>
           )}
-          {modal.typeModal === "delete" &&
+          {
             // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-            `Êtes-vous sûr de vouloir supprimer l'opérateur ${modal.currentRow?.name} ?`}
+            modal.typeModal === "delete" && `Êtes-vous sûr de vouloir supprimer l'opérateur ${modal.currentRow?.name} ?`
+          }
         </>
       </Modal>
     </>

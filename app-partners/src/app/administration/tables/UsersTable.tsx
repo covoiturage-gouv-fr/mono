@@ -2,10 +2,11 @@ import AlertMessage from "@/components/common/AlertMessage";
 import { Modal } from "@/components/common/Modal";
 import Pagination from "@/components/common/Pagination";
 import { getApiUrl } from "@/helpers/api";
-import { enumRoles, getRolesList, labelRole } from "@/helpers/auth";
+import { getRolesList, labelRole } from "@/helpers/auth";
 import { useActionsModal } from "@/hooks/useActionsModal";
 import { useApi } from "@/hooks/useApi";
 import { useUrlSearch } from "@/hooks/useUrlSearch";
+import { roles } from "@/interfaces/auth";
 import { type OperatorsInterface, type TerritoriesInterface, type UsersInterface } from "@/interfaces/dataInterface";
 import { useAuth } from "@/providers/AuthProvider";
 import { fr } from "@codegouvfr/react-dsfr";
@@ -137,7 +138,7 @@ export default function UsersTable(props: { title: string; territoryId: number |
     email: z.string().email({ message: `L'adresse mail n'est pas valide` }),
     operator_id: z.number({ message: "L'identifiant n'est pas un nombre" }).nullable(),
     territory_id: z.number({ message: "L'identifiant n'est pas un nombre" }).nullable(),
-    role: z.enum(enumRoles, { message: "Le rôle n'est pas valide" }),
+    role: z.enum(roles, { message: "Le rôle n'est pas valide" }),
   });
   const roleList = () => {
     if (simulatedRole) {
@@ -216,13 +217,10 @@ export default function UsersTable(props: { title: string; territoryId: number |
             nativeInputProps={{
               type: "text",
               value: search ?? "",
-              onChange: (e) =>
-                onChangeSearch(
-                  e.target.value,
-                ),
+              onChange: (e) => onChangeSearch(e.target.value),
             }}
           />
-      </div>
+        </div>
       )}
       <Table data={dataTable} headers={headers} colorVariant="blue-ecume" fixed />
       <Pagination count={totalPages} defaultPage={currentPage} onChange={onChangePage} />

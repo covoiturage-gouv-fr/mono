@@ -1,6 +1,6 @@
 "use client";
 import { getUserSession } from "@/helpers/auth";
-import { type AuthContextProps } from "@/interfaces/providersInterface";
+import { type AuthContextProps } from "@/interfaces/auth";
 import { usePathname, useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useState } from "react";
 
