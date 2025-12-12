@@ -3,7 +3,7 @@ import { CommandInterface, ValidatorInterfaceResolver } from "@/ilos/common/inde
 import { logger } from "@/lib/logger/index.ts";
 import { CompanyDataSourceProviderInterfaceResolver } from "@/pdc/services/company/interfaces/CompanyDataSourceProviderInterface.ts";
 import { CompanyRepositoryProviderInterfaceResolver } from "@/pdc/services/company/interfaces/CompanyRepositoryProviderInterface.ts";
-import { alias } from "../contracts/fetch.schema.ts";
+import { aliasCommand } from "../contracts/fetch.schema.ts";
 
 export type Options = {
   save: boolean;
@@ -39,7 +39,7 @@ export class FetchCommand implements CommandInterface {
         required: ["siret"],
       });
 
-      await this.validator.validate(siret, alias);
+      await this.validator.validate(siret, aliasCommand);
     } catch (error) {
       logger.error(error.message);
       logger.error(this.validator.errors);

@@ -1,6 +1,6 @@
 import { CompanyInterface } from "../../../../shared/common/interfaces/CompanyInterface2.ts";
 
-export type ParamsInterface = string;
+export type ParamsInterface = string | { siret: string };
 
 export type ResultInterface = CompanyInterface;
 

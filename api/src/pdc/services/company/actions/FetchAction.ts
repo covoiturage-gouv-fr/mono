@@ -28,9 +28,10 @@ export class FetchAction extends AbstractAction {
   }
 
   public override async handle(params: ParamsInterface): Promise<ResultInterface> {
-    const data = await this.ds.find(params);
+    const siret = typeof params === "string" ? params : params.siret;
+    const data = await this.ds.find(siret);
     await this.repository.updateOrCreate(data);
 
-    return this.repository.findBySiret(params);
+    return this.repository.findBySiret(siret);
   }
 }

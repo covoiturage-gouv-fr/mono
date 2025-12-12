@@ -1,7 +1,6 @@
 import AlertMessage from "@/components/common/AlertMessage";
 import { Modal } from "@/components/common/Modal";
 import Pagination from "@/components/common/Pagination";
-import { Config } from "@/config";
 import { getApiUrl } from "@/helpers/api";
 import { formatErrors, useActionsModal } from "@/hooks/useActionsModal";
 import { useApi } from "@/hooks/useApi";
@@ -61,17 +60,6 @@ export default function TerritoriesTable(props: { title: string; id: number | nu
         key={d._id}
         buttons={[
           {
-            children: "modifier",
-            iconId: "fr-icon-refresh-line",
-            priority: "secondary",
-            onClick: () => {
-              modal.setCurrentRow(d);
-              modal.setErrors({});
-              modal.setOpenModal(true);
-              modal.setTypeModal("update");
-            },
-          },
-          {
             children: "supprimer",
             iconId: "fr-icon-delete-bin-line",
             onClick: () => {
@@ -91,18 +79,13 @@ export default function TerritoriesTable(props: { title: string; id: number | nu
     siret: z.string().regex(/^\d{14}$/, { message: "Le SIRET doit contenir 14 chiffres" }),
   });
   const fetchCompany = async (siret: string): Promise<Response> => {
-    return fetch(`${Config.get<string>("auth.domain")}/rpc?methods=company:fetch`, {
+    return await fetch(getApiUrl("v3", "company/fetch"), {
       credentials: "include",
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        jsonrpc: "2.0",
-        method: "company:fetch",
-        params: siret,
-        id: 1,
-      }),
+      body: JSON.stringify({ siret }),
     });
   };
 
@@ -137,7 +120,6 @@ export default function TerritoriesTable(props: { title: string; id: number | nu
         },
       } as RequestInit,
     };
-    console.log(modal.typeModal);
     switch (modal.typeModal) {
       case "delete":
         request.url = getApiUrl("v3", `${url}/${modal.currentRow?._id as string}`);
@@ -145,14 +127,13 @@ export default function TerritoriesTable(props: { title: string; id: number | nu
         break;
       case "create": {
         const companyResponse: Response = await fetchCompany(modal.currentRow.siret as string);
-        console.log("companyResponse : ".companyResponse);
         if (companyResponse.ok) {
           const companyBody = (await companyResponse.json()) as Company;
           request.url = getApiUrl("v3", url);
           request.params.method = "POST";
           request.params.body = JSON.stringify({
             ...modal.currentRow,
-            company_id: companyBody.result.data._id,
+            company_id: companyBody._id,
             selector: selector,
           });
         } else {
@@ -161,10 +142,7 @@ export default function TerritoriesTable(props: { title: string; id: number | nu
         break;
       }
     }
-    console.log(request.url);
-    console.log(request.params);
     const response = await fetch(request.url, request.params);
-    console.log(response);
     if (!response.ok) {
       const res = await response.json();
       throw new Error(res?.message ?? "Une erreur est survenue");
@@ -178,14 +156,15 @@ export default function TerritoriesTable(props: { title: string; id: number | nu
         const geoResponse = await findGeoBySiren(modal.currentRow.siret as string);
         if (geoResponse.ok) {
           const body = await geoResponse.json();
-          if (body?.result?.data?.aom_siren) {
+          console.log(body.aom_siren);
+          if (body.aom_siren && body.aom_name) {
             modal.setCurrentRow({
               ...modal.currentRow,
-              name: body.result.data.aom_name,
+              name: body.aom_name,
             });
-            modal.validateInputChange(formSchema, "name", body.result.data.aom_name as string);
+            modal.validateInputChange(formSchema, "name", body.aom_name as string);
             setSelector({
-              aom: [body.result.data.aom_siren],
+              aom: [body.aom_siren],
             });
           }
         }
