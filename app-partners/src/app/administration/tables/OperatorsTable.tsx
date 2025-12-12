@@ -1,9 +1,8 @@
 import AlertMessage from "@/components/common/AlertMessage";
 import { Modal } from "@/components/common/Modal";
 import Pagination from "@/components/common/Pagination";
-import { getApiUrl } from "@/helpers/api";
+import { useOperatorsList } from "@/hooks/api";
 import { useActionsModal } from "@/hooks/useActionsModal";
-import { useApi } from "@/hooks/useApi";
 import { useUrlSearch } from "@/hooks/useUrlSearch";
 import { type OperatorsInterface } from "@/interfaces/dataInterface";
 import { useAuth } from "@/providers/AuthProvider";
@@ -12,7 +11,7 @@ import Button from "@codegouvfr/react-dsfr/Button";
 import ButtonsGroup from "@codegouvfr/react-dsfr/ButtonsGroup";
 import { Input } from "@codegouvfr/react-dsfr/Input";
 import Table from "@codegouvfr/react-dsfr/Table";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { z } from "zod";
 
 export default function OperatorsTable(props: { title: string; id: number | null }) {
@@ -28,20 +27,11 @@ export default function OperatorsTable(props: { title: string; id: number | null
     setSearchValue(search);
     setCurrentPage(1);
   };
-  const url = useMemo(() => {
-    const urlObj = new URL(getApiUrl("v3", "dashboard/operators"));
-    if (props.id) {
-      urlObj.searchParams.set("id", props.id.toString());
-    }
-    if (currentPage !== 1) {
-      urlObj.searchParams.set("page", currentPage.toString());
-    }
-    if (debouncedSearch !== "") {
-      urlObj.searchParams.set("search", debouncedSearch);
-    }
-    return urlObj.toString();
-  }, [props.id, currentPage, debouncedSearch]);
-  const { data, refetch: refetchOperators } = useApi<OperatorsInterface>(url);
+  const { data, refetch: refetchOperators } = useOperatorsList({
+    id: props.id,
+    page: currentPage,
+    search: debouncedSearch || undefined, // undefined to avoid empty string
+  });
   const totalPages = data?.meta.totalPages ?? 1;
   const totalRecords = data?.meta.total ?? 0;
   const headers = ["Identifiant", "Nom", "Siret", "Actions"];
@@ -119,38 +109,35 @@ export default function OperatorsTable(props: { title: string; id: number | null
         />
       )}
       <h3 className={fr.cx("fr-callout__title")}>{props.title}</h3>
-        {user?.role === "registry.admin" && (
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "1rem" }}>
-              <Button
-                iconId="fr-icon-add-circle-line"
-                onClick={() => {
-                  modal.setCurrentRow({ name: "", siret: "" });
-                  modal.setOpenModal(true);
-                  modal.setErrors({});
-                  modal.setTypeModal("create");
-                }}
-                title="Ajouter un opérateur"
-                size="small"
-              >
-                Ajouter
-              </Button>
-              <Input
-                label="Rechercher"
-                state={search !== "" ? (totalRecords <= 0 ? "error" : "success") : "default"}
-                stateRelatedMessage={totalRecords + " résultats"}
-                hintText="Nom / SIRET"
-                nativeInputProps={{
-                  type: "text",
-                  value: search ?? "",
-                  onChange: (e) =>
-                    onChangeSearch(
-                      e.target.value,
-                    ),
-                }}
-              />
-          </div>
-        )}
-      
+      {user?.role === "registry.admin" && (
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "1rem" }}>
+          <Button
+            iconId="fr-icon-add-circle-line"
+            onClick={() => {
+              modal.setCurrentRow({ name: "", siret: "" });
+              modal.setOpenModal(true);
+              modal.setErrors({});
+              modal.setTypeModal("create");
+            }}
+            title="Ajouter un opérateur"
+            size="small"
+          >
+            Ajouter
+          </Button>
+          <Input
+            label="Rechercher"
+            state={search !== "" ? (totalRecords <= 0 ? "error" : "success") : "default"}
+            stateRelatedMessage={totalRecords + " résultats"}
+            hintText="Nom / SIRET"
+            nativeInputProps={{
+              type: "text",
+              value: search ?? "",
+              onChange: (e) => onChangeSearch(e.target.value),
+            }}
+          />
+        </div>
+      )}
+
       <Table data={dataTable} headers={headers} colorVariant="blue-ecume" fixed />
       <Pagination count={totalPages} defaultPage={currentPage} onChange={onChangePage} />
       <Modal

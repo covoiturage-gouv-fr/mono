@@ -11,6 +11,10 @@ import { PolicyRepositoryProviderInterfaceResolver } from "../interfaces/index.t
     hasPermissionMiddleware("registry.policy.patch"),
     ["validate", alias],
   ],
+  apiRoute: {
+    path: "/policies/update/descriptive-sheet-url",
+    method: "POST",
+  },
 })
 export class UpdateDescriptiveSheetUrlAction extends AbstractAction {
   constructor(

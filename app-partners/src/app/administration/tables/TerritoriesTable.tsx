@@ -107,17 +107,14 @@ export default function TerritoriesTable(props: { title: string; id: number | nu
   };
 
   const findGeoBySiren = async (siret: string): Promise<Response> => {
-    return await fetch(`${Config.get<string>("auth.domain")}/rpc?methods=territory:findGeoBySiren`, {
+    return await fetch(getApiUrl("v3", "territory/findGeoBySiren"), {
       credentials: "include",
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        jsonrpc: "2.0",
-        method: "territory:findGeoBySiren",
-        params: { siren: siret.substring(0, 9) },
-        id: 1,
+        siren: siret.substring(0, 9),
       }),
     });
   };
@@ -140,6 +137,7 @@ export default function TerritoriesTable(props: { title: string; id: number | nu
         },
       } as RequestInit,
     };
+    console.log(modal.typeModal);
     switch (modal.typeModal) {
       case "delete":
         request.url = getApiUrl("v3", `${url}/${modal.currentRow?._id as string}`);
@@ -147,6 +145,7 @@ export default function TerritoriesTable(props: { title: string; id: number | nu
         break;
       case "create": {
         const companyResponse: Response = await fetchCompany(modal.currentRow.siret as string);
+        console.log("companyResponse : ".companyResponse);
         if (companyResponse.ok) {
           const companyBody = (await companyResponse.json()) as Company;
           request.url = getApiUrl("v3", url);
@@ -162,7 +161,10 @@ export default function TerritoriesTable(props: { title: string; id: number | nu
         break;
       }
     }
+    console.log(request.url);
+    console.log(request.params);
     const response = await fetch(request.url, request.params);
+    console.log(response);
     if (!response.ok) {
       const res = await response.json();
       throw new Error(res?.message ?? "Une erreur est survenue");
@@ -250,10 +252,7 @@ export default function TerritoriesTable(props: { title: string; id: number | nu
             nativeInputProps={{
               type: "text",
               value: search ?? "",
-              onChange: (e) =>
-                onChangeSearch(
-                  e.target.value,
-                ),
+              onChange: (e) => onChangeSearch(e.target.value),
             }}
           />
         </div>

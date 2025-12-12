@@ -1,5 +1,5 @@
 import AlertMessage from "@/components/common/AlertMessage";
-import { Config } from "@/config";
+import { getApiUrl } from "@/helpers/api";
 import { fr } from "@codegouvfr/react-dsfr";
 import Button from "@codegouvfr/react-dsfr/Button";
 import Input from "@codegouvfr/react-dsfr/Input";
@@ -26,32 +26,26 @@ export default function DescriptiveSheetUrlEditor({ campaignId, initialValue }: 
       return;
     }
     try {
-      const response = await fetch(`${Config.get<string>("auth.domain")}/rpc`, {
+      const response = await fetch(getApiUrl("v3", "policies/update/descriptive-sheet-url"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         credentials: "include",
         body: JSON.stringify({
-          jsonrpc: "2.0",
-          method: "policy:updateDescriptiveSheetUrl",
-          params: {
-            _id: campaignId,
-            descriptive_sheet_url: descriptiveSheetUrl ?? "",
-          },
-          id: 1,
+          _id: campaignId,
+          descriptive_sheet_url: descriptiveSheetUrl,
         }),
       });
-
-      const result = (await response.json()) as { error?: { message: string } };
-      if (result.error) {
+      if (!response.ok) {
         setAlert("error");
         return;
       }
 
       setError(null);
       setAlert("success");
-    } catch {
+    } catch (e) {
+      console.error(e);
       setAlert("error");
     }
   };

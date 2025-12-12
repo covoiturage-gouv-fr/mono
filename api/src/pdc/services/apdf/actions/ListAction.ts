@@ -26,6 +26,10 @@ import { StorageRepositoryProviderInterfaceResolver } from "../interfaces/Storag
     }),
     ["validate", alias],
   ],
+  apiRoute: {
+    path: "/apdf/list",
+    method: "POST",
+  },
 })
 export class ListAction extends Action {
   constructor(
