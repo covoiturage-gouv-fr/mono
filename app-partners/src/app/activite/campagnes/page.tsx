@@ -1,4 +1,9 @@
 "use client";
+import Loading from "@/components/layout/Loading";
+import { useCampaignList, useTerritoriesList } from "@/hooks/api";
+import { useUrlSearch } from "@/hooks/useUrlSearch";
+import { TerritoriesInterface } from "@/interfaces/dataInterface";
+import { useAuth } from "@/providers/AuthProvider";
 import { fr } from "@codegouvfr/react-dsfr";
 import Alert from "@codegouvfr/react-dsfr/Alert";
 import Button from "@codegouvfr/react-dsfr/Button";
@@ -6,14 +11,7 @@ import Input from "@codegouvfr/react-dsfr/Input";
 import Pagination from "@codegouvfr/react-dsfr/Pagination";
 import Table from "@codegouvfr/react-dsfr/Table";
 import { usePathname, useRouter } from "next/navigation";
-import { ReactNode, useEffect, useMemo, useState } from "react";
-import Loading from "../../../components/layout/Loading";
-import { Config } from "../../../config";
-import { getApiUrl } from "../../../helpers/api";
-import { useApi } from "../../../hooks/useApi";
-import { useUrlSearch } from "../../../hooks/useUrlSearch";
-import { TerritoriesInterface } from "../../../interfaces/dataInterface";
-import { useAuth } from "../../../providers/AuthProvider";
+import { ReactNode, useEffect, useState } from "react";
 
 export default function TabCampaigns() {
   const [campaignId] = useState<number>();
@@ -23,41 +21,21 @@ export default function TabCampaigns() {
   const pathname = usePathname();
   const pageSize = 15;
   const [page, setPage] = useState(1);
-  const url = `${Config.get<string>("auth.domain")}/rpc?methods=campaign:list`;
   const onChangeSearch = (search: string) => {
     setSearchValue(search);
   };
-  const init = useMemo(() => {
-    const params = {
-      ...(user?.territory_id && { territory_id: user?.territory_id }),
-      ...(user?.operator_id && { operator_id: user?.operator_id }),
-      ...(debouncedSearch && { search: debouncedSearch }),
-    };
-    return {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        jsonrpc: "2.0",
-        method: "campaign:list",
-        params: params,
-        id: 1,
-      }),
-    };
-  }, [user?.territory_id, user?.operator_id, debouncedSearch]);
-  const { data, loading } = useApi<{
-    id: number;
-    result: { meta: null; data: Record<string, string | number>[] };
-    jsonrpc: string;
-  }>(url, false, init);
-  const territoriesApiUrl = getApiUrl("v3", `dashboard/territories?limit=200`);
-  const { data: territoriesData } = useApi<TerritoriesInterface>(
-    territoriesApiUrl,
-    false,
-    undefined,
-    user?.territory_id,
-  );
+
+  const { data, loading } = useCampaignList({
+    ...(user?.territory_id && { territory_id: user?.territory_id }),
+    ...(user?.operator_id && { operator_id: user?.operator_id }),
+    ...(debouncedSearch && { search: debouncedSearch }),
+  });
+
+  const { data: territoriesData } = useTerritoriesList({
+    limit: 200,
+    ...(user?.territory_id && { territory_id: user?.territory_id }),
+  });
+
   const territoriesList = () => {
     if (user?.territory_id && territoriesData?.data) {
       return [territoriesData?.data.find((t) => t._id === user?.territory_id)] as TerritoriesInterface["data"];
@@ -73,18 +51,18 @@ export default function TabCampaigns() {
       value
     );
   };
-  const active = data?.result.data
-    .filter((d) => d.status === "active")
+  const active = data
+    ?.filter((d) => d.status === "active")
     .sort((a, b) => new Date(b.start_date).getTime() - new Date(a.start_date).getTime());
 
-  const others = data?.result.data
-    .filter((d) => d.status !== "active")
+  const others = data
+    ?.filter((d) => d.status !== "active")
     .sort((a, b) => new Date(b.start_date).getTime() - new Date(a.start_date).getTime());
   const dataTableFull = [...(active ?? []), ...(others ?? [])].map((d, i) => [
-    getIcon(d.status as string),
+    getIcon(d.status),
     new Date(d.start_date).toLocaleDateString(),
     new Date(d.end_date).toLocaleDateString(),
-    territoriesList().find((t) => t._id === d.territory_id)?.name ?? d.territory_id,
+    territoriesList().find((t) => t._id === Number(d.territory_id))?.name ?? d.territory_id,
     d.name,
     `${(Number(d.incentive_sum) / 100).toLocaleString()} €`,
     `${(Number(d.max_amount) / 100).toLocaleString()} €`,

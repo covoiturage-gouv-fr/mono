@@ -1,5 +1,4 @@
-import { getApiUrl } from "@/helpers/api";
-import { useApi } from "@/hooks/useApi";
+import { useOperatorsGraph } from "@/hooks/api";
 import { type Periods } from "@/interfaces/vizInterface";
 import { fr } from "@codegouvfr/react-dsfr";
 import { Tag } from "@codegouvfr/react-dsfr/Tag";
@@ -21,8 +20,7 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, T
 
 export default function OperatorsGraph(props: { title: string; campaignId: number }) {
   const [period, setPeriod] = useState<Periods>("month");
-  const url = getApiUrl("v3", `dashboard/operators/${period}/?campaign_id=${props.campaignId}`);
-  const { data } = useApi<Record<string, string | number>[]>(url);
+  const { data } = useOperatorsGraph({ campaign_id: props.campaignId, period });
   if (!data || data.length === 0) {
     return <></>;
   }

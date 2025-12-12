@@ -1,9 +1,8 @@
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+
+import { getApiUrl } from "@/helpers/api";
 import { useCallback, useState } from "react";
 import { ZodError, type ZodSchema, type ZodType } from "zod";
-import { getApiUrl } from "../helpers/api";
 
 export const formatErrors = (
   formattedErrors: Record<string, string[] | undefined>,
@@ -101,7 +100,7 @@ export const useActionsModal = <T extends Record<string, unknown>>() => {
             break;
         }
         const response = await fetch(request.url, request.params);
-        const res = await response.json();
+        const res = await response.json() as T & { message?: string };
         if (!response.ok) {
           throw new Error(res.message ?? "Une erreur est survenue");
         }

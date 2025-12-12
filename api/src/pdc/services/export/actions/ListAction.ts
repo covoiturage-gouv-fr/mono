@@ -12,6 +12,10 @@ import { TerritoryServiceInterfaceResolver } from "../services/TerritoryService.
     hasPermissionMiddleware("common.export.list"),
     ["validate", alias],
   ],
+  apiRoute: {
+    path: "/export/list",
+    method: "POST",
+  },
 })
 export class listAction extends AbstractAction {
   constructor(

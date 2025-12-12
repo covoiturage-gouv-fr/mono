@@ -14,6 +14,10 @@ import { alias } from "../contracts/fetch.schema.ts";
     "validate",
     alias,
   ]],
+  apiRoute: {
+    path: "/company/fetch",
+    method: "POST",
+  },
 })
 export class FetchAction extends AbstractAction {
   constructor(
@@ -23,7 +27,8 @@ export class FetchAction extends AbstractAction {
     super();
   }
 
-  public override async handle(siret: ParamsInterface): Promise<ResultInterface> {
+  public override async handle(params: ParamsInterface): Promise<ResultInterface> {
+    const siret = typeof params === "string" ? params : params.siret;
     const data = await this.ds.find(siret);
     await this.repository.updateOrCreate(data);
 

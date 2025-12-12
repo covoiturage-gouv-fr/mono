@@ -6,7 +6,7 @@ import { FetchAction } from "./actions/FetchAction.ts";
 import { FindAction } from "./actions/FindAction.ts";
 import { FetchCommand } from "./commands/FetchCommand.ts";
 import { config } from "./config/index.ts";
-import { binding as fetchBinding } from "./contracts/fetch.schema.ts";
+import { binding as fetchBinding, bindingCommand as fetchBindingCommand } from "./contracts/fetch.schema.ts";
 import { binding as findBinding } from "./contracts/find.schema.ts";
 import { CompanyDataSourceProvider } from "./providers/CompanyDataSourceProvider.ts";
 import { CompanyRepositoryProvider } from "./providers/CompanyRepositoryProvider.ts";
@@ -14,7 +14,7 @@ import { CompanyRepositoryProvider } from "./providers/CompanyRepositoryProvider
 @serviceProvider({
   config,
   providers: [CompanyRepositoryProvider, CompanyDataSourceProvider],
-  validator: [fetchBinding, findBinding],
+  validator: [fetchBinding, fetchBindingCommand, findBinding],
   middlewares: [...defaultMiddlewareBindings, [
     "validate",
     ValidatorMiddleware,

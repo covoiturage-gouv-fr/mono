@@ -1,11 +1,11 @@
 import AlertMessage from "@/components/common/AlertMessage";
 import { Modal } from "@/components/common/Modal";
 import Pagination from "@/components/common/Pagination";
-import { Config } from "@/config";
 import { getApiUrl } from "@/helpers/api";
 import { formatErrors, useActionsModal } from "@/hooks/useActionsModal";
 import { useApi } from "@/hooks/useApi";
 import { useUrlSearch } from "@/hooks/useUrlSearch";
+import { type AuthContextProps } from "@/interfaces/auth";
 import type { Company, TerritoriesInterface, TerritorySelectorsInterface } from "@/interfaces/dataInterface";
 import { useAuth } from "@/providers/AuthProvider";
 import { fr } from "@codegouvfr/react-dsfr";
@@ -17,7 +17,7 @@ import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 
 export default function TerritoriesTable(props: { title: string; id: number | null }) {
-  const { user } = useAuth();
+  const { user }: AuthContextProps = useAuth();
   const [currentPage, setCurrentPage] = useState(1);
   const { search, debouncedSearch, onChangeSearch: setSearchValue } = useUrlSearch();
   const [selector, setSelector] = useState<TerritorySelectorsInterface>();
@@ -61,17 +61,6 @@ export default function TerritoriesTable(props: { title: string; id: number | nu
         key={d._id}
         buttons={[
           {
-            children: "modifier",
-            iconId: "fr-icon-refresh-line",
-            priority: "secondary",
-            onClick: () => {
-              modal.setCurrentRow(d);
-              modal.setErrors({});
-              modal.setOpenModal(true);
-              modal.setTypeModal("update");
-            },
-          },
-          {
             children: "supprimer",
             iconId: "fr-icon-delete-bin-line",
             onClick: () => {
@@ -91,33 +80,25 @@ export default function TerritoriesTable(props: { title: string; id: number | nu
     siret: z.string().regex(/^\d{14}$/, { message: "Le SIRET doit contenir 14 chiffres" }),
   });
   const fetchCompany = async (siret: string): Promise<Response> => {
-    return fetch(`${Config.get<string>("auth.domain")}/rpc?methods=company:fetch`, {
+    return await fetch(getApiUrl("v3", "company/fetch"), {
       credentials: "include",
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        jsonrpc: "2.0",
-        method: "company:fetch",
-        params: siret,
-        id: 1,
-      }),
+      body: JSON.stringify({ siret }),
     });
   };
 
   const findGeoBySiren = async (siret: string): Promise<Response> => {
-    return await fetch(`${Config.get<string>("auth.domain")}/rpc?methods=territory:findGeoBySiren`, {
+    return await fetch(getApiUrl("v3", "territory/findGeoBySiren"), {
       credentials: "include",
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        jsonrpc: "2.0",
-        method: "territory:findGeoBySiren",
-        params: { siren: siret.substring(0, 9) },
-        id: 1,
+        siren: siret.substring(0, 9),
       }),
     });
   };
@@ -153,7 +134,7 @@ export default function TerritoriesTable(props: { title: string; id: number | nu
           request.params.method = "POST";
           request.params.body = JSON.stringify({
             ...modal.currentRow,
-            company_id: companyBody.result.data._id,
+            company_id: companyBody._id,
             selector: selector,
           });
         } else {
@@ -164,7 +145,7 @@ export default function TerritoriesTable(props: { title: string; id: number | nu
     }
     const response = await fetch(request.url, request.params);
     if (!response.ok) {
-      const res = await response.json();
+      const res = (await response.json()) as { message?: string };
       throw new Error(res?.message ?? "Une erreur est survenue");
     }
     return;
@@ -175,15 +156,15 @@ export default function TerritoriesTable(props: { title: string; id: number | nu
       if (!modal.errors?.siret && modal.currentRow.siret) {
         const geoResponse = await findGeoBySiren(modal.currentRow.siret as string);
         if (geoResponse.ok) {
-          const body = await geoResponse.json();
-          if (body?.result?.data?.aom_siren) {
+          const body = (await geoResponse.json()) as { aom_siren: string; aom_name: string };
+          if (body.aom_siren && body.aom_name) {
             modal.setCurrentRow({
               ...modal.currentRow,
-              name: body.result.data.aom_name,
+              name: body.aom_name,
             });
-            modal.validateInputChange(formSchema, "name", body.result.data.aom_name as string);
+            modal.validateInputChange(formSchema, "name", body.aom_name);
             setSelector({
-              aom: [body.result.data.aom_siren],
+              aom: [body.aom_siren],
             });
           }
         }
@@ -227,7 +208,7 @@ export default function TerritoriesTable(props: { title: string; id: number | nu
         />
       )}
       <h3 className={fr.cx("fr-callout__title")}>{props.title}</h3>
-      {user?.role === "registry.admin" && (
+      {user && user.role === "registry.admin" && (
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "1rem" }}>
           <Button
             iconId="fr-icon-add-circle-line"
@@ -250,10 +231,7 @@ export default function TerritoriesTable(props: { title: string; id: number | nu
             nativeInputProps={{
               type: "text",
               value: search ?? "",
-              onChange: (e) =>
-                onChangeSearch(
-                  e.target.value,
-                ),
+              onChange: (e) => onChangeSearch(e.target.value),
             }}
           />
         </div>
@@ -299,9 +277,10 @@ export default function TerritoriesTable(props: { title: string; id: number | nu
               />
             </>
           )}
-          {modal.typeModal === "delete" &&
+          {
             // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-            `Êtes-vous sûr de vouloir supprimer l'opérateur ${modal.currentRow?.name} ?`}
+            modal.typeModal === "delete" && `Êtes-vous sûr de vouloir supprimer l'opérateur ${modal.currentRow?.name} ?`
+          }
         </>
       </Modal>
     </>

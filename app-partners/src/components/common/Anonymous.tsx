@@ -1,6 +1,6 @@
 "use client";
+import { useAuth } from "@/providers/AuthProvider";
 import Alert from "@codegouvfr/react-dsfr/Alert";
-import { useAuth } from "../../providers/AuthProvider";
 
 export default function Anonymous() {
   const { user } = useAuth();
@@ -12,9 +12,8 @@ export default function Anonymous() {
           severity="warning"
           description={
             <p>
-              Vous êtes identifé en tant qu&apos;utilisateur anonyme. Veuillez
-              contacter votre administrateur afin qu&apos;il associe votre
-              compte ProConnect avec votre compte RPC
+              Vous êtes identifé en tant qu&apos;utilisateur anonyme. Veuillez contacter votre administrateur afin
+              qu&apos;il associe votre compte ProConnect avec votre compte RPC
             </p>
           }
         />

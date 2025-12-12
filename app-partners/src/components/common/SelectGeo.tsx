@@ -1,11 +1,11 @@
 "use client";
 import { castPerimeterType, fetchSearchAPI } from "@/helpers/search";
+import { type PerimeterType } from "@/interfaces/searchInterface";
 import { fr } from "@codegouvfr/react-dsfr";
 import Tag from "@codegouvfr/react-dsfr/Tag";
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import { useState } from "react";
-import { type PerimeterType } from "../../interfaces/searchInterface";
 
 export default function SelectGeo(props: {
   defaultValue?: string;

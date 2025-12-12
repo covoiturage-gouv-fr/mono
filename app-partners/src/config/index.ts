@@ -62,7 +62,9 @@ export const Config = {
   get<T>(key: string, defaultValue?: T): T {
     let _value: unknown = _configuration;
     for (const part of key.split(".")) {
-      _value = _value instanceof Map && _value.has(part) ? _value.get(part) : undefined;
+      _value = _value instanceof Map && _value.has(part)
+        ? _value.get(part)
+        : undefined;
     }
     if (typeof _value === "undefined") {
       if (typeof defaultValue === "undefined") {
