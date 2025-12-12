@@ -1,21 +1,21 @@
 "use client";
+import DescriptiveSheetUrlEditor from "@/components/campaign/DescriptiveSheetUrlEditor";
+import Loading from "@/components/layout/Loading";
+import { Config } from "@/config";
+import { useApi } from "@/hooks/useApi";
+import { Campaign } from "@/interfaces/campaignInterface";
+import { useAuth } from "@/providers/AuthProvider";
 import { fr } from "@codegouvfr/react-dsfr";
-import { notFound, useRouter } from "next/navigation";
+import { notFound, useRouter, useSearchParams } from "next/navigation";
 import { useMemo } from "react";
-import DescriptiveSheetUrlEditor from "../../../../../components/campaign/DescriptiveSheetUrlEditor";
-import Loading from "../../../../../components/layout/Loading";
-import { Config } from "../../../../../config";
-import { useApi } from "../../../../../hooks/useApi";
-import { Campaign } from "../../../../../interfaces/campaignInterface";
-import { useAuth } from "../../../../../providers/AuthProvider";
-import ApdfTable from "./ApdfTable";
+import APDFTable from "./APDFTable";
 import JourneysGraph from "./graphs/JourneysGraph";
 import OperatorsGraph from "./graphs/OperatorsGraph";
 
-export default function CampaignDetailsClient({ id }: { id: string }) {
+export default function CampaignDetails() {
   const { user, simulatedRole } = useAuth();
   const router = useRouter();
-
+  const params = useSearchParams();
   const formatDate = (dateStr: string): string => {
     const date = new Date(dateStr);
     return isNaN(date.getTime()) ? "Date invalide" : date.toLocaleDateString("fr-FR");
@@ -31,11 +31,11 @@ export default function CampaignDetailsClient({ id }: { id: string }) {
       body: JSON.stringify({
         jsonrpc: "2.0",
         method: "campaign:find",
-        params: { _id: Number(id) },
+        params: { _id: Number(params.get("id")) },
         id: 1,
       }),
     }),
-    [id],
+    [params.get("id")],
   );
 
   const { data, loading, error } = useApi<{
@@ -50,15 +50,18 @@ export default function CampaignDetailsClient({ id }: { id: string }) {
   if (!currentCampaign || error) notFound();
   return (
     <>
-      <a
-        href="#"
-        className={fr.cx("fr-link", "fr-icon-arrow-right-line", "fr-link--icon-right")}
-        target="_self"
-        onClick={() => router.push("/activite/campagnes")}
-      >
-        Revenir à toutes les campagnes
-      </a>
-      <h3 className={fr.cx("fr-callout__title", "fr-mt-2w")}>Campagne {currentCampaign.name}</h3>
+      <div className="flex justify-between items-center">
+        <h2 className={fr.cx("fr-callout__title", "fr-mt-2w")}>Campagne {currentCampaign.name}</h2>
+        <a
+          href="#"
+          className={fr.cx("fr-link", "fr-icon-arrow-left-s-line", "fr-link--icon-left")}
+          target="_self"
+          onClick={() => router.push("/activite/campagnes")}
+          style={{ marginLeft: "auto" }}
+        >
+          Revenir à la liste des campagnes
+        </a>
+      </div>
       <div className={fr.cx("fr-callout")}>
         <div className={fr.cx("fr-callout__title")}>{currentCampaign.territory_name}</div>
         <div>
@@ -85,8 +88,8 @@ export default function CampaignDetailsClient({ id }: { id: string }) {
       {["registry", "territory"].includes(user?.role.split(".")[0] ?? "") && simulatedRole !== "operator" && (
         <OperatorsGraph title="Evolution des trajets par opérateurs" campaignId={currentCampaign._id} />
       )}
-      <ApdfTable
-        title="Fichiers d'appels de fonds recalculés par covoiturage.beta.gouv"
+      <APDFTable
+        title="Appels de fonds calculés par le RPC"
         campaignId={currentCampaign._id}
         operatorId={user?.operator_id ?? null}
       />

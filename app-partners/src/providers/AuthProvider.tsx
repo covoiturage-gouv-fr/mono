@@ -1,8 +1,8 @@
 "use client";
+import { getUserSession } from "@/helpers/auth";
 import { type AuthContextProps } from "@/interfaces/providersInterface";
 import { usePathname, useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useState } from "react";
-import { Config } from "../config";
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -15,10 +15,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   const checkAuth = async () => {
-    const response = await fetch(`${Config.get<string>("auth.domain")}/auth/me`, { credentials: "include" });
-
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const data: AuthContextProps["user"] = await response.json();
+    const data = await getUserSession();
     if (data?.role && data?.role !== "anonymous") {
       setIsAuth(true);
       setUser(data);

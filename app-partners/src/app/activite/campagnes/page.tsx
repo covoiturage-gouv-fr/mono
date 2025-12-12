@@ -92,7 +92,7 @@ export default function TabCampaigns() {
       key={i}
       size="small"
       linkProps={{
-        href: "/activite/campagnes/details/" + d._id,
+        href: "/activite/campagnes/details?id=" + d._id,
       }}
     >
       Détails
@@ -168,7 +168,7 @@ export default function TabCampaigns() {
             </>
           ) : (
             <Alert
-              title={"Pas de campagnes en cours"}
+              title={"Pas de campagne en cours"}
               severity="info"
               description={
                 <p>

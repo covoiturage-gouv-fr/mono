@@ -1,6 +1,8 @@
 "use client";
 import SelectGeo from "@/components/common/SelectGeo";
+import SelectTerritory from "@/components/common/SelectTerritory";
 import { getApiUrl } from "@/helpers/api";
+import { type PerimeterType } from "@/interfaces/searchInterface";
 import { useAuth } from "@/providers/AuthProvider";
 import { fr } from "@codegouvfr/react-dsfr";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
@@ -11,8 +13,6 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs, { type Dayjs } from "dayjs";
 import "dayjs/locale/fr";
 import { useState } from "react";
-import SelectTerritory from "../../../components/common/SelectTerritory";
-import { type PerimeterType } from "../../../interfaces/searchInterface";
 
 interface ParamsInterfaceV3 {
   tz: string;
