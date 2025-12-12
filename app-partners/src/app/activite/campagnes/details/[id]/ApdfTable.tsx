@@ -10,7 +10,7 @@ export default function ApdfTable(props: { title: string; campaignId: number; op
   const { user, simulate } = useAuth();
 
   const { data, loading, error } = useApdfList({
-    ...(props.campaignId && { campaign_id: props.campaignId }),
+    campaign_id: props.campaignId,
     ...(props.operatorId && { operator_id: props.operatorId }),
   });
 
