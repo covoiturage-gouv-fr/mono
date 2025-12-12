@@ -1,16 +1,17 @@
 import { provider } from "@/ilos/common/index.ts";
-import { LegacyPostgresConnection } from "@/ilos/connection-postgres/index.ts";
+import { DenoPostgresConnection } from "@/ilos/connection-postgres/index.ts";
+import sql, { raw } from "@/lib/pg/sql.ts";
 import { ExportLog, ExportLogEvent } from "../models/ExportLog.ts";
 
 export abstract class LogRepositoryInterfaceResolver {
   public async add(
-    export_id: number,
-    type: ExportLogEvent,
-    message: string,
+    _export_id: number,
+    _type: ExportLogEvent,
+    _message: string,
   ): Promise<void> {
     throw new Error("Not implemented");
   }
-  public async list(export_id: number): Promise<ExportLog[]> {
+  public async list(_export_id: number): Promise<ExportLog[]> {
     throw new Error("Not implemented");
   }
 }
@@ -21,24 +22,26 @@ export abstract class LogRepositoryInterfaceResolver {
 export class LogRepository {
   protected readonly table = "export.logs";
 
-  constructor(protected connection: LegacyPostgresConnection) {}
+  constructor(protected connection: DenoPostgresConnection) {}
 
   public async add(
     export_id: number,
     type: ExportLogEvent,
     message: string,
   ): Promise<void> {
-    await this.connection.getClient().query<any>({
-      text: `INSERT INTO ${this.table} (export_id, type, message) VALUES ($1, $2, $3)`,
-      values: [export_id, type, message],
-    });
+    await this.connection.query(sql`
+      INSERT INTO ${raw(this.table)} (export_id, type, message)
+      VALUES (${export_id}, ${type}, ${message})
+    `);
   }
 
   public async list(export_id: number): Promise<ExportLog[]> {
-    const { rows } = await this.connection.getClient().query<any>({
-      text: `SELECT * FROM ${this.table} WHERE export_id = $1 ORDER BY created_at DESC`,
-      values: [export_id],
-    });
+    const rows = await this.connection.query(sql`
+      SELECT *
+      FROM ${raw(this.table)}
+      WHERE export_id = ${export_id}
+      ORDER BY created_at DESC
+    `);
 
     return rows.map(ExportLog.fromJSON);
   }

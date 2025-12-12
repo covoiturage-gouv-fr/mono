@@ -1,7 +1,7 @@
-import { provider } from "../../../../ilos/common/index.ts";
-import { LegacyPostgresConnection } from "../../../../ilos/connection-postgres/index.ts";
-import { logger } from "../../../../lib/logger/index.ts";
-import sql, { raw } from "../../../../lib/pg/sql.ts";
+import { provider } from "@/ilos/common/index.ts";
+import { DenoPostgresConnection } from "@/ilos/connection-postgres/index.ts";
+import { logger } from "@/lib/logger/index.ts";
+import sql, { join, raw } from "@/lib/pg/sql.ts";
 import { staleDelay } from "../config/export.ts";
 import { Export, ExportStatus } from "../models/Export.ts";
 import { ExportRecipient } from "../models/ExportRecipient.ts";
@@ -23,10 +23,10 @@ export abstract class ExportRepositoryInterfaceResolver {
    * Recipients are added to the export if passed in the data and
    * the creator is added as a recipient if not already in the list.
    *
-   * @param {ExportCreateData} data
+   * @param {ExportCreateData} _data
    * @returns {Promise<Export>}
    */
-  public async create(data: ExportCreateData): Promise<Export> {
+  public async create(_data: ExportCreateData): Promise<Export> {
     throw new Error("Not implemented");
   }
 
@@ -47,7 +47,7 @@ export abstract class ExportRepositoryInterfaceResolver {
   public async get(id: string): Promise<Export>;
 
   // Method overloading implementation
-  public async get(id: number | string): Promise<Export> {
+  public async get(_id: number | string): Promise<Export> {
     throw new Error("Not implemented");
   }
 
@@ -57,21 +57,21 @@ export abstract class ExportRepositoryInterfaceResolver {
    * State information can be updated with this method, not the configuration
    * of the initial export.
    *
-   * @param {number} id
-   * @param {ExportUpdateData} data
+   * @param {number} _id
+   * @param {ExportUpdateData} _data
    * @returns {Promise<void>}
    */
-  public async update(id: number, data: ExportUpdateData): Promise<void> {
+  public async update(_id: number, _data: ExportUpdateData): Promise<void> {
     throw new Error("Not implemented");
   }
 
   /**
    * Hard delete an export by its id
    *
-   * @param {number} id
+   * @param {number} _id
    * @returns {Promise<void>}
    */
-  public async delete(id: number): Promise<void> {
+  public async delete(_id: number): Promise<void> {
     throw new Error("Not implemented");
   }
 
@@ -81,32 +81,32 @@ export abstract class ExportRepositoryInterfaceResolver {
    * @todo add pagination
    * @todo add filters (user_id, status, ...)
    *
-   * @param filters
+   * @param _filters
    * @returns {Promise<Export[]>}
    */
-  public async list(filters?: { created_by?: number; days?: number }): Promise<Export[]> {
+  public async list(_filters?: { created_by?: number; days?: number }): Promise<Export[]> {
     throw new Error("Not implemented");
   }
 
   /**
    * Set the status of an export
    *
-   * @param {number} id
-   * @param {ExportStatus} status
+   * @param {number} _id
+   * @param {ExportStatus} _status
    * @returns {Promise<void>}
    */
-  public async status(id: number, status: ExportStatus): Promise<void> {
+  public async status(_id: number, _status: ExportStatus): Promise<void> {
     throw new Error("Not implemented");
   }
 
   /**
    * Set the error context of an export
    *
-   * @param {number} id
-   * @param {string | Error} error
+   * @param {number} _id
+   * @param {string | Error} _error
    * @returns {Promise<void>}
    */
-  public async error(id: number, error: string): Promise<void> {
+  public async error(_id: number, _error: string): Promise<void> {
     throw new Error("Not implemented");
   }
 
@@ -116,10 +116,10 @@ export abstract class ExportRepositoryInterfaceResolver {
    * to be injected in the carpool repository to be able
    * to update the `progress` field of the export as the export is running
    *
-   * @param {number} id
+   * @param {number} _id
    * @returns {ExportProgress}
    */
-  public async progress(id: number): Promise<ExportProgress> {
+  public async progress(_id: number): Promise<ExportProgress> {
     throw new Error("Not implemented");
   }
 
@@ -137,9 +137,9 @@ export abstract class ExportRepositoryInterfaceResolver {
   /**
    * Get the recipients of an export
    *
-   * @param id Export _id
+   * @param _id Export _id
    */
-  public async recipients(id: number): Promise<ExportRecipient[]> {
+  public async recipients(_id: number): Promise<ExportRecipient[]> {
     throw new Error("Not implemented");
   }
 
@@ -148,12 +148,12 @@ export abstract class ExportRepositoryInterfaceResolver {
    *
    * Recipients will receive notifications when the export is done.
    *
-   * @param {number} export_id
-   * @param {ExportRecipient} recipient
+   * @param {number} _export_id
+   * @param {ExportRecipient} _recipient
    */
   public async addRecipient(
-    export_id: number,
-    recipient: ExportRecipient,
+    _export_id: number,
+    _recipient: ExportRecipient,
   ): Promise<void> {
     throw new Error("Not implemented");
   }
@@ -177,21 +177,19 @@ export class ExportRepository {
   protected readonly recipientsTable = "export.recipients";
 
   constructor(
-    protected connection: LegacyPostgresConnection,
+    protected connection: DenoPostgresConnection,
     protected logger: LogServiceInterfaceResolver,
   ) {}
 
   public async create(data: ExportCreateData): Promise<Export> {
     const { created_by, target, params, recipients } = data;
 
-    const { rows } = await this.connection.getClient().query({
-      text: `
-        INSERT INTO ${this.exportsTable} (created_by, target, params)
-        VALUES ($1, $2, $3)
+    const rows = await this.connection.query(sql`
+        INSERT INTO ${raw(this.exportsTable)}
+        (created_by, target, params)
+        VALUES (${created_by}, ${target}, ${JSON.stringify(params.get())}::json)
         RETURNING *
-      `,
-      values: [created_by, target, params.get()],
-    });
+      `);
     const exp = Export.fromJSON(rows[0]);
 
     // add recipients
@@ -207,59 +205,48 @@ export class ExportRepository {
 
   public async get(id: number | string): Promise<Export> {
     const field = typeof id === "number" ? "_id" : "uuid";
-    const { rows } = await this.connection.getClient().query({
-      text: `SELECT * FROM ${this.exportsTable} WHERE ${field} = $1`,
-      values: [id],
-    });
+    const rows = await this.connection.query(sql`
+      SELECT *
+      FROM ${raw(this.exportsTable)}
+      WHERE ${raw(field)} = ${id}
+    `);
     return Export.fromJSON(rows[0]);
   }
 
   public async update(id: number, data: ExportUpdateData): Promise<void> {
-    await this.connection.getClient().query({
-      text: `UPDATE ${this.exportsTable} SET ${
-        Object.keys(data)
-          .map((key, index) => `${key} = $${index + 2}`)
-          .join(", ")
-      } WHERE _id = $1`,
-      values: [id, ...Object.values(data)],
-    });
+    const props = Object.keys(data).map((key) => sql`${raw(key)} = ${data[key as keyof ExportUpdateData]}`);
+    const query = sql`
+      UPDATE ${raw(this.exportsTable)}
+      SET ${join(props)}
+      WHERE _id = ${id}
+    `;
+    await this.connection.query(query);
   }
 
   public async delete(id: number): Promise<void> {
-    await this.connection.getClient().query({
-      text: `DELETE FROM ${this.exportsTable} WHERE _id = $1`,
-      values: [id],
-    });
+    await this.connection.query(sql`DELETE FROM ${raw(this.exportsTable)} WHERE _id = ${id}`);
   }
 
   public async list(filters?: { created_by?: number; days?: number }): Promise<Export[]> {
-    const conditions: string[] = [];
-    const values: any[] = [];
+    const rows = await this.connection.query(sql`
+      SELECT *
+      FROM ${raw(this.exportsTable)}
+      WHERE true
+      ${filters?.created_by ? sql`AND created_by = ${filters.created_by}` : sql``}
+      ${filters?.days ? sql`AND created_at >= NOW() - INTERVAL '${filters.days} days'` : sql``}
+      ORDER BY created_at DESC
+    `);
 
-    if (filters?.created_by) {
-      conditions.push(`created_by = $${values.length + 1}`);
-      values.push(filters.created_by);
-    }
-
-    if (filters?.days) {
-      conditions.push(`created_at >= NOW() - INTERVAL '${filters.days} days'`);
-    }
-
-    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
-
-    const { rows } = await this.connection.getClient().query({
-      text: `SELECT * FROM ${this.exportsTable} ${whereClause} ORDER BY created_at DESC`,
-      values,
-    });
     return rows.map(Export.fromJSON);
   }
 
   public async status(id: number, status: ExportStatus): Promise<void> {
     // update the export status
-    await this.connection.getClient().query({
-      text: `UPDATE ${this.exportsTable} SET status = $1::text WHERE _id = $2`,
-      values: [status, id],
-    });
+    await this.connection.query(sql`
+      UPDATE ${raw(this.exportsTable)}
+      SET status = ${status}::text
+      WHERE _id = ${id}
+    `);
 
     // log depending on the status
     switch (status) {
@@ -283,40 +270,42 @@ export class ExportRepository {
     await this.logger.failure(id, message);
 
     // update the export status
-    await this.connection.getClient().query({
-      text: `UPDATE ${this.exportsTable} SET status = $1, error = $2::json WHERE _id = $3`,
-      values: [ExportStatus.FAILURE, { message, stack }, id],
-    });
+    await this.connection.query(sql`
+      UPDATE ${raw(this.exportsTable)}
+      SET status = ${ExportStatus.FAILURE},
+          error = ${JSON.stringify({ message, stack })}::json
+      WHERE _id = ${id}
+    `);
   }
 
   public async progress(id: number): Promise<ExportProgress> {
     return async (progress: number): Promise<void> => {
       logger.info(`Export #${id} progress: ${progress}%`);
 
-      await this.connection.getClient().query({
-        text: `UPDATE ${this.exportsTable} SET progress = $1::int WHERE _id = $2`,
-        values: [progress, id],
-      });
+      await this.connection.query(sql`
+        UPDATE ${raw(this.exportsTable)}
+        SET progress = ${progress}::int
+        WHERE _id = ${id}
+      `);
     };
   }
 
   public async pickPending(): Promise<Export | null> {
-    const { rows, rowCount } = await this.connection.getClient().query({
-      text: `
-        SELECT * FROM ${this.exportsTable}
+    const rows = await this.connection.query(sql`
+        SELECT * FROM ${raw(this.exportsTable)}
         WHERE status = 'pending'
         ORDER BY created_at ASC
         LIMIT 1
-      `,
-    });
-    return rowCount ? Export.fromJSON(rows[0]) : null;
+      `);
+    return rows.length ? Export.fromJSON(rows[0]) : null;
   }
 
   public async recipients(id: number): Promise<ExportRecipient[]> {
-    const { rows } = await this.connection.getClient().query({
-      text: `SELECT * FROM ${this.recipientsTable} WHERE export_id = $1`,
-      values: [id],
-    });
+    const rows = await this.connection.query<ExportRecipient>(sql`
+      SELECT *
+      FROM ${raw(this.recipientsTable)}
+      WHERE export_id = ${id}
+    `);
 
     return rows.map(ExportRecipient.fromJSON);
   }
@@ -328,18 +317,16 @@ export class ExportRepository {
     if (!export_id) throw new Error("Export _id is required");
     if (!recipient.email) throw new Error("Recipient email is required");
 
-    await this.connection.getClient().query({
-      text: `
-        INSERT INTO ${this.recipientsTable} (export_id, email, fullname, message)
-        VALUES ($1, $2, $3, $4)
-      `,
-      values: [
-        export_id,
-        recipient.email,
-        recipient.fullname,
-        recipient.message,
-      ],
-    });
+    await this.connection.query(sql`
+      INSERT INTO ${raw(this.recipientsTable)}
+      (export_id, email, fullname, message)
+      VALUES (
+        ${export_id},
+        ${recipient.email},
+        ${recipient.fullname},
+        ${recipient.message}
+      )
+    `);
   }
 
   public async failStaleExports(): Promise<void> {
@@ -350,6 +337,6 @@ export class ExportRepository {
         AND created_at < NOW() - ${staleDelay}::interval
     `;
 
-    await this.connection.getClient().query(query);
+    await this.connection.query(query);
   }
 }

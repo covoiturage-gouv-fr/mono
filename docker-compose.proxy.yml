@@ -41,7 +41,6 @@ services:
     environment:
       APP_CORS: ${APP_CORS:-https://app.covoiturage.test}
       APP_API_URL: ${APP_API_URL:-https://api.covoiturage.test}
-      APP_DASHBOARD_URL: ${APP_DASHBOARD_URL:-https://app.covoiturage.test}
       APP_DASHBOARD_V2_URL: ${APP_DASHBOARD_V2_URL:-https://app.covoiturage.test}
       DEX_REDIRECT_URL: ${DEX_REDIRECT_URL:-https://api.covoiturage.test/auth/callback}
       PROCONNECT_REDIRECT_URL: ${PROCONNECT_REDIRECT_URL:-https://api.covoiturage.test/auth/login/callback}
@@ -58,16 +57,6 @@ services:
       - 'traefik.http.routers.api-http.rule=Host(`api.covoiturage.test`)'
       - 'traefik.http.routers.api-http.entrypoints=web'
       - 'traefik.http.services.api.loadbalancer.server.port=${PORT:-8080}'
-
-  # dashboard:
-  #   expose:
-  #     - 4200
-  #   labels:
-  #     - 'traefik.enable=true'
-  #     - 'traefik.http.routers.dashboard-https.tls=true'
-  #     - 'traefik.http.routers.dashboard-https.rule=Host(`app.covoiturage.test`)'
-  #     - 'traefik.http.routers.dashboard-https.entrypoints=websecure'
-  #     - 'traefik.http.services.dashboard.loadbalancer.server.port=4200'
 
   s3:
     environment:

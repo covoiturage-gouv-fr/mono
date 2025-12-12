@@ -7,6 +7,8 @@ import { ListCommand } from "@/pdc/proxy/commands/ListCommand.ts";
 import { AuthServiceProvider } from "@/pdc/services/auth/AuthServiceProvider.ts";
 import { MonitoringServiceProvider } from "@/pdc/services/monitoring/MonitoringServiceProvider.ts";
 import { DenoPostgresConnection, LegacyPostgresConnection } from "../../ilos/connection-postgres/index.ts";
+import { NotificationMailTransporter } from "../providers/notification/NotificationMailTransporter.ts";
+import { HandlebarsTemplateProvider } from "../providers/template/HandlebarsTemplateProvider.ts";
 import { AcquisitionServiceProvider } from "../services/acquisition/AcquisitionServiceProvider.ts";
 import { APDFServiceProvider } from "../services/apdf/APDFServiceProvider.ts";
 import { ApplicationServiceProvider } from "../services/application/ApplicationServiceProvider.ts";
@@ -20,7 +22,6 @@ import { ObservatoryServiceProvider } from "../services/observatory/ObservatoryS
 import { OperatorServiceProvider } from "../services/operator/OperatorServiceProvider.ts";
 import { PolicyServiceProvider } from "../services/policy/PolicyServiceProvider.ts";
 import { TerritoryServiceProvider } from "../services/territory/TerritoryServiceProvider.ts";
-import { UserServiceProvider } from "../services/user/UserServiceProvider.ts";
 import { config } from "./config/index.ts";
 
 @kernel({
@@ -38,7 +39,6 @@ import { config } from "./config/index.ts";
     OperatorServiceProvider,
     PolicyServiceProvider,
     TerritoryServiceProvider,
-    UserServiceProvider,
     ObservatoryServiceProvider,
     DashboardServiceProvider,
     GeoServiceProvider,
@@ -47,6 +47,8 @@ import { config } from "./config/index.ts";
   providers: [
     SentryProvider,
     TokenProvider,
+    NotificationMailTransporter,
+    HandlebarsTemplateProvider,
     [RedisConnection, new RedisConnection(config.connections.redis)],
     [LegacyPostgresConnection, new LegacyPostgresConnection(config.connections.postgres)],
     [DenoPostgresConnection, new DenoPostgresConnection()],

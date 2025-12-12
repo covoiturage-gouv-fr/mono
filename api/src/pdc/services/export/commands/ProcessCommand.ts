@@ -1,5 +1,5 @@
-import { command, CommandInterface } from "../../../../ilos/common/index.ts";
-import { getPerformanceTimer, logger } from "../../../../lib/logger/index.ts";
+import { command, CommandInterface } from "@/ilos/common/index.ts";
+import { getPerformanceTimer, logger } from "@/lib/logger/index.ts";
 import { staleDelay } from "../config/export.ts";
 import { CSVWriter } from "../models/CSVWriter.ts";
 import { Export, ExportStatus } from "../models/Export.ts";
@@ -90,9 +90,12 @@ export class ProcessCommand implements CommandInterface {
       await this.exportRepository.status(_id, ExportStatus.SUCCESS);
       logger.info(`Export ${uuid} done in ${timer.stop()} ms`);
     } catch (e) {
-      await this.exportRepository.error(_id, e.message);
-      await this.notify.error({ ...exp, error: e.message });
-      await this.notify.support({ ...exp, error: e.message });
+      const message = e instanceof Error ? e.message : String(e);
+      logger.error(`Export ${uuid} failed: ${message}`);
+      e instanceof Error && logger.error(e.stack);
+      await this.exportRepository.error(_id, message);
+      await this.notify.error({ ...exp, error: message });
+      await this.notify.support({ ...exp, error: message });
     }
   }
 }

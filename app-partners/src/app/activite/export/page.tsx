@@ -14,7 +14,7 @@ import dayjs, { type Dayjs } from "dayjs";
 import "dayjs/locale/fr";
 import { useState } from "react";
 
-interface ParamsInterfaceV3 {
+interface ParamsInterface {
   tz: string;
   start_at: Date;
   end_at: Date;
@@ -94,7 +94,7 @@ export default function TabExport() {
   const [error, setError] = useState<string | null>(null);
 
   const handleExport = async () => {
-    const body: ParamsInterfaceV3 = {
+    const body: ParamsInterface = {
       tz: "Europe/Paris",
       start_at: forceHour(startDate, "start"),
       end_at: forceHour(endDate, "end"),

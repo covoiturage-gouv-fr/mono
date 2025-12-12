@@ -1,5 +1,5 @@
 import { ContextType } from "@/ilos/common/index.ts";
-import { UserInterface } from "../../services/user/contracts/common/interfaces/UserInterface.ts";
+import { UserInterface } from "../types/UserInterface.ts";
 
 export function castContext(
   user?: Partial<UserInterface>,

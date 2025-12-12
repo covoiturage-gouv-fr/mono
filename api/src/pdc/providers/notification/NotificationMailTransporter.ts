@@ -1,10 +1,9 @@
 import { ConfigInterfaceResolver, provider } from "@/ilos/common/index.ts";
+import { logger } from "@/lib/logger/index.ts";
+import { exit } from "@/lib/process/index.ts";
 import { TemplateInterface, TemplateProviderInterfaceResolver } from "@/pdc/providers/template/index.ts";
 import mjml2html from "dep:mjml";
 import mailer, { MailOptions } from "dep:nodemailer";
-
-import { logger } from "@/lib/logger/index.ts";
-import { exit } from "@/lib/process/index.ts";
 import {
   MailTemplateNotificationInterface,
   NotificationTransporterInterface,
@@ -21,11 +20,8 @@ interface NotificationOptions {
 @provider({
   identifier: NotificationTransporterInterfaceResolver,
 })
-export class NotificationMailTransporter implements
-  NotificationTransporterInterface<
-    MailTemplateNotificationInterface,
-    Partial<MailOptions>
-  > {
+export class NotificationMailTransporter
+  implements NotificationTransporterInterface<MailTemplateNotificationInterface, Partial<MailOptions>> {
   transporter: mailer.Transporter | null = null;
   protected options: NotificationOptions = {} as NotificationOptions;
 
@@ -36,9 +32,7 @@ export class NotificationMailTransporter implements
 
   async init(): Promise<void> {
     this.setOptionsFromConfig();
-    await this.createTransport(
-      this.config.get("notification.mail.verifySmtp", false),
-    );
+    await this.createTransport(this.config.get("notification.mail.verifySmtp", false) as boolean);
   }
 
   async destroy(): Promise<void> {
@@ -48,17 +42,21 @@ export class NotificationMailTransporter implements
   }
 
   protected setOptionsFromConfig(): void {
-    const fromFullname = this.config.get("notification.mail.from.name");
-    const fromEmail = this.config.get("notification.mail.from.email");
-    const toFullname = this.config.get("notification.mail.to.name");
-    const toEmail = this.config.get("notification.mail.to.email");
-    const debug = this.config.get("notification.mail.debug", false);
+    try {
+      const fromFullname = this.config.get("notification.mail.from.name");
+      const fromEmail = this.config.get("notification.mail.from.email");
+      const toFullname = this.config.get("notification.mail.to.name");
+      const toEmail = this.config.get("notification.mail.to.email");
+      const debug = this.config.get("notification.mail.debug", false) as boolean;
 
-    this.options = {
-      from: `${fromFullname} <${fromEmail}>`,
-      debugToOverride: `${toFullname} <${toEmail}>`,
-      debug,
-    };
+      this.options = {
+        from: `${fromFullname} <${fromEmail}>`,
+        debugToOverride: `${toFullname} <${toEmail}>`,
+        debug,
+      };
+    } catch (e) {
+      console.log(e.stack);
+    }
   }
 
   protected async createTransport(verify = false): Promise<void> {
@@ -69,7 +67,8 @@ export class NotificationMailTransporter implements
         try {
           await this.transporter.verify();
         } catch (e) {
-          logger.error("Failed to connect to SMTP server", e.message);
+          const message = e instanceof Error ? e.message : String(e);
+          logger.error("Failed to connect to SMTP server", message);
           exit(1);
         }
       }
@@ -87,29 +86,15 @@ export class NotificationMailTransporter implements
     });
   }
 
-  async send(
-    mail: MailTemplateNotificationInterface,
-    options = {},
-  ): Promise<void> {
-    const mailCtor = mail
-      .constructor as StaticMailTemplateNotificationInterface;
+  async send(mail: MailTemplateNotificationInterface, options = {}): Promise<void> {
+    const mailCtor = mail.constructor as StaticMailTemplateNotificationInterface;
 
-    if (
-      "message_html" in mail.data && typeof mail.data.message_html === "string"
-    ) {
-      mail.data.message_html = this.moustache(
-        mail.data.message_html,
-        mail.data,
-      );
+    if ("message_html" in mail.data && typeof mail.data.message_html === "string") {
+      mail.data.message_html = this.moustache(mail.data.message_html, mail.data);
     }
 
-    if (
-      "message_text" in mail.data && typeof mail.data.message_text === "string"
-    ) {
-      mail.data.message_text = this.moustache(
-        mail.data.message_text,
-        mail.data,
-      );
+    if ("message_text" in mail.data && typeof mail.data.message_text === "string") {
+      mail.data.message_text = this.moustache(mail.data.message_text, mail.data);
     }
 
     this.transporter && await this.transporter.sendMail({

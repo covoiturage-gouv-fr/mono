@@ -1,26 +1,13 @@
-import {
-  afterEach,
-  assert,
-  assertRejects,
-  beforeEach,
-  describe,
-  it,
-  sinon,
-} from "@/dev_deps.ts";
+import { afterEach, assert, assertRejects, beforeEach, describe, it, sinon } from "@/dev_deps.ts";
 import { InvalidParamsException } from "@/ilos/common/exceptions/index.ts";
 import { ConfigInterfaceResolver } from "@/ilos/common/index.ts";
 import { AjvValidator } from "./AjvValidator.ts";
-
-interface Context {
-  sandbox: sinon.SinonSandbox;
-  provider: AjvValidator;
-}
 
 describe("AjvValidator", () => {
   class FakeObject {
     constructor(data: Record<string, any>) {
       Reflect.ownKeys(data).forEach((key) => {
-        // @ts-ignore
+        // @ts-ignore untypable
         this[key] = data[key];
       });
     }

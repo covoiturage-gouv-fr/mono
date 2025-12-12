@@ -23,10 +23,7 @@ describe.skip("Notification", () => {
           port: env_or_int("INTEGRATION_MAILER_SMTP_PORT", 1025),
           secure: env_or_false("INTEGRATION_MAILER_SMTP_SECURE"),
           auth: {
-            user: env_or_fail(
-              "INTEGRATION_MAILER_SMTP_USER",
-              "test@example.com",
-            ),
+            user: env_or_fail("INTEGRATION_MAILER_SMTP_USER", "test@example.com"),
             pass: env_or_fail("INTEGRATION_MAILER_SMTP_PASS", "password"),
           },
         },
@@ -52,10 +49,10 @@ describe.skip("Notification", () => {
 
   it("should work", async () => {
     class TemplateText extends AbstractTemplate<{ word: string }> {
-      static template = "Hello {{word}}";
+      static override template = "Hello {{word}}";
     }
     class TemplateMJML extends AbstractTemplate<{ word: string }> {
-      static template = `       
+      static override template = `       
             <mjml>
                 <mj-body>
                     <mj-section>
@@ -66,14 +63,12 @@ describe.skip("Notification", () => {
         `;
     }
     class Notification extends AbstractMailNotification<{ word: string }> {
-      static subject = "Test";
-      static templateMJML = TemplateMJML;
-      static templateText = TemplateText;
+      static override subject = "Test";
+      static override templateMJML = TemplateMJML;
+      static override templateText = TemplateText;
     }
 
-    await transporter.send(
-      new Notification("fake <fake@example.com>", { word: "world!" }),
-    );
+    await transporter.send(new Notification("fake <fake@example.com>", { word: "world!" }));
     assert(true);
   });
 });

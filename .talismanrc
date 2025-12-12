@@ -10,6 +10,8 @@ fileignoreconfig:
     ignore_detectors: [filename, filecontent]
   - filename: .github/workflows/*.yml
     ignore_detectors: [filename, filecontent]
+  - filename: docker/**/Dockerfile
+    ignore_detectors: [filename, filecontent]
   - filename: api/src/lib/pg/sql.ts
     checksum: 34a1d26889326c6bd576b22b2b4de9ef2a10dcc6d36ee915b3c99028d378bd39
   - filename: app-attestation/src/app/services/pdfLimited.service.ts

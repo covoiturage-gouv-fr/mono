@@ -4,6 +4,7 @@ import * as cache from "./cache.ts";
 import * as dex from "./dex.ts";
 import * as jwt from "./jwt.ts";
 import * as kernel from "./kernel.ts";
+import * as notification from "./notification.ts";
 import * as sentry from "./sentry.ts";
 
 export const config = {
@@ -12,6 +13,7 @@ export const config = {
   dex,
   jwt,
   kernel,
+  notification,
   proxy,
   sentry,
 };

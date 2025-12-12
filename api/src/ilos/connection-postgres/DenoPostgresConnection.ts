@@ -209,32 +209,60 @@ export class DenoPostgresConnection
     read: (rowCount?: number) => AsyncGenerator<TResult[]>;
     [Symbol.asyncDispose]: () => Promise<void>;
   }> {
-    using client = await this.#pool!.connect();
+    // keep client alive for the lifetime of the cursor object
+    let disposed = false;
+    const client = await this.#pool!.connect();
+    const cursorName = DenoPostgresConnection.id("cursor");
 
     try {
-      // Create a transaction manually as client.createTransaction() fails with cursors
       await client.queryArray(`BEGIN`);
+      logger.debug(`[pg] creating cursor ${cursorName}`);
 
-      // Create a cursor
-      const cursorName = DenoPostgresConnection.id("cursor");
       await client.queryArray(`DECLARE ${cursorName} CURSOR FOR ${sql.text}`, sql.values);
 
-      return {
-        read: async function* (rowCount: number = 100): AsyncGenerator<TResult[]> {
-          let rows: TResult[] = [];
-          do {
-            ({ rows } = await client.queryObject<TResult>(`FETCH FORWARD ${rowCount} FROM ${cursorName}`));
-            if (rows.length) yield rows;
-          } while (rows.length);
-        },
-        [Symbol.asyncDispose]: async () => {
+      const dispose = async () => {
+        if (disposed) return;
+        disposed = true;
+
+        try {
           await client.queryArray(`CLOSE ${cursorName}`);
           await client.queryArray(`COMMIT`);
+        } catch (_e) {
+          try {
+            await client.queryArray(`ROLLBACK`);
+          } catch (_) {
+            // swallow rollback error
+          }
+        } finally {
+          client.release();
+        }
+      };
+
+      return {
+        [Symbol.asyncDispose]: dispose,
+        read: async function* (rowCount: number = 100): AsyncGenerator<TResult[]> {
+          try {
+            let rows: TResult[] = [];
+            do {
+              ({ rows } = await client.queryObject<TResult>(`FETCH FORWARD ${rowCount} FROM ${cursorName}`));
+              if (rows.length) yield rows;
+            } while (rows.length);
+          } finally {
+            await dispose();
+          }
         },
       };
     } catch (e) {
-      e instanceof Error && logger.error(`[pg] cursor error ${e.message}`);
-      await client.queryArray(`ROLLBACK`);
+      try {
+        await client.queryArray(`ROLLBACK`);
+      } catch (_) {
+        // ignore rollback failure
+      } finally {
+        client.release();
+      }
+
+      const message = e instanceof Error ? e.message : String(e);
+      logger.error(`[pg] cursor error ${message}`);
       throw e;
     }
   }

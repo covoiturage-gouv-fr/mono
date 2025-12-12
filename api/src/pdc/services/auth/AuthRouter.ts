@@ -5,6 +5,7 @@ import express, { NextFunction, Request, Response } from "dep:express";
 import { session } from "../../../config/proxy.ts";
 import { authGuard } from "../../proxy/middlewares/authGuard.ts";
 import { sessionMiddleware } from "../../proxy/middlewares/sessionMiddleware.ts";
+import { testLoginRoute } from "./test/login.ts";
 
 @injectable()
 export class AuthRouter {
@@ -104,5 +105,13 @@ export class AuthRouter {
         return res.json(req.session?.user);
       },
     );
+
+    /**
+     * Test-only login route to create a session without going through OIDC.
+     * This route should only be available in test environments.
+     */
+    if (["demo", "production"].includes(this.config.get("env")) === false) {
+      this.app.post("/auth/test/login", testLoginRoute.bind(this)(this.config));
+    }
   }
 }

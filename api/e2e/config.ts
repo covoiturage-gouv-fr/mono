@@ -6,6 +6,7 @@ import { env } from "./lib/config.ts";
  *
  * UPDATE the list of supported versions if needed.
  * - 2025-05-22: v3, v3.2
+ * - 2025-07-04: v3, v3.2, v3.3
  */
 export const SUPPORTED_VERSIONS = ["v3", "v3.2", "v3.3"];
 export const UNSUPPORTED_VERSIONS = ["v3.1", "v4"];

@@ -19,7 +19,7 @@ export interface DefaultTemplateData {
 }
 
 export class DefaultMJMLTemplate extends AbstractTemplate<DefaultTemplateData> {
-  static readonly template = `
+  static override readonly template = `
 <mjml version="4.6.3" lang="fr">
   <mj-head>
     <mj-title>
@@ -166,7 +166,7 @@ export class DefaultMJMLTemplate extends AbstractTemplate<DefaultTemplateData> {
 }
 
 export class DefaultTextTemplate extends AbstractTemplate<DefaultTemplateData> {
-  static readonly template = `
+  static override readonly template = `
 Bonjour {{fullname}},
 
 {{ message_text }}
@@ -185,11 +185,10 @@ puis de la DGITM et à l’appui stratégique et opérationnel de la DINUM.
   `;
 }
 
-export class DefaultNotification
-  extends AbstractMailNotification<DefaultTemplateData> {
-  static templateText = DefaultTextTemplate;
-  static templateMJML = DefaultMJMLTemplate;
-  static readonly subject: string = "Registre de preuve de covoiturage";
+export class DefaultNotification extends AbstractMailNotification<DefaultTemplateData> {
+  static override templateText = DefaultTextTemplate;
+  static override templateMJML = DefaultMJMLTemplate;
+  static override readonly subject: string = "Registre de preuve de covoiturage";
 
   constructor(to: string, data: Partial<DefaultTemplateData>) {
     super(to, {

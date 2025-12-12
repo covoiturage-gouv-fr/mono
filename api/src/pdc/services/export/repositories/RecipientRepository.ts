@@ -1,5 +1,6 @@
 import { provider } from "@/ilos/common/index.ts";
-import { LegacyPostgresConnection } from "@/ilos/connection-postgres/index.ts";
+import { DenoPostgresConnection } from "@/ilos/connection-postgres/index.ts";
+import sql, { raw } from "@/lib/pg/sql.ts";
 
 export type Recipient = {
   _id: number;
@@ -16,10 +17,10 @@ export type CreateRecipientData = Pick<
 >;
 
 export abstract class RecipientRepositoryInterfaceResolver {
-  public async create(data: CreateRecipientData): Promise<number> {
+  public async create(_data: CreateRecipientData): Promise<number> {
     throw new Error("Not implemented");
   }
-  public async anonymize(export_id: number): Promise<void> {
+  public async anonymize(_export_id: number): Promise<void> {
     throw new Error("Not implemented");
   }
 }
@@ -30,31 +31,30 @@ export abstract class RecipientRepositoryInterfaceResolver {
 export class RecipientRepository {
   protected readonly table = "export.recipients";
 
-  constructor(protected connection: LegacyPostgresConnection) {}
+  constructor(protected connection: DenoPostgresConnection) {}
 
   public async create(data: CreateRecipientData): Promise<number> {
-    const { rows } = await this.connection.getClient().query<any>({
-      text: `
-        INSERT INTO ${this.table}
+    const rows = await this.connection.query<{ _id: number }>(sql`
+      INSERT INTO ${raw(this.table)}
         (export_id, email, fullname, message)
-        VALUES ($1, $2, $3, $4)
-        RETURNING _id`,
-      values: [data.export_id, data.email, data.fullname, data.message],
-    });
+        VALUES (
+          ${data.export_id},
+          ${data.email},
+          ${data.fullname},
+          ${data.message}
+        )
+      RETURNING _id`);
     return rows[0]._id;
   }
 
   public async anonymize(export_id: number): Promise<void> {
-    await this.connection.getClient().query<any>({
-      text: `
-        UPDATE ${this.table}
+    await this.connection.query(sql`
+        UPDATE ${raw(this.table)}
         SET
           scrambled_at = NOW(),
           email = NULL,
           fullname = NULL,
           message = NULL
-        WHERE export_id = $1`,
-      values: [export_id],
-    });
+        WHERE export_id = ${export_id}`);
   }
 }
