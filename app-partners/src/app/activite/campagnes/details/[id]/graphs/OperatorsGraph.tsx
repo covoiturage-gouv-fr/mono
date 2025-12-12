@@ -20,7 +20,7 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, T
 
 export default function OperatorsGraph(props: { title: string; campaignId: number }) {
   const [period, setPeriod] = useState<Periods>("month");
-  const { data } = useOperatorsGraph({ ...(props.campaignId && { campaign_id: props.campaignId }), period });
+  const { data } = useOperatorsGraph({ campaign_id: props.campaignId, period });
   if (!data || data.length === 0) {
     return <></>;
   }

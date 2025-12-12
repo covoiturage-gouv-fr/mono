@@ -2,7 +2,7 @@ import { getApiUrl } from "@/helpers/api";
 import { useApi } from "@/hooks/useApi";
 import { useMemo } from "react";
 
-type QueryParams = Record<string, string | number | boolean | undefined>;
+export type QueryParams<T> = T;
 
 interface RestQueryOptions {
   method?: "GET" | "POST";
@@ -14,10 +14,10 @@ interface RestQueryOptions {
  * - GET: query params appended to URL
  * - POST: params sent in JSON body
  */
-export function useRestQuery<T>(
+export function useRestQuery<T, TParams = unknown>(
   version: string,
   path: string,
-  params?: QueryParams,
+  params?: QueryParams<TParams>,
   options: RestQueryOptions = {},
   deps: unknown[] = [],
 ) {
@@ -25,15 +25,18 @@ export function useRestQuery<T>(
   const url = useMemo(() => {
     const baseUrl = getApiUrl(version, path);
 
-    console.log(baseUrl);
-    console.log(params);
-    console.log(method);
     // For POST, don't append query params to URL
     if (method === "POST" || !params) return baseUrl;
 
     const searchParams = new URLSearchParams();
     Object.entries(params).forEach(([key, value]) => {
-      if (value !== undefined) {
+      if (value === undefined || value === null) return;
+
+      // Only append primitives to query string to avoid [object Object]
+      if (
+        typeof value === "string" || typeof value === "number" ||
+        typeof value === "boolean"
+      ) {
         searchParams.append(key, String(value));
       }
     });

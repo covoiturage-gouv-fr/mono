@@ -19,7 +19,7 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, T
 
 export default function JourneysGraph(props: { title: string; campaignId: number }) {
   const [period, setPeriod] = useState<"month" | "day">("month");
-  const { data } = useIncentiveGraph({ ...(props.campaignId && { campaign_id: props.campaignId }), period });
+  const { data } = useIncentiveGraph({ campaign_id: props.campaignId, period });
   if (!data || data.length === 0) {
     return <p>Pas de campagnes pour ce territoire...</p>;
   }

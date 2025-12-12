@@ -17,12 +17,8 @@ export interface UsersInterface {
 }
 
 export interface Company {
-  result: {
-    data: {
-      _id: number;
-      siret: string;
-    };
-  };
+  _id: number;
+  siret: string;
 }
 
 export enum TerritoryCodeEnum {
