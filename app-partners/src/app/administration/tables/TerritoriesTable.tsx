@@ -156,7 +156,6 @@ export default function TerritoriesTable(props: { title: string; id: number | nu
         const geoResponse = await findGeoBySiren(modal.currentRow.siret as string);
         if (geoResponse.ok) {
           const body = await geoResponse.json();
-          console.log(body.aom_siren);
           if (body.aom_siren && body.aom_name) {
             modal.setCurrentRow({
               ...modal.currentRow,
