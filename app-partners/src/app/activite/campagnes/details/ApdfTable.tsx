@@ -6,9 +6,9 @@ import { fr } from "@codegouvfr/react-dsfr";
 import { Download } from "@codegouvfr/react-dsfr/Download";
 import Table from "@codegouvfr/react-dsfr/Table";
 import { type ReactNode, useMemo } from "react";
-import Loading from "../../../../../components/layout/Loading";
-import { ApdfRecord } from "../../../../../interfaces/apdfInterface";
-import { OperatorResult } from "../../../../../interfaces/operatorInterface";
+import Loading from "../../../../components/layout/Loading";
+import { ApdfRecord } from "../../../../interfaces/apdfInterface";
+import { OperatorResult } from "../../../../interfaces/operatorInterface";
 
 export default function ApdfTable(props: { title: string; campaignId: number; operatorId: number | null }) {
   const { user, simulate } = useAuth();

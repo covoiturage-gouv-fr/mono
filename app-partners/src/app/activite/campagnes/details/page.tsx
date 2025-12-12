@@ -1,21 +1,21 @@
 "use client";
 import { fr } from "@codegouvfr/react-dsfr";
-import { notFound, useRouter } from "next/navigation";
+import { notFound, useRouter, useSearchParams } from "next/navigation";
 import { useMemo } from "react";
-import DescriptiveSheetUrlEditor from "../../../../../components/campaign/DescriptiveSheetUrlEditor";
-import Loading from "../../../../../components/layout/Loading";
-import { Config } from "../../../../../config";
-import { useApi } from "../../../../../hooks/useApi";
-import { Campaign } from "../../../../../interfaces/campaignInterface";
-import { useAuth } from "../../../../../providers/AuthProvider";
+import DescriptiveSheetUrlEditor from "../../../../components/campaign/DescriptiveSheetUrlEditor";
+import Loading from "../../../../components/layout/Loading";
+import { Config } from "../../../../config";
+import { useApi } from "../../../../hooks/useApi";
+import { Campaign } from "../../../../interfaces/campaignInterface";
+import { useAuth } from "../../../../providers/AuthProvider";
 import ApdfTable from "./ApdfTable";
 import JourneysGraph from "./graphs/JourneysGraph";
 import OperatorsGraph from "./graphs/OperatorsGraph";
 
-export default function CampaignDetailsClient({ id }: { id: string }) {
+export default function CampaignDetails() {
   const { user, simulatedRole } = useAuth();
   const router = useRouter();
-
+  const params = useSearchParams();
   const formatDate = (dateStr: string): string => {
     const date = new Date(dateStr);
     return isNaN(date.getTime()) ? "Date invalide" : date.toLocaleDateString("fr-FR");
@@ -31,11 +31,11 @@ export default function CampaignDetailsClient({ id }: { id: string }) {
       body: JSON.stringify({
         jsonrpc: "2.0",
         method: "campaign:find",
-        params: { _id: Number(id) },
+        params: { _id: Number(params.get("id")) },
         id: 1,
       }),
     }),
-    [id],
+    [params.get("id")],
   );
 
   const { data, loading, error } = useApi<{

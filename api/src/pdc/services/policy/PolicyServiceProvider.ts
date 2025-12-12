@@ -8,7 +8,6 @@ import { FinalizeAction } from "./actions/FinalizeAction.ts";
 import { FindAction } from "./actions/FindAction.ts";
 import { GetPastSimulationOrComputeAction } from "./actions/GetPastSimulationOrComputeAction.ts";
 import { ListAction } from "./actions/ListAction.ts";
-import { ListBuildAction } from "./actions/ListBuildAction.ts";
 import { SimulateOnFutureAction } from "./actions/SimulateOnFutureAction.ts";
 import { SimulateOnPastAction } from "./actions/SimulateOnPastAction.ts";
 import { SimulateOnPastByGeoAction } from "./actions/SimulateOnPastByGeoAction.ts";
@@ -64,7 +63,6 @@ import { TripRepositoryProvider } from "./providers/TripRepositoryProvider.ts";
     FindAction,
     GetPastSimulationOrComputeAction,
     ListAction,
-    ListBuildAction,
     SimulateOnFutureAction,
     SimulateOnPastAction,
     SimulateOnPastByGeoAction,
