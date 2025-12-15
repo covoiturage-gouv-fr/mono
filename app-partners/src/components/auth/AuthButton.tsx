@@ -15,7 +15,7 @@ export function AuthButton() {
   };
   const authLogout = () => {
     logout();
-    router.push(`${Config.get<string>("auth.domain")}/auth/logout`);
+    window.location.href = `${Config.get<string>("auth.domain")}/auth/logout`;
   };
 
   return (
