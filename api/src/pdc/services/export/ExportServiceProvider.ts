@@ -8,12 +8,14 @@ import { defaultMiddlewareBindings } from "@/pdc/providers/middleware/index.ts";
 import { S3StorageProvider } from "@/pdc/providers/storage/index.ts";
 import { ValidatorExtension, ValidatorMiddleware } from "@/pdc/providers/validator/index.ts";
 import { CreateAction } from "./actions/CreateAction.ts";
+import { GetDownloadLinkAction } from "./actions/GetDownloadLinkAction.ts";
 import { listAction } from "./actions/ListAction.ts";
 import { CreateCommand } from "./commands/CreateCommand.ts";
 import { DataGouvCommand } from "./commands/DataGouvCommand.ts";
 import { ProcessCommand } from "./commands/ProcessCommand.ts";
 import { config } from "./config/index.ts";
 import { bindingV3 as createBindingV3 } from "./contracts/create.schema.ts";
+import { binding as getDownloadLinkBinding } from "./contracts/getDownloadLink.schema.ts";
 import { binding as listBinding } from "./contracts/list.schema.ts";
 import { CampaignRepository } from "./repositories/CampaignRepository.ts";
 import { CarpoolRepository } from "./repositories/CarpoolRepository.ts";
@@ -68,11 +70,11 @@ const commands = [CreateCommand, DataGouvCommand, ProcessCommand];
 
 // Handlers are from the ./actions folder
 // and are used to implement the API endpoints (also called actions).
-const handlers = [CreateAction, listAction];
+const handlers = [CreateAction, listAction, GetDownloadLinkAction];
 
 // Validator bindings are from the @shared/export/*.schema.ts files
 // and are used to validate the input data using JSON Schema.
-const validators = [createBindingV3, listBinding];
+const validators = [createBindingV3, listBinding, getDownloadLinkBinding];
 
 @serviceProvider({
   config,

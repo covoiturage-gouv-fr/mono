@@ -47,6 +47,10 @@ export class StorageService {
     return await this.s3StorageProvider.getPublicUrl(this.bucket, filename);
   }
 
+  public async getOneTimeSignedUrl(filename: string): Promise<string> {
+    return await this.s3StorageProvider.getSignedUrl(this.bucket, filename, 60);
+  }
+
   public async cleanup(filepath: string): Promise<void> {
     await remove(filepath);
   }
