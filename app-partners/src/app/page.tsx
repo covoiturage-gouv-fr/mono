@@ -6,7 +6,7 @@ import { type Metadata } from "next";
 import Image from "next/image";
 
 export const metadata: Metadata = {
-  title: "Accueil | app.covoiturage.gouv.fr",
+  title: "Espace partenaire du Registre de Preuve de Covoiturage",
   description: "Développer le covoiturage de courte distance",
 };
 
@@ -15,7 +15,7 @@ export default function Home() {
     <div className={fr.cx("fr-container")}>
       <Anonymous />
       <div id="content" className="text-center">
-        <PageTitle title={`Espace partenaire de Covoiturage.beta.gouv.fr`} />
+        <PageTitle title={`Espace partenaire de covoiturage.beta.gouv.fr`} />
         <div>
           <p>Pour exporter les données des trajets</p>
           <p>Pour un suivi des campagnes d’incitation</p>

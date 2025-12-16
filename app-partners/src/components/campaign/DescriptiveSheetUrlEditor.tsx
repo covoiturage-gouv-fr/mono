@@ -6,6 +6,7 @@ import { useAuth } from "@/providers/AuthProvider";
 import { fr } from "@codegouvfr/react-dsfr";
 import Button from "@codegouvfr/react-dsfr/Button";
 import Input from "@codegouvfr/react-dsfr/Input";
+import { sendEvent } from "@socialgouv/matomo-next";
 import { useState } from "react";
 import isURL from "validator/lib/isURL";
 
@@ -98,6 +99,15 @@ export default function DescriptiveSheetUrlEditor({ campaignId, initialValue }: 
           <Button
             onClick={() => {
               if (initialValue && isURL(initialValue)) {
+                // Matomo tracking
+                sendEvent({
+                  category: "campagne",
+                  action: "Consultation de la fiche descriptive",
+                  name: `Campaign ID: ${campaignId}`,
+                  value: initialValue,
+                });
+
+                // Navigate to URL in new tab
                 window.open(initialValue, "_blank", "noopener,noreferrer");
               }
             }}

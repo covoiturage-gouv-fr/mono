@@ -1,7 +1,7 @@
-import Analytics from "@/components/layout/Analytics";
 import { AppFooter } from "@/components/layout/AppFooter";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { Follow } from "@/components/layout/Follow";
+import { MatomoAnalytics } from "@/components/layout/MatomoAnalytics";
 import { ScrollToTop } from "@/components/layout/ScrollToTop";
 import { Skiplinks } from "@/components/layout/Skiplinks";
 import { StartDsfr } from "@/components/layout/StartDsfr";
@@ -14,22 +14,18 @@ import { DsfrProvider } from "@codegouvfr/react-dsfr/next-appdir/DsfrProvider";
 import { getHtmlAttributes } from "@codegouvfr/react-dsfr/next-appdir/getHtmlAttributes";
 import { type Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
-  title: "app.covoiturage.gouv.fr",
+  title: "partenaire.covoiturage.gouv.fr",
   description: "Développer le covoiturage de courte distance",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   const lang = "fr";
   return (
     <html {...getHtmlAttributes({ defaultColorScheme, lang })}>
       <head>
-        <Analytics />
         <StartDsfr />
         <DsfrHead
           Link={Link}
@@ -62,6 +58,9 @@ export default function RootLayout({
             </MuiDsfrThemeProvider>
           </DsfrProvider>
         </AuthProvider>
+        <Suspense fallback={null}>
+          <MatomoAnalytics />
+        </Suspense>
       </body>
     </html>
   );
