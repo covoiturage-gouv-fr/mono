@@ -1,4 +1,5 @@
 import Loading from "@/components/layout/Loading";
+import { getApiUrl } from "@/helpers/api";
 import { useExportsList } from "@/hooks/api";
 import { fr } from "@codegouvfr/react-dsfr";
 import Badge from "@codegouvfr/react-dsfr/Badge";
@@ -6,8 +7,10 @@ import Download from "@codegouvfr/react-dsfr/Download";
 import Pagination from "@codegouvfr/react-dsfr/Pagination";
 import { Table } from "@codegouvfr/react-dsfr/Table";
 import { type ReactNode, useEffect, useMemo, useState } from "react";
+import AlertMessage from "../common/AlertMessage";
 
 interface ExportListItemInterface {
+  uuid: string;
   start_date: Date;
   end_date: Date;
   geo_selector: string[];
@@ -51,29 +54,52 @@ interface ExportListProps {
 
 export default function ExportList({ refreshTrigger, days = 30, pageSize = 25 }: ExportListProps) {
   const [page, setPage] = useState(1);
-
-  const { data, loading } = useExportsList({ days, refreshTrigger });
+  const [alert, setAlert] = useState<string | undefined>();
+  const { data: response, loading } = useExportsList({ days, refreshTrigger });
 
   const allData = useMemo(() => {
-    return data ?? [];
-  }, [data]);
+    return response?.data ?? [];
+  }, [response]);
 
-  const dataTableFull = allData.map((d: ExportListItemInterface) => [
-    new Date(d.start_date).toLocaleDateString("fr-FR"),
-    new Date(d.end_date).toLocaleDateString("fr-FR"),
-    d.geo_selector?.length > 0 ? d.geo_selector.join(", ") : "-",
-    d.download_url && d.filename ? (
-      <Download
-        label={d.filename}
-        details={`${d.filename.split(".").pop()?.toUpperCase()} • ${formatFileSize(d.file_size)}`}
-        linkProps={{
-          href: d.download_url,
-        }}
-      />
-    ) : (
-      getStatusBadge(d.status)
-    ),
-  ]) as ReactNode[][];
+  const handleDownload = async (uuid: string, filename: string) => {
+    try {
+      const response = await fetch(getApiUrl("v3", "exports/download-link") + `/${uuid}`, {
+        credentials: "include",
+      });
+      if (!response.ok) throw new Error("Link generation failed");
+      const json = (await response.json()) as { data: { url: string } };
+      Object.assign(document.createElement("a"), {
+        href: json.data.url,
+        download: filename,
+        target: "_blank",
+      }).click();
+    } catch {
+      setAlert("Erreur lors du téléchargement du fichier.");
+    }
+  };
+
+  const dataTableFull = Array.isArray(allData)
+    ? (allData.map((d: ExportListItemInterface) => [
+        new Date(d.start_date).toLocaleDateString("fr-FR"),
+        new Date(d.end_date).toLocaleDateString("fr-FR"),
+        d.geo_selector?.length > 0 ? d.geo_selector.join(", ") : "-",
+        d.download_url && d.filename ? (
+          <Download
+            label={d.filename}
+            details={`${d.filename.split(".").pop()?.toUpperCase()} • ${formatFileSize(d.file_size)}`}
+            linkProps={{
+              href: "#",
+              onClick: (e) => {
+                e.preventDefault();
+                void handleDownload(d.uuid, d.filename);
+              },
+            }}
+          />
+        ) : (
+          getStatusBadge(d.status)
+        ),
+      ]) as ReactNode[][])
+    : [];
 
   const pageCount = Math.max(1, Math.ceil(dataTableFull.length / pageSize));
   const dataTable = dataTableFull.slice((page - 1) * pageSize, page * pageSize);
@@ -93,21 +119,31 @@ export default function ExportList({ refreshTrigger, days = 30, pageSize = 25 }:
   }
 
   return (
-    <div className={fr.cx("fr-mt-4w")}>
-      <h3 className={fr.cx("fr-callout__title")}>Historique des exports des 30 derniers jours</h3>
-      <Table data={dataTable} headers={tableHeaders} colorVariant="blue-ecume" fixed />
-      <div className={fr.cx("fr-grid-row", "fr-mt-5w")}>
-        <div className={fr.cx("fr-mx-auto")}>
-          <Pagination
-            defaultPage={page}
-            count={pageCount}
-            getPageLinkProps={(value) => ({
-              onClick: () => setPage(value),
-              href: "#",
-            })}
-          />
+    <>
+      {alert && (
+        <AlertMessage
+          title="Une erreur s'est produite"
+          message={alert}
+          typeAlert="error"
+          onClose={() => setAlert(undefined)}
+        />
+      )}
+      <div className={fr.cx("fr-mt-4w")}>
+        <h3 className={fr.cx("fr-callout__title")}>Historique des exports des 30 derniers jours</h3>
+        <Table data={dataTable} headers={tableHeaders} colorVariant="blue-ecume" fixed />
+        <div className={fr.cx("fr-grid-row", "fr-mt-5w")}>
+          <div className={fr.cx("fr-mx-auto")}>
+            <Pagination
+              defaultPage={page}
+              count={pageCount}
+              getPageLinkProps={(value) => ({
+                onClick: () => setPage(value),
+                href: "#",
+              })}
+            />
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

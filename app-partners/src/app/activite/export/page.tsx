@@ -1,6 +1,7 @@
 "use client";
 import SelectGeo from "@/components/common/SelectGeo";
 import SelectTerritory from "@/components/common/SelectTerritory";
+import ExportList from "@/components/export/ExportList";
 import { getApiUrl } from "@/helpers/api";
 import { type PerimeterType } from "@/interfaces/searchInterface";
 import { useAuth } from "@/providers/AuthProvider";
@@ -72,9 +73,7 @@ interface ResultInterfaceV3 {
 export default function TabExport() {
   const { user, simulate, simulatedRole } = useAuth();
   const [territoryId, setTerritoryId] = useState(user?.territory_id);
-  {
-    /*const [refreshTrigger, setRefreshTrigger] = useState(0);*/
-  }
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const forceHour = (input: Date | Dayjs, range: "start" | "end"): Date => {
     const d = dayjs(input);
     const date =
@@ -122,9 +121,8 @@ export default function TabExport() {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const result: ResultInterfaceV3 = await res.json();
         setResponse(result);
-        {
-          /*setRefreshTrigger((prev) => prev + 1);*/
-        }
+
+        setRefreshTrigger((prev) => prev + 1);
       }
     } catch (err) {
       if (err instanceof Error) {
@@ -291,10 +289,7 @@ export default function TabExport() {
         </LocalizationProvider>
       </div>
 
-      {/*
-        Will be re-enabled when a mechanism to get a fresh download URL
       <ExportList refreshTrigger={refreshTrigger} days={30} pageSize={10} />
-      */}
     </>
   );
 }
