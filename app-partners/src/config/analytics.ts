@@ -1,4 +1,4 @@
 export const analytics = {
-  matomoUrl: "https://matomo.covoiturage.beta.gouv.fr/",
-  matomoSiteId: "1",
+  matomoUrl: "https://stats.beta.gouv.fr/",
+  matomoSiteId: "246",
 };
