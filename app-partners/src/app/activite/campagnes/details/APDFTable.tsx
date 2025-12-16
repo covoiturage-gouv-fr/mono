@@ -4,7 +4,6 @@ import { useAuth } from "@/providers/AuthProvider";
 import { fr } from "@codegouvfr/react-dsfr";
 import { Download } from "@codegouvfr/react-dsfr/Download";
 import Table from "@codegouvfr/react-dsfr/Table";
-import { sendEvent } from "@socialgouv/matomo-next";
 import { type ReactNode } from "react";
 
 export default function APDFTable(props: { title: string; campaignId: number; operatorId: number | null }) {
@@ -43,14 +42,6 @@ export default function APDFTable(props: { title: string; campaignId: number; op
           details={`xlsx - ${formatSize(d.size)}`}
           label="Télécharger"
           linkProps={{ href: d.signed_url }}
-          onClick={() => {
-            sendEvent({
-              category: "campagne",
-              action: "Consultation des APDF",
-              name: `Consultation APDF ${d.datetime.slice(0, 7)}`,
-              value: `Campaign ID: ${campaignId} / Operator ID: ${props.operatorId}`,
-            });
-          }}
         />,
       ];
 
