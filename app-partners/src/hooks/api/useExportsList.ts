@@ -1,6 +1,7 @@
 import { useRestQuery } from "./useRestQuery";
 
 interface ExportRecord {
+  uuid: string;
   start_date: Date;
   end_date: Date;
   geo_selector: string[];
