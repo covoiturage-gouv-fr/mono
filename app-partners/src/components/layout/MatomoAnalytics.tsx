@@ -10,7 +10,7 @@ export function MatomoAnalytics() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    trackAppRouter({
+    void trackAppRouter({
       url: Config.get<string>("analytics.matomoUrl"),
       siteId: Config.get<string>("analytics.matomoSiteId"),
       pathname,
