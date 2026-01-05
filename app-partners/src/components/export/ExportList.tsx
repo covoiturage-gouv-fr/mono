@@ -125,7 +125,7 @@ export default function ExportList({ refreshTrigger, days = 30, pageSize = 25 }:
         />
       )}
       <div className={fr.cx("fr-mt-4w")}>
-        <h3 className={fr.cx("fr-callout__title")}>Historique des exports des 30 derniers jours</h3>
+        <h3 className={fr.cx("fr-callout__title")}>Historique des exports des {days} derniers jours</h3>
         <Table data={dataTable} headers={tableHeaders} colorVariant="blue-ecume" fixed />
         <div className={fr.cx("fr-grid-row", "fr-mt-5w")}>
           <div className={fr.cx("fr-mx-auto")}>

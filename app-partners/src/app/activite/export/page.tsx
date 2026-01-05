@@ -289,7 +289,7 @@ export default function TabExport() {
         </LocalizationProvider>
       </div>
 
-      <ExportList refreshTrigger={refreshTrigger} days={30} pageSize={10} />
+      <ExportList refreshTrigger={refreshTrigger} days={7} pageSize={10} />
     </>
   );
 }
