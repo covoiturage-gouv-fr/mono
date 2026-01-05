@@ -420,7 +420,7 @@ describe("CeeRepositoryProvider", () => {
       {
         last_name_trunc: "CCC",
         phone_trunc: "+336123456",
-        datetime: new Date(),
+        datetime: new Date("2025-01-02T00:00:00.000Z"),
       },
       config.rules.applicationCooldownConstraint,
     );
@@ -431,7 +431,7 @@ describe("CeeRepositoryProvider", () => {
       {
         last_name_trunc: "DDD",
         phone_trunc: "+336123457",
-        datetime: new Date(),
+        datetime: new Date("2025-01-02T00:00:00.000Z"),
       },
       config.rules.applicationCooldownConstraint,
     );
