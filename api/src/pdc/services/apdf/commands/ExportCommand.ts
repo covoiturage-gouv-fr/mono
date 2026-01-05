@@ -2,11 +2,8 @@ import { coerceIntList } from "@/ilos/cli/index.ts";
 import { command, CommandInterface, ContextType, KernelInterfaceResolver } from "@/ilos/common/index.ts";
 import { logger } from "@/lib/logger/index.ts";
 import { set } from "@/lib/object/index.ts";
+import { CampaignRepository } from "@/pdc/providers/campaign/repositories/CampaignRepository.ts";
 import { fromZonedTime } from "dep:date-fns-tz";
-import {
-  ResultInterface as ListCampaignsResults,
-  signature as listCampaignsSignature,
-} from "../../policy/contracts/list.contract.ts";
 import { ParamsInterface as ExportParams, signature as exportSignature } from "../contracts/export.contract.ts";
 import { castExportParams } from "../helpers/castExportParams.helper.ts";
 
@@ -56,7 +53,10 @@ interface Options {
   ],
 })
 export class ExportCommand implements CommandInterface {
-  constructor(private kernel: KernelInterfaceResolver) {}
+  constructor(
+    private kernel: KernelInterfaceResolver,
+    protected campaignsRepository: CampaignRepository,
+  ) {}
 
   public async call(options: Options): Promise<string> {
     const params: Partial<ExportParams> = {
@@ -93,34 +93,18 @@ export class ExportCommand implements CommandInterface {
     const { start_date, end_date } = castExportParams(params as ExportParams);
     const campaign_list = options.campaigns.length
       ? options.campaigns
-      : await this.findActiveCampaigns(start_date.toISOString());
+      : await this.campaignsRepository.findByRange(start_date, end_date);
+
     set(params, "query.campaign_id", campaign_list);
 
-    // eslint-disable-next-line max-len,prettier/prettier
     logger.info(
       `Running [${exportSignature}] from ${start_date.toISOString()} to ${end_date.toISOString()} for campaigns: ${
         campaign_list.join(", ")
       }`,
     );
-    // eslint-enable
 
     await this.kernel.call(exportSignature, params, context);
 
     return "";
-  }
-
-  private async findActiveCampaigns(datetime: String): Promise<number[]> {
-    const params = { datetime };
-
-    return (
-      await this.kernel.call<{ datetime: String }, ListCampaignsResults>(
-        listCampaignsSignature,
-        params,
-        {
-          channel: { service: "apdf" },
-          call: { user: { permissions: ["common.policy.list"] } },
-        },
-      )
-    ).map((c) => c._id);
   }
 }
