@@ -1,6 +1,7 @@
 import { useRestQuery } from "./useRestQuery";
 
 interface ExportRecord {
+  uuid: string;
   start_date: Date;
   end_date: Date;
   geo_selector: string[];
@@ -15,6 +16,11 @@ interface UseExportsListParams {
   refreshTrigger?: number;
 }
 
+interface ExportsListResponse {
+  data: ExportRecord[];
+  meta: null;
+}
+
 /**
  * Hook to fetch exports list.
  *
@@ -24,7 +30,7 @@ interface UseExportsListParams {
 export function useExportsList(
   { days = 30, refreshTrigger }: UseExportsListParams = {},
 ) {
-  return useRestQuery<ExportRecord[]>("v3", "exports/list", { days }, {
+  return useRestQuery<ExportsListResponse>("v3", "exports/list", { days }, {
     method: "POST",
   }, [
     refreshTrigger,

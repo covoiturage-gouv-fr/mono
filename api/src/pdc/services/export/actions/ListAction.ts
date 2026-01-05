@@ -13,7 +13,7 @@ import { TerritoryServiceInterfaceResolver } from "../services/TerritoryService.
     ["validate", alias],
   ],
   apiRoute: {
-    path: "/export/list",
+    path: "/exports/list",
     method: "POST",
   },
 })
@@ -38,6 +38,7 @@ export class listAction extends AbstractAction {
 
     const data = await Promise.all(
       exports.map(async (exp) => ({
+        uuid: exp.uuid,
         start_date: exp.params.get().start_at,
         end_date: exp.params.get().end_at,
         geo_selector: await this.territoryService.getTerritoryNames(exp.params.get().geo_selector),

@@ -5,6 +5,7 @@ export { useRestQuery } from "./useRestQuery";
 export { useApdfList } from "./useApdfList";
 export { useCampaignFind } from "./useCampaignFind";
 export { useCampaignList } from "./useCampaignList";
+export { useExportDownloadLink } from "./useExportDownloadLink";
 export { useExportsList } from "./useExportsList";
 export { useIncentiveGraph } from "./useIncentiveGraph";
 export { useOperatorsGraph } from "./useOperatorsGraph";

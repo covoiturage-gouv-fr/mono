@@ -36,7 +36,7 @@ export abstract class ExportRepositoryInterfaceResolver {
    * @param {number} id
    * @returns {Promise<Export>}
    */
-  public async get(id: number): Promise<Export>;
+  public async get(id: number, _userId?: number): Promise<Export>;
 
   /**
    * Get an export by its UUID
@@ -44,10 +44,10 @@ export abstract class ExportRepositoryInterfaceResolver {
    * @param {string} id
    * @returns {Promise<Export>}
    */
-  public async get(id: string): Promise<Export>;
+  public async get(id: string, _userId?: number): Promise<Export>;
 
   // Method overloading implementation
-  public async get(_id: number | string): Promise<Export> {
+  public async get(_id: number | string, _userId?: number): Promise<Export> {
     throw new Error("Not implemented");
   }
 
@@ -203,14 +203,15 @@ export class ExportRepository {
     return exp;
   }
 
-  public async get(id: number | string): Promise<Export> {
+  public async get(id: number | string, userId?: number): Promise<Export | null> {
     const field = typeof id === "number" ? "_id" : "uuid";
     const rows = await this.connection.query(sql`
       SELECT *
       FROM ${raw(this.exportsTable)}
       WHERE ${raw(field)} = ${id}
+      ${userId ? sql`AND created_by = ${userId}` : sql``}
     `);
-    return Export.fromJSON(rows[0]);
+    return rows.length ? Export.fromJSON(rows[0]) : null;
   }
 
   public async update(id: number, data: ExportUpdateData): Promise<void> {
@@ -232,8 +233,8 @@ export class ExportRepository {
       SELECT *
       FROM ${raw(this.exportsTable)}
       WHERE true
+      ${filters?.days ? sql`AND created_at >= NOW() - ${filters.days} * interval '1 days'` : sql``}
       ${filters?.created_by ? sql`AND created_by = ${filters.created_by}` : sql``}
-      ${filters?.days ? sql`AND created_at >= NOW() - INTERVAL '${filters.days} days'` : sql``}
       ORDER BY created_at DESC
     `);
 

@@ -45,7 +45,7 @@ export class Export {
     export_.download_url_expire_at = data.download_url_expire_at;
     export_.download_url = data.download_url;
     export_.filename = data.filename;
-    export_.file_size = data.file_size;
+    export_.file_size = Number(data.file_size) || 0;
     export_.params = new ExportParams(data.params);
     export_.error = data.error;
     export_.stats = data.stats;

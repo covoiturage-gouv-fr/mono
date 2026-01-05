@@ -100,11 +100,10 @@ export default function DescriptiveSheetUrlEditor({ campaignId, initialValue }: 
             onClick={() => {
               if (initialValue && isURL(initialValue)) {
                 // Matomo tracking
-                sendEvent({
+                void sendEvent({
                   category: "campagne",
                   action: "Consultation de la fiche descriptive",
                   name: `Campaign ID: ${campaignId}`,
-                  value: initialValue,
                 });
 
                 // Navigate to URL in new tab
