@@ -1,3 +1,4 @@
+import { Timezone } from "@/pdc/providers/validator/types.ts";
 import { BoundedSlices, UnboundedSlices } from "./Slices.ts";
 
 export enum PolicyStatusEnum {
@@ -22,12 +23,14 @@ export interface PolicyInterface {
   handler: string;
   incentive_sum: bigint;
   params: {
+    tz?: Timezone;
     slices?: BoundedSlices | UnboundedSlices;
     operators?: Array<string>;
     allTimeOperators?: Array<string>;
     limits?: {
-      glob?: number;
+      glob?: bigint;
     };
     booster_dates?: Array<string>;
+    extras?: unknown;
   };
 }

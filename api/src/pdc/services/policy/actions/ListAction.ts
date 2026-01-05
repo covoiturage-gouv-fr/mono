@@ -1,7 +1,7 @@
-import { handler, KernelInterfaceResolver } from "../../../../ilos/common/index.ts";
-import { Action as AbstractAction } from "../../../../ilos/core/index.ts";
-import { logger } from "../../../../lib/logger/index.ts";
-import { copyFromContextMiddleware, hasPermissionMiddleware } from "../../../providers/middleware/index.ts";
+import { handler, KernelInterfaceResolver } from "@/ilos/common/index.ts";
+import { Action as AbstractAction } from "@/ilos/core/index.ts";
+import { logger } from "@/lib/logger/index.ts";
+import { copyFromContextMiddleware, hasPermissionMiddleware } from "@/pdc/providers/middleware/index.ts";
 import {
   ParamsInterface as OperatorParamsInterface,
   ResultInterface as OperatorResultInterface,
@@ -39,14 +39,14 @@ export class ListAction extends AbstractAction {
 
     const result: ResultInterface = await Promise.all(
       policies.map(async (r) => {
-        const policy: SingleResultInterface = { ...r, params: null };
+        const policy: SingleResultInterface = { ...r, params: {} };
         try {
           const importedPolicy = await Policy.import(r);
           policy.params = importedPolicy.params();
+          return policy;
         } catch (e) {
           const errMsg = e instanceof Error ? e.message : String(e);
           logger.warn(`Could not import policy ${r._id}`, errMsg);
-        } finally {
           return policy;
         }
       }),
