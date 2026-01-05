@@ -1,13 +1,12 @@
 import AlertMessage from "@/components/common/AlertMessage";
 import { Modal } from "@/components/common/Modal";
 import Pagination from "@/components/common/Pagination";
-import { getApiUrl } from "@/helpers/api";
 import { getRolesList, labelRole } from "@/helpers/auth";
+import { useOperatorsList, useTerritoriesList, useUsersList } from "@/hooks/api";
 import { useActionsModal } from "@/hooks/useActionsModal";
-import { useApi } from "@/hooks/useApi";
 import { useUrlSearch } from "@/hooks/useUrlSearch";
 import { roles } from "@/interfaces/auth";
-import { type OperatorsInterface, type TerritoriesInterface, type UsersInterface } from "@/interfaces/dataInterface";
+import { UsersInterface, type OperatorsInterface, type TerritoriesInterface } from "@/interfaces/dataInterface";
 import { useAuth } from "@/providers/AuthProvider";
 import { fr } from "@codegouvfr/react-dsfr";
 import Button from "@codegouvfr/react-dsfr/Button";
@@ -15,7 +14,7 @@ import ButtonsGroup from "@codegouvfr/react-dsfr/ButtonsGroup";
 import Input from "@codegouvfr/react-dsfr/Input";
 import Select from "@codegouvfr/react-dsfr/Select";
 import Table from "@codegouvfr/react-dsfr/Table";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { z } from "zod";
 
 export default function UsersTable(props: { title: string; territoryId: number | null; operatorId: number | null }) {
@@ -31,37 +30,25 @@ export default function UsersTable(props: { title: string; territoryId: number |
     setSearchValue(search);
     setCurrentPage(1);
   };
-  const url = useMemo(() => {
-    const urlObj = new URL(getApiUrl("v3", "dashboard/users"));
-    if (props.territoryId) {
-      urlObj.searchParams.set("territory_id", props.territoryId.toString());
-    } else if (props.operatorId) {
-      urlObj.searchParams.set("operator_id", props.operatorId.toString());
-    }
-    if (currentPage !== 1) {
-      urlObj.searchParams.set("page", currentPage.toString());
-    }
-    if (debouncedSearch !== "") {
-      urlObj.searchParams.set("search", debouncedSearch);
-    }
-    return urlObj.toString();
-  }, [props.territoryId, props.operatorId, currentPage, debouncedSearch]);
 
-  const { data, refetch: refetchUsers } = useApi<UsersInterface>(url);
+  const { data, refetch: refetchUsers } = useUsersList({
+    territoryId: props.territoryId,
+    operatorId: props.operatorId,
+    page: currentPage,
+    search: debouncedSearch || undefined,
+  });
   const totalPages = data?.meta.totalPages ?? 1;
   const totalRecords = data?.meta.total ?? 0;
 
   const headers = ["Prénom", "Nom", "Adresse mail", "Rôle", "Opérateur", "Territoire", "Actions"];
-  const operatorsApiUrl = getApiUrl("v3", `dashboard/operators?limit=100`);
-  const { data: operatorsData, refetch: refetchOperators } = useApi<OperatorsInterface>(operatorsApiUrl);
+  const { data: operatorsData, refetch: refetchOperators } = useOperatorsList({ limit: 100 });
   const operatorsList = () => {
     if (user?.operator_id) {
       return [operatorsData?.data.find((t) => t.id === user?.operator_id)] as OperatorsInterface["data"];
     }
     return operatorsData?.data ?? [];
   };
-  const territoriesApiUrl = getApiUrl("v3", `dashboard/territories?limit=200`);
-  const { data: territoriesData, refetch: refetchTerritories } = useApi<TerritoriesInterface>(territoriesApiUrl);
+  const { data: territoriesData, refetch: refetchTerritories } = useTerritoriesList({ limit: 200 });
   const territoriesList = () => {
     if (user?.territory_id) {
       return [territoriesData?.data.find((t) => t._id === user?.territory_id)] as TerritoriesInterface["data"];
@@ -126,8 +113,8 @@ export default function UsersTable(props: { title: string; territoryId: number |
     firstname: z.string().min(3, { message: "Le prénom doit contenir au moins 3 caractères" }),
     lastname: z.string().min(3, { message: "Le nom doit contenir au moins 3 caractères" }),
     email: z.string().email({ message: `L'adresse mail n'est pas valide` }),
-    operator_id: z.number({ message: "L'identifiant n'est pas un nombre" }).nullable(),
-    territory_id: z.number({ message: "L'identifiant n'est pas un nombre" }).nullable(),
+    operator_id: z.coerce.number({ message: "L'identifiant n'est pas un nombre" }).nullable(),
+    territory_id: z.coerce.number({ message: "L'identifiant n'est pas un nombre" }).nullable(),
     role: z.enum(roles, { message: "Le rôle n'est pas valide" }),
   });
   const roleList = () => {

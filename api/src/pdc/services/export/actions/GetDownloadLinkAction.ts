@@ -1,6 +1,6 @@
-import { NotFoundException } from "../../../../ilos/common/exceptions/index.ts";
-import { ContextType, handler } from "../../../../ilos/common/index.ts";
-import { Action as AbstractAction } from "../../../../ilos/core/index.ts";
+import { NotFoundException } from "@/ilos/common/exceptions/index.ts";
+import { ContextType, handler } from "@/ilos/common/index.ts";
+import { Action as AbstractAction } from "@/ilos/core/index.ts";
 import { hasPermissionMiddleware } from "../../../providers/middleware/middlewares.ts";
 import { handlerConfig, ParamsInterface, ResultInterface } from "../contracts/getDownloadLink.contract.ts";
 import { alias } from "../contracts/getDownloadLink.schema.ts";
@@ -37,11 +37,6 @@ export class GetDownloadLinkAction extends AbstractAction {
       throw new NotFoundException(`Export ${params.id} not found`);
     }
     const url = await this.storage.getOneTimeSignedUrl(exportEntity.filename);
-    return {
-      meta: null,
-      data: {
-        url,
-      },
-    };
+    return { url };
   }
 }

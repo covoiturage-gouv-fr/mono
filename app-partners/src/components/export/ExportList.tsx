@@ -1,6 +1,5 @@
 import Loading from "@/components/layout/Loading";
-import { getApiUrl } from "@/helpers/api";
-import { useExportsList } from "@/hooks/api";
+import { useExportDownloadLink, useExportsList } from "@/hooks/api";
 import { fr } from "@codegouvfr/react-dsfr";
 import Badge from "@codegouvfr/react-dsfr/Badge";
 import Download from "@codegouvfr/react-dsfr/Download";
@@ -56,6 +55,7 @@ export default function ExportList({ refreshTrigger, days = 30, pageSize = 25 }:
   const [page, setPage] = useState(1);
   const [alert, setAlert] = useState<string | undefined>();
   const { data: response, loading } = useExportsList({ days, refreshTrigger });
+  const { downloadLink } = useExportDownloadLink();
 
   const allData = useMemo(() => {
     return response?.data ?? [];
@@ -63,13 +63,9 @@ export default function ExportList({ refreshTrigger, days = 30, pageSize = 25 }:
 
   const handleDownload = async (uuid: string, filename: string) => {
     try {
-      const response = await fetch(getApiUrl("v3", "exports/download-link") + `/${uuid}`, {
-        credentials: "include",
-      });
-      if (!response.ok) throw new Error("Link generation failed");
-      const json = (await response.json()) as { data: { url: string } };
+      const url = await downloadLink(uuid);
       Object.assign(document.createElement("a"), {
-        href: json.data.url,
+        href: url,
         download: filename,
         target: "_blank",
       }).click();

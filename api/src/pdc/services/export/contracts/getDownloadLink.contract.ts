@@ -2,13 +2,8 @@ export type ParamsInterface = {
   id: string;
 };
 
-export type ResultItemInterface = {
-  url: string;
-};
-
 export type ResultInterface = {
-  meta: null;
-  data: ResultItemInterface;
+  url: string;
 };
 
 export const handlerConfig = {

@@ -62,7 +62,7 @@ enum ExportTarget {
   TERRITORY = "territory",
 }
 
-interface ResultInterfaceV3 {
+interface ResultInterface {
   uuid: string;
   target: ExportTarget;
   status: ExportStatus;
@@ -88,7 +88,7 @@ export default function TabExport() {
   const [geoSelector, setGeoSelector] = useState<"geo" | "campaign">("campaign");
   const export_endpoint = getApiUrl("v3", `exports`);
   // Call related states
-  const [response, setResponse] = useState<ResultInterfaceV3 | null>(null);
+  const [response, setResponse] = useState<ResultInterface | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -119,7 +119,7 @@ export default function TabExport() {
         setError(error);
       } else {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const result: ResultInterfaceV3 = await res.json();
+        const result: ResultInterface = await res.json();
         setResponse(result);
 
         setRefreshTrigger((prev) => prev + 1);
