@@ -46,7 +46,7 @@ export class FinalizeAction extends AbstractAction {
     super();
   }
 
-  public async handle(params: ParamsInterface): Promise<ResultInterface> {
+  public override async handle(params: ParamsInterface): Promise<ResultInterface> {
     if (env_or_false("APP_DISABLE_POLICY_PROCESSING")) {
       logger.warn(
         "[campaign:finalize] policy processing is disabled by APP_DISABLE_POLICY_PROCESSING",
@@ -80,13 +80,8 @@ export class FinalizeAction extends AbstractAction {
       try {
         // Update incentive on canceled carpool
         const subtimer = getPerformanceTimer();
-        await this.incentiveRepository.disableOnExcludedCarpool(
-          currentFrom,
-          currentTo,
-        );
-        logger.info(
-          `[campaign:finalize] disableOnExcludedCarpool in ${subtimer.stop()} ms`,
-        );
+        await this.incentiveRepository.disableOnExcludedCarpool(currentFrom, currentTo);
+        logger.info(`[campaign:finalize] disableOnExcludedCarpool in ${subtimer.stop()} ms`);
 
         // eslint-disable-next-line prettier/prettier,max-len
         logger.info(
@@ -100,9 +95,7 @@ export class FinalizeAction extends AbstractAction {
         await this.incentiveRepository.setStatus(currentFrom, currentTo);
         logger.debug("[campaign:finalize] lock finished");
       } catch (e) {
-        logger.debug(
-          `[campaign:finalize] unlock all incentive until ${toTzString(currentTo)} in catch block`,
-        );
+        logger.debug(`[campaign:finalize] unlock all incentive until ${toTzString(currentTo)} in catch block`);
         await this.incentiveRepository.setStatus(currentFrom, currentTo, true);
         throw e;
       }

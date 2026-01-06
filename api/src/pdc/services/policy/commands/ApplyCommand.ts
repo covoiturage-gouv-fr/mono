@@ -1,9 +1,10 @@
 import { command, CommandInterface, ContextType, KernelInterfaceResolver, ResultType } from "@/ilos/common/index.ts";
 import { logger } from "@/lib/logger/index.ts";
+import { get } from "@/lib/object/index.ts";
+import { CampaignRepository } from "@/pdc/providers/campaign/repositories/CampaignRepository.ts";
 import { Timezone } from "@/pdc/providers/validator/index.ts";
 import { signature as apply } from "../contracts/apply.contract.ts";
-import { PolicyStatusEnum } from "../contracts/common/interfaces/PolicyInterface.ts";
-import { castUserStringToUTC, toISOString } from "../helpers/index.ts";
+import { castUserStringToUTC, subDaysTz, today, toISOString } from "../helpers/index.ts";
 import { PolicyRepositoryProviderInterfaceResolver } from "../interfaces/index.ts";
 
 interface CommandOptions {
@@ -25,7 +26,7 @@ interface CommandOptions {
       coerce(s: string): number[] {
         return s
           .split(",")
-          .map((i: string): number => parseInt(s, 10))
+          .map((i: string): number => parseInt(i, 10))
           .filter((i: number): boolean => !!i);
       },
     },
@@ -53,19 +54,24 @@ export class ApplyCommand implements CommandInterface {
   constructor(
     protected kernel: KernelInterfaceResolver,
     private policyRepository: PolicyRepositoryProviderInterfaceResolver,
+    private campaignRepository: CampaignRepository,
   ) {}
 
   public async call(options: CommandOptions): Promise<ResultType> {
     try {
       const { tz, override } = options;
 
+      // cast or default from/to dates
+      const from = options.from && castUserStringToUTC(options.from, tz) || subDaysTz(today(tz), 7);
+      const to = options.to && castUserStringToUTC(options.to, tz) || today(tz);
+
       // update all campaign statuses
       await this.policyRepository.updateAllCampaignStatuses();
 
       // list campaigns
-      const campaigns = options.campaigns.length ? options.campaigns : (await this.policyRepository.findWhere({
-        status: PolicyStatusEnum.ACTIVE,
-      })).map((c) => c._id);
+      const campaigns = options.campaigns.length
+        ? options.campaigns
+        : (await this.campaignRepository.findByRange(from, to));
 
       for (const policy_id of campaigns) {
         const context: ContextType = { channel: { service: "campaign" } };
@@ -77,23 +83,16 @@ export class ApplyCommand implements CommandInterface {
           override,
         };
 
-        if ("from" in options && options.from) {
-          const from = castUserStringToUTC(options.from, tz);
-          if (from) params.from = toISOString(from);
-        }
-
-        if ("to" in options && options.to) {
-          const to = castUserStringToUTC(options.to, tz);
-          if (to) params.to = toISOString(to);
-        }
+        if (from) params.from = toISOString(from);
+        if (to) params.to = toISOString(to);
 
         // warn the user if 'override' and 'to' are used together
         // as the processed finalized incentives might affect the result
         // of further incentives.
         if (params.override && params.to) {
-          // eslint-disable-next-line prettier/prettier,max-len
           logger.warn(
-            "[campaign:apply] Be careful when re-processing incentives with the --override option in conjunction with a --to end date. Further incentives will have to be re-processed and finalized too.",
+            `[campaign:apply] Be careful when re-processing incentives with the --override option in conjunction ` +
+              `with a --to end date. Further incentives will have to be re-processed and finalized too.`,
           );
         }
 
@@ -101,13 +100,15 @@ export class ApplyCommand implements CommandInterface {
         try {
           await this.kernel.call(apply, params, context);
         } catch (e) {
-          logger.error(e.message, { params });
+          const message = Error.isError(e) ? e.message : "Unknown error";
+          logger.error(message, { params });
         }
       }
 
       return "";
     } catch (e) {
-      logger.error(e.rpcError?.data || e.message);
+      const message = Error.isError(e) ? e.message : "Unknown error";
+      logger.error(get(e, "rpcError.data", message));
     }
   }
 }
