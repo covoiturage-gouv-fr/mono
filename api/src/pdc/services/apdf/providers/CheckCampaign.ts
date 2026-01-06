@@ -27,16 +27,9 @@ export class CheckCampaign {
     });
 
     // checks
-    this.isActive(campaign);
     this.isValidDateRange(campaign, start_date, end_date);
 
     return campaign;
-  }
-
-  public isActive(campaign: GetCampaignResultInterface): void {
-    if (campaign.status !== "active") {
-      throw new Error(`Campaign ${campaign._id} is inactive`);
-    }
   }
 
   public isValidDateRange(
