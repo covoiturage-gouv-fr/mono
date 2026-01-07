@@ -19,9 +19,9 @@ export function rateLimiter(
       // @ts-expect-error - Known issue: the `call` function is not present in @types/ioredis
       sendCommand: (...args: string[]) => client.call(...args),
     }),
-    windowMs: 5 * minute,
-    max: 100,
-    handler(req: Request, res: Response) {
+    windowMs: minute,
+    max: 360,
+    handler(_req: Request, res: Response) {
       res.status(429).json({
         error: { code: 429, message: "Too many requests" },
       });
