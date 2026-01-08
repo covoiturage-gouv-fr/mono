@@ -57,7 +57,7 @@ export class CarpoolAcquisitionService {
       result.push("expired");
     }
 
-    if (data.distance < 2_000) {
+    if (data.distance < 1_000) {
       result.push("distance_too_short");
     }
 
