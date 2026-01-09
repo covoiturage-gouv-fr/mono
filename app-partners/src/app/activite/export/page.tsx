@@ -2,7 +2,8 @@
 import SelectGeo from "@/components/common/SelectGeo";
 import SelectTerritory from "@/components/common/SelectTerritory";
 import ExportList from "@/components/export/ExportList";
-import { getApiUrl } from "@/helpers/api";
+import { useExportCreate } from "@/hooks/api/useExportCreate";
+import { TerritorySelectorsInterface } from "@/interfaces/dataInterface";
 import { type PerimeterType } from "@/interfaces/searchInterface";
 import { useAuth } from "@/providers/AuthProvider";
 import { fr } from "@codegouvfr/react-dsfr";
@@ -13,62 +14,7 @@ import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs, { type Dayjs } from "dayjs";
 import "dayjs/locale/fr";
-import { useState } from "react";
-
-interface ParamsInterface {
-  tz: string;
-  start_at: Date;
-  end_at: Date;
-  recipients?: string[];
-  operator_id?: number[];
-  geo_selector?: TerritorySelectorsInterface;
-  territory_id?: number[];
-}
-
-enum TerritoryCodeEnum {
-  Arr = "arr",
-  City = "com",
-  CityGroup = "epci",
-  Mobility = "aom",
-  Region = "reg",
-  District = "dep",
-  Network = "reseau",
-  Country = "country",
-}
-
-interface TerritorySelectorsInterface {
-  [TerritoryCodeEnum.Arr]?: string[];
-  [TerritoryCodeEnum.City]?: string[];
-  [TerritoryCodeEnum.Mobility]?: string[];
-  [TerritoryCodeEnum.District]?: string[];
-  [TerritoryCodeEnum.CityGroup]?: string[];
-  [TerritoryCodeEnum.Region]?: string[];
-  [TerritoryCodeEnum.Country]?: string[];
-}
-
-enum ExportStatus {
-  PENDING = "pending",
-  RUNNING = "running",
-  UPLOADING = "uploading",
-  UPLOADED = "uploaded",
-  NOTIFY = "notify",
-  SUCCESS = "success",
-  FAILURE = "failure",
-}
-
-enum ExportTarget {
-  OPENDATA = "opendata",
-  OPERATOR = "operator",
-  TERRITORY = "territory",
-}
-
-interface ResultInterface {
-  uuid: string;
-  target: ExportTarget;
-  status: ExportStatus;
-  start_at: Date;
-  end_at: Date;
-}
+import { useEffect, useRef, useState } from "react";
 
 export default function TabExport() {
   const { user, simulate, simulatedRole } = useAuth();
@@ -86,52 +32,37 @@ export default function TabExport() {
   const [endDate, setEndDate] = useState(dayjs().subtract(5, "days"));
   const [territorySelectors, setTerritorySelectors] = useState<TerritorySelectorsInterface>();
   const [geoSelector, setGeoSelector] = useState<"geo" | "campaign">("campaign");
-  const export_endpoint = getApiUrl("v3", `exports`);
-  // Call related states
-  const [response, setResponse] = useState<ResultInterface | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+
+  const { createExport, data: exportResponse, loading, error, reset } = useExportCreate();
+
+  useEffect(() => {
+    if (exportResponse) {
+      setRefreshTrigger((prev) => prev + 1);
+      scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [exportResponse]);
+
+  useEffect(() => {
+    if (error) {
+      scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [error]);
 
   const handleExport = async () => {
-    const body: ParamsInterface = {
-      tz: "Europe/Paris",
-      start_at: forceHour(startDate, "start"),
-      end_at: forceHour(endDate, "end"),
-      territory_id: territorySelectors ? [] : territoryId ? [territoryId] : [],
-      geo_selector: territorySelectors,
-      operator_id: user?.operator_id ? [user.operator_id] : [],
-    };
-
-    setLoading(true);
-    setError(null);
     try {
-      const res = await fetch(export_endpoint, {
-        credentials: "include",
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
+      await createExport({
+        tz: "Europe/Paris",
+        start_at: forceHour(startDate, "start"),
+        end_at: forceHour(endDate, "end"),
+        territory_id: territorySelectors ? [] : territoryId ? [territoryId] : [],
+        geo_selector: territorySelectors,
+        operator_id: user?.operator_id ? [user.operator_id] : [],
       });
-
-      if (!res.ok) {
-        const error: string = await res.text();
-        setError(error);
-      } else {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const result: ResultInterface = await res.json();
-        setResponse(result);
-
-        setRefreshTrigger((prev) => prev + 1);
-      }
-    } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("An unknown error occurred");
-      }
+    } catch {
+      // Error is handled by the hook's error state
     }
-    setLoading(false);
   };
   const onChangeGeo = (
     option: {
@@ -259,30 +190,32 @@ export default function TabExport() {
                 >
                   Exporter
                 </Button>
-                {error && (
-                  <Alert
-                    style={{
-                      marginTop: fr.spacing("5v"),
-                    }}
-                    closable
-                    onClose={() => setError(null)}
-                    severity="warning"
-                    title="Une erreur est survenue"
-                    description={error}
-                  />
-                )}
-                {response && (
-                  <Alert
-                    style={{
-                      marginTop: fr.spacing("5v"),
-                    }}
-                    severity="success"
-                    title="Succès"
-                    description="Vous allez recevoir un email avec le lien de téléchargement prochainement"
-                    closable
-                    onClose={() => setResponse(null)}
-                  />
-                )}
+                <div ref={scrollRef}>
+                  {error && (
+                    <Alert
+                      style={{
+                        marginTop: fr.spacing("5v"),
+                      }}
+                      closable
+                      onClose={reset}
+                      severity="warning"
+                      title="Une erreur est survenue"
+                      description={error.message}
+                    />
+                  )}
+                  {exportResponse && (
+                    <Alert
+                      style={{
+                        marginTop: fr.spacing("5v"),
+                      }}
+                      severity="success"
+                      title="Succès"
+                      description="Vous allez recevoir un email avec le lien de téléchargement prochainement"
+                      closable
+                      onClose={reset}
+                    />
+                  )}
+                </div>
               </div>
             </div>
           )}
