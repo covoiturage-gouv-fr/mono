@@ -28,6 +28,8 @@ export enum TerritoryCodeEnum {
   Mobility = "aom",
   Region = "reg",
   District = "dep",
+  Network = "reseau",
+  Country = "country",
 }
 
 export interface TerritorySelectorsInterface {
@@ -37,6 +39,7 @@ export interface TerritorySelectorsInterface {
   [TerritoryCodeEnum.District]?: string[];
   [TerritoryCodeEnum.CityGroup]?: string[];
   [TerritoryCodeEnum.Region]?: string[];
+  [TerritoryCodeEnum.Country]?: string[];
 }
 
 export interface Territory extends Record<string, unknown> {
