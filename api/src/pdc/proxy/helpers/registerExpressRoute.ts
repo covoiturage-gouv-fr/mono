@@ -13,8 +13,8 @@ const defaultParams: Required<Pick<RouteParams, "successHttpCode" | "rateLimiter
   successHttpCode: 200,
   rateLimiter: {
     key: "rl",
-    limit: 100,
-    windowMinute: 5,
+    limit: 360,
+    windowMinute: 1,
   },
 };
 
