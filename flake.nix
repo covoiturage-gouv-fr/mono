@@ -86,7 +86,7 @@
             export DENO_DIR="$PWD/api/.cache"
             export SEVEN_ZIP_BIN_PATH=$(which 7z)
             export LESS="-SRXF"
-            export LD_LIBRARY_PATH="${pkgs.stdenv.cc.cc.lib.outPath}/lib:${pkgs.pythonManylinuxPackages.manylinux2014Package}/lib:$LD_LIBRARY_PATH";
+            if [ -f /etc/nixos ]; then export LD_LIBRARY_PATH="${pkgs.stdenv.cc.cc.lib.outPath}/lib:${pkgs.pythonManylinuxPackages.manylinux2014Package}/lib:$LD_LIBRARY_PATH"; fi;
             test -d .nix-venv || uv venv .nix-venv --no-project --no-managed-python --no-python-downloads
             source .nix-venv/bin/activate
             $(cd sqlmesh && UV_PROJECT_ENVIRONMENT=../.nix-venv uv sync)
