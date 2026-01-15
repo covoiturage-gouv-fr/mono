@@ -210,7 +210,14 @@ export default function TabExport() {
                       }}
                       severity="success"
                       title="Succès"
-                      description="Vous allez recevoir un email avec le lien de téléchargement prochainement"
+                      description={
+                        <>
+                          Vous allez recevoir un email avec le lien de téléchargement d'ici maximum 2h.
+                          <br />
+                          Un rafraîchissement de la page sera nécessaire pour mettre à jour le statut de traitement de
+                          l'export affiché ci-dessous.
+                        </>
+                      }
                       closable
                       onClose={reset}
                     />
@@ -222,7 +229,7 @@ export default function TabExport() {
         </LocalizationProvider>
       </div>
 
-      <ExportList refreshTrigger={refreshTrigger} days={7} pageSize={10} />
+      <ExportList refreshTrigger={refreshTrigger} days={30} pageSize={10} />
     </>
   );
 }
