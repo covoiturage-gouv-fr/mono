@@ -27,7 +27,7 @@ COLUMNS_TYPES = {
   "end_position_y": "FLOAT4",
   "end_h3_index": "VARCHAR",
   "end_geo_code": "VARCHAR",
-  "geo_errors": "TEXT",
+  "geo_errors": "JSONB",
   "geo_updated_at": "TIMESTAMP",
   "distance": "INTEGER",
   "duration": "BIGINT",

@@ -1,13 +1,13 @@
 MODEL (
-  name trusted_zone.journeys_2022,
+  name trusted_zone.journeys_2024,
   kind INCREMENTAL_BY_TIME_RANGE (
     time_column start_datetime,
     lookback 1
   ),
-  start '2022-01-01',
-  end '2022-12-31',
+  start '2025-01-01',
+  end '2025-12-31',
   grain '_id',
-  tags ['trusted', 'journeys', '2022'],
+  tags ['trusted', 'journeys', '2025'],
 );
 
 SELECT
@@ -69,8 +69,8 @@ SELECT
   valid_acquisition_status,
   uuid,
   legacy_id
-FROM raw_zone.journeys_2022
+FROM raw_zone.journeys_2025
 WHERE start_datetime >= '@start_ds'
   AND start_datetime <= '@end_ds'
 
-CREATE INDEX IF NOT EXISTS journeys_2022_id_index ON @this_model USING btree (_id);
+CREATE INDEX IF NOT EXISTS journeys_2025_id_index ON @this_model USING btree (_id);

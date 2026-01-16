@@ -15,6 +15,8 @@ select * from trusted_zone.journeys_2023
 UNION ALL
 select * from trusted_zone.journeys_2024
 UNION ALL
+select * from trusted_zone.journeys_2025
+UNION ALL
 select * from trusted_zone.journeys_latest
 ORDER BY _id desc
 ;

@@ -4,7 +4,7 @@ MODEL (
     time_column start_datetime,
     lookback 1
   ),
-  start '2025-01-01',
+  start '2026-01-01',
   end 'now()',
   grain '_id',
   tags ['trusted', 'journeys', 'latest'],
