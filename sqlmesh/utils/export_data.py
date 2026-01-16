@@ -1,5 +1,4 @@
 import os
-import logging
 import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
@@ -50,7 +49,6 @@ def export_query_to_file(conn, query: str, columns: list, output_path: str, form
     Exporte une requete SQL vers CSV ou Parquet en streaming.
     Resout le probleme de cur.description=None grace a un fetch initial
     """
-    log = logging.getLogger(__name__)
     format = format.lower()
     if format not in ("csv", "parquet"):
         raise ValueError("Format supporte : csv | parquet")
@@ -67,9 +65,9 @@ def export_query_to_file(conn, query: str, columns: list, output_path: str, form
     try:
       with conn.cursor(name="export_cursor") as cur:
           cur.itersize = chunksize
-          log.info("Executing query...")
+          print("Executing query...")
           cur.execute(query)
-          log.info("Query executed, fetching first chunk...")
+          print("Query executed, fetching first chunk...")
 
           if format == "csv":
             first_chunk = True
@@ -81,7 +79,7 @@ def export_query_to_file(conn, query: str, columns: list, output_path: str, form
                         index=False, header=first_chunk)
               first_chunk = False
               total_rows += len(df)
-              log.info(f"CSV -> {total_rows} rows")
+              print(f"CSV -> {total_rows} rows")
           else:
               writer = pq.ParquetWriter(output_path, schema, compression="zstd")
               chunk_num = 0
@@ -93,14 +91,14 @@ def export_query_to_file(conn, query: str, columns: list, output_path: str, form
                 writer.write_table(table)
                 chunk_num += 1
                 total_rows += len(df)
-                log.info(f"Parquet chunk {chunk_num} -> {total_rows} rows")
+                print(f"Parquet chunk {chunk_num} -> {total_rows} rows")
               writer.close()
-              log.info("ParquetWriter closed")
+              print("ParquetWriter closed")
               
       if not os.path.exists(output_path):
         raise FileNotFoundError(f"Le fichier n'a pas ete cree: {output_path}")
       file_size = os.path.getsize(output_path)
-      log.info(f"Export termine : {total_rows} lignes | {file_size / 1024 / 1024:.1f} MB")
+      print(f"Export termine : {total_rows} lignes | {file_size / 1024 / 1024:.1f} MB")
       return {
         "rows": total_rows,
         "columns": columns_count,
@@ -109,5 +107,5 @@ def export_query_to_file(conn, query: str, columns: list, output_path: str, form
         "format": format,
       }
     except Exception as e:
-      log.error(f"Erreur pendant l'export: {str(e)}", exc_info=True)
+      print(f"Erreur pendant l'export: {str(e)}", exc_info=True)
       raise

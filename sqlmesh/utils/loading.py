@@ -3,6 +3,8 @@ import io
 import typing as t
 import geopandas as gpd
 import pandas as pd
+import pyarrow as pa
+import pyarrow.parquet as pq
 import requests
 from utils.cleaning import auto_cast, clean_columns
 from utils.s3 import get_s3_client
@@ -18,6 +20,8 @@ def load_geo_dataset(
     target_crs: str = "EPSG:4326",
     geometry_col: str = "geometry",
     s3_client: t.Optional[t.Any] = None,
+    date_format: t.Optional[str] = None,
+    date_default: t.Optional[str] = None,
 ) -> pd.DataFrame:
     """
     Charge un jeu de données géographique depuis un fichier local ou un bucket S3.
@@ -67,6 +71,8 @@ def load_geo_dataset(
     gdf_non_geom = auto_cast(
       gdf_non_geom,
       {k: v for k, v in column_types.items() if k != geometry_col},
+      date_format,
+      date_default
     )
     # --- Recomposition du DataFrame final ---
     gdf_final = pd.concat([gdf_non_geom, gdf_geom.rename(geometry_col)], axis=1)
@@ -85,6 +91,7 @@ def load_dataset(
     sep: str = ",",
     encoding: str = "utf-8",
     date_format: t.Optional[str] = None,
+    date_default: t.Optional[str] = None,
 ) -> pd.DataFrame:
     """
     Charge un jeu de données tabulaire (CSV, Excel, ODS, Parquet)
@@ -147,16 +154,71 @@ def load_dataset(
         "ods": lambda: pd.read_excel(data, sheet_name=sheet_name, engine="odf", dtype=str),
         "parquet": lambda: pd.read_parquet(data),
     }.get(file_type)
-
     if not read_func:
         raise ValueError(f"❌ Type de fichier non supporté : {file_type}")
-
     df = read_func()
-
     # --- Post-traitement ---
     if rename_columns:
         df = df.rename(columns=rename_columns)
     if clean_col_name:
         df = clean_columns(df)
-    df = auto_cast(df, column_types, date_format=date_format)
+    df = auto_cast(df, column_types, date_format, date_default)
+    df = df[list(column_types.keys())]
     return df
+
+def load_parquet_chunked(
+    path_or_bucket: str,
+    key: t.Optional[str] = None,
+    column_types: dict[str, str] = {},
+    rename_columns: t.Optional[dict[str, str]] = None,
+    clean_col_name: bool = False,
+    chunk_size: int = 100_000,
+    s3_client: t.Optional[t.Any] = None,
+    date_format: t.Optional[str] = None,
+    date_default: t.Optional[str] = None,
+) -> t.Generator[pd.DataFrame, None, None]:
+    """
+    Charge un fichier Parquet volumineux par chunks pour économiser la mémoire.
+    
+    Args:
+        path_or_bucket: Chemin local ou bucket S3
+        key: Clé S3 (si applicable)
+        column_types: Types des colonnes pour SQLMesh
+        rename_columns: Renommage des colonnes
+        clean_col_name: Nettoyer les noms de colonnes
+        chunk_size: Nombre de lignes par chunk
+        s3_client: Client S3 existant
+        columns: Liste des colonnes à charger (None = toutes)
+    
+    Yields:
+        DataFrames par chunks
+    """
+    # --- Déterminer la source ---
+    if key:  # S3
+        s3 = s3_client or get_s3_client()
+        try:
+            obj = s3.get_object(Bucket=path_or_bucket, Key=key)
+            parquet_file = io.BytesIO(obj["Body"].read())
+        except Exception as e:
+            raise FileNotFoundError(f"❌ S3 introuvable : s3://{path_or_bucket}/{key}") from e
+    else:  # Local
+        if not os.path.exists(path_or_bucket):
+            raise FileNotFoundError(f"❌ Fichier introuvable : {path_or_bucket}")
+        parquet_file = path_or_bucket
+
+    # --- Lecture par batches avec PyArrow ---
+    parquet_table = pq.ParquetFile(parquet_file)    
+    for batch in parquet_table.iter_batches(batch_size=chunk_size, columns=list(column_types.keys()), use_threads=True):
+        
+        # Conversion Arrow → Pandas
+        df = batch.to_pandas()
+        
+        # --- Post-traitement ---
+        if rename_columns:
+            df = df.rename(columns=rename_columns)
+        if clean_col_name:
+            df = clean_columns(df)
+        
+        # Cast minimal (évite les conversions inutiles)
+        df = auto_cast(df, column_types, date_format, date_default)
+        yield df
