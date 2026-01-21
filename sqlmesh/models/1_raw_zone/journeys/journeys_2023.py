@@ -53,7 +53,7 @@ COLUMNS_TYPES = {
   "passenger_payments": "JSONB",
   "operator_incentives_sirets": "VARCHAR[]",
   "operator_incentives_amount_total": "INTEGER",
-  "policy_id": "VARCHAR",
+  "policy_id": "INTEGER",
   "policy_incentives_amount_total": "INTEGER",
   "policy_incentives_result_total": "INTEGER",
   "fraud_status": "VARCHAR",

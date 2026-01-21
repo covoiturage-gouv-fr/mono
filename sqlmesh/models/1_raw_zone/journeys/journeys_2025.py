@@ -53,7 +53,7 @@ COLUMNS_TYPES = {
   "passenger_payments": "JSONB",
   "operator_incentives_sirets": "VARCHAR[]",
   "operator_incentives_amount_total": "INTEGER",
-  "policy_id": "VARCHAR",
+  "policy_id": "INTEGER",
   "policy_incentives_amount_total": "INTEGER",
   "policy_incentives_result_total": "INTEGER",
   "fraud_status": "VARCHAR",
@@ -89,7 +89,7 @@ def execute(
         path_or_bucket="geo-datasets-archives",
         key="exports/journeys_2025.parquet",
         column_types=COLUMNS_TYPES,
-        chunk_size=100_000,
+        chunk_size=1_000_000,
     ):
         chunk_count += 1
         total_rows += len(chunk_df)

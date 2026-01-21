@@ -5,7 +5,7 @@ MODEL (
     lookback 1
   ),
   start '2024-01-01',
-  end '2024-12-31',
+  end '2025-01-01',
   grain '_id',
   tags ['trusted', 'journeys', '2024'],
 );
@@ -70,7 +70,7 @@ SELECT
   uuid,
   legacy_id
 FROM raw_zone.journeys_2024
-WHERE start_datetime >= '@start_ds'
-  AND start_datetime <= '@end_ds'
+WHERE start_datetime >= @start_ds
+AND start_datetime < @end_ds;
 
 CREATE INDEX IF NOT EXISTS journeys_2024_id_index ON @this_model USING btree (_id);

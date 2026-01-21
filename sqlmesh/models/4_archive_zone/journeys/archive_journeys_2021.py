@@ -29,7 +29,7 @@ COLUMNS_TYPES = [
   ("geo_errors::TEXT", "TEXT", "geo_errors"),
   ("geo_updated_at::TIMESTAMP", "TIMESTAMP", "geo_updated_at"),
   ("distance::INTEGER", "INTEGER", "distance"),
-  ("EXTRACT(EPOCH FROM duration)::BIGINT", "BIGINT", "duration"),
+  ("EXTRACT(EPOCH FROM duration)::INTEGER", "INTEGER", "duration"),
   ("licence_plate::VARCHAR", "VARCHAR", "licence_plate"),
   ("driver_identity_key::VARCHAR", "VARCHAR", "driver_identity_key"),
   ("driver_operator_user_id::VARCHAR", "VARCHAR", "driver_operator_user_id"),
@@ -52,7 +52,7 @@ COLUMNS_TYPES = [
   ("passenger_payments::TEXT", "TEXT", "passenger_payments"),
   ("operator_incentives_sirets::VARCHAR[]", "VARCHAR[]", "operator_incentives_sirets"),
   ("operator_incentives_amount_total::INTEGER", "INTEGER", "operator_incentives_amount_total"),
-  ("policy_id::VARCHAR", "VARCHAR", "policy_id"),
+  ("policy_id", "BIGINT", "policy_id"),
   ("policy_incentives_amount_total::INTEGER", "INTEGER", "policy_incentives_amount_total"),
   ("policy_incentives_result_total::INTEGER", "INTEGER", "policy_incentives_result_total"),
   ("fraud_status::VARCHAR", "VARCHAR", "fraud_status"),
@@ -61,7 +61,7 @@ COLUMNS_TYPES = [
   ("anomaly_labels::VARCHAR[]", "VARCHAR[]", "anomaly_labels"),
   ("acquisition_status::VARCHAR", "VARCHAR", "acquisition_status"),
   ("status_updated_at::TIMESTAMP", "TIMESTAMP", "status_updated_at"),
-  ("final_acquisition_status::VARCHAR", "VARCHAR", "final_acquisition_status"),
+  ("final_acquisition_status::BOOLEAN", "BOOLEAN", "final_acquisition_status"),
   ("valid_acquisition_status::BOOLEAN", "BOOLEAN", "valid_acquisition_status"),
   ("uuid::VARCHAR", "VARCHAR", "uuid"),
   ("legacy_id", "BIGINT", "legacy_id")  
@@ -85,7 +85,7 @@ COLUMNS_TYPES = [
 def execute(context: ExecutionContext, **kwargs):
     from utils.export_data import build_select_query, export_query_to_file
     # Génération de la query
-    query = build_select_query(COLUMNS_TYPES, "trusted_zone.journeys_2021")
+    query = build_select_query(COLUMNS_TYPES, "archive_zone.carpools_to_journeys_2021")
     output_file = "/tmp/journeys_2021.parquet"
     file_format = "parquet"
     chunksize = 100_000  
