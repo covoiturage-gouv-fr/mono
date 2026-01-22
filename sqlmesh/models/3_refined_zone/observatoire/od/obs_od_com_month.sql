@@ -1,7 +1,7 @@
 MODEL (
   name refined_zone.obs_od_com_month,
   kind INCREMENTAL_BY_TIME_RANGE (
-    time_column month_date,
+    time_column journey_date,
     lookback 1
   ),
   start '2020-01-01',
@@ -10,10 +10,11 @@ MODEL (
   tags ['refined', 'observatoire', 'od_com'],
 );
 
-WITH flux AS (
+
   SELECT
     start_geo_code as origin,
     end_geo_code   as destination,
+    journey_date,
     extract('year' FROM journey_date)::int  AS year,
     extract('month' FROM journey_date)::int AS month,
     sum(journeys)                         AS journeys,
@@ -25,4 +26,3 @@ WITH flux AS (
     AND date_trunc('month', journey_date) < @end_ts
   GROUP BY
     1, 2, 3, 4
-),
