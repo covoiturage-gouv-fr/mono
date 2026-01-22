@@ -1,20 +1,20 @@
 MODEL (
   name refined_zone.obs_od_com_month,
   kind INCREMENTAL_BY_TIME_RANGE (
-    time_column journey_date,
+    time_column month_date,
     lookback 1
   ),
   start '2020-01-01',
   end 'now()',
   grain ['year', 'month', 'type', 'territory_1', 'territory_2'],
   tags ['refined', 'observatoire', 'od_com'],
+  enabled false
 );
 
 
   SELECT
     start_geo_code as origin,
     end_geo_code   as destination,
-    journey_date,
     extract('year' FROM journey_date)::int  AS year,
     extract('month' FROM journey_date)::int AS month,
     sum(journeys)                         AS journeys,
