@@ -8,6 +8,7 @@ import type { ResultInterface as CreateUserResultInterface } from "../actions/us
 import type { ResultInterface as DeleteUserResultInterface } from "../actions/users/DeleteUserAction.ts";
 import type { ResultInterface as UpdateUserResultInterface } from "../actions/users/UpdateUserAction.ts";
 import type { ResultInterface as UsersResultInterface } from "../actions/users/UsersAction.ts";
+
 export type {
   CreateUserDataInterface,
   CreateUserResultInterface,

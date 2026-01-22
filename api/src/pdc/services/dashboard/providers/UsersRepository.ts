@@ -23,7 +23,6 @@ export class UsersRepository implements UsersRepositoryInterface {
   private readonly tableTerritory = "territory.territory_group";
   private readonly tableOperator = "operator.operators";
 
-
   constructor(private pgConnection: DenoPostgresConnection) {}
 
   async getUsers(
@@ -61,9 +60,13 @@ export class UsersRepository implements UsersRepositoryInterface {
         users.territory_id,
         users.role
       FROM ${raw(this.table)} AS users
-      ${params.search ?
-        sql`LEFT JOIN ${raw(this.tableTerritory)} tg ON tg._id = users.territory_id LEFT JOIN ${raw(this.tableOperator)} o ON o._id = users.operator_id` : sql``
-      }
+      ${
+      params.search
+        ? sql`LEFT JOIN ${raw(this.tableTerritory)} tg ON tg._id = users.territory_id LEFT JOIN ${
+          raw(this.tableOperator)
+        } o ON o._id = users.operator_id`
+        : sql``
+    }
       WHERE ${join(filters, " AND ")}
       ORDER BY users._id
       LIMIT ${limit} OFFSET ${offset}
@@ -73,7 +76,7 @@ export class UsersRepository implements UsersRepositoryInterface {
     const countQuery = sql`
       SELECT COUNT(*) as total
       FROM ${raw(this.table)} AS users
-      ${params.search ?  sql`LEFT JOIN ${raw(this.tableTerritory)} tg ON tg._id = users.territory_id` : sql``}
+      ${params.search ? sql`LEFT JOIN ${raw(this.tableTerritory)} tg ON tg._id = users.territory_id` : sql``}
       LEFT JOIN ${raw(this.tableOperator)} o ON o._id = users.operator_id
       WHERE ${join(filters, " AND ")}
     `;

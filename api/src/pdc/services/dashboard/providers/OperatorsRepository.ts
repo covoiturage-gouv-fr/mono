@@ -64,6 +64,19 @@ export class OperatorsRepository implements OperatorsRepositoryInterface {
     };
   }
 
+  async getOperatorById(id: number): Promise<OperatorResult | null> {
+    const query = sql`
+      SELECT
+        _id as id,
+        name,
+        siret
+      FROM ${raw(this.table)}
+      WHERE _id = ${id} AND deleted_at IS NULL
+    `;
+    const rows = await this.pgConnection.query<OperatorResult>(query);
+    return rows.length > 0 ? rows[0] : null;
+  }
+
   async createOperator(
     data: CreateOperatorDataInterface,
   ): Promise<CreateOperatorResultInterface> {

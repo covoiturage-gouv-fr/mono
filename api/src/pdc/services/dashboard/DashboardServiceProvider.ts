@@ -19,16 +19,22 @@ import { DeleteUserAction } from "./actions/users/DeleteUserAction.ts";
 import { UpdateUserAction } from "./actions/users/UpdateUserAction.ts";
 import { UserAction } from "./actions/users/UserAction.ts";
 import { UsersAction } from "./actions/users/UsersAction.ts";
+import { config } from "./config/index.ts";
+import { BrevoProvider } from "./providers/BrevoProvider.ts";
 import { CampaignsRepository } from "./providers/CampaignsRepository.ts";
 import { JourneysRepository } from "./providers/JourneysRepository.ts";
 import { OperatorsRepository } from "./providers/OperatorsRepository.ts";
+import { TerritoriesRepository } from "./providers/TerritoriesRepository.ts";
 import { UsersRepository } from "./providers/UsersRepository.ts";
 
 @serviceProvider({
+  config,
   commands: [],
   providers: [
     S3StorageProvider,
+    BrevoProvider,
     OperatorsRepository,
+    TerritoriesRepository,
     JourneysRepository,
     CampaignsRepository,
     UsersRepository,
