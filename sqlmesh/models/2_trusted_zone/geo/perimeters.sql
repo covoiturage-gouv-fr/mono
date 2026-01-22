@@ -1,7 +1,7 @@
 MODEL (
   name trusted_zone.perimeters,
   kind FULL,
-  start '2020-01-01',
+  start '2024-01-01',
   cron '@yearly',
   grain ['id','year','arr'],
   tags ['trusted','geo', 'perimeters']

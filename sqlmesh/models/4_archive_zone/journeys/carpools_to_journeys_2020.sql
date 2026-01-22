@@ -1,13 +1,13 @@
 MODEL (
-  name trusted_zone.journeys_latest,
+  name archive_zone.carpools_to_journeys_2020,
   kind INCREMENTAL_BY_TIME_RANGE (
     time_column start_datetime,
     lookback 1
   ),
-  start '2026-01-01',
-  end 'now()',
+  start '2020-01-01',
+  end '2021-01-01',
   grain '_id',
-  tags ['trusted', 'journeys', 'latest'],
+  tags ['archive', 'carpools', 'journeys_2020'],
 );
 JINJA_QUERY_BEGIN;
 {{ journeys_model_generator("@start_ds", "@end_ds") }}

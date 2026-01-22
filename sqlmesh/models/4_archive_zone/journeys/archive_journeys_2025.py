@@ -68,7 +68,7 @@ COLUMNS_TYPES = [
 ]
 
 @model(
-    "archive_zone.archive_journeys_2022",
+    "archive_zone.archive_journeys_2025",
     kind="FULL",
     columns={
         "status": "VARCHAR",
@@ -80,13 +80,13 @@ COLUMNS_TYPES = [
         "columns": "INTEGER",
         "date_uploaded": "TIMESTAMP",
     },
-    tags=["archive","journeys_2022"],
+    tags=["archive","journeys_2025"],
 )
 def execute(context: ExecutionContext, **kwargs):
     from utils.export_data import build_select_query, export_query_to_file
     # Génération de la query
-    query = build_select_query(COLUMNS_TYPES, "archive_zone.carpools_to_journeys_2022")
-    output_file = "/tmp/journeys_2022.parquet"
+    query = build_select_query(COLUMNS_TYPES, "archive_zone.carpools_to_journeys_2025")
+    output_file = "/tmp/journeys_2025.parquet"
     file_format = "parquet"
     chunksize = 100_000  
 
@@ -112,7 +112,7 @@ def execute(context: ExecutionContext, **kwargs):
     # -----------------------------
     upload_info = upload_to_s3(
         file_path=output_file,
-        key=f"exports/journeys_2022.{file_format.lower()}",
+        key=f"exports/journeys_2025.{file_format.lower()}",
     )
 
     # -----------------------------
