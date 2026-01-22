@@ -29,7 +29,7 @@ COLUMNS_TYPES = [
   ("geo_errors::TEXT", "TEXT", "geo_errors"),
   ("geo_updated_at::TIMESTAMP", "TIMESTAMP", "geo_updated_at"),
   ("distance::INTEGER", "INTEGER", "distance"),
-  ("EXTRACT(EPOCH FROM duration)::INTEGER", "INTEGER", "duration"),
+  ("duration", "INTEGER", "duration"),
   ("licence_plate::VARCHAR", "VARCHAR", "licence_plate"),
   ("driver_identity_key::VARCHAR", "VARCHAR", "driver_identity_key"),
   ("driver_operator_user_id::VARCHAR", "VARCHAR", "driver_operator_user_id"),
