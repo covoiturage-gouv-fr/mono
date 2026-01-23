@@ -35,8 +35,22 @@ WITH journeys AS (
     a.incentive_operator,
     a.incentive_others
   FROM refined_zone.obs_journeys_by_day AS a
-  LEFT JOIN trusted_zone.perimeters AS ps ON a.start_geo_code = ps.arr AND ps.year = EXTRACT(YEAR FROM a.journey_date)
-  LEFT JOIN trusted_zone.perimeters AS pe ON a.end_geo_code = pe.arr AND pe.year = EXTRACT(YEAR FROM a.journey_date)
+  LEFT JOIN LATERAL (
+    SELECT arr, epci, aom, dep, reg, country
+    FROM trusted_zone.perimeters p
+    WHERE p.arr = a.start_geo_code
+      AND p.year <= EXTRACT(YEAR FROM a.journey_date)
+    ORDER BY p.year DESC
+    LIMIT 1
+  ) ps ON TRUE
+  LEFT JOIN LATERAL (
+    SELECT arr, epci, aom, dep, reg, country
+    FROM trusted_zone.perimeters p
+    WHERE p.arr = a.end_geo_code
+      AND p.year <= EXTRACT(YEAR FROM a.journey_date)
+    ORDER BY p.year DESC
+    LIMIT 1
+  ) pe ON TRUE
   WHERE a.journey_date BETWEEN @start_ds AND @end_ds
 ),
 directions AS (

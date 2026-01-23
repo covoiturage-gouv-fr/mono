@@ -70,3 +70,5 @@ SELECT
 FROM trusted_zone.perimeters
 WHERE country IS NOT NULL
 GROUP BY year, country, l_country;
+
+CREATE INDEX IF NOT EXISTS perimeters_agg_index ON @this_model USING btree (code, type, year);
