@@ -57,6 +57,7 @@
             openssl
             jq
             minio-client
+            duckdb
 
             # rpc infra
             nodejs_24
