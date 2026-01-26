@@ -10,3 +10,11 @@
   padding: 10px;
   overflow-x: auto;
 }
+
+.no-external-icon::after {
+  display: none !important;
+}
+
+.proconnect-no-help p {
+  display: none;
+}
