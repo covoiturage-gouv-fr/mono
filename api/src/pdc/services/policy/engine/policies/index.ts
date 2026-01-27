@@ -45,6 +45,7 @@ import { Rennes2025 } from "./20250101_Rennes.ts";
 import { PMGFxATMBxSM4CCx2025 } from "./20250701_PMGFxATMBxSM4CC.ts";
 import { HauteCorreze2026 } from "./20250902_haute_correze_2026.ts";
 import { ATMB2025 } from "./20251014_ATMB.ts";
+import { CovoitIDFM2026 } from "./20251201_Covoit_IDFM_2026.ts";
 import { PolicyTemplateOne } from "./unbound/PolicyTemplateOne.ts";
 import { PolicyTemplateThree } from "./unbound/PolicyTemplateThree.ts";
 import { PolicyTemplateTwo } from "./unbound/PolicyTemplateTwo.ts";
@@ -57,6 +58,7 @@ export const policies: Map<string, PolicyHandlerStaticInterface> = new Map(
     CCPOA202410,
     CCVMM202405,
     Cotentin2023,
+    CovoitIDFM2026,
     GrandChatellerault2024,
     GrandChatellerault2025,
     GrandPoitiers,

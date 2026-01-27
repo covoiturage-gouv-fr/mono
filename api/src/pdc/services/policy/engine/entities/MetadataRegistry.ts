@@ -5,25 +5,24 @@ import {
   SerializedMetadataVariableDefinitionInterface,
 } from "../../interfaces/index.ts";
 
-function getMetaKey(
-  datetime: Date,
-  metaDefinition: MetadataVariableDefinitionInterface,
-): string {
+function getMetaKey(datetime: Date, metaDefinition: MetadataVariableDefinitionInterface): string {
   if (metaDefinition.key) {
     return metaDefinition.key;
   }
-  const date = typeof datetime.getMonth === "function"
-    ? datetime
-    : new Date(datetime);
+  const date = typeof datetime.getMonth === "function" ? datetime : new Date(datetime);
   const [day, month, year] = [
     date.getDate(),
-    date.getMonth(),
+    date.getMonth(), // zero-based !
     date.getFullYear(),
   ];
 
   let keyPeriod = "global";
   let period = "campaign";
   switch (metaDefinition.lifetime) {
+    case MetadataLifetime.Carpool:
+      keyPeriod = "-1";
+      period = "carpool";
+      break;
     case MetadataLifetime.Day:
       keyPeriod = `${day}-${month}-${year}`;
       period = "day";
@@ -42,17 +41,14 @@ function getMetaKey(
       break;
   }
 
-  return `${metaDefinition.name}.${
-    metaDefinition.scope || "global"
-  }.${period}.${keyPeriod}`;
+  return `${metaDefinition.name}.${metaDefinition.scope || "global"}.${period}.${keyPeriod}`;
 }
 
 export class MetadataRegistry implements MetadataRegistryInterface {
   constructor(
     public readonly policy_id: number,
     public readonly datetime: Date,
-    public readonly data: Map<string, MetadataVariableDefinitionInterface> =
-      new Map(),
+    public readonly data: Map<string, MetadataVariableDefinitionInterface> = new Map(),
   ) {}
 
   static create(policy_id: number, datetime: Date): MetadataRegistry {
