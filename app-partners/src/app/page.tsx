@@ -21,10 +21,10 @@ export default function Home() {
         id="content"
         className={fr.cx("fr-grid-row", "fr-grid-row--gutters", "fr-grid-row--center", "fr-grid-row--middle")}
       >
-        <div className={fr.cx("fr-col-12", "fr-col-sm-6")}>
+        <div className={fr.cx("fr-col-12", "fr-col-sm-6")} style={{ wordBreak: "break-word", minWidth: 0 }}>
           <PageTitle title={`Bievenue sur l'espace partenaire de covoiturage.beta.gouv.fr`} />
         </div>
-        <div className={fr.cx("fr-col-12", "fr-col-sm-6")}>
+        <div className={fr.cx("fr-col-12", "fr-col-sm-6", "fr-hidden", "fr-unhidden-sm")}>
           <Image
             src="https://static.covoiturage.beta.gouv.fr/medium_Car_driving_bro_d766ec81d5.png"
             alt=""
@@ -68,6 +68,15 @@ export default function Home() {
             ]}
           />
         </div>
+      </div>
+      <div className={fr.cx("fr-mt-4w", "fr-hidden-sm")}>
+        <Image
+          src="https://static.covoiturage.beta.gouv.fr/medium_Car_driving_bro_d766ec81d5.png"
+          alt=""
+          width={450}
+          height={450}
+          style={{ width: "100%", height: "auto" }}
+        />
       </div>
     </div>
   );
