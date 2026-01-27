@@ -7,10 +7,7 @@ import {
   StatelessContextInterface,
 } from "../../interfaces/index.ts";
 import { NotEligibleTargetException } from "../exceptions/NotEligibleTargetException.ts";
-import { atDate } from "../helpers/atDate.ts";
 import { getOperatorsAt, TimestampedOperators } from "../helpers/getOperatorsAt.ts";
-import { isAfter } from "../helpers/isAfter.ts";
-import { isBefore } from "../helpers/isBefore.ts";
 import { isOperatorClassOrThrow } from "../helpers/isOperatorClassOrThrow.ts";
 import { isOperatorOrThrow } from "../helpers/isOperatorOrThrow.ts";
 import {
@@ -18,13 +15,12 @@ import {
   watchForGlobalMaxAmount,
   watchForMaxPassengersPerDriverPerDay,
   watchForMaxPassengersPerTrip,
-  watchForPassengerMaxByTripByDay,
   watchForPersonMaxAmountByMonth,
   watchForPersonMaxTripByDay,
 } from "../helpers/limits.ts";
 import { onDistanceRange, onDistanceRangeOrThrow } from "../helpers/onDistanceRange.ts";
 import { perKm, perSeat } from "../helpers/per.ts";
-import { endsAt, startsAt, startsOrEndsAt } from "../helpers/position.ts";
+import { endsAt, startsAt } from "../helpers/position.ts";
 import { description } from "./20210520_IDFM.html.ts";
 import { AbstractPolicyHandler } from "./AbstractPolicyHandler.ts";
 
