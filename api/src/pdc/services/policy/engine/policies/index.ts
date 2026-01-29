@@ -46,6 +46,7 @@ import { PMGFxATMBxSM4CCx2025 } from "./20250701_PMGFxATMBxSM4CC.ts";
 import { HauteCorreze2026 } from "./20250902_haute_correze_2026.ts";
 import { ATMB2025 } from "./20251014_ATMB.ts";
 import { CovoitIDFM2026 } from "./20251201_Covoit_IDFM_2026.ts";
+import { LaRochelle2026 } from "./20260101_LaRochelle.ts";
 import { MontluconCommunaute2026 } from "./20260101_Montlucon_2026.ts";
 import { PolicyTemplateOne } from "./unbound/PolicyTemplateOne.ts";
 import { PolicyTemplateThree } from "./unbound/PolicyTemplateThree.ts";
@@ -72,6 +73,7 @@ export const policies: Map<string, PolicyHandlerStaticInterface> = new Map(
     LaRochelle20232024,
     LaRochelle2024,
     LaRochelle2025,
+    LaRochelle2026,
     LavalAgglo2022,
     MetropoleRouenNormandie2022,
     MetropoleSavoie,
