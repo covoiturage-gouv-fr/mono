@@ -21,7 +21,7 @@ import {
 import { onDistanceRange, onDistanceRangeOrThrow } from "../helpers/onDistanceRange.ts";
 import { perKm, perSeat } from "../helpers/per.ts";
 import { endsAt, startsAt } from "../helpers/position.ts";
-import { description } from "./20210520_IDFM.html.ts";
+import { description } from "./20251201_Covoit_IDFM_2026.html.ts";
 import { AbstractPolicyHandler } from "./AbstractPolicyHandler.ts";
 
 // Article 5 TRAJETS ÉLIGIBLES
@@ -170,7 +170,6 @@ export const CovoitIDFM2026: PolicyHandlerStaticInterface = class extends Abstra
       operators: getOperatorsAt(this.operators),
       allTimeOperators: Array.from(new Set(this.operators.flatMap((entry) => entry.operators))),
       limits: { glob: this.max_amount },
-      booster_dates: [...this.boosterDates],
       extras: {},
     };
   }
