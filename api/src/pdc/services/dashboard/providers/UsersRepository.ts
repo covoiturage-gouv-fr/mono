@@ -25,10 +25,8 @@ export class UsersRepository implements UsersRepositoryInterface {
 
   constructor(private pgConnection: DenoPostgresConnection) {}
 
-  async getUsers(
-    params: UsersParamsInterface,
-  ): Promise<UsersResultInterface> {
-    const filters = [];
+  async getUsers(params: UsersParamsInterface): Promise<UsersResultInterface> {
+    const filters = [sql`TRUE`];
     if (params.id) {
       filters.push(sql`users._id = ${params.id}`);
     }
@@ -45,7 +43,7 @@ export class UsersRepository implements UsersRepositoryInterface {
         OR users.email ILIKE ${`%${params.search}%`} 
         OR o.name ILIKE ${`%${params.search}%`}
         OR tg.name ILIKE ${`%${params.search}%`}
-        )`);
+      )`);
     }
     const limit = params.limit || 25;
     const page = params.page || 1;
@@ -71,6 +69,7 @@ export class UsersRepository implements UsersRepositoryInterface {
       ORDER BY users._id
       LIMIT ${limit} OFFSET ${offset}
     `;
+
     const rows = await this.pgConnection.query<UserResult>(query);
     // Calcul du nombre total d'éléments
     const countQuery = sql`
