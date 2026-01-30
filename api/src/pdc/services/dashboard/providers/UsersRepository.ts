@@ -28,7 +28,7 @@ export class UsersRepository implements UsersRepositoryInterface {
   async getUsers(
     params: UsersParamsInterface,
   ): Promise<UsersResultInterface> {
-    const filters = [sql`users.hidden = false`];
+    const filters = [];
     if (params.id) {
       filters.push(sql`users._id = ${params.id}`);
     }
@@ -91,9 +91,7 @@ export class UsersRepository implements UsersRepositoryInterface {
     };
   }
 
-  async createUser(
-    data: CreateUserDataInterface,
-  ): Promise<CreateUserResultInterface> {
+  async createUser(data: CreateUserDataInterface): Promise<CreateUserResultInterface> {
     const query = sql`
       INSERT INTO ${raw(this.table)} (
         firstname, lastname, email, role, operator_id, territory_id
@@ -113,12 +111,9 @@ export class UsersRepository implements UsersRepositoryInterface {
     };
   }
 
-  async deleteUser(
-    params: DeleteUserParamsInterface,
-  ): Promise<DeleteUserResultInterface> {
+  async deleteUser(params: DeleteUserParamsInterface): Promise<DeleteUserResultInterface> {
     const query = sql`
-      UPDATE ${raw(this.table)}
-      SET hidden = true
+      DELETE ${raw(this.table)}
       WHERE _id = ${params.id}
       RETURNING _id
     `;
@@ -129,9 +124,7 @@ export class UsersRepository implements UsersRepositoryInterface {
     return { success: true, message: `user ${params.id} deleted` };
   }
 
-  async updateUser(
-    data: UpdateUserDataInterface,
-  ): Promise<UpdateUserResultInterface> {
+  async updateUser(data: UpdateUserDataInterface): Promise<UpdateUserResultInterface> {
     const query = sql`
       UPDATE ${raw(this.table)}
       SET 
