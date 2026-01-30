@@ -5,8 +5,9 @@ import {
   PolicyHandlerParamsInterface,
   PolicyHandlerStaticInterface,
   StatelessContextInterface,
+  TerritoryCodeEnum,
+  TerritorySelectorsInterface,
 } from "../../interfaces/index.ts";
-import { NotEligibleTargetException } from "../exceptions/NotEligibleTargetException.ts";
 import { getOperatorsAt, TimestampedOperators } from "../helpers/getOperatorsAt.ts";
 import { isOperatorClassOrThrow } from "../helpers/isOperatorClassOrThrow.ts";
 import { isOperatorOrThrow } from "../helpers/isOperatorOrThrow.ts";
@@ -18,9 +19,12 @@ import {
 } from "../helpers/limits.ts";
 import { onDistanceRange, onDistanceRangeOrThrow } from "../helpers/onDistanceRange.ts";
 import { perKm, perSeat } from "../helpers/per.ts";
-import { endsAt, startsAt } from "../helpers/position.ts";
+import { startsOrEndsAtOrThrow } from "../helpers/startsOrEndsAtOrThrow.ts";
 import { description } from "./20260101_LaRochelle.html.ts";
 import { AbstractPolicyHandler } from "./AbstractPolicyHandler.ts";
+
+// INSERT INTO policy.policies ( territory_id, start_date, end_date, name, unit, status, handler, max_amount )
+// VALUES (178, '2026-01-01T00:00:00+0100', '2027-01-01T00:00:00+0100', 'CA La Rochelle 2026', 'euro', 'draft', 'la_rochelle_2026', 21000000);
 
 export const LaRochelle2026: PolicyHandlerStaticInterface = class extends AbstractPolicyHandler
   implements PolicyHandlerInterface {
@@ -32,6 +36,10 @@ export const LaRochelle2026: PolicyHandlerStaticInterface = class extends Abstra
       operators: [OperatorsEnum.BLABLACAR_DAILY],
     },
   ];
+
+  protected readonly territorySelector: TerritorySelectorsInterface = {
+    [TerritoryCodeEnum.Mobility]: ["241700434"],
+  };
 
   protected slices: RunnableSlices = [
     {
@@ -78,12 +86,7 @@ export const LaRochelle2026: PolicyHandlerStaticInterface = class extends Abstra
     isOperatorOrThrow(ctx, getOperatorsAt(this.operators, ctx.carpool.datetime));
     onDistanceRangeOrThrow(ctx, { min: 5_000, max: 70_000 });
     isOperatorClassOrThrow(ctx, ["B", "C"]);
-
-    // aom:241700434
-    // Exclure les trajets qui ne sont pas du tout dans l'AOM
-    if (!startsAt(ctx, { aom: ["241700434"] }) && !endsAt(ctx, { aom: ["241700434"] })) {
-      throw new NotEligibleTargetException();
-    }
+    startsOrEndsAtOrThrow(ctx, this.territorySelector);
   }
 
   public override processStateless(ctx: StatelessContextInterface): void {
