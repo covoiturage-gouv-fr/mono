@@ -6,7 +6,6 @@ import { LavalAgglo2022 } from "./20220412_LavalAgglo.ts";
 import { SMT2022 } from "./20220414_SMT.ts";
 import { MetropoleRouenNormandie2022 } from "./20220420_MetropoleRouenNormandie.ts";
 import { Occitanie20232024 } from "./20221024_Occitanie.ts";
-import { Occitanie20262027 } from "./20260101_Occitanie.ts";
 import { PMGF2022 } from "./20221102_PMGF.ts";
 import { Montpellier } from "./20221206_Montpellier.ts";
 import { Cotentin2023 } from "./20230101_Cotentin.ts";
@@ -48,8 +47,10 @@ import { HauteCorreze2026 } from "./20250902_haute_correze_2026.ts";
 import { ATMB2025 } from "./20251014_ATMB.ts";
 import { CovoitIDFM2026 } from "./20251201_Covoit_IDFM_2026.ts";
 import { LannionTregor2026 } from "./20251201_LannionTregor.ts";
+import { GrandPoitiers2026 } from "./20260101_GrandPoitiers2026.ts";
 import { LaRochelle2026 } from "./20260101_LaRochelle.ts";
 import { MontluconCommunaute2026 } from "./20260101_Montlucon_2026.ts";
+import { Occitanie20262027 } from "./20260101_Occitanie.ts";
 import { PolicyTemplateOne } from "./unbound/PolicyTemplateOne.ts";
 import { PolicyTemplateThree } from "./unbound/PolicyTemplateThree.ts";
 import { PolicyTemplateTwo } from "./unbound/PolicyTemplateTwo.ts";
@@ -67,6 +68,7 @@ export const policies: Map<string, PolicyHandlerStaticInterface> = new Map(
     GrandChatellerault2025,
     GrandPoitiers,
     GrandPoitiers2025,
+    GrandPoitiers2026,
     HauteCorreze2025,
     HauteCorreze2026,
     IDFMPeriodeNormale2021,
