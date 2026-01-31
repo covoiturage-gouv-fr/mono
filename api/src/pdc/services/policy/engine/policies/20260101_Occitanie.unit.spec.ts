@@ -1,8 +1,9 @@
 import { describe, it } from "@/dev_deps.ts";
 import { v4 as uuidV4 } from "@/lib/uuid/index.ts";
-import { CarpoolInterface, OperatorsEnum } from "../../interfaces/index.ts";
+import { CarpoolInterface, OperatorsEnum, TerritoryCodeEnum } from "../../interfaces/index.ts";
 import { makeProcessHelper } from "../tests/macro.ts";
 import { Occitanie20262027 as Handler } from "./20260101_Occitanie.ts";
+import { occitanie2026Data } from "./20260101_Occitanie.data.ts";
 
 const defaultPosition = {
   arr: "46240",
@@ -47,8 +48,14 @@ describe("Occitanie 2026 - Exclusions", () => {
   it("unsupported operator", async () =>
     await process({
       policy: { handler: Handler.id },
-      carpool: [{ operator_uuid: "not in list" }],
-    }, { incentive: [0] }));
+      carpool: [
+        // Non listed operator will fail
+        { operator_uuid: OperatorsEnum.BLABLACAR, datetime: new Date("2026-02-02") },
+
+        // Supported operator but before starting date
+        { operator_uuid: OperatorsEnum.BLABLACAR_DAILY, datetime: new Date("2025-02-02") },
+      ],
+    }, { incentive: [0, 0] }));
 
   it("distance below minimum", async () =>
     await process({
@@ -56,22 +63,23 @@ describe("Occitanie 2026 - Exclusions", () => {
       carpool: [{ distance: 1_999 }],
     }, { incentive: [0] }));
 
+  // The campaign has different maximum distances based on areas
   it("distance above maximum", async () =>
     await process({
       policy: { handler: Handler.id },
       carpool: [
-        { distance: 31_000 }, // regular start and end
-        { distance: 31_000, start: { ...defaultCarpool.start, arr: "30294" } }, // inside specific area
-        { distance: 51_000, start: { ...defaultCarpool.start, arr: "30294" } }, // inside specific area
+        // regular area : 30 km max
+        { distance: 31_000 },
+
+        // inside specific area : 50 km max
+        { distance: 31_000, start: { ...defaultCarpool.start, arr: occitanie2026Data.areas[0] } }, // ok
+        { distance: 51_000, start: { ...defaultCarpool.start, arr: occitanie2026Data.areas[0] } }, // ko
       ],
     }, {
-      incentive: [
-        0,
-        200,
-        0,
-      ],
+      incentive: [0, 200, 0],
     }));
 
+  // trips must start AND end within Occitanie region
   it("trip outside AOM", async () =>
     await process({
       policy: { handler: Handler.id },
@@ -82,20 +90,30 @@ describe("Occitanie 2026 - Exclusions", () => {
       ],
     }, { incentive: [0, 0, 0] }));
 
+  // Trips from within the same inner AOM are rejected
   it("trip within same inner AOM", async () =>
     await process({
       policy: { handler: Handler.id },
-      carpool: [{ start: { ...defaultPosition, aom: "253100986" }, end: { ...defaultPosition, aom: "253100986" } }],
+      carpool: [{
+        start: { ...defaultPosition, aom: occitanie2026Data.inner[0] },
+        end: { ...defaultPosition, aom: occitanie2026Data.inner[0] },
+      }],
     }, { incentive: [0] }));
 
   it("trip within different inner AOM (ok)", async () =>
     await process({
       policy: { handler: Handler.id },
       carpool: [
-        // Grand-Cahors - CA du Pays de l'Or
-        { start: { ...defaultPosition, aom: "200023737" }, end: { ...defaultPosition, aom: "243400470" } },
+        // Grand-Cahors - CA Grand Montauban
+        {
+          start: { ...defaultPosition, aom: occitanie2026Data.innerByName("CA du Grand Cahors") },
+          end: { ...defaultPosition, aom: occitanie2026Data.innerByName("CA Grand Montauban") },
+        },
         // Occitanie - Grand-Cahors
-        { start: { ...defaultPosition, aom: "200053791" }, end: { ...defaultPosition, aom: "243400470" } },
+        {
+          start: { ...defaultPosition, aom: occitanie2026Data.region[TerritoryCodeEnum.Mobility] },
+          end: { ...defaultPosition, aom: occitanie2026Data.innerByName("CA du Grand Cahors") },
+        },
       ],
     }, { incentive: [150, 150] }));
 
@@ -135,35 +153,48 @@ describe("Occitanie 2026 - Exclusions", () => {
     }, { incentive: [0] }));
 });
 
-describe("Occitanie 2026 - Incentives", () => {
+describe("Occitanie 2027 - Incentives", () => {
   // De 2 à 20km : 2€ par passager transporté - contribution passager
   it("first slice (2-20)", async () =>
     await process({
       policy: { handler: Handler.id },
       carpool: [
-        { distance: 2_000, passenger_identity_key: uuidV4(), passenger_contribution: 0 },
+        { distance: 2_000, passenger_identity_key: uuidV4(), passenger_contribution: 100 },
         { distance: 2_000, passenger_identity_key: uuidV4(), passenger_contribution: 200 },
-        { distance: 10_000, passenger_identity_key: uuidV4(), passenger_contribution: 0 },
         { distance: 10_000, passenger_identity_key: uuidV4(), passenger_contribution: 100 },
-        { distance: 15_000, passenger_identity_key: uuidV4(), passenger_contribution: 0 },
-        { distance: 15_000, passenger_identity_key: uuidV4(), passenger_contribution: 50 },
+        { distance: 10_000, passenger_identity_key: uuidV4(), passenger_contribution: 50 },
+        { distance: 15_000, passenger_identity_key: uuidV4(), passenger_contribution: 100 },
+        { distance: 15_000, passenger_identity_key: uuidV4(), passenger_contribution: 250 }, // possible ?
       ],
-    }, { incentive: [200, 0, 200, 100, 200, 150] }));
+    }, { incentive: [100, 0, 100, 150, 100, 0] }));
 
   // De 20 à 30km : 0,10 € par trajet par km par passager moins la contribution du passager, plafonné à 2,00 €
   it("second slice (20-30)", async () =>
     await process({
       policy: { handler: Handler.id },
       carpool: [
-        { distance: 20_000, passenger_identity_key: uuidV4(), passenger_contribution: 0 },
+        // 20 x 0,10 - 0,50 = 1,50 €
+        { distance: 20_000, passenger_identity_key: uuidV4(), passenger_contribution: 50 },
+
+        // 20 x 0,10 - 1,00 = 1,00 €
         { distance: 20_000, passenger_identity_key: uuidV4(), passenger_contribution: 100 },
-        { distance: 25_000, passenger_identity_key: uuidV4(), passenger_contribution: 0 },
+
+        // 25 * 0,10 - 0,50 = 2,00 €
+        { distance: 25_000, passenger_identity_key: uuidV4(), passenger_contribution: 50 },
+
+        // 25 * 0,10 - 1,00 = 1,50 €
         { distance: 25_000, passenger_identity_key: uuidV4(), passenger_contribution: 100 },
-        { distance: 29_000, passenger_identity_key: uuidV4(), passenger_contribution: 0 },
+
+        // 29 * 0,10 - 0,50 = 2,40 € -> capped at 2,00 €
+        { distance: 29_000, passenger_identity_key: uuidV4(), passenger_contribution: 50 },
+
+        // 29 * 0,10 - 1,00 = 1,90 €
         { distance: 29_000, passenger_identity_key: uuidV4(), passenger_contribution: 100 },
+
+        // 29 * 0,10 - 2,00 = 0,90 €
         { distance: 29_000, driver_identity_key: uuidV4(), passenger_contribution: 200 }, // switch driver identity to avoid daily limit
       ],
-    }, { incentive: [200, 100, 200, 150, 200, 190, 90] }));
+    }, { incentive: [150, 100, 200, 150, 200, 190, 90] }));
 
   // Pour les trajets au-delà de 30km et jusqu’à 50km sur les bassins listés en annexe 1 :
   // plafonné à 2€ par passager transporté
@@ -171,18 +202,17 @@ describe("Occitanie 2026 - Incentives", () => {
     await process({
       policy: { handler: Handler.id },
       carpool: [
-        { distance: 30_000 },
-        { distance: 45_000 },
-        { distance: 60_000 },
+        { distance: 30_000, start: { ...defaultCarpool.start, arr: occitanie2026Data.areas[0] } },
+        { distance: 49_999, start: { ...defaultCarpool.start, arr: occitanie2026Data.areas[0] } },
       ],
-    }, { incentive: [250, 250, 250] }));
+    }, { incentive: [200, 200] }));
 
   it("farther away", async () =>
     await process({
       policy: { handler: Handler.id },
       carpool: [
-        { distance: 80_000 },
-        { distance: 100_000 },
+        { distance: 30_000 },
+        { distance: 50_000, start: { ...defaultCarpool.start, arr: occitanie2026Data.areas[0] } },
       ],
     }, { incentive: [0, 0] }));
 });
@@ -192,90 +222,59 @@ describe("Occitanie 2026 - Driver daily limits", () => {
     await process({
       policy: { handler: Handler.id },
       carpool: [
-        { operator_trip_id: uuidV4() },
-        { operator_trip_id: uuidV4() },
-        { operator_trip_id: uuidV4() },
-        { operator_trip_id: uuidV4() },
-        { operator_trip_id: uuidV4() },
-        { operator_trip_id: uuidV4() },
-        { operator_trip_id: uuidV4() }, /* exceeds limit here */
+        { operator_trip_id: uuidV4(), passenger_identity_key: uuidV4() },
+        { operator_trip_id: uuidV4(), passenger_identity_key: uuidV4() },
+        { operator_trip_id: uuidV4(), passenger_identity_key: uuidV4() },
+        { operator_trip_id: uuidV4(), passenger_identity_key: uuidV4() },
+        { operator_trip_id: uuidV4(), passenger_identity_key: uuidV4() },
+        { operator_trip_id: uuidV4(), passenger_identity_key: uuidV4() },
+        { operator_trip_id: uuidV4(), passenger_identity_key: uuidV4() }, /* exceeds driver limit here */
       ],
-    }, { incentive: [100, 100, 100, 100, 100, 100, 0] }));
+    }, { incentive: [150, 150, 150, 150, 150, 150, 0] }));
 
-  it("should reset limits on different days", async () =>
+  it("should reset driver limits on different days", async () =>
     await process({
       policy: { handler: Handler.id },
       carpool: [
-        { datetime: new Date("2026-02-01T10:00:00") },
-        { datetime: new Date("2026-02-01T12:00:00") },
-        { datetime: new Date("2026-02-01T14:00:00") },
-        { datetime: new Date("2026-02-01T16:00:00") },
-        { datetime: new Date("2026-02-01T16:00:00") },
-        { datetime: new Date("2026-02-01T16:00:00") },
-        { datetime: new Date("2026-02-01T18:00:00") }, // exceeds limit here
+        { datetime: new Date("2026-02-02T10:00:00"), passenger_identity_key: uuidV4() },
+        { datetime: new Date("2026-02-02T12:00:00"), passenger_identity_key: uuidV4() },
+        { datetime: new Date("2026-02-02T14:00:00"), passenger_identity_key: uuidV4() },
+        { datetime: new Date("2026-02-02T16:00:00"), passenger_identity_key: uuidV4() },
+        { datetime: new Date("2026-02-02T16:00:00"), passenger_identity_key: uuidV4() },
+        { datetime: new Date("2026-02-02T16:00:00"), passenger_identity_key: uuidV4() },
+        { datetime: new Date("2026-02-02T18:00:00"), passenger_identity_key: uuidV4() }, // exceeds driver limit here
 
         // next day
-        { datetime: new Date("2026-02-02T10:00:00") },
-        { datetime: new Date("2026-02-02T12:00:00") },
+        { datetime: new Date("2026-02-03T10:00:00"), passenger_identity_key: uuidV4() },
+        { datetime: new Date("2026-02-03T12:00:00"), passenger_identity_key: uuidV4() },
       ],
-    }, { incentive: [100, 100, 100, 100, 100, 100, 0, 100, 100] }));
+    }, { incentive: [150, 150, 150, 150, 150, 150, 0, 150, 150] }));
 });
 
-describe("Occitanie 2026 - Driver monthly limits", () => {
-  it("should limit driver monthly earnings to 150 €", async () => {
-    await process({
-      policy: { handler: Handler.id },
-      carpool: [{ driver_identity_key: "driver_1" }],
-      meta: [{
-        key: "max_amount_restriction.0-driver_1.month.1-2026",
-        value: 149_99n,
-      }, {
-        key: "max_amount_restriction.global.campaign.global",
-        value: 149_99n,
-      }],
-    }, {
-      incentive: [1], // only 0.01€ left to reach the limit
-      meta: [{
-        key: "max_amount_restriction.0-driver_1.month.1-2026",
-        value: 150_00n,
-      }, {
-        key: "max_amount_restriction.global.campaign.global",
-        value: 150_00n,
-      }],
-    });
-  });
-
-  it("should reset limits on next month", async () => {
+describe("Occitanie 2026 - Passenger daily limits", () => {
+  it("should limit passenger daily trips to 2", async () =>
     await process({
       policy: { handler: Handler.id },
       carpool: [
-        { driver_identity_key: "driver_1", datetime: new Date("2026-02-10") },
-        { driver_identity_key: "driver_1", datetime: new Date("2026-03-10") },
+        { operator_trip_id: uuidV4(), driver_identity_key: uuidV4() },
+        { operator_trip_id: uuidV4(), driver_identity_key: uuidV4() },
+        { operator_trip_id: uuidV4(), driver_identity_key: uuidV4() }, /* exceeds driver limit here */
       ],
-      meta: [{
-        key: "max_amount_restriction.0-driver_1.month.1-2026",
-        value: 149_99n,
-      }, {
-        key: "max_amount_restriction.global.campaign.global",
-        value: 149_99n,
-      }],
-    }, {
-      incentive: [
-        1, // only 0.01€ left to reach the limit
-        1_00, // reset for new month : full incentive
+    }, { incentive: [150, 150, 0] }));
+
+  it("should reset passenger limits on different days", async () =>
+    await process({
+      policy: { handler: Handler.id },
+      carpool: [
+        { datetime: new Date("2026-02-02T10:00:00"), driver_identity_key: uuidV4() },
+        { datetime: new Date("2026-02-02T12:00:00"), driver_identity_key: uuidV4() },
+        { datetime: new Date("2026-02-02T18:00:00"), driver_identity_key: uuidV4() }, // exceeds driver limit here
+
+        // next day
+        { datetime: new Date("2026-02-03T10:00:00"), driver_identity_key: uuidV4() },
+        { datetime: new Date("2026-02-03T12:00:00"), driver_identity_key: uuidV4() },
       ],
-      meta: [{
-        key: "max_amount_restriction.0-driver_1.month.1-2026", // february
-        value: 150_00n,
-      }, {
-        key: "max_amount_restriction.global.campaign.global",
-        value: 151_00n,
-      }, {
-        key: "max_amount_restriction.0-driver_1.month.2-2026", // march
-        value: 1_00n,
-      }],
-    });
-  });
+    }, { incentive: [150, 150, 0, 150, 150] }));
 });
 
 describe("Occitanie 2026 - Campaign global limit", () => {
@@ -288,7 +287,7 @@ describe("Occitanie 2026 - Campaign global limit", () => {
         value: 61_162_00n,
       }],
     }, {
-      incentive: [100, 0, 0], // only 1.00€ left to reach the limit
+      incentive: [100, 0, 0], // 1.00€ left to reach the limit
     });
   });
 });

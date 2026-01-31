@@ -30,10 +30,10 @@ function startsOrEndsWithinArea(ctx: StatelessContextInterface) {
 }
 
 function filterInnerAOMOrThrow(ctx: StatelessContextInterface): void {
-  const { aom } = occitanie2026Data;
+  const { inner } = occitanie2026Data;
 
   // check if start and end are within inner AOM
-  const isInner = startsAndEndsAt(ctx, { [TerritoryCodeEnum.Mobility]: aom });
+  const isInner = startsAndEndsAt(ctx, { [TerritoryCodeEnum.Mobility]: inner });
   if (!isInner) return;
 
   // throw if startn and end are within the same AOM
@@ -149,8 +149,15 @@ export const Occitanie20262027 = class extends AbstractPolicyHandler implements 
     }
 
     // Départ ET arrivée dans le périmètre de la région Occitanie...
-    startsAndEndsAtOrThrow(ctx, { [TerritoryCodeEnum.Region]: ["76"] });
-    startsAndEndsAtOrThrow(ctx, { [TerritoryCodeEnum.Mobility]: ["200053791", ...occitanie2026Data.aom] });
+    startsAndEndsAtOrThrow(ctx, {
+      [TerritoryCodeEnum.Region]: [occitanie2026Data.region[TerritoryCodeEnum.Region]],
+    });
+    startsAndEndsAtOrThrow(ctx, {
+      [TerritoryCodeEnum.Mobility]: [
+        ...occitanie2026Data.inner,
+        occitanie2026Data.region[TerritoryCodeEnum.Mobility],
+      ],
+    });
 
     // ...hors trajets internes aux autres Autorités Organisatrices de Mobilité de la Région (cf. Annexe 2) ;
     // sauf si les AOM sont différentes
@@ -183,7 +190,8 @@ export const Occitanie20262027 = class extends AbstractPolicyHandler implements 
     }
 
     // Application du seuil d'incitation maximal de 2,00 €
-    ctx.incentive.set(Math.min(200, amount));
+    // et minimal de 0,00 €
+    ctx.incentive.set(Math.max(Math.min(200, amount), 0));
   }
 
   params(): PolicyHandlerParamsInterface {
