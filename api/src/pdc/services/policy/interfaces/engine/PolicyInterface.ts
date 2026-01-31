@@ -100,6 +100,8 @@ export interface StatelessContextInterface {
   carpool: CarpoolInterface;
   policy_territory_selector?: TerritorySelectorsInterface;
   policy_max_amount?: bigint;
+  // deno-lint-ignore no-explicit-any
+  data?: Record<string, any>;
 }
 
 /**

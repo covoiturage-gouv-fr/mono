@@ -6,6 +6,7 @@ import { LavalAgglo2022 } from "./20220412_LavalAgglo.ts";
 import { SMT2022 } from "./20220414_SMT.ts";
 import { MetropoleRouenNormandie2022 } from "./20220420_MetropoleRouenNormandie.ts";
 import { Occitanie20232024 } from "./20221024_Occitanie.ts";
+import { Occitanie20262027 } from "./20260101_Occitanie.ts";
 import { PMGF2022 } from "./20221102_PMGF.ts";
 import { Montpellier } from "./20221206_Montpellier.ts";
 import { Cotentin2023 } from "./20230101_Cotentin.ts";
@@ -84,6 +85,7 @@ export const policies: Map<string, PolicyHandlerStaticInterface> = new Map(
     NantesMetropole2024,
     NantesMetropoleXPCovoitan2021,
     Occitanie20232024,
+    Occitanie20262027,
     PMGF2022,
     PMGF2023,
     PMGFOctobre2023,
