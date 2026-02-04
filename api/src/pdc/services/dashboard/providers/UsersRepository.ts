@@ -112,7 +112,7 @@ export class UsersRepository implements UsersRepositoryInterface {
 
   async deleteUser(params: DeleteUserParamsInterface): Promise<DeleteUserResultInterface> {
     const query = sql`
-      DELETE ${raw(this.table)}
+      DELETE FROM ${raw(this.table)}
       WHERE _id = ${params.id}
       RETURNING _id
     `;
