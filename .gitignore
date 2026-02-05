@@ -2,6 +2,7 @@ node_modules
 .DS_Store
 .idea
 .ignore
+.claude
 !.vscode/settings.json
 .env
 .env.disabled
