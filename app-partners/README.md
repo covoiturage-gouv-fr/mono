@@ -181,3 +181,9 @@ App-Partners est un **frontend pur** : il ne possède aucune base de données pr
 - [DSFR Documentation](https://www.systeme-de-design.gouv.fr/)
 - [React DSFR Storybook](https://components.react-dsfr.codegouv.studio/?path=/docs/components-button--default)
 - [Next.js Documentation](https://nextjs.org/docs)
+
+## Licence
+
+DINUM / DGITM / ADEME, 2017-2026
+
+Ce projet est développé sous licence [Apache license 2.0](./LICENSE).
