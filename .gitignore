@@ -9,6 +9,7 @@ node_modules
 .pgcli*
 db/*
 logs
+.claude
 
 !docker/dashboard
 dashboard/src/environments/environment.review.ts
