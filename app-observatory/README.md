@@ -1,36 +1,111 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Observatoire national du covoiturage au quotidien
 
-## Getting Started
+L'Observatoire national du covoiturage au quotidien est une application web permettant de suivre l'évolution des pratiques de covoiturage courte distance en France et d'évaluer l'impact des politiques publiques mises en place par l'État, les collectivités et les entreprises.
 
-First, run the development server:
+**Site de production** : [observatoire.covoiturage.gouv.fr](https://observatoire.covoiturage.gouv.fr/)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
+## Objectifs
+
+- Suivre l'évolution du covoiturage courte distance à l'échelle nationale et territoriale
+- Évaluer l'efficacité des campagnes d'incitation financière
+- Fournir des données ouvertes aux collectivités, entreprises et citoyens
+- Accompagner l'objectif national de **3 millions de trajets quotidiens** en covoiturage d'ici 2027
+
+## Stack technique
+
+| Catégorie | Technologie |
+|-----------|-------------|
+| **Framework** | Next.js 15.1 (App Router) |
+| **Langage** | TypeScript 5.7, React 19 |
+| **Design System** | [@codegouvfr/react-dsfr](https://github.com/codegouvfr/react-dsfr) (Système de Design de l'État) |
+| **UI** | Material-UI 6.4, Emotion CSS-in-JS, SASS |
+| **Graphiques** | Chart.js 4.4, react-chartjs-2 |
+| **Cartographie** | MapLibre GL 4.7, Deck.gl 9.1, react-map-gl |
+| **Géospatial** | H3-js (indexation hexagonale), Turf.js |
+| **Contenu** | MDX (next-mdx-remote), remark/rehype |
+| **Recherche** | Meilisearch 0.48 |
+| **Analytics** | Matomo (@socialgouv/matomo-next) |
+| **Build** | Export statique (`output: "export"`) |
+
+## Structure du projet
+
+```
+src/
+├── app/                    # Routes Next.js (App Router)
+│   ├── page.tsx           # Page d'accueil
+│   ├── observatoire/      # Tableaux de bord
+│   │   ├── territoire/    # Données par territoire
+│   │   └── campagnes-incitation/  # Suivi des incitations
+│   ├── actualites/        # Section actualités
+│   ├── ressources/        # Ressources documentaires
+│   ├── collectivites/     # Pages pour collectivités
+│   └── autres-acteurs/    # Employeurs, particuliers, plateformes
+├── components/            # Composants React
+│   ├── common/            # Composants réutilisables
+│   ├── layout/            # Header, Footer, Navigation
+│   └── observatoire/      # Composants du tableau de bord
+├── config/                # Configuration (CMS, analytics, cartes)
+├── context/               # Providers React Context
+├── helpers/               # Fonctions utilitaires
+├── hooks/                 # Custom hooks React
+├── interfaces/            # Types TypeScript
+└── styles/                # Styles globaux SCSS
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Fonctionnalités principales
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Tableau de bord territorial
+- Analyse des données par périmètre : national, régional, départemental, communal
+- Visualisation des flux de covoiturage sur carte interactive
+- Graphiques d'évolution temporelle (mensuel, trimestriel, semestriel)
+- Indicateurs clés : trajets, passagers, distances, taux d'occupation
 
-[http://localhost:3000/api/hello](http://localhost:3000/api/hello) is an endpoint that uses [Route Handlers](https://beta.nextjs.org/docs/routing/route-handlers). This endpoint can be edited in `app/api/hello/route.ts`.
+### Cartographie avancée
+- Cartes vectorielles MapLibre avec tuiles personnalisées
+- Visualisation de densité hexagonale H3
+- Flux origine-destination
+- Aires de covoiturage
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+### Campagnes d'incitation
+- Suivi des campagnes financières par territoire
+- Montants distribués et trajets incités
+- Évolution dans le temps
 
-## Learn More
+## Installation
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+# Installation des dépendances
+npm install
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Lancement en développement
+npm run dev
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+# Build de production (export statique)
+npm run build
+```
 
-## Deploy on Vercel
+## Variables d'environnement
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Copier `.env.example` vers `.env.local` et configurer :
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+```env
+NEXT_PUBLIC_API_URL=           # URL de l'API backend
+NEXT_PUBLIC_CMS_URL=           # URL du CMS Strapi
+NEXT_PUBLIC_MAPTILER_KEY=      # Clé MapTiler pour les fonds de carte
+NEXT_PUBLIC_MATOMO_URL=        # URL Matomo (analytics)
+NEXT_PUBLIC_MATOMO_SITE_ID=    # ID du site Matomo
+```
+
+## Liens utiles
+
+- [Registre de preuve de covoiturage](https://covoiturage.beta.gouv.fr/)
+- [Plan national covoiturage](https://www.ecologie.gouv.fr/covoiturage-en-france-avantages-et-reglementationen-vigueur)
+- [Système de Design de l'État (DSFR)](https://www.systeme-de-design.gouv.fr/)
+- [beta.gouv.fr](https://beta.gouv.fr/)
+
+## Licence
+
+DINUM / DGITM / ADEME, 2017-2026
+
+Ce projet est développé sous licence [Apache license 2.0](./LICENSE).  
+
