@@ -18,7 +18,7 @@ Review changes from: `!git diff --name-only HEAD~1` or files specified in $ARGUM
 ## Documentation Files
 
 | File | Purpose | Update When |
-|------|---------|-------------|
+| ---- | ------- | ----------- |
 | `CLAUDE.md` | Main project guide | Architecture changes |
 | `.claude/CLAUDE-API.md` | API instructions | Backend changes |
 | `.claude/CLAUDE-APP-PARTNERS.md` | Partners app guide | Frontend changes |
@@ -30,6 +30,7 @@ Review changes from: `!git diff --name-only HEAD~1` or files specified in $ARGUM
 ## Documentation Checklist
 
 ### 1. CLAUDE Instructions
+
 - [ ] **New patterns**: Document new architectural patterns or conventions
 - [ ] **New commands**: Add new Just/CLI commands to relevant docs
 - [ ] **New services**: Document new API services in CLAUDE-API.md
@@ -37,32 +38,38 @@ Review changes from: `!git diff --name-only HEAD~1` or files specified in $ARGUM
 - [ ] **Breaking changes**: Highlight changes to existing patterns
 
 ### 2. Code Comments
+
 - [ ] **Complex logic**: Non-obvious algorithms have explanatory comments
 - [ ] **TODOs**: New TODOs have issue references or context
 - [ ] **Deprecations**: Deprecated code is marked with `@deprecated`
 - [ ] **No stale comments**: Comments match current implementation
 
 ### 3. Type Documentation
+
 - [ ] **Interface docs**: Public interfaces have JSDoc comments
 - [ ] **Action docs**: Handler decorators describe the action purpose
 - [ ] **Complex types**: Non-trivial types are documented
 
 ### 4. API Documentation
+
 - [ ] **New endpoints**: Document path, method, params, response
 - [ ] **Changed endpoints**: Update docs for modified behavior
 - [ ] **Error responses**: Document possible error codes
 
 ### 5. Configuration
+
 - [ ] **New env vars**: Document in relevant CLAUDE-*.md files
 - [ ] **Default values**: Document default values and valid ranges
 - [ ] **Required vs optional**: Clearly indicate which are required
 
 ### 6. Database
+
 - [ ] **Schema changes**: Document migration purpose
 - [ ] **New tables/columns**: Update database section in docs
 - [ ] **Index changes**: Note performance implications
 
 ### 7. SQLMesh/Datalake
+
 - [ ] **New models**: Document in CLAUDE-DATALAKE.md
 - [ ] **New macros**: Add macro documentation
 - [ ] **Schema changes**: Update column conventions if needed
@@ -70,11 +77,13 @@ Review changes from: `!git diff --name-only HEAD~1` or files specified in $ARGUM
 ## Analysis Steps
 
 1. **Identify changed components**:
+
    ```bash
    git diff --name-only HEAD~1 | grep -E '\.(ts|tsx|sql|py)$'
    ```
 
 2. **Check for documentation changes**:
+
    ```bash
    git diff --name-only HEAD~1 | grep -E '(\.md|CLAUDE)'
    ```
@@ -93,17 +102,21 @@ Review changes from: `!git diff --name-only HEAD~1` or files specified in $ARGUM
 ### Missing Documentation
 
 #### [PRIORITY] Missing Doc for Feature/Change
+
 - **Code change**: path/to/file.ts - description of change
 - **Documentation needed**: Which file(s) need updates
 - **Suggested content**: Brief outline of what to document
 
 ### Stale Documentation
+
 - Documentation that no longer matches the code
 
 ### Documentation Updates Included
+
 - Doc changes that correctly reflect code changes
 
 ### Required Actions
+
 - [ ] Update specific documentation files
 - [ ] Add inline comments for complex logic
 - [ ] Update CLAUDE instructions for new patterns

@@ -42,6 +42,12 @@ Use sub-agents to perform :
 - `/check-qa` a quality code review to enforce up to date Deno coding standards and project coherence
 - `/check-doc` to make sure documentation and CLAUDE instructions are updated alongside the code
 
+### documentation
+
+Technical internal documentation is available on Notion.
+`api/specs` are published on <https://tech.covoiturage.beta.gouv.fr> using bump.sh in a Github Action.
+Local README.md files are used as entrypoints to the different applications and must be updated alongside code.
+
 ### Git
 
 CLAUDE agent cannot commit. Code must be human reviewed before committing to the repository.
