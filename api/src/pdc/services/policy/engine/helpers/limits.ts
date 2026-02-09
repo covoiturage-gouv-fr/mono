@@ -68,6 +68,20 @@ export function applyLimitsOnStatefulStage(
   }
 }
 
+export const watchPersonTripCount: LimitStatelessStageHelper = (() => {
+  function fn(ctx: StatelessContextInterface, uuid: string, target?: LimitTargetEnum): void {
+    ctx.meta.register({
+      uuid,
+      name: "person_trip_counter",
+      scope: getTargetUuid(target!, ctx),
+      lifetime: MetadataLifetime.Always,
+    });
+  }
+  fn.counter = LimitCounterTypeEnum.Trip;
+  fn.priority = 100;
+  return fn;
+})();
+
 export const watchForGlobalMaxAmount: LimitStatelessStageHelper = (() => {
   function fn(ctx: StatelessContextInterface, uuid: string): void {
     ctx.meta.register({
