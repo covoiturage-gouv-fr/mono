@@ -47,6 +47,7 @@ import { HauteCorreze2026 } from "./20250902_haute_correze_2026.ts";
 import { ATMB2025 } from "./20251014_ATMB.ts";
 import { CovoitIDFM2026 } from "./20251201_Covoit_IDFM_2026.ts";
 import { LannionTregor2026 } from "./20251201_LannionTregor.ts";
+import { ATMBx2CCAM2026 } from "./20260101_ATMBx2CCAM_2026.ts";
 import { GrandPoitiers2026 } from "./20260101_GrandPoitiers2026.ts";
 import { LaRochelle2026 } from "./20260101_LaRochelle.ts";
 import { MontluconCommunaute2026 } from "./20260101_Montlucon_2026.ts";
@@ -59,6 +60,7 @@ export const policies: Map<string, PolicyHandlerStaticInterface> = new Map(
   [
     ATMB202305,
     ATMB2025,
+    ATMBx2CCAM2026,
     CCPOA202410,
     CCVMM202405,
     Cannes2024,

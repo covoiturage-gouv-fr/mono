@@ -21,7 +21,6 @@ import {
 import { onDistanceRange, onDistanceRangeOrThrow } from "../helpers/onDistanceRange.ts";
 import { perKm, perSeat } from "../helpers/per.ts";
 import { endsAt, startsAt } from "../helpers/position.ts";
-import { description } from "./20251201_Covoit_IDFM_2026.html.ts";
 import { AbstractPolicyHandler } from "./AbstractPolicyHandler.ts";
 
 // Article 5 TRAJETS ÉLIGIBLES
@@ -175,6 +174,6 @@ export const CovoitIDFM2026: PolicyHandlerStaticInterface = class extends Abstra
   }
 
   describe(): string {
-    return description;
+    return "";
   }
 };
