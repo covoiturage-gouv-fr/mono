@@ -7,6 +7,7 @@ import { TerritorySelectorsInterface } from "@/interfaces/dataInterface";
 import { type PerimeterType } from "@/interfaces/searchInterface";
 import { useAuth } from "@/providers/AuthProvider";
 import { fr } from "@codegouvfr/react-dsfr";
+import { sendEvent } from "@socialgouv/matomo-next";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import Button from "@codegouvfr/react-dsfr/Button";
 import { RadioButtons } from "@codegouvfr/react-dsfr/RadioButtons";
@@ -51,6 +52,11 @@ export default function TabExport() {
   }, [error]);
 
   const handleExport = async () => {
+    void sendEvent({
+      category: "export",
+      action: "Export",
+      name: `Territory: ${territoryId ?? "N/A"} | Operator: ${user?.operator_id ?? "N/A"}`,
+    });
     try {
       await createExport({
         tz: "Europe/Paris",

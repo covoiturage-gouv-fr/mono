@@ -6,7 +6,7 @@ import { cx } from "@codegouvfr/react-dsfr/tools/cx";
 import Autocomplete from "@mui/material/Autocomplete";
 import { sendEvent } from "@socialgouv/matomo-next";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 type SearchBarProps = {
   className?: string;
@@ -27,6 +27,7 @@ type ContentTypes = "article" | "resource" | "page";
 export default function SearchBar(props: SearchBarProps) {
   const { className, id, placeholder, type } = props;
   const [options, setOptions] = useState<SearchOptions[]>([]);
+  const searchEventTimer = useRef<ReturnType<typeof setTimeout>>();
   const search = async (v: string | null) => {
     const query = {
       queries: [
@@ -77,6 +78,14 @@ export default function SearchBar(props: SearchBarProps) {
         )
         .flat(),
     );
+    clearTimeout(searchEventTimer.current);
+    searchEventTimer.current = setTimeout(() => {
+      void sendEvent({
+        category: "recherche",
+        action: "Recherche",
+        name: v ?? "",
+      });
+    }, 500);
   };
   const contentTypes = [
     { id: "article", name: "Actualités", url: "/actualites" },
@@ -136,11 +145,6 @@ export default function SearchBar(props: SearchBarProps) {
         </div>
       )}
       onChange={(e, v) => {
-        void sendEvent({
-          category: "recherche",
-          action: "Recherche",
-          name: v!.title,
-        });
         router.push(getUrl(v!));
       }}
     />
