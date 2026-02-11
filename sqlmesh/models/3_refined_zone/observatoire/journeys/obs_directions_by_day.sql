@@ -23,7 +23,8 @@ SELECT
   SUM(distance) AS distance,
   SUM(incentive_collectivite) AS incentive_collectivite,
   SUM(incentive_operator) AS incentive_operator,
-  SUM(incentive_others) AS incentive_others
+  SUM(incentive_others) AS incentive_others,
+  SUM(no_incentive) AS no_incentive
 FROM refined_zone.obs_directions_hours_by_day
 WHERE code IS NOT NULL
 GROUP BY code, type, journey_date, direction;

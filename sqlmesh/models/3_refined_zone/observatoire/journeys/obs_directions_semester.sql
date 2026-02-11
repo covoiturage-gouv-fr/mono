@@ -21,7 +21,8 @@ WITH sum_directions AS (
     (sum(distance) / sum(journeys)) * sum(drivers) AS drivers_distance,
     sum(incentive_collectivite)       AS incentive_collectivite,
     sum(incentive_operator)          AS incentive_operator,
-    sum(incentive_others)            AS incentive_others
+    sum(incentive_others)            AS incentive_others,
+    SUM(no_incentive)                AS no_incentive
   FROM refined_zone.obs_directions_by_day
   WHERE journey_date >= @start_ts
     AND journey_date <  @end_ts
@@ -41,6 +42,7 @@ SELECT
   a.incentive_collectivite,
   a.incentive_operator,
   a.incentive_others,
+  a.no_incentive,
   round(
     (drivers_distance + passengers_distance) / drivers_distance, 2
   )::float                      AS occupation_rate,

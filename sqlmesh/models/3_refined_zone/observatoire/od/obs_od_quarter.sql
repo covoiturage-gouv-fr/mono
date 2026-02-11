@@ -51,22 +51,14 @@ od_agg AS (
     round(sum(distance)::numeric / 1000, 2)  AS distance,
     sum(duration) / 60 AS duration
   FROM od AS a
- LEFT JOIN LATERAL (
-    SELECT arr, epci
-    FROM trusted_zone.perimeters p
-    WHERE p.arr = a.origin
-      AND p.year <= a.year
-    ORDER BY p.year DESC
-    LIMIT 1
-  ) b ON TRUE
-  LEFT JOIN LATERAL (
-    SELECT arr, epci
-    FROM trusted_zone.perimeters p
-    WHERE p.arr = a.destination
-      AND p.year <= a.year
-    ORDER BY p.year DESC
-    LIMIT 1
-  ) c ON TRUE
+  LEFT JOIN (
+    SELECT year, arr, epci
+    FROM trusted_zone.perimeters 
+  ) b ON  b.arr = a.origin and b.year = geo.get_latest_millesime_or(a.year::smallint)
+  LEFT JOIN (
+    SELECT year, arr, epci
+    FROM trusted_zone.perimeters
+  ) c ON c.arr = a.destination and c.year = geo.get_latest_millesime_or(a.year::smallint)
   GROUP BY 1, 2, 4, 5
   HAVING
     least(b.epci, c.epci) IS NOT NULL
@@ -83,22 +75,14 @@ od_agg AS (
     round(sum(distance)::numeric / 1000, 2)  AS distance,
     sum(duration) / 60 AS duration
   FROM od AS a
-  LEFT JOIN LATERAL (
-    SELECT arr, aom
-    FROM trusted_zone.perimeters p
-    WHERE p.arr = a.origin
-      AND p.year <= a.year
-    ORDER BY p.year DESC
-    LIMIT 1
-  ) b ON TRUE
-  LEFT JOIN LATERAL (
-    SELECT arr, aom
-    FROM trusted_zone.perimeters p
-    WHERE p.arr = a.destination
-      AND p.year <= a.year
-    ORDER BY p.year DESC
-    LIMIT 1
-  ) c ON TRUE
+  LEFT JOIN (
+    SELECT year, arr, aom
+    FROM trusted_zone.perimeters 
+  ) b ON  b.arr = a.origin and b.year = geo.get_latest_millesime_or(a.year::smallint)
+  LEFT JOIN (
+    SELECT year, arr, aom
+    FROM trusted_zone.perimeters
+  ) c ON c.arr = a.destination and c.year = geo.get_latest_millesime_or(a.year::smallint)
   GROUP BY 1, 2, 4, 5
   HAVING least(b.aom, c.aom) IS NOT NULL OR greatest(b.aom, c.aom) IS NOT NULL
   UNION
@@ -113,22 +97,14 @@ od_agg AS (
     round(sum(distance)::numeric / 1000, 2)  AS distance,
     sum(duration) / 60 AS duration
   FROM od AS a
-  LEFT JOIN LATERAL (
-    SELECT arr, dep
-    FROM trusted_zone.perimeters p
-    WHERE p.arr = a.origin
-      AND p.year <= a.year
-    ORDER BY p.year DESC
-    LIMIT 1
-  ) b ON TRUE
-  LEFT JOIN LATERAL (
-    SELECT arr, dep
-    FROM trusted_zone.perimeters p
-    WHERE p.arr = a.destination
-      AND p.year <= a.year
-    ORDER BY p.year DESC
-    LIMIT 1
-  ) c ON TRUE
+  LEFT JOIN (
+    SELECT year, arr, dep
+    FROM trusted_zone.perimeters 
+  ) b ON  b.arr = a.origin and b.year = geo.get_latest_millesime_or(a.year::smallint)
+  LEFT JOIN (
+    SELECT year, arr, dep
+    FROM trusted_zone.perimeters
+  ) c ON c.arr = a.destination and c.year = geo.get_latest_millesime_or(a.year::smallint)
   GROUP BY 1, 2, 4, 5
   HAVING least(b.dep, c.dep) IS NOT NULL OR greatest(b.dep, c.dep) IS NOT NULL
   UNION
@@ -143,22 +119,14 @@ od_agg AS (
     round(sum(distance)::numeric / 1000, 2)  AS distance,
     sum(duration) / 60 AS duration
   FROM od AS a
-  LEFT JOIN LATERAL (
-    SELECT arr, reg
-    FROM trusted_zone.perimeters p
-    WHERE p.arr = a.origin
-      AND p.year <= a.year
-    ORDER BY p.year DESC
-    LIMIT 1
-  ) b ON TRUE
-  LEFT JOIN LATERAL (
-    SELECT arr, reg
-    FROM trusted_zone.perimeters p
-    WHERE p.arr = a.destination
-      AND p.year <= a.year
-    ORDER BY p.year DESC
-    LIMIT 1
-  ) c ON TRUE
+  LEFT JOIN (
+    SELECT year, arr, reg
+    FROM trusted_zone.perimeters 
+  ) b ON  b.arr = a.origin and b.year = geo.get_latest_millesime_or(a.year::smallint)
+  LEFT JOIN (
+    SELECT year, arr, reg
+    FROM trusted_zone.perimeters
+  ) c ON c.arr = a.destination and c.year = geo.get_latest_millesime_or(a.year::smallint)
   GROUP BY 1, 2, 4, 5
   HAVING least(b.reg, c.reg) IS NOT NULL OR greatest(b.reg, c.reg) IS NOT NULL
   UNION
@@ -173,22 +141,14 @@ od_agg AS (
     round(sum(distance)::numeric / 1000, 2)  AS distance,
     sum(duration) / 60 AS duration
   FROM od AS a
-  LEFT JOIN LATERAL (
-    SELECT arr, country
-    FROM trusted_zone.perimeters p
-    WHERE p.arr = a.origin
-      AND p.year <= a.year
-    ORDER BY p.year DESC
-    LIMIT 1
-  ) b ON TRUE
-  LEFT JOIN LATERAL (
-    SELECT arr, country
-    FROM trusted_zone.perimeters p
-    WHERE p.arr = a.destination
-      AND p.year <= a.year
-    ORDER BY p.year DESC
-    LIMIT 1
-  ) c ON TRUE
+  LEFT JOIN (
+    SELECT year, arr, country
+    FROM trusted_zone.perimeters 
+  ) b ON  b.arr = a.origin and b.year = geo.get_latest_millesime_or(a.year::smallint)
+  LEFT JOIN (
+    SELECT year, arr, country
+    FROM trusted_zone.perimeters
+  ) c ON c.arr = a.destination and c.year = geo.get_latest_millesime_or(a.year::smallint)
   GROUP BY 1, 2, 4, 5
   HAVING
     least(b.country, c.country) IS NOT NULL
