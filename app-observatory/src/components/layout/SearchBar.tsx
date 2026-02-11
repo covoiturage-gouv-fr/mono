@@ -27,7 +27,7 @@ type ContentTypes = "article" | "resource" | "page";
 export default function SearchBar(props: SearchBarProps) {
   const { className, id, placeholder, type } = props;
   const [options, setOptions] = useState<SearchOptions[]>([]);
-  const searchEventTimer = useRef<ReturnType<typeof setTimeout>>();
+  const searchEventTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const search = async (v: string | null) => {
     const query = {
       queries: [
