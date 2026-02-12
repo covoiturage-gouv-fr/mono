@@ -19,7 +19,6 @@ import {
 } from "../helpers/limits.ts";
 import { onDistanceRange, onDistanceRangeOrThrow } from "../helpers/onDistanceRange.ts";
 import { perKm, perSeat } from "../helpers/per.ts";
-import { description } from "./20251201_LannionTregor.html.ts";
 import { AbstractPolicyHandler } from "./AbstractPolicyHandler.ts";
 
 // INSERT INTO policy.policies (territory_id, start_date, end_date, name, unit, status, handler, max_amount)
@@ -133,6 +132,6 @@ export const LannionTregor2026 = class extends AbstractPolicyHandler implements 
   }
 
   describe(): string {
-    return description;
+    return "";
   }
 };

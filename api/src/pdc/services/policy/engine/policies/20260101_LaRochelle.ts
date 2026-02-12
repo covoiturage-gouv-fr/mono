@@ -20,7 +20,6 @@ import {
 import { onDistanceRange, onDistanceRangeOrThrow } from "../helpers/onDistanceRange.ts";
 import { perKm, perSeat } from "../helpers/per.ts";
 import { startsOrEndsAtOrThrow } from "../helpers/startsOrEndsAtOrThrow.ts";
-import { description } from "./20260101_LaRochelle.html.ts";
 import { AbstractPolicyHandler } from "./AbstractPolicyHandler.ts";
 
 // INSERT INTO policy.policies ( territory_id, start_date, end_date, name, unit, status, handler, max_amount )
@@ -114,6 +113,6 @@ export const LaRochelle2026: PolicyHandlerStaticInterface = class extends Abstra
   }
 
   public describe(): string {
-    return description;
+    return "";
   }
 };

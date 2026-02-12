@@ -43,14 +43,14 @@ export default function Rows(props: RowsProps) {
                 );
               case "row.map":
                 return (
-                  <div className={fr.cx("fr-col")}>
-                    <Map key={i} title={r.title} params={r.params} />
+                  <div key={i} className={fr.cx("fr-col")}>
+                    <Map title={r.title} params={r.params} />
                   </div>
                 );
               case "row.graph":
                 return (
-                  <div className={fr.cx("fr-col")}>
-                    <Graph key={i} title={r.title} params={r.params} />
+                  <div key={i} className={fr.cx("fr-col")}>
+                    <Graph title={r.title} params={r.params} />
                   </div>
                 );
             }
