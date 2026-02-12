@@ -3,8 +3,8 @@ import { useApdfList, useOperatorsList } from "@/hooks/api";
 import { useAuth } from "@/providers/AuthProvider";
 import { fr } from "@codegouvfr/react-dsfr";
 import { Download } from "@codegouvfr/react-dsfr/Download";
-import { sendEvent } from "@socialgouv/matomo-next";
 import Table from "@codegouvfr/react-dsfr/Table";
+import { sendEvent } from "@socialgouv/matomo-next";
 import { type ReactNode } from "react";
 
 export default function APDFTable(props: { title: string; campaignId: number; operatorId: number | null }) {
@@ -48,7 +48,8 @@ export default function APDFTable(props: { title: string; campaignId: number; op
               void sendEvent({
                 category: "apdf",
                 action: "Téléchargement APDF",
-                name: `Campaign: ${props.campaignId} | ${d.datetime.slice(0, 7)}`,
+                name: "Campaign ID",
+                value: `${props.campaignId}`,
               });
             },
           }}
