@@ -9,6 +9,8 @@ export type LocalSiretUser = {
   territory_id: number | null;
   siret: string | null;
   _id: number;
+  analytics_id: string;
+  organisation: string | null;
 };
 
 @provider()
@@ -29,7 +31,9 @@ export class UserRepository {
         u.operator_id,
         u.territory_id,
         COALESCE(o.siret, c.siret) as siret,
-        u._id
+        u._id,
+        u.analytics_id,
+        COALESCE(o.name, t.name) as organisation
       FROM ${raw(this.table)} u
       LEFT JOIN ${raw(this.territoryTable)} t
         ON t._id = u.territory_id
