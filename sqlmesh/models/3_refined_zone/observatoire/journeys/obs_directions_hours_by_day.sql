@@ -10,36 +10,95 @@ MODEL (
   tags ['refined', 'observatoire', 'directions_hours_by_day'],
 );
 
-WITH journeys AS (
+WITH unnested_sirets AS (
   SELECT
-    a.journey_date,
-    a.start_geo_code AS start_com,
-    a.end_geo_code   AS end_com,
-    ps.epci AS start_epci,
-    pe.epci AS end_epci,
-    ps.aom AS start_aom,
-    pe.aom AS end_aom,
-    ps.dep AS start_dep,
-    pe.dep AS end_dep,
-    ps.reg AS start_reg,
-    pe.reg AS end_reg,
-    ps.country AS start_country,
-    pe.country AS end_country,
-    a.journeys,
-    a.drivers,
-    a.passengers,
-    a.passenger_seats,
-    a.distance,
-    a.duration,
-    a.incentive_collectivite,
-    a.incentive_operator,
-    a.incentive_others,
-    a.no_incentive
-  FROM refined_zone.obs_journeys_by_day AS a
-  LEFT JOIN LATERAL (
+    a._id,
+    a.start_geo_code,
+    a.end_geo_code,
+    a.start_datetime_tz,
+    s.siret,
+    CASE 
+      WHEN d.code IS NOT NULL
+        THEN 'collectivite'
+      WHEN c.siren IS NOT NULL
+        THEN 'operator'
+      WHEN d.code is null and c.siren IS null and s.siret is not null
+        THEN 'other'
+      ELSE NULL
+    END AS siret_type
+  FROM trusted_zone.journeys a
+  LEFT JOIN LATERAL (SELECT unnest(a.operator_incentives_sirets) AS siret) s ON TRUE
+  LEFT JOIN (select distinct left(siret,9) as siren from operator.operators) c ON left(s.siret,9) = c.siren
+  LEFT JOIN (select distinct code FROM trusted_zone.perimeters_agg WHERE type = 'aom') d ON left(s.siret,9) = d.code
+  WHERE a.valid_acquisition_status = true
+  AND a.start_datetime_tz BETWEEN @start_ds AND @end_ds
+),
+incentives_agg AS (
+  SELECT
+    start_geo_code AS start_com,
+    end_geo_code AS end_com,
+    extract('hour' from start_datetime_tz) AS hour,
+    start_datetime_tz::date AS journey_date,
+    COUNT(*) FILTER (WHERE siret_type = 'collectivite') AS incentive_collectivite,
+    COUNT(*) FILTER (WHERE siret_type = 'operator')     AS incentive_operator,
+    COUNT(*) FILTER (WHERE siret_type = 'other')        AS incentive_others,
+    COUNT(*) FILTER (WHERE siret_type = NULL)           AS no_incentive,
+  FROM unnested_sirets
+  GROUP BY 1,2,3,4
+),
+journeys_agg AS (
+  SELECT 
+    extract('hour' from start_datetime_tz) AS hour,
+    start_datetime_tz::date AS journey_date,
+    start_geo_code AS start_com,
+    end_geo_code   AS end_com,
+    count(DISTINCT _id)::int AS journeys,
+    count(DISTINCT driver_id)::int AS drivers,
+    count(DISTINCT passenger_id)::int AS passengers,
+    sum(passenger_seats)::int AS passenger_seats,
+    sum(distance)::int AS distance,
+    sum(duration) AS duration
+  FROM trusted_zone.journeys 
+  WHERE valid_acquisition_status = true
+  AND start_datetime_tz BETWEEN @start_ds AND @end_ds
+  GROUP BY 1,2,3,4
+),
+journeys AS (
+  SELECT 
+  a.hour,
+  a.journey_date,
+  a.start_com,
+  a.end_com,
+  ps.epci AS start_epci,
+  pe.epci AS end_epci,
+  ps.aom AS start_aom,
+  pe.aom AS end_aom,
+  ps.dep AS start_dep,
+  pe.dep AS end_dep,
+  ps.reg AS start_reg,
+  pe.reg AS end_reg,
+  ps.country AS start_country,
+  pe.country AS end_country,
+  a.journeys,
+  a.drivers,
+  a.passengers,
+  a.passenger_seats,
+  a.distance,
+  a.duration,
+  b.incentive_collectivite,
+  b.incentive_operator,
+  b.incentive_others,
+  b.no_incentive
+FROM journeys_agg a
+LEFT JOIN incentives_agg b 
+  ON a.start_com = b.start_com 
+  AND a.end_com = b.end_com 
+  AND a.hour = b.hour
+  AND a.journey_date = b.journey_date
+LEFT JOIN LATERAL (
     SELECT arr, epci, aom, dep, reg, country
     FROM trusted_zone.perimeters p
-    WHERE p.arr = a.start_geo_code
+    WHERE p.arr = a.start_com
       AND p.year <= EXTRACT(YEAR FROM a.journey_date)
     ORDER BY p.year DESC
     LIMIT 1
@@ -47,32 +106,11 @@ WITH journeys AS (
   LEFT JOIN LATERAL (
     SELECT arr, epci, aom, dep, reg, country
     FROM trusted_zone.perimeters p
-    WHERE p.arr = a.end_geo_code
+    WHERE p.arr = a.end_com
       AND p.year <= EXTRACT(YEAR FROM a.journey_date)
     ORDER BY p.year DESC
     LIMIT 1
   ) pe ON TRUE
-  WHERE a.journey_date BETWEEN @start_ds AND @end_ds
-),
-aom_region AS (
-  SELECT *
-  FROM (
-    VALUES
-      ('200053767', '84'),
-      ('200053742', '32'),
-      ('231300021', '93'),
-      ('200053726', '27'),
-      ('233500016', '53'),
-      ('234500023', '24'),
-      ('200076958', '94'),
-      ('229850003', '06'),
-      ('200052264', '44'),
-      ('239730013', '03'),
-      ('200053403', '28'),
-      ('200053759', '75'),
-      ('200053791', '76'),
-      ('234400034', '52')
-  ) AS t(code, reg)
 ),
 -- Directions pour tous les territoires SAUF AOM
 directions_non_aom AS (
@@ -121,7 +159,7 @@ directions_aom_classic AS (
     j.journey_date,
     d.direction,
     d.type,
-    d.start_code as code,
+    d.start_code AS code,
     j.journeys,
     j.drivers,
     j.passengers,
@@ -142,7 +180,7 @@ directions_aom_classic AS (
       ('from','aom', start_aom, end_aom, start_aom, end_aom),
       ('to',  'aom', end_aom,   start_aom, end_aom,   start_aom)
   ) AS d(direction, type, start_code, end_code, intra_start, intra_end)
-  WHERE d.start_code NOT IN (SELECT code FROM aom_region)
+  WHERE d.start_code NOT IN (SELECT aom FROM trusted_zone.aom_region)
 ),
 -- Directions pour AOM régionales
 directions_aom_regional AS (
@@ -150,7 +188,7 @@ directions_aom_regional AS (
     j.journey_date,
     'from' AS direction,
     'aom' AS type,
-    ar.code,
+    ar.aom AS code,
     j.journeys,
     j.drivers,
     j.passengers,
@@ -166,8 +204,8 @@ directions_aom_regional AS (
       ELSE FALSE 
     END AS is_intra
   FROM journeys j
-  INNER JOIN aom_region ar ON ar.reg = j.start_reg
-  WHERE NOT (j.start_aom = j.end_aom AND j.start_aom = ar.code)  -- Exclut les intra-AOM
+  INNER JOIN trusted_zone.aom_region ar ON ar.reg = j.start_reg
+  WHERE NOT (j.start_aom = j.end_aom AND j.start_aom = ar.aom)  -- Exclut les intra-AOM
   
   UNION ALL
   
@@ -175,7 +213,7 @@ directions_aom_regional AS (
     j.journey_date,
     'to' AS direction,
     'aom' AS type,
-    ar.code,
+    ar.aom AS code,
     j.journeys,
     j.drivers,
     j.passengers,
@@ -191,8 +229,8 @@ directions_aom_regional AS (
       ELSE FALSE 
     END AS is_intra
   FROM journeys j
-  INNER JOIN aom_region ar ON ar.reg = j.end_reg
-  WHERE NOT (j.start_aom = j.end_aom AND j.start_aom = ar.code)  -- Exclut les intra-AOM
+  INNER JOIN trusted_zone.aom_region ar ON ar.reg = j.end_reg
+  WHERE NOT (j.start_aom = j.end_aom AND j.start_aom = ar.aom)  -- Exclut les intra-AOM
 ),
 -- Union de toutes les directions
 all_directions AS (
