@@ -57,9 +57,8 @@ od_agg AS (
     FROM trusted_zone.perimeters
   ) c ON c.arr = a.destination and c.year = geo.get_latest_millesime_or(a.year::smallint)
   GROUP BY 1, 3, 4
-  HAVING
-    least(b.epci, c.epci) IS NOT NULL
-    OR greatest(b.epci, c.epci) IS NOT NULL
+  HAVING least(b.epci, c.epci) IS NOT NULL
+  /* aom classiques */
   UNION
   SELECT
     a.year,
@@ -79,8 +78,35 @@ od_agg AS (
     SELECT year, arr, aom
     FROM trusted_zone.perimeters
   ) c ON c.arr = a.destination and c.year = geo.get_latest_millesime_or(a.year::smallint)
+  WHERE b.aom NOT IN (SELECT aom FROM trusted_zone.aom_region)
+    OR c.aom NOT IN (SELECT aom FROM trusted_zone.aom_region)
   GROUP BY 1, 3, 4
-  HAVING least(b.aom, c.aom) IS NOT NULL OR greatest(b.aom, c.aom) IS NOT NULL
+  HAVING least(b.aom, c.aom) IS NOT NULL
+   /* aom région */
+  UNION
+  SELECT
+    a.year,
+    'aom'                                    AS type,
+    least(b.aom_r, c.aom_r)                  AS territory_1,
+    greatest(b.aom_r, c.aom_r)               AS territory_2,
+    sum(journeys)                            AS journeys,
+    sum(passenger_seats)                     AS passengers,
+    round(sum(distance)::numeric / 1000, 2)  AS distance,
+    sum(duration) / 60 AS duration
+  FROM od AS a
+  LEFT JOIN (
+    SELECT p.year, p.arr, p.aom, ar.aom AS aom_r, p.reg
+    FROM trusted_zone.perimeters p
+    LEFT JOIN trusted_zone.aom_region ar ON p.reg = ar.reg
+  ) b ON  b.arr = a.origin and b.year = geo.get_latest_millesime_or(a.year::smallint)
+  LEFT JOIN (
+    SELECT p.year, p.arr, p.aom, ar.aom AS aom_r, p.reg
+    FROM trusted_zone.perimeters p
+    LEFT JOIN trusted_zone.aom_region ar ON p.reg = ar.reg
+  ) c ON c.arr = a.destination and c.year = geo.get_latest_millesime_or(a.year::smallint)
+  WHERE b.aom <> c.aom
+  GROUP BY 1, 3, 4
+  HAVING least(b.aom_r, c.aom_r) IS NOT NULL
   UNION
   SELECT
     a.year,
@@ -101,7 +127,7 @@ od_agg AS (
     FROM trusted_zone.perimeters
   ) c ON c.arr = a.destination and c.year = geo.get_latest_millesime_or(a.year::smallint)
   GROUP BY 1, 3, 4
-  HAVING least(b.dep, c.dep) IS NOT NULL OR greatest(b.dep, c.dep) IS NOT NULL
+  HAVING least(b.dep, c.dep) IS NOT NULL
   UNION
   SELECT
     a.year,
@@ -122,7 +148,7 @@ od_agg AS (
     FROM trusted_zone.perimeters
   ) c ON c.arr = a.destination and c.year = geo.get_latest_millesime_or(a.year::smallint)
   GROUP BY 1, 3, 4
-  HAVING least(b.reg, c.reg) IS NOT NULL OR greatest(b.reg, c.reg) IS NOT NULL
+  HAVING least(b.reg, c.reg) IS NOT NULL
   UNION
   SELECT
     a.year,
@@ -143,9 +169,7 @@ od_agg AS (
     FROM trusted_zone.perimeters
   ) c ON c.arr = a.destination and c.year = geo.get_latest_millesime_or(a.year::smallint)
   GROUP BY 1, 3, 4
-  HAVING
-    least(b.country, c.country) IS NOT NULL
-    OR greatest(b.country, c.country) IS NOT NULL
+  HAVING least(b.country, c.country) IS NOT NULL
 )
 SELECT
   make_date(a.year, 1, 1) AS year_date,
@@ -182,4 +206,3 @@ LEFT JOIN LATERAL (
   ORDER BY p.year DESC
   LIMIT 1
 ) AS c ON TRUE
-ORDER BY a.territory_1, a.territory_2

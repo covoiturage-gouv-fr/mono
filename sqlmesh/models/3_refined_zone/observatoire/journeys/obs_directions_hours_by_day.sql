@@ -116,6 +116,7 @@ LEFT JOIN LATERAL (
 directions_non_aom AS (
   SELECT
     j.journey_date,
+    j.hour,
     d.direction,
     d.type,
     d.start_code as code,
@@ -157,6 +158,7 @@ directions_non_aom AS (
 directions_aom_classic AS (
   SELECT
     j.journey_date,
+    j.hour,
     d.direction,
     d.type,
     d.start_code AS code,
@@ -186,6 +188,7 @@ directions_aom_classic AS (
 directions_aom_regional AS (
   SELECT
     j.journey_date,
+    j.hour,
     'from' AS direction,
     'aom' AS type,
     ar.aom AS code,
@@ -211,6 +214,7 @@ directions_aom_regional AS (
   
   SELECT
     j.journey_date,
+    j.hour,
     'to' AS direction,
     'aom' AS type,
     ar.aom AS code,
@@ -245,7 +249,7 @@ SELECT
   code,
   type,
   journey_date,
-  extract('hour' from journey_date) AS hour,
+  hour,
   direction,
   SUM(journeys) AS journeys,
   COALESCE(SUM(journeys) FILTER (WHERE is_intra = TRUE), 0) AS intra_journeys,
@@ -268,7 +272,7 @@ SELECT
   code,
   type,
   journey_date,
-  extract('hour' from journey_date) AS hour,
+  hour,
   'both' AS direction,
   SUM(journeys) - COALESCE(SUM(journeys) FILTER (WHERE is_intra = TRUE), 0) AS journeys,
   COALESCE(SUM(journeys) FILTER (WHERE is_intra = TRUE), 0) AS intra_journeys,
