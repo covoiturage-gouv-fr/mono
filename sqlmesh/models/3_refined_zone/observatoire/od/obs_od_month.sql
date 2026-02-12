@@ -54,11 +54,11 @@ od_agg AS (
   LEFT JOIN (
     SELECT year, arr, epci
     FROM trusted_zone.perimeters 
-  ) b ON  b.arr = a.origin and b.year = geo.get_latest_millesime_or(a.year::smallint)
+  ) b ON  b.arr = a.origin and b.year = @get_millesime_or_latest(a.year::smallint)
   LEFT JOIN (
     SELECT year, arr, epci
     FROM trusted_zone.perimeters
-  ) c ON c.arr = a.destination and c.year = geo.get_latest_millesime_or(a.year::smallint)
+  ) c ON c.arr = a.destination and c.year = @get_millesime_or_latest(a.year::smallint)
   GROUP BY 1, 2, 4, 5
   HAVING least(b.epci, c.epci) IS NOT NULL
   /* aom classiques */
@@ -77,11 +77,11 @@ od_agg AS (
   LEFT JOIN (
     SELECT year, arr, aom
     FROM trusted_zone.perimeters 
-  ) b ON  b.arr = a.origin and b.year = geo.get_latest_millesime_or(a.year::smallint)
+  ) b ON  b.arr = a.origin and b.year = @get_millesime_or_latest(a.year::smallint)
   LEFT JOIN (
     SELECT year, arr, aom
     FROM trusted_zone.perimeters
-  ) c ON c.arr = a.destination and c.year = geo.get_latest_millesime_or(a.year::smallint)
+  ) c ON c.arr = a.destination and c.year = @get_millesime_or_latest(a.year::smallint)
   WHERE b.aom NOT IN (SELECT aom FROM trusted_zone.aom_region)
     OR c.aom NOT IN (SELECT aom FROM trusted_zone.aom_region)
   GROUP BY 1, 2, 4, 5
@@ -103,12 +103,12 @@ od_agg AS (
     SELECT p.year, p.arr, p.aom, ar.aom AS aom_r, p.reg
     FROM trusted_zone.perimeters p
     LEFT JOIN trusted_zone.aom_region ar ON p.reg = ar.reg
-  ) b ON  b.arr = a.origin and b.year = geo.get_latest_millesime_or(a.year::smallint)
+  ) b ON  b.arr = a.origin and b.year = @get_millesime_or_latest(a.year::smallint)
   LEFT JOIN (
     SELECT p.year, p.arr, p.aom, ar.aom AS aom_r, p.reg
     FROM trusted_zone.perimeters p
     LEFT JOIN trusted_zone.aom_region ar ON p.reg = ar.reg
-  ) c ON c.arr = a.destination and c.year = geo.get_latest_millesime_or(a.year::smallint)
+  ) c ON c.arr = a.destination and c.year = @get_millesime_or_latest(a.year::smallint)
   WHERE b.aom <> c.aom
   GROUP BY 1, 2, 4, 5
   HAVING least(b.aom_r, c.aom_r) IS NOT NULL
@@ -127,11 +127,11 @@ od_agg AS (
   LEFT JOIN (
     SELECT year, arr, dep
     FROM trusted_zone.perimeters 
-  ) b ON  b.arr = a.origin and b.year = geo.get_latest_millesime_or(a.year::smallint)
+  ) b ON  b.arr = a.origin and b.year = @get_latest_millesime_or(a.year::smallint)
   LEFT JOIN (
     SELECT year, arr, dep
     FROM trusted_zone.perimeters
-  ) c ON c.arr = a.destination and c.year = geo.get_latest_millesime_or(a.year::smallint)
+  ) c ON c.arr = a.destination and c.year = @get_millesime_or_latest(a.year::smallint)
   GROUP BY 1, 2, 4, 5
   HAVING least(b.dep, c.dep) IS NOT NULL
   UNION
@@ -149,11 +149,11 @@ od_agg AS (
   LEFT JOIN (
     SELECT year, arr, reg
     FROM trusted_zone.perimeters 
-  ) b ON  b.arr = a.origin and b.year = geo.get_latest_millesime_or(a.year::smallint)
+  ) b ON  b.arr = a.origin and b.year = @get_millesime_or_latest(a.year::smallint)
   LEFT JOIN (
     SELECT year, arr, reg
     FROM trusted_zone.perimeters
-  ) c ON c.arr = a.destination and c.year = geo.get_latest_millesime_or(a.year::smallint)
+  ) c ON c.arr = a.destination and c.year = @get_millesime_or_latest(a.year::smallint)
   GROUP BY 1, 2, 4, 5
   HAVING least(b.reg, c.reg) IS NOT NULL
   UNION
@@ -171,11 +171,11 @@ od_agg AS (
   LEFT JOIN (
     SELECT year, arr, country
     FROM trusted_zone.perimeters 
-  ) b ON  b.arr = a.origin and b.year = geo.get_latest_millesime_or(a.year::smallint)
+  ) b ON  b.arr = a.origin and b.year = @get_millesime_or_latest(a.year::smallint)
   LEFT JOIN (
     SELECT year, arr, country
     FROM trusted_zone.perimeters
-  ) c ON c.arr = a.destination and c.year = geo.get_latest_millesime_or(a.year::smallint)
+  ) c ON c.arr = a.destination and c.year = @get_millesime_or_latest(a.year::smallint)
   GROUP BY 1, 2, 4, 5
   HAVING least(b.country, c.country) IS NOT NULL
 )
