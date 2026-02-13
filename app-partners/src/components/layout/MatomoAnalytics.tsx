@@ -28,7 +28,9 @@ export function MatomoAnalytics() {
   }, [isAuth, user]);
 
   useEffect(() => {
-    void trackAppRouter({
+    // Make sure the URL is defined properly before setting up Matomo.
+    const url = Config.get<string>("analytics.matomoUrl");
+    url && url.length && void trackAppRouter({
       url: Config.get<string>("analytics.matomoUrl"),
       siteId: Config.get<string>("analytics.matomoSiteId"),
       pathname,
