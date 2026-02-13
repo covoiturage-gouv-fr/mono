@@ -2,7 +2,8 @@ MODEL (
   name trusted_zone.journeys_latest,
   kind INCREMENTAL_BY_TIME_RANGE (
     time_column start_datetime,
-    lookback 1
+    lookback 1,
+    batch_size 30
   ),
   start '2026-01-01',
   end 'now()',

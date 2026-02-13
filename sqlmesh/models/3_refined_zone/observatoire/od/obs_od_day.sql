@@ -1,8 +1,9 @@
 MODEL (
-  name refined_zone.obs_journeys_by_day,
+  name refined_zone.obs_od_day,
   kind INCREMENTAL_BY_TIME_RANGE (
     time_column journey_date,
-    lookback 1
+    lookback 1,
+    batch_size 30,
   ),
   start '2020-01-01',
   end 'now()',
@@ -82,5 +83,3 @@ FROM journeys_agg j
 LEFT JOIN incentives_agg i ON j.start_geo_code = i.start_geo_code
   AND j.end_geo_code   = i.end_geo_code
   AND j.journey_date  = i.journey_date;
-
-CREATE UNIQUE INDEX IF NOT EXISTS obs_journeys_by_day_pk ON refined_zone.obs_journeys_by_day (start_geo_code, end_geo_code, journey_date);

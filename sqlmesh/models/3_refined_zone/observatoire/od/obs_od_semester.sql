@@ -1,7 +1,8 @@
 MODEL (
   name refined_zone.obs_od_semester,
   kind INCREMENTAL_BY_TIME_RANGE (
-    time_column semester_date
+    time_column semester_date,
+    batch_size 6,
   ),
   start '2020-01-01',
   cron '@monthly',
@@ -19,7 +20,7 @@ WITH od AS (
     sum(passenger_seats)                  AS passenger_seats,
     sum(distance)                         AS distance,
     sum(duration)                         AS duration
-  FROM refined_zone.obs_journeys_by_day
+  FROM refined_zone.obs_od_day
   WHERE journey_date >= @start_ts
     AND journey_date <  @end_ts
   GROUP BY
@@ -179,6 +180,7 @@ od_agg AS (
   GROUP BY 1, 2, 4, 5
   HAVING least(b.country, c.country) IS NOT NULL
 )
+
 SELECT
   make_date(a.year, (a.semester-1)*6 + 1, 1) AS semester_date,
   a.year,
@@ -197,21 +199,11 @@ SELECT
   st_x(c.centroid)  AS lng_2,
   st_y(c.centroid)  AS lat_2
 FROM od_agg AS a
-LEFT JOIN LATERAL (
-  SELECT code, type, libelle, centroid
-  FROM trusted_zone.perimeters_agg AS p
-  WHERE p.code = a.territory_1
-    AND p.type = a.type
-    AND p.year <= a.year
-  ORDER BY p.year DESC
-  LIMIT 1
-) AS b ON TRUE
-LEFT JOIN LATERAL (
-  SELECT code, type, libelle, centroid
-  FROM trusted_zone.perimeters_agg AS p
-  WHERE p.code = a.territory_2
-    AND p.type = a.type
-    AND p.year <= a.year
-  ORDER BY p.year DESC
-  LIMIT 1
-) AS c ON TRUE
+LEFT JOIN @join_perimeters_agg(@start_ts, @end_ts) AS b
+  ON  b.code   = a.territory_1
+  AND b.type   = a.type
+  AND b.j_year = a.year
+LEFT JOIN @join_perimeters_agg(@start_ts, @end_ts) AS c
+  ON  c.code   = a.territory_2
+  AND c.type   = a.type
+  AND c.j_year = a.year

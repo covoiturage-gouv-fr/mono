@@ -2,7 +2,7 @@ MODEL (
   name trusted_zone.journeys_2022,
   kind INCREMENTAL_BY_TIME_RANGE (
     time_column start_datetime,
-    lookback 1
+    batch_size 30
   ),
   start '2022-01-01',
   end '2023-01-01',

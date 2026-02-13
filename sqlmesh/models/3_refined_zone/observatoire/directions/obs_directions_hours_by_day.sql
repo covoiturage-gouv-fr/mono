@@ -2,7 +2,8 @@ MODEL (
   name refined_zone.obs_directions_hours_by_day,
   kind INCREMENTAL_BY_TIME_RANGE (
     time_column journey_date,
-    lookback 1
+    lookback 1,
+    batch_size 30,
   ),
   start '2020-01-01',
   end 'now()',
@@ -31,7 +32,8 @@ WITH unnested_sirets AS (
   LEFT JOIN (select distinct left(siret,9) as siren from operator.operators) c ON left(s.siret,9) = c.siren
   LEFT JOIN (select distinct code FROM trusted_zone.perimeters_agg WHERE type = 'aom') d ON left(s.siret,9) = d.code
   WHERE a.valid_acquisition_status = true
-  AND a.start_datetime_tz BETWEEN @start_ds AND @end_ds
+  AND start_datetime_tz >= @start_ds
+  AND start_datetime_tz <  @end_ds
 ),
 incentives_agg AS (
   SELECT
@@ -42,7 +44,7 @@ incentives_agg AS (
     COUNT(*) FILTER (WHERE siret_type = 'collectivite') AS incentive_collectivite,
     COUNT(*) FILTER (WHERE siret_type = 'operator')     AS incentive_operator,
     COUNT(*) FILTER (WHERE siret_type = 'other')        AS incentive_others,
-    COUNT(*) FILTER (WHERE siret_type = NULL)           AS no_incentive,
+    COUNT(*) FILTER (WHERE siret_type IS NULL)           AS no_incentive
   FROM unnested_sirets
   GROUP BY 1,2,3,4
 ),
@@ -60,8 +62,28 @@ journeys_agg AS (
     sum(duration) AS duration
   FROM trusted_zone.journeys 
   WHERE valid_acquisition_status = true
-  AND start_datetime_tz BETWEEN @start_ds AND @end_ds
+    AND start_datetime_tz >= @start_ds
+    AND start_datetime_tz <  @end_ds
   GROUP BY 1,2,3,4
+),
+journey_years AS (
+  SELECT EXTRACT(YEAR FROM @start_ds::date)::int AS year
+  UNION
+  SELECT EXTRACT(YEAR FROM @end_ds::date)::int
+),
+perimeters_resolved AS (
+  SELECT DISTINCT ON (p.arr, y.year)
+    p.arr,
+    p.epci,
+    p.aom,
+    p.dep,
+    p.reg,
+    p.country,
+    y.year AS journey_year
+  FROM trusted_zone.perimeters p
+  CROSS JOIN journey_years y
+  WHERE p.year <= y.year
+  ORDER BY p.arr, y.year, p.year DESC
 ),
 journeys AS (
   SELECT 
@@ -90,27 +112,17 @@ journeys AS (
   b.incentive_others,
   b.no_incentive
 FROM journeys_agg a
-LEFT JOIN incentives_agg b 
-  ON a.start_com = b.start_com 
-  AND a.end_com = b.end_com 
-  AND a.hour = b.hour
+LEFT JOIN incentives_agg b
+  ON  a.start_com    = b.start_com
+  AND a.end_com      = b.end_com
+  AND a.hour         = b.hour
   AND a.journey_date = b.journey_date
-LEFT JOIN LATERAL (
-    SELECT arr, epci, aom, dep, reg, country
-    FROM trusted_zone.perimeters p
-    WHERE p.arr = a.start_com
-      AND p.year <= EXTRACT(YEAR FROM a.journey_date)
-    ORDER BY p.year DESC
-    LIMIT 1
-  ) ps ON TRUE
-  LEFT JOIN LATERAL (
-    SELECT arr, epci, aom, dep, reg, country
-    FROM trusted_zone.perimeters p
-    WHERE p.arr = a.end_com
-      AND p.year <= EXTRACT(YEAR FROM a.journey_date)
-    ORDER BY p.year DESC
-    LIMIT 1
-  ) pe ON TRUE
+LEFT JOIN perimeters_resolved ps
+  ON ps.arr          = a.start_com
+  AND ps.journey_year = EXTRACT(YEAR FROM a.journey_date)::int
+LEFT JOIN perimeters_resolved pe
+  ON pe.arr          = a.end_com
+  AND pe.journey_year = EXTRACT(YEAR FROM a.journey_date)::int
 ),
 -- Directions pour tous les territoires SAUF AOM
 directions_non_aom AS (
@@ -286,6 +298,4 @@ SELECT
   SUM(no_incentive) - COALESCE(SUM(no_incentive) FILTER (WHERE is_intra = TRUE), 0) AS no_incentive
 FROM all_directions
 WHERE code IS NOT NULL
-GROUP BY 1,2,3,4;
-
-CREATE UNIQUE INDEX IF NOT EXISTS obs_directions_hours_by_day_pk ON refined_zone.obs_directions_hours_by_day (code, type, journey_date, hour, direction);
+GROUP BY 1,2,3,4

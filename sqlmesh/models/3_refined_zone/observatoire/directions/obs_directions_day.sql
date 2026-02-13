@@ -1,8 +1,9 @@
 MODEL (
-  name refined_zone.obs_directions_by_day,
+  name refined_zone.obs_directions_day,
   kind INCREMENTAL_BY_TIME_RANGE (
     time_column journey_date,
-    lookback 1
+    lookback 1,
+    batch_size 30,
   ),
   start '2020-01-01',
   end 'now()',
@@ -24,9 +25,11 @@ SELECT
   SUM(incentive_collectivite) AS incentive_collectivite,
   SUM(incentive_operator) AS incentive_operator,
   SUM(incentive_others) AS incentive_others,
-  SUM(no_incentive) AS no_incentive
+  SUM(no_incentive) AS no_incentive,
+  json_agg(
+    json_build_object('hour', hour, 'journeys', journeys)
+    ORDER BY hour
+  )  AS hours_distribution
 FROM refined_zone.obs_directions_hours_by_day
 WHERE code IS NOT NULL
-GROUP BY code, type, journey_date, direction;
-
-CREATE UNIQUE INDEX IF NOT EXISTS obs_directions_by_day_pk ON refined_zone.obs_directions_by_day (code, type, journey_date, direction);
+GROUP BY code, type, journey_date, direction

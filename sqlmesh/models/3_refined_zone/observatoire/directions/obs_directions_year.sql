@@ -1,7 +1,8 @@
 MODEL (
   name refined_zone.obs_directions_year,
   kind INCREMENTAL_BY_TIME_RANGE (
-    time_column year_date
+    time_column year_date,
+    batch_size 12,
   ),
   start '2020-01-01',
   cron '@monthly',
@@ -22,11 +23,41 @@ WITH sum_directions AS (
     sum(incentive_operator)          AS incentive_operator,
     sum(incentive_others)            AS incentive_others,
     SUM(no_incentive)                AS no_incentive
-  FROM refined_zone.obs_directions_by_day
+  FROM refined_zone.obs_directions_day
   WHERE journey_date >= @start_ts
     AND journey_date <  @end_ts
   GROUP BY 1, 2, 3, 4
   HAVING sum(journeys) > 0
+),
+hours_agg AS (
+  SELECT
+    code,
+    type,
+    direction,
+    extract('year'  FROM journey_date)::int AS year,
+    json_agg(
+      json_build_object('hour', hour, 'journeys', journeys)
+      ORDER BY hour
+    ) AS hours_distribution
+  FROM refined_zone.obs_directions_hours_by_day
+  WHERE journey_date >= @start_ts
+    AND journey_date <  @end_ts
+  GROUP BY 1, 2, 3, 4
+),
+dist_agg AS (
+  SELECT
+    code,
+    type,
+    direction,
+    extract('year'  FROM journey_date)::int AS year,
+    json_agg(
+      json_build_object('class', dist_class, 'journeys', journeys)
+      ORDER BY dist_class
+    ) AS dist_distribution
+  FROM refined_zone.obs_directions_dist_by_day
+  WHERE journey_date >= @start_ts
+    AND journey_date <  @end_ts
+  GROUP BY 1, 2, 3, 4
 )
 
 SELECT
@@ -44,22 +75,24 @@ SELECT
   round(
     (drivers_distance + passengers_distance) / drivers_distance, 2
   )::float                      AS occupation_rate,
+  h.hours_distribution,
+  d.dist_distribution,
   st_asgeojson(b.centroid, 6)::json AS geom
 FROM sum_directions AS a
-LEFT JOIN LATERAL
-(
-  SELECT
-    code,
-    type,
-    libelle,
-    centroid
-  FROM trusted_zone.perimeters_agg AS p
-  WHERE p.code = a.code
-    AND p.type = a.type
-    AND p.year <= a.year
-  ORDER BY p.year DESC
-  LIMIT 1
-) AS b ON TRUE
+LEFT JOIN hours_agg h
+  ON  h.code      = a.code
+  AND h.type      = a.type
+  AND h.direction = a.direction
+  AND h.year      = a.year
+LEFT JOIN dist_agg d
+  ON  d.code      = a.code
+  AND d.type      = a.type
+  AND d.direction = a.direction
+  AND d.year      = a.year
+LEFT JOIN @join_perimeters_agg(@start_ts, @end_ts) AS b
+  ON  b.code    = a.code
+  AND b.type    = a.type
+  AND b.j_year = a.year
 WHERE
   a.code IS NOT null
   AND a.drivers_distance > 0

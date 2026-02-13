@@ -1,5 +1,5 @@
 MODEL (
-  name refined_zone.part_campaigns_by_month,
+  name refined_zone.part_campaigns_month,
   kind INCREMENTAL_BY_UNIQUE_KEY (
     unique_key (year, month, campaign_id, operator_id)
   ),
