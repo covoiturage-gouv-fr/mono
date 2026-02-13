@@ -1,3 +1,2 @@
--- Add analytics_id column 
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-ALTER TABLE auth.users ADD COLUMN analytics_id UUID UNIQUE NOT NULL DEFAULT uuid_generate_v4();
+ALTER TABLE auth.users ADD COLUMN IF NOT EXISTS analytics_id UUID DEFAULT gen_random_uuid();
+ALTER TABLE auth.users ALTER COLUMN analytics_id SET NOT NULL;
