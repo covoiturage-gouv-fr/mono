@@ -29,13 +29,15 @@ export function MatomoAnalytics() {
 
   useEffect(() => {
     const url = Config.get<string>("analytics.matomoUrl");
-    url && url.length && void trackAppRouter({
-      url,
-      siteId: Config.get<string>("analytics.matomoSiteId"),
-      pathname,
-      searchParams,
-      disableCookies: true,
-    });
+    if (url?.length) {
+      trackAppRouter({
+        url,
+        siteId: Config.get<string>("analytics.matomoSiteId"),
+        pathname,
+        searchParams,
+        disableCookies: true,
+      });
+    }
   }, [pathname, searchParams]);
 
   return null;
