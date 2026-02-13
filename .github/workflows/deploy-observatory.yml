@@ -41,6 +41,8 @@ jobs:
           NEXT_PUBLIC_CMS_TOKEN: ${{ secrets.CMS_API_KEY }}
           NEXT_PUBLIC_SEARCH_URL: ${{ vars.API_SEARCH_URL }}
           NEXT_PUBLIC_SEARCH_TOKEN: ${{ secrets.MEILISEARCH_API_KEY }}
+          NEXT_PUBLIC_MATOMO_URL: ${{ vars.MATOMO_URL }}
+          NEXT_PUBLIC_MATOMO_SITE_ID: ${{ vars.OBS_MATOMO_SITE_ID }}
         run: |
           cd app-observatory
           npm ci
