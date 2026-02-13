@@ -28,8 +28,9 @@ export function MatomoAnalytics() {
   }, [isAuth, user]);
 
   useEffect(() => {
-    void trackAppRouter({
-      url: Config.get<string>("analytics.matomoUrl"),
+    const url = Config.get<string>("analytics.matomoUrl");
+    url && url.length && void trackAppRouter({
+      url,
       siteId: Config.get<string>("analytics.matomoSiteId"),
       pathname,
       searchParams,
