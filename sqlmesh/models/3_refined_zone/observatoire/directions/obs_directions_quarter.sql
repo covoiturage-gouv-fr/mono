@@ -25,8 +25,8 @@ WITH sum_directions AS (
     sum(incentive_others)            AS incentive_others,
     SUM(no_incentive)                AS no_incentive
   FROM refined_zone.obs_directions_day
-  WHERE journey_date >= @start_ts
-    AND journey_date <  @end_ts
+  WHERE journey_date >= @start_ds
+    AND journey_date <  @end_ds
   GROUP BY 1, 2, 3, 4, 5
   HAVING sum(journeys) > 0
 ),
@@ -42,8 +42,8 @@ hours_agg AS (
       ORDER BY hour
     ) AS hours_distribution
   FROM refined_zone.obs_directions_hours_by_day
-  WHERE journey_date >= @start_ts
-    AND journey_date <  @end_ts
+  WHERE journey_date >= @start_ds
+    AND journey_date <  @end_ds
   GROUP BY 1, 2, 3, 4, 5
 ),
 dist_agg AS (
@@ -58,8 +58,8 @@ dist_agg AS (
       ORDER BY dist_class
     ) AS dist_distribution
   FROM refined_zone.obs_directions_dist_by_day
-  WHERE journey_date >= @start_ts
-    AND journey_date <  @end_ts
+  WHERE journey_date >= @start_ds
+    AND journey_date <  @end_ds
   GROUP BY 1, 2, 3, 4, 5
 )
 
@@ -95,7 +95,7 @@ LEFT JOIN dist_agg d
   AND d.direction = a.direction
   AND d.year      = a.year
   AND d.quarter   = a.quarter
-LEFT JOIN @join_perimeters_agg(@start_ts, @end_ts) AS b
+LEFT JOIN @join_perimeters_agg(@start_ds, @end_ds) AS b
   ON  b.code    = a.code
   AND b.type    = a.type
   AND b.j_year = a.year

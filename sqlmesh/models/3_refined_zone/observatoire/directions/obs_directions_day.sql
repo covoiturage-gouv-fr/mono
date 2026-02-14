@@ -33,8 +33,8 @@ WITH hours AS (
     ) AS hours_distribution
   FROM refined_zone.obs_directions_hours_by_day
   WHERE code IS NOT NULL
-  AND journey_date >= @start_ts
-  AND journey_date <  @end_ts
+  AND journey_date >= @start_ds
+  AND journey_date <  @end_ds
   GROUP BY code, type, journey_date, direction
 ),
 distances AS (
@@ -49,8 +49,8 @@ distances AS (
     ) AS dist_distribution
   FROM refined_zone.obs_directions_distances_by_day
   WHERE code IS NOT NULL
-  AND journey_date >= @start_ts
-  AND journey_date <  @end_ts
+  AND journey_date >= @start_ds
+  AND journey_date <  @end_ds
   GROUP BY code, type, journey_date, direction
 )
 SELECT

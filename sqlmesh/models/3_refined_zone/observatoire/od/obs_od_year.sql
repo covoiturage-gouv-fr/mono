@@ -20,8 +20,8 @@ WITH od AS (
     sum(distance)                         AS distance,
     sum(duration)                         AS duration
   FROM refined_zone.obs_od_day
-  WHERE journey_date >= @start_ts
-    AND journey_date <  @end_ts
+  WHERE journey_date >= @start_ds
+    AND journey_date <  @end_ds
   GROUP BY
     1, 2, 3
 ),
@@ -190,11 +190,11 @@ SELECT
   st_x(c.centroid)  AS lng_2,
   st_y(c.centroid)  AS lat_2
 FROM od_agg AS a
-LEFT JOIN @join_perimeters_agg(@start_ts, @end_ts) AS b
+LEFT JOIN @join_perimeters_agg(@start_ds, @end_ds) AS b
   ON  b.code   = a.territory_1
   AND b.type   = a.type
   AND b.j_year = a.year
-LEFT JOIN @join_perimeters_agg(@start_ts, @end_ts) AS c
+LEFT JOIN @join_perimeters_agg(@start_ds, @end_ds) AS c
   ON  c.code   = a.territory_2
   AND c.type   = a.type
   AND c.j_year = a.year

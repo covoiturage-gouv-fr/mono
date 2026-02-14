@@ -6,39 +6,25 @@ MODEL (
   ),
   start '2020-01-01',
   cron '@monthly',
-  grain [ 'month_date', 'code', 'type', 'direction'],
+  grain [ 'month_date', 'h3_index'],
   tags ['refined', 'observatoire', 'density_month'],
 );
 
 SELECT
-  date_trunc('month', start_datetime) AS month_date,
-  EXTRACT(YEAR FROM start_datetime)::int AS year,
+  date_trunc('month', start_datetime)    AS month_date,
+  EXTRACT(YEAR  FROM start_datetime)::int AS year,
   EXTRACT(MONTH FROM start_datetime)::int AS month,
   h3_index,
-  COUNT(*) AS journeys,
-  SUM(distance) AS distance,
-  SUM(duration) AS duration,
+  COUNT(*)             AS journeys,
+  SUM(distance)        AS distance,
+  SUM(duration)        AS duration,
   SUM(passenger_seats) AS passengers
-FROM (
-  SELECT
-    start_datetime,
-    start_h3_index AS h3_index,
-    distance,
-    duration,
-    passenger_seats
-  FROM trusted_zone.journeys
-  WHERE start_datetime >= @start_ds
-    AND start_datetime < @end_ds
-  UNION ALL
-  SELECT
-    start_datetime,
-    end_h3_index AS h3_index,
-    distance,
-    duration,
-    passenger_seats
-  FROM trusted_zone.journeys
-  WHERE start_datetime >= @start_ds
-    AND start_datetime < @end_ds
-) t
-GROUP BY 1,2,3;
-
+FROM trusted_zone.journeys
+CROSS JOIN LATERAL (
+  VALUES
+    (start_h3_index),
+    (end_h3_index)
+) AS t(h3_index)
+WHERE start_datetime >= @start_ds
+  AND start_datetime < @end_ds
+GROUP BY 1, 2, 3, 4
