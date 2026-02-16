@@ -37,10 +37,7 @@ hours_agg AS (
     direction,
     extract('year'  FROM journey_date)::int AS year,
     extract('quarter' FROM journey_date)::int AS quarter,
-    json_agg(
-      json_build_object('hour', hour, 'journeys', journeys)
-      ORDER BY hour
-    ) AS hours_distribution
+    jsonb_object_agg(hour::text, journeys ORDER BY hour) AS hours_distribution
   FROM refined_zone.obs_directions_hours_by_day
   WHERE journey_date >= @start_ds
     AND journey_date <  @end_ds
@@ -53,11 +50,8 @@ dist_agg AS (
     direction,
     extract('year'  FROM journey_date)::int AS year,
     extract('quarter' FROM journey_date)::int AS quarter,
-    json_agg(
-      json_build_object('class', dist_class, 'journeys', journeys)
-      ORDER BY dist_class
-    ) AS dist_distribution
-  FROM refined_zone.obs_directions_dist_by_day
+    jsonb_object_agg(dist_class::text, journeys ORDER BY dist_class) AS dist_distribution
+  FROM refined_zone.obs_directions_distances_by_day
   WHERE journey_date >= @start_ds
     AND journey_date <  @end_ds
   GROUP BY 1, 2, 3, 4, 5
@@ -103,4 +97,6 @@ WHERE
   a.code IS NOT null
   AND a.drivers_distance > 0
   AND a.passengers_distance > 0
-ORDER BY 1, 2, 3, 4, 5, 6, 7
+ORDER BY 1, 2, 3, 4, 5, 6, 7;
+
+@create_unique_index(@this_model, quarter_date, code, type, direction);

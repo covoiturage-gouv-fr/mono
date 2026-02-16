@@ -27,10 +27,7 @@ WITH hours AS (
     SUM(incentive_operator)     AS incentive_operator,
     SUM(incentive_others)       AS incentive_others,
     SUM(no_incentive)           AS no_incentive,
-    json_agg(
-      json_build_object('hour', hour, 'journeys', journeys)
-      ORDER BY hour
-    ) AS hours_distribution
+    jsonb_object_agg(hour::text, journeys ORDER BY hour) AS hours_distribution
   FROM refined_zone.obs_directions_hours_by_day
   WHERE code IS NOT NULL
   AND journey_date >= @start_ds
@@ -43,10 +40,7 @@ distances AS (
     type,
     journey_date,
     direction,
-    json_agg(
-      json_build_object('class', dist_class, 'journeys', journeys)
-      ORDER BY dist_class
-    ) AS dist_distribution
+    jsonb_object_agg(dist_class::text, journeys ORDER BY dist_class) AS dist_distribution
   FROM refined_zone.obs_directions_distances_by_day
   WHERE code IS NOT NULL
   AND journey_date >= @start_ds
@@ -75,4 +69,6 @@ LEFT JOIN distances d
   ON  d.code         = h.code
   AND d.type         = h.type
   AND d.journey_date = h.journey_date
-  AND d.direction    = h.direction
+  AND d.direction    = h.direction;
+
+@create_unique_index(@this_model, code, type, journey_date, direction);

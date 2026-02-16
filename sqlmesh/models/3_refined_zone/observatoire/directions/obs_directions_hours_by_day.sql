@@ -298,4 +298,6 @@ SELECT
   SUM(no_incentive) - COALESCE(SUM(no_incentive) FILTER (WHERE is_intra = TRUE), 0) AS no_incentive
 FROM all_directions
 WHERE code IS NOT NULL
-GROUP BY 1,2,3,4
+GROUP BY 1,2,3,4;
+
+@create_unique_index(@this_model, code, type, journey_date, hour, direction);

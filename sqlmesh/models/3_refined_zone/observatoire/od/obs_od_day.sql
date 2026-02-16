@@ -83,3 +83,5 @@ FROM journeys_agg j
 LEFT JOIN incentives_agg i ON j.start_geo_code = i.start_geo_code
   AND j.end_geo_code   = i.end_geo_code
   AND j.journey_date  = i.journey_date;
+
+@create_unique_index(@this_model, start_geo_code, end_geo_code, journey_date);

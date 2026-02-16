@@ -197,4 +197,6 @@ LEFT JOIN @join_perimeters_agg(@start_ds, @end_ds) AS b
 LEFT JOIN @join_perimeters_agg(@start_ds, @end_ds) AS c
   ON  c.code   = a.territory_2
   AND c.type   = a.type
-  AND c.j_year = a.year
+  AND c.j_year = a.year;
+
+@create_unique_index(@this_model, year_date, type, territory_1, territory_2);

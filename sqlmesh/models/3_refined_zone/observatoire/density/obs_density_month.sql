@@ -2,7 +2,7 @@ MODEL (
   name refined_zone.obs_density_month,
   kind INCREMENTAL_BY_TIME_RANGE (
     time_column month_date,
-    batch_size 3
+    batch_size 1
   ),
   start '2020-01-01',
   cron '@monthly',
