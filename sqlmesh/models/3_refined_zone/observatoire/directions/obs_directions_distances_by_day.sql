@@ -303,16 +303,16 @@ SELECT
   journey_date,
   dist_class,
   'both' AS direction,
-  SUM(journeys) - COALESCE(SUM(journeys) FILTER (WHERE is_intra = TRUE), 0) AS journeys,
-  COALESCE(SUM(journeys) FILTER (WHERE is_intra = TRUE), 0) AS intra_journeys,
-  SUM(drivers) - COALESCE(SUM(drivers) FILTER (WHERE is_intra = TRUE), 0) AS drivers,
-  SUM(passengers) - COALESCE(SUM(passengers) FILTER (WHERE is_intra = TRUE), 0) AS passengers,
-  SUM(passenger_seats) - COALESCE(SUM(passenger_seats) FILTER (WHERE is_intra = TRUE), 0) AS passenger_seats,
-  SUM(distance) - COALESCE(SUM(distance) FILTER (WHERE is_intra = TRUE), 0) AS distance,
-  SUM(incentive_collectivite) - COALESCE(SUM(incentive_collectivite) FILTER (WHERE is_intra = TRUE), 0) AS incentive_collectivite,
-  SUM(incentive_operator) - COALESCE(SUM(incentive_operator) FILTER (WHERE is_intra = TRUE), 0) AS incentive_operator,
-  SUM(incentive_others) - COALESCE(SUM(incentive_others) FILTER (WHERE is_intra = TRUE), 0) AS incentive_others,
-  SUM(no_incentive) - COALESCE(SUM(no_incentive) FILTER (WHERE is_intra = TRUE), 0) AS no_incentive
+  SUM(journeys) - COALESCE(SUM(journeys) FILTER (WHERE is_intra = TRUE AND direction = 'from'), 0) AS journeys,
+  COALESCE(SUM(journeys) FILTER (WHERE is_intra = TRUE AND direction = 'from'), 0) AS intra_journeys,
+  SUM(drivers) - COALESCE(SUM(drivers) FILTER (WHERE is_intra = TRUE AND direction = 'from'), 0) AS drivers,
+  SUM(passengers) - COALESCE(SUM(passengers) FILTER (WHERE is_intra = TRUE AND direction = 'from'), 0) AS passengers,
+  SUM(passenger_seats) - COALESCE(SUM(passenger_seats) FILTER (WHERE is_intra = TRUE AND direction = 'from'), 0) AS passenger_seats,
+  SUM(distance) - COALESCE(SUM(distance) FILTER (WHERE is_intra = TRUE AND direction = 'from'), 0) AS distance,
+  SUM(incentive_collectivite) - COALESCE(SUM(incentive_collectivite) FILTER (WHERE is_intra = TRUE AND direction = 'from'), 0) AS incentive_collectivite,
+  SUM(incentive_operator) - COALESCE(SUM(incentive_operator) FILTER (WHERE is_intra = TRUE AND direction = 'from'), 0) AS incentive_operator,
+  SUM(incentive_others) - COALESCE(SUM(incentive_others) FILTER (WHERE is_intra = TRUE AND direction = 'from'), 0) AS incentive_others,
+  SUM(no_incentive) - COALESCE(SUM(no_incentive) FILTER (WHERE is_intra = TRUE AND direction = 'from'), 0) AS no_incentive
 FROM all_directions
 WHERE code IS NOT NULL
 GROUP BY 1,2,3,4
