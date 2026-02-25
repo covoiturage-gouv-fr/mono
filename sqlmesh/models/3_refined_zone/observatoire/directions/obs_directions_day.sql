@@ -19,8 +19,6 @@ WITH hours AS (
     direction,
     SUM(journeys)               AS journeys,
     SUM(intra_journeys)         AS intra_journeys,
-    SUM(drivers)                AS drivers,
-    SUM(passengers)             AS passengers,
     SUM(passenger_seats)        AS passenger_seats,
     SUM(distance)               AS distance,
     SUM(incentive_collectivite) AS incentive_collectivite,
@@ -33,6 +31,13 @@ WITH hours AS (
   AND journey_date >= @start_ds
   AND journey_date <  @end_ds
   GROUP BY code, type, journey_date, direction
+),
+users AS (
+  SELECT *
+  FROM refined_zone.obs_directions_users_by_day
+  WHERE code IS NOT NULL
+    AND journey_date >= @start_ds
+    AND journey_date <  @end_ds
 ),
 distances AS (
   SELECT
@@ -54,8 +59,10 @@ SELECT
   h.direction,
   h.journeys,
   h.intra_journeys,
-  h.drivers,
-  h.passengers,
+  u.unique_drivers AS drivers,
+  u.unique_passengers AS passengers,
+  u.new_drivers,
+  u.new_passengers,
   h.passenger_seats,
   h.distance,
   h.incentive_collectivite,
@@ -69,6 +76,11 @@ LEFT JOIN distances d
   ON  d.code         = h.code
   AND d.type         = h.type
   AND d.journey_date = h.journey_date
-  AND d.direction    = h.direction;
+  AND d.direction    = h.direction
+LEFT JOIN users u  
+  ON  u.code         = h.code
+  AND u.type         = h.type
+  AND u.journey_date = h.journey_date
+  AND u.direction    = h.direction;
 
 @create_unique_index(@this_model, code, type, journey_date, direction);
