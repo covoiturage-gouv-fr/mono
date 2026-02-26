@@ -22,6 +22,21 @@ gateways:
       # role:
       # sslmode:
       # application_name:
+  duckdb:
+    connection:
+      type: duckdb
+      catalogs:
+        {{ env_var('MESHPGDBNAME') }}:
+          type: postgres
+          path: "dbname={{ env_var('MESHPGDBNAME') }} user={{ env_var('MESHPGUSER') }} password={{ env_var('MESHPGPASSWORD') }} host={{ env_var('MESHPGHOST') }}"
+      extensions:
+        - name: spatial
+        - name: httpfs
+      secrets:
+        - type: s3
+          endpoint: {{ env_var('DUCKDB_S3_ENDPOINT') }}
+          key_id: {{ env_var('S3_ACCESS_KEY') }}
+          secret: {{ env_var('S3_SECRET_KEY') }}
 physical_schema_mapping:
   raw_zone: raw_zone
   trusted_zone: trusted_zone
