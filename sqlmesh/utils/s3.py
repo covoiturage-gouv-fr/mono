@@ -22,6 +22,8 @@ def get_s3_client(
 
     # Récupérer les credentials
     endpoint = endpoint or os.getenv("S3_ENDPOINT")
+    if endpoint and not endpoint.startswith("http"):
+      endpoint = f"https://{endpoint}"
     access_key = access_key or os.getenv("S3_ACCESS_KEY")
     secret_key = secret_key or os.getenv("S3_SECRET_KEY")
 
