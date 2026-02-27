@@ -1,7 +1,8 @@
 MODEL (
   name refined_zone.obs_od_month,
   kind INCREMENTAL_BY_TIME_RANGE (
-    time_column month_date
+    time_column month_date,
+    batch_size 3,
   ),
   start '2020-01-01',
   cron '@monthly',
@@ -19,9 +20,9 @@ WITH od AS (
     sum(passenger_seats)                  AS passenger_seats,
     sum(distance)                         AS distance,
     sum(duration)                         AS duration
-  FROM refined_zone.obs_journeys_by_day
-  WHERE journey_date >= @start_ts
-    AND journey_date <  @end_ts
+  FROM refined_zone.obs_od_day
+  WHERE journey_date >= @start_ds
+    AND journey_date <  @end_ds
   GROUP BY
     1, 2, 3, 4
 ),
@@ -38,7 +39,7 @@ od_agg AS (
     sum(duration) / 60 AS duration
   FROM od
   GROUP BY 1, 2, 4, 5
-  HAVING least(origin, destination) IS NOT NULL OR greatest(origin, destination) IS NOT NULL
+  HAVING least(origin, destination) IS NOT NULL
   UNION
   SELECT
     a.year,
@@ -51,28 +52,17 @@ od_agg AS (
     round(sum(distance)::numeric / 1000, 2)  AS distance,
     sum(duration) / 60 AS duration
   FROM od AS a
-  LEFT JOIN
-    (
-      SELECT
-        arr,
-        epci
-      FROM trusted_zone.perimeters
-      WHERE year = geo.get_latest_millesime()
-    ) AS b
-    ON a.origin = b.arr
-  LEFT JOIN
-    (
-      SELECT
-        arr,
-        epci
-      FROM trusted_zone.perimeters
-      WHERE year = geo.get_latest_millesime()
-    ) AS c
-    ON a.destination = c.arr
+  LEFT JOIN (
+    SELECT year, arr, epci
+    FROM trusted_zone.perimeters 
+  ) b ON  b.arr = a.origin and b.year = @get_millesime_or_latest(a.year::smallint)
+  LEFT JOIN (
+    SELECT year, arr, epci
+    FROM trusted_zone.perimeters
+  ) c ON c.arr = a.destination and c.year = @get_millesime_or_latest(a.year::smallint)
   GROUP BY 1, 2, 4, 5
-  HAVING
-    least(b.epci, c.epci) IS NOT NULL
-    OR greatest(b.epci, c.epci) IS NOT NULL
+  HAVING least(b.epci, c.epci) IS NOT NULL
+  /* aom classiques */
   UNION
   SELECT
     a.year,
@@ -85,26 +75,44 @@ od_agg AS (
     round(sum(distance)::numeric / 1000, 2)  AS distance,
     sum(duration) / 60 AS duration
   FROM od AS a
-  LEFT JOIN
-    (
-      SELECT
-        arr,
-        aom
-      FROM trusted_zone.perimeters
-      WHERE year = geo.get_latest_millesime()
-    ) AS b
-    ON a.origin = b.arr
-  LEFT JOIN
-    (
-      SELECT
-        arr,
-        aom
-      FROM trusted_zone.perimeters
-      WHERE year = geo.get_latest_millesime()
-    ) AS c
-    ON a.destination = c.arr
+  LEFT JOIN (
+    SELECT year, arr, aom
+    FROM trusted_zone.perimeters 
+  ) b ON  b.arr = a.origin and b.year = @get_millesime_or_latest(a.year::smallint)
+  LEFT JOIN (
+    SELECT year, arr, aom
+    FROM trusted_zone.perimeters
+  ) c ON c.arr = a.destination and c.year = @get_millesime_or_latest(a.year::smallint)
+  WHERE b.aom NOT IN (SELECT aom FROM trusted_zone.aom_region)
+    OR c.aom NOT IN (SELECT aom FROM trusted_zone.aom_region)
   GROUP BY 1, 2, 4, 5
-  HAVING least(b.aom, c.aom) IS NOT NULL OR greatest(b.aom, c.aom) IS NOT NULL
+  HAVING least(b.aom, c.aom) IS NOT NULL
+   /* aom région */
+  UNION
+  SELECT
+    a.year,
+    a.month,
+    'aom'                                    AS type,
+    least(b.aom_r, c.aom_r)                  AS territory_1,
+    greatest(b.aom_r, c.aom_r)               AS territory_2,
+    sum(journeys)                            AS journeys,
+    sum(passenger_seats)                     AS passengers,
+    round(sum(distance)::numeric / 1000, 2)  AS distance,
+    sum(duration) / 60 AS duration
+  FROM od AS a
+  LEFT JOIN (
+    SELECT p.year, p.arr, p.aom, ar.aom AS aom_r, p.reg
+    FROM trusted_zone.perimeters p
+    LEFT JOIN trusted_zone.aom_region ar ON p.reg = ar.reg
+  ) b ON  b.arr = a.origin and b.year = @get_millesime_or_latest(a.year::smallint)
+  LEFT JOIN (
+    SELECT p.year, p.arr, p.aom, ar.aom AS aom_r, p.reg
+    FROM trusted_zone.perimeters p
+    LEFT JOIN trusted_zone.aom_region ar ON p.reg = ar.reg
+  ) c ON c.arr = a.destination and c.year = @get_millesime_or_latest(a.year::smallint)
+  WHERE b.aom <> c.aom
+  GROUP BY 1, 2, 4, 5
+  HAVING least(b.aom_r, c.aom_r) IS NOT NULL
   UNION
   SELECT
     a.year,
@@ -117,26 +125,16 @@ od_agg AS (
     round(sum(distance)::numeric / 1000, 2)  AS distance,
     sum(duration) / 60 AS duration
   FROM od AS a
-  LEFT JOIN
-    (
-      SELECT
-        arr,
-        dep
-      FROM trusted_zone.perimeters
-      WHERE year = geo.get_latest_millesime()
-    ) AS b
-    ON a.origin = b.arr
-  LEFT JOIN
-    (
-      SELECT
-        arr,
-        dep
-      FROM trusted_zone.perimeters
-      WHERE year = geo.get_latest_millesime()
-    ) AS c
-    ON a.destination = c.arr
+  LEFT JOIN (
+    SELECT year, arr, dep
+    FROM trusted_zone.perimeters 
+  ) b ON  b.arr = a.origin and b.year = @get_millesime_or_latest(a.year::smallint)
+  LEFT JOIN (
+    SELECT year, arr, dep
+    FROM trusted_zone.perimeters
+  ) c ON c.arr = a.destination and c.year = @get_millesime_or_latest(a.year::smallint)
   GROUP BY 1, 2, 4, 5
-  HAVING least(b.dep, c.dep) IS NOT NULL OR greatest(b.dep, c.dep) IS NOT NULL
+  HAVING least(b.dep, c.dep) IS NOT NULL
   UNION
   SELECT
     a.year,
@@ -149,26 +147,16 @@ od_agg AS (
     round(sum(distance)::numeric / 1000, 2)  AS distance,
     sum(duration) / 60 AS duration
   FROM od AS a
-  LEFT JOIN
-    (
-      SELECT
-        arr,
-        reg
-      FROM trusted_zone.perimeters
-      WHERE year = geo.get_latest_millesime()
-    ) AS b
-    ON a.origin = b.arr
-  LEFT JOIN
-    (
-      SELECT
-        arr,
-        reg
-      FROM trusted_zone.perimeters
-      WHERE year = geo.get_latest_millesime()
-    ) AS c
-    ON a.destination = c.arr
+  LEFT JOIN (
+    SELECT year, arr, reg
+    FROM trusted_zone.perimeters 
+  ) b ON  b.arr = a.origin and b.year = @get_millesime_or_latest(a.year::smallint)
+  LEFT JOIN (
+    SELECT year, arr, reg
+    FROM trusted_zone.perimeters
+  ) c ON c.arr = a.destination and c.year = @get_millesime_or_latest(a.year::smallint)
   GROUP BY 1, 2, 4, 5
-  HAVING least(b.reg, c.reg) IS NOT NULL OR greatest(b.reg, c.reg) IS NOT NULL
+  HAVING least(b.reg, c.reg) IS NOT NULL
   UNION
   SELECT
     a.year,
@@ -181,29 +169,18 @@ od_agg AS (
     round(sum(distance)::numeric / 1000, 2)  AS distance,
     sum(duration) / 60 AS duration
   FROM od AS a
-  LEFT JOIN
-    (
-      SELECT
-        arr,
-        country
-      FROM trusted_zone.perimeters
-      WHERE year = geo.get_latest_millesime()
-    ) AS b
-    ON a.origin = b.arr
-  LEFT JOIN
-    (
-      SELECT
-        arr,
-        country
-      FROM trusted_zone.perimeters
-      WHERE year = geo.get_latest_millesime()
-    ) AS c
-    ON a.destination = c.arr
+  LEFT JOIN (
+    SELECT year, arr, country
+    FROM trusted_zone.perimeters 
+  ) b ON  b.arr = a.origin and b.year = @get_millesime_or_latest(a.year::smallint)
+  LEFT JOIN (
+    SELECT year, arr, country
+    FROM trusted_zone.perimeters
+  ) c ON c.arr = a.destination and c.year = @get_millesime_or_latest(a.year::smallint)
   GROUP BY 1, 2, 4, 5
-  HAVING
-    least(b.country, c.country) IS NOT NULL
-    OR greatest(b.country, c.country) IS NOT NULL
+  HAVING least(b.country, c.country) IS NOT NULL
 )
+
 SELECT
   make_date(a.year, a.month, 1) AS month_date,
   a.year,
@@ -222,46 +199,13 @@ SELECT
   st_x(c.centroid)  AS lng_2,
   st_y(c.centroid)  AS lat_2
 FROM od_agg AS a
-LEFT JOIN
-  (
-    SELECT
-      code,
-      type,
-      libelle,
-      centroid
-    FROM trusted_zone.perimeters_agg
-    WHERE year = geo.get_latest_millesime()
-    UNION
-    SELECT
-      code,
-      'com',
-      libelle,
-      centroid
-    FROM trusted_zone.perimeters_agg
-    WHERE
-      year = geo.get_latest_millesime()
-      AND type = 'country'
-  ) AS b
-  ON concat(a.territory_1, a.type) = concat(b.code, b.type)
-LEFT JOIN
-  (
-    SELECT
-      code,
-      type,
-      libelle,
-      centroid
-    FROM trusted_zone.perimeters_agg
-    WHERE year = geo.get_latest_millesime()
-    UNION
-    SELECT
-      code,
-      'com',
-      libelle,
-      centroid
-    FROM trusted_zone.perimeters_agg
-    WHERE
-      year = geo.get_latest_millesime()
-      AND type = 'country'
-  ) AS c
-  ON concat(a.territory_2, a.type) = concat(c.code, c.type)
-ORDER BY a.territory_1, a.territory_2
+LEFT JOIN @join_perimeters_agg(@start_ds, @end_ds) AS b
+  ON  b.code   = a.territory_1
+  AND b.type   = a.type
+  AND b.j_year = a.year
+LEFT JOIN @join_perimeters_agg(@start_ds, @end_ds) AS c
+  ON  c.code   = a.territory_2
+  AND c.type   = a.type
+  AND c.j_year = a.year;
+
+@create_unique_index(@this_model, month_date, type, territory_1, territory_2);

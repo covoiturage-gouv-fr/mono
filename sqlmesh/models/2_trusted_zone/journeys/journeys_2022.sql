@@ -2,7 +2,7 @@ MODEL (
   name trusted_zone.journeys_2022,
   kind INCREMENTAL_BY_TIME_RANGE (
     time_column start_datetime,
-    lookback 1
+    batch_size 30
   ),
   start '2022-01-01',
   end '2023-01-01',
@@ -74,3 +74,6 @@ WHERE start_datetime >= @start_ds
 AND start_datetime < @end_ds;
 
 CREATE INDEX IF NOT EXISTS journeys_2022_id_index ON @this_model USING btree (_id);
+CREATE INDEX IF NOT EXISTS journeys_2022_start_datetime_tz_index ON @this_model USING btree (start_datetime_tz);
+CREATE INDEX IF NOT EXISTS journeys_2022_start_h3_index_index ON @this_model USING btree (start_h3_index);
+CREATE INDEX IF NOT EXISTS journeys_2022_end_h3_index_index ON @this_model USING btree (end_h3_index);

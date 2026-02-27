@@ -1,8 +1,9 @@
 MODEL (
-  name refined_zone.obs_journeys_by_day,
+  name refined_zone.obs_od_day,
   kind INCREMENTAL_BY_TIME_RANGE (
     time_column journey_date,
-    lookback 1
+    lookback 1,
+    batch_size 30,
   ),
   start '2020-01-01',
   end 'now()',
@@ -18,17 +19,18 @@ WITH unnested_sirets AS (
     a.start_datetime_tz::date AS journey_date,
     s.siret,
     CASE 
-      WHEN c.establishment_naf_code IN ('8411Z','8413Z','4931Z','4939A')
+      WHEN d.code IS NOT NULL
         THEN 'collectivite'
-      WHEN c.establishment_naf_code IS NOT NULL AND c.establishment_naf_code NOT IN ('8411Z','8413Z','4931Z','4939A')
+      WHEN c.siren IS NOT NULL
         THEN 'operator'
-      WHEN c.establishment_naf_code IS NULL
+      WHEN d.code is null and c.siren IS null and s.siret is not null
         THEN 'other'
       ELSE NULL
     END AS siret_type
   FROM trusted_zone.journeys a
   LEFT JOIN LATERAL (SELECT unnest(a.operator_incentives_sirets) AS siret) s ON TRUE
-  LEFT JOIN company.companies c ON s.siret = c.siret
+  LEFT JOIN (select distinct left(siret,9) as siren from operator.operators) c ON left(s.siret,9) = c.siren
+  LEFT JOIN (select distinct code FROM trusted_zone.perimeters_agg WHERE type = 'aom') d ON left(s.siret,9) = d.code
   WHERE a.valid_acquisition_status = true
   AND a.start_datetime_tz BETWEEN @start_ds AND @end_ds
 ),
@@ -40,7 +42,8 @@ incentives_agg AS (
     journey_date,
     COUNT(*) FILTER (WHERE siret_type = 'collectivite') AS incentive_collectivite,
     COUNT(*) FILTER (WHERE siret_type = 'operator')     AS incentive_operator,
-    COUNT(*) FILTER (WHERE siret_type = 'other')        AS incentive_others
+    COUNT(*) FILTER (WHERE siret_type = 'other')        AS incentive_others,
+    COUNT(*) FILTER (WHERE siret_type = NULL)           AS no_incentive,
   FROM unnested_sirets
   GROUP BY 1,2,3
 ),
@@ -74,10 +77,11 @@ SELECT
   j.duration,
   COALESCE(i.incentive_collectivite, 0) AS incentive_collectivite,
   COALESCE(i.incentive_operator, 0)     AS incentive_operator,
-  COALESCE(i.incentive_others, 0)       AS incentive_others
+  COALESCE(i.incentive_others, 0)       AS incentive_others,
+  COALESCE(i.no_incentive, 0)           AS no_incentive
 FROM journeys_agg j
 LEFT JOIN incentives_agg i ON j.start_geo_code = i.start_geo_code
   AND j.end_geo_code   = i.end_geo_code
   AND j.journey_date  = i.journey_date;
 
-CREATE UNIQUE INDEX IF NOT EXISTS obs_journeys_by_day_pk ON refined_zone.obs_journeys_by_day (start_geo_code, end_geo_code, journey_date);
+@create_unique_index(@this_model, start_geo_code, end_geo_code, journey_date);

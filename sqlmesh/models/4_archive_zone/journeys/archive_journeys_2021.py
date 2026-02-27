@@ -51,6 +51,7 @@ COLUMNS_TYPES = [
   ("passenger_contribution::INTEGER", "INTEGER", "passenger_contribution"),
   ("passenger_payments::TEXT", "TEXT", "passenger_payments"),
   ("operator_incentives_sirets::VARCHAR[]", "VARCHAR[]", "operator_incentives_sirets"),
+  ("operator_incentives_amounts::INTEGER[]", "INTEGER[]", "operator_incentives_amounts"),
   ("operator_incentives_amount_total::INTEGER", "INTEGER", "operator_incentives_amount_total"),
   ("policy_id", "BIGINT", "policy_id"),
   ("policy_incentives_amount_total::INTEGER", "INTEGER", "policy_incentives_amount_total"),

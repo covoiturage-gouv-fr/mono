@@ -2,7 +2,8 @@ MODEL (
   name trusted_zone.journeys_latest,
   kind INCREMENTAL_BY_TIME_RANGE (
     time_column start_datetime,
-    lookback 1
+    lookback 1,
+    batch_size 30
   ),
   start '2026-01-01',
   end 'now()',
@@ -14,3 +15,6 @@ JINJA_QUERY_BEGIN;
 JINJA_END;
 
 CREATE INDEX IF NOT EXISTS journeys_latest_id_index ON @this_model USING btree (_id);
+CREATE INDEX IF NOT EXISTS journeys_latest_start_datetime_tz_index ON @this_model USING btree (start_datetime_tz);
+CREATE INDEX IF NOT EXISTS journeys_latest_start_h3_index_index ON @this_model USING btree (start_h3_index);
+CREATE INDEX IF NOT EXISTS journeys_latest_end_h3_index_index ON @this_model USING btree (end_h3_index);

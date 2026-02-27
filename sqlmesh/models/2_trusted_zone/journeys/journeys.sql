@@ -18,5 +18,4 @@ UNION ALL
 select * from trusted_zone.journeys_2025
 UNION ALL
 select * from trusted_zone.journeys_latest
-ORDER BY _id desc
 ;

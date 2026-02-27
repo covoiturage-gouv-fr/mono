@@ -1,8 +1,9 @@
 MODEL (
-  name refined_zone.part_campaigns_by_day,
+  name refined_zone.part_campaigns_day,
   kind INCREMENTAL_BY_TIME_RANGE (
     time_column start_date,
-    lookback 1
+    lookback 1,
+    batch_size 30,
   ),
   start '2020-01-01',
   grain ['campaign_id', 'start_date', 'operator_id'],
