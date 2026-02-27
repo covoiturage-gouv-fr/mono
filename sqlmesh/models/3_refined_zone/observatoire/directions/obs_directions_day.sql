@@ -8,7 +8,7 @@ MODEL (
   start '2020-01-01',
   end 'now()',
   grain ['code','type','journey_date','direction'],
-  tags ['refined', 'observatoire', 'directions_by_day'],
+  tags ['refined', 'observatoire', 'directions_day'],
 );
 
 WITH hours AS (
@@ -26,7 +26,7 @@ WITH hours AS (
     SUM(incentive_others)       AS incentive_others,
     SUM(no_incentive)           AS no_incentive,
     jsonb_object_agg(hour::text, journeys ORDER BY hour) AS hours_distribution
-  FROM refined_zone.obs_directions_hours_by_day
+  FROM refined_zone.obs_directions_hours_day
   WHERE code IS NOT NULL
   AND journey_date >= @start_ds
   AND journey_date <  @end_ds
@@ -34,7 +34,7 @@ WITH hours AS (
 ),
 users AS (
   SELECT *
-  FROM refined_zone.obs_directions_users_by_day
+  FROM refined_zone.obs_directions_users_day
   WHERE code IS NOT NULL
     AND journey_date >= @start_ds
     AND journey_date <  @end_ds
@@ -46,7 +46,7 @@ distances AS (
     journey_date,
     direction,
     jsonb_object_agg(dist_class::text, journeys ORDER BY dist_class) AS dist_distribution
-  FROM refined_zone.obs_directions_distances_by_day
+  FROM refined_zone.obs_directions_distances_day
   WHERE code IS NOT NULL
   AND journey_date >= @start_ds
   AND journey_date <  @end_ds

@@ -38,7 +38,7 @@ hours_agg AS (
     extract('year'  FROM journey_date)::int AS year,
     extract('quarter' FROM journey_date)::int AS quarter,
     jsonb_object_agg(hour::text, journeys ORDER BY hour) AS hours_distribution
-  FROM refined_zone.obs_directions_hours_by_day
+  FROM refined_zone.obs_directions_hours_day
   WHERE journey_date >= @start_ds
     AND journey_date <  @end_ds
   GROUP BY 1, 2, 3, 4, 5
@@ -51,10 +51,25 @@ dist_agg AS (
     extract('year'  FROM journey_date)::int AS year,
     extract('quarter' FROM journey_date)::int AS quarter,
     jsonb_object_agg(dist_class::text, journeys ORDER BY dist_class) AS dist_distribution
-  FROM refined_zone.obs_directions_distances_by_day
+  FROM refined_zone.obs_directions_distances_day
   WHERE journey_date >= @start_ds
     AND journey_date <  @end_ds
   GROUP BY 1, 2, 3, 4, 5
+),
+users as (
+  SELECT
+    code,
+    type,
+    direction,
+    extract('year'  FROM quarter_date)::int AS year,
+    extract('quarter' FROM quarter_date)::int AS quarter,
+    unique_drivers,
+    unique_passengers,
+    new_drivers,
+    new_passengers
+  FROM refined_zone.obs_directions_users_quarter
+  WHERE quarter_date >= @start_ds
+    AND quarter_date <  @end_ds
 )
 
 SELECT
@@ -75,6 +90,10 @@ SELECT
   )::float                      AS occupation_rate,
   h.hours_distribution,
   d.dist_distribution,
+  u.unique_drivers,
+  u.unique_passengers,
+  u.new_drivers,
+  u.new_passengers,
   st_asgeojson(b.centroid, 6)::json AS geom
 FROM sum_directions AS a
 LEFT JOIN hours_agg h
@@ -89,6 +108,12 @@ LEFT JOIN dist_agg d
   AND d.direction = a.direction
   AND d.year      = a.year
   AND d.quarter   = a.quarter
+LEFT JOIN users u
+  ON  u.code      = a.code
+  AND u.type      = a.type
+  AND u.direction = a.direction
+  AND u.year      = a.year
+  AND u.quarter   = a.quarter
 LEFT JOIN @join_perimeters_agg(@start_ds, @end_ds) AS b
   ON  b.code    = a.code
   AND b.type    = a.type
