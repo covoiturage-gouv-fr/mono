@@ -29,3 +29,9 @@ logs/dbt.log
 dbt/target
 dbt/edr_target
 .aider*
+
+# Claude code
+# Exclude local settings to let each dev
+# set its own permissions.
+.claude/settings.local.json
+

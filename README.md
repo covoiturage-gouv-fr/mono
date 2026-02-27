@@ -77,6 +77,6 @@ Le code suit les spécifications [semver](https://semver.org/).
 
 # License
 
-DINUM / DGITM / ADEME, 2017-2025
+DINUM / DGITM / ADEME, 2017-2026
 
 The source code is published under [Apache license 2.0](./LICENSE).

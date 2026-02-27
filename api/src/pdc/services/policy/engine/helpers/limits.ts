@@ -7,6 +7,7 @@ export enum LimitTargetEnum {
 }
 
 export enum LimitCounterTypeEnum {
+  Seats,
   Trip,
   Amount,
   Other,
@@ -66,6 +67,20 @@ export function applyLimitsOnStatefulStage(
     applyLimitOnStatefulStage(ctx, uuid, BigInt(max), fn);
   }
 }
+
+export const watchPersonTripCount: LimitStatelessStageHelper = (() => {
+  function fn(ctx: StatelessContextInterface, uuid: string, target?: LimitTargetEnum): void {
+    ctx.meta.register({
+      uuid,
+      name: "person_trip_counter",
+      scope: getTargetUuid(target!, ctx),
+      lifetime: MetadataLifetime.Always,
+    });
+  }
+  fn.counter = LimitCounterTypeEnum.Trip;
+  fn.priority = 100;
+  return fn;
+})();
 
 export const watchForGlobalMaxAmount: LimitStatelessStageHelper = (() => {
   function fn(ctx: StatelessContextInterface, uuid: string): void {
@@ -182,6 +197,40 @@ export const watchForPassengerMaxByTripByDay: LimitStatelessStageHelper = (() =>
   return fn;
 })();
 
+export const watchForMaxPassengersPerDriverPerDay: LimitStatelessStageHelper = (() => {
+  function fn(ctx: StatelessContextInterface, uuid: string): void {
+    if ("driver_identity_key" in ctx.carpool && ctx.carpool.driver_identity_key?.length) {
+      ctx.meta.register({
+        uuid,
+        name: "max_passenger_restriction",
+        scope: ctx.carpool.driver_identity_key,
+        lifetime: MetadataLifetime.Day,
+        carpoolValue: ctx.carpool.seats,
+      });
+    }
+  }
+  fn.counter = LimitCounterTypeEnum.Other;
+  fn.priority = 11;
+  return fn;
+})();
+
+export const watchForMaxPassengersPerTrip: LimitStatelessStageHelper = (() => {
+  function fn(ctx: StatelessContextInterface, uuid: string): void {
+    if ("operator_trip_id" in ctx.carpool && ctx.carpool.operator_trip_id?.length) {
+      ctx.meta.register({
+        uuid,
+        name: "max_passenger_restriction",
+        scope: ctx.carpool.operator_trip_id,
+        lifetime: MetadataLifetime.Carpool,
+        carpoolValue: ctx.carpool.seats,
+      });
+    }
+  }
+  fn.counter = LimitCounterTypeEnum.Seats;
+  fn.priority = 11;
+  return fn;
+})();
+
 export function applyLimitOnStatefulStage(
   ctx: StatefulContextInterface,
   uuid: string,
@@ -200,6 +249,21 @@ export function applyLimitOnStatefulStage(
   }
 
   switch (helper.counter) {
+    case LimitCounterTypeEnum.Seats: {
+      const raw = ctx.meta.getRaw(uuid);
+      const val = BigInt(raw.carpoolValue as number);
+
+      if (state + val > max) {
+        ctx.meta.set(uuid, max);
+        const allowedSeats = Number(max - state);
+        const seatIncentive = Math.floor(ctx.incentive.get() / (raw.carpoolValue as number));
+        ctx.incentive.set(seatIncentive * allowedSeats);
+        return;
+      }
+
+      ctx.meta.set(uuid, state + val);
+      return;
+    }
     case LimitCounterTypeEnum.Trip: {
       ctx.meta.set(uuid, state + 1n);
       return;
@@ -221,6 +285,7 @@ export function applyLimitOnStatefulStage(
       if (!raw.carpoolValue) {
         throw new MisconfigurationException("Missing carpool value");
       }
+
       ctx.meta.set(uuid, state + BigInt(raw.carpoolValue));
       return;
     }

@@ -23,13 +23,10 @@ export class UsersRepository implements UsersRepositoryInterface {
   private readonly tableTerritory = "territory.territory_group";
   private readonly tableOperator = "operator.operators";
 
-
   constructor(private pgConnection: DenoPostgresConnection) {}
 
-  async getUsers(
-    params: UsersParamsInterface,
-  ): Promise<UsersResultInterface> {
-    const filters = [sql`users.hidden = false`];
+  async getUsers(params: UsersParamsInterface): Promise<UsersResultInterface> {
+    const filters = [sql`TRUE`];
     if (params.id) {
       filters.push(sql`users._id = ${params.id}`);
     }
@@ -46,7 +43,7 @@ export class UsersRepository implements UsersRepositoryInterface {
         OR users.email ILIKE ${`%${params.search}%`} 
         OR o.name ILIKE ${`%${params.search}%`}
         OR tg.name ILIKE ${`%${params.search}%`}
-        )`);
+      )`);
     }
     const limit = params.limit || 25;
     const page = params.page || 1;
@@ -61,20 +58,30 @@ export class UsersRepository implements UsersRepositoryInterface {
         users.territory_id,
         users.role
       FROM ${raw(this.table)} AS users
-      ${params.search ?
-        sql`LEFT JOIN ${raw(this.tableTerritory)} tg ON tg._id = users.territory_id LEFT JOIN ${raw(this.tableOperator)} o ON o._id = users.operator_id` : sql``
-      }
+      ${
+      params.search
+        ? sql`LEFT JOIN ${raw(this.tableTerritory)} tg ON tg._id = users.territory_id LEFT JOIN ${
+          raw(this.tableOperator)
+        } o ON o._id = users.operator_id`
+        : sql``
+    }
       WHERE ${join(filters, " AND ")}
       ORDER BY users._id
       LIMIT ${limit} OFFSET ${offset}
     `;
+
     const rows = await this.pgConnection.query<UserResult>(query);
     // Calcul du nombre total d'éléments
     const countQuery = sql`
       SELECT COUNT(*) as total
       FROM ${raw(this.table)} AS users
-      ${params.search ?  sql`LEFT JOIN ${raw(this.tableTerritory)} tg ON tg._id = users.territory_id` : sql``}
-      LEFT JOIN ${raw(this.tableOperator)} o ON o._id = users.operator_id
+      ${
+      params.search
+        ? sql`LEFT JOIN ${raw(this.tableTerritory)} tg ON tg._id = users.territory_id LEFT JOIN ${
+          raw(this.tableOperator)
+        } o ON o._id = users.operator_id`
+        : sql``
+    }
       WHERE ${join(filters, " AND ")}
     `;
     const countResponse = await this.pgConnection.query<{ total: string }>(countQuery);
@@ -88,9 +95,7 @@ export class UsersRepository implements UsersRepositoryInterface {
     };
   }
 
-  async createUser(
-    data: CreateUserDataInterface,
-  ): Promise<CreateUserResultInterface> {
+  async createUser(data: CreateUserDataInterface): Promise<CreateUserResultInterface> {
     const query = sql`
       INSERT INTO ${raw(this.table)} (
         firstname, lastname, email, role, operator_id, territory_id
@@ -110,25 +115,20 @@ export class UsersRepository implements UsersRepositoryInterface {
     };
   }
 
-  async deleteUser(
-    params: DeleteUserParamsInterface,
-  ): Promise<DeleteUserResultInterface> {
+  async deleteUser(params: DeleteUserParamsInterface): Promise<DeleteUserResultInterface> {
     const query = sql`
-      UPDATE ${raw(this.table)}
-      SET hidden = true
+      DELETE FROM ${raw(this.table)}
       WHERE _id = ${params.id}
       RETURNING _id
     `;
     const rows = await this.pgConnection.query(query);
     if (rows.length !== 1) {
-      throw new NotFoundException(`user not found: (${params.id})`);
+      throw new NotFoundException();
     }
     return { success: true, message: `user ${params.id} deleted` };
   }
 
-  async updateUser(
-    data: UpdateUserDataInterface,
-  ): Promise<UpdateUserResultInterface> {
+  async updateUser(data: UpdateUserDataInterface): Promise<UpdateUserResultInterface> {
     const query = sql`
       UPDATE ${raw(this.table)}
       SET 

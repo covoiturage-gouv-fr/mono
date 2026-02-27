@@ -131,12 +131,12 @@ export default function Navigation() {
             },
             {
               linkProps: {
-                href: '/collectivites/plateformes-numeriques',
+                href: '/collectivites/deployer-une-plateforme-numerique-de-covoiturage-en-marque-blanche-1',
                 title: 'Déployer une plateforme numérique de covoiturage en marque blanche',
                 'aria-label': 'Déployer une plateforme numérique de covoiturage en marque blanche',
               },
               text: 'Déployer une plateforme numérique de covoiturage en marque blanche',
-              isActive: pathname === '/collectivites/plateformes-numeriques',
+              isActive: pathname === '/collectivites/deployer-une-plateforme-numerique-de-covoiturage-en-marque-blanche-1',
             },
             {
               linkProps: {

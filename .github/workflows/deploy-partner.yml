@@ -41,6 +41,9 @@ jobs:
           NEXT_PUBLIC_API_URL: ${{ vars.API_ROOT_URL }}
           NEXT_PUBLIC_SEARCH_URL: ${{ vars.API_SEARCH_URL }}
           NEXT_PUBLIC_SEARCH_TOKEN: ${{ secrets.MEILISEARCH_API_KEY }}
+          NEXT_PUBLIC_MATOMO_URL: ${{ vars.MATOMO_URL }}
+          NEXT_PUBLIC_MATOMO_SITE_ID: ${{ vars.PARTNER_MATOMO_SITE_ID }}
+          NEXT_PUBLIC_MATOMO_ORG_DIMENSION_ID: ${{ vars.PARTNER_MATOMO_ORG_DIMENSION_ID }}
         run: |
           cd app-partners
           npm ci

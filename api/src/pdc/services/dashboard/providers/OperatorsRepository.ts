@@ -33,7 +33,7 @@ export class OperatorsRepository implements OperatorsRepositoryInterface {
     if (params.search) {
       filters.push(sql`(name ILIKE ${`%${params.search}%`} OR SIRET ILIKE ${`%${params.search}%`})`);
     }
-    const limit = params.limit || 25;
+    const limit = params.limit || 100;
     const page = params.page || 1;
     const offset = (page - 1) * limit;
     const query = sql`
@@ -62,6 +62,19 @@ export class OperatorsRepository implements OperatorsRepositoryInterface {
       },
       data: rows,
     };
+  }
+
+  async getOperatorById(id: number): Promise<OperatorResult | null> {
+    const query = sql`
+      SELECT
+        _id as id,
+        name,
+        siret
+      FROM ${raw(this.table)}
+      WHERE _id = ${id} AND deleted_at IS NULL
+    `;
+    const rows = await this.pgConnection.query<OperatorResult>(query);
+    return rows.length > 0 ? rows[0] : null;
   }
 
   async createOperator(

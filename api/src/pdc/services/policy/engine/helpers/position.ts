@@ -5,7 +5,7 @@ import {
   TerritorySelectorsInterface,
 } from "../../interfaces/index.ts";
 
-function inList(
+export function inList(
   selectors: TerritorySelectorsInterface,
   territory: TerritoryCodeInterface,
 ): boolean {

@@ -6,6 +6,8 @@ export interface UserInterface {
   operator_id: number | null;
   territory_id: number | null;
   siret?: string;
+  analytics_id?: string;
+  organisation?: string;
 }
 
 export interface AuthContextProps {

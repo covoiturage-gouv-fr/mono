@@ -45,6 +45,14 @@ import { Rennes2025 } from "./20250101_Rennes.ts";
 import { PMGFxATMBxSM4CCx2025 } from "./20250701_PMGFxATMBxSM4CC.ts";
 import { HauteCorreze2026 } from "./20250902_haute_correze_2026.ts";
 import { ATMB2025 } from "./20251014_ATMB.ts";
+import { CovoitIDFM2026 } from "./20251201_Covoit_IDFM_2026.ts";
+import { LannionTregor2026 } from "./20251201_LannionTregor.ts";
+import { GrandChatellerault2026 } from "./20260101_GrandChatellerault.ts";
+import { ATMBx2CCAM2026 } from "./20260101_ATMBx2CCAM_2026.ts";
+import { GrandPoitiers2026 } from "./20260101_GrandPoitiers2026.ts";
+import { LaRochelle2026 } from "./20260101_LaRochelle.ts";
+import { MontluconCommunaute2026 } from "./20260101_Montlucon_2026.ts";
+import { Occitanie20262027 } from "./20260101_Occitanie.ts";
 import { PolicyTemplateOne } from "./unbound/PolicyTemplateOne.ts";
 import { PolicyTemplateThree } from "./unbound/PolicyTemplateThree.ts";
 import { PolicyTemplateTwo } from "./unbound/PolicyTemplateTwo.ts";
@@ -53,29 +61,43 @@ export const policies: Map<string, PolicyHandlerStaticInterface> = new Map(
   [
     ATMB202305,
     ATMB2025,
-    Cannes2024,
+    ATMBx2CCAM2026,
     CCPOA202410,
     CCVMM202405,
+    Cannes2024,
     Cotentin2023,
+    CovoitIDFM2026,
     GrandChatellerault2024,
     GrandChatellerault2025,
+    GrandChatellerault2026,
     GrandPoitiers,
     GrandPoitiers2025,
+    GrandPoitiers2026,
     HauteCorreze2025,
     HauteCorreze2026,
     IDFMPeriodeNormale2021,
-    Lannion202305,
-    LannionTregor2024,
     LaRochelle20232024,
     LaRochelle2024,
     LaRochelle2025,
+    LaRochelle2026,
+    Lannion202305,
+    LannionTregor2024,
+    LannionTregor2026,
     LavalAgglo2022,
     MetropoleRouenNormandie2022,
     MetropoleSavoie,
+    MontluconCommunaute2026,
     Montpellier,
     NantesMetropole2024,
     NantesMetropoleXPCovoitan2021,
     Occitanie20232024,
+    Occitanie20262027,
+    PMGF2022,
+    PMGF2023,
+    PMGFOctobre2023,
+    PMGFxATMB2024,
+    PMGFxATMB2025,
+    PMGFxATMBxSM4CCx2025,
     PaysBasque20232024,
     PaysBasque2025,
     PaysDeLaLoire2021,
@@ -83,21 +105,15 @@ export const policies: Map<string, PolicyHandlerStaticInterface> = new Map(
     PaysDeLaLoire2024,
     PetrLunevillois092024032025,
     PetrLunevilloisS12023,
-    PMGF2022,
-    PMGF2023,
-    PMGFOctobre2023,
-    PMGFxATMB2024,
-    PMGFxATMB2025,
-    PMGFxATMBxSM4CCx2025,
     PolicyTemplateOne,
     PolicyTemplateThree,
     PolicyTemplateTwo,
     Rennes2025,
-    SiouleLimagne,
     SMT2022,
     SMT2023,
     SMTC2024Driver,
     SMTC2024Passenger,
+    SiouleLimagne,
     TerresTouloises2024,
     Vitre2023,
   ].map((h) => [h.id, h]),

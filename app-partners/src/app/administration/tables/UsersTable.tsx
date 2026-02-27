@@ -212,8 +212,12 @@ export default function UsersTable(props: { title: string; territoryId: number |
         }}
         onClose={() => modal.setOpenModal(false)}
         onSubmit={async () => {
-          await modal.submitModal("dashboard/user", formSchema);
-          setAlert(Object.keys(modal.errors ?? {}).length > 0 ? "error" : modal.typeModal);
+          try {
+            await modal.submitModal("dashboard/user", formSchema);
+            setAlert(modal.typeModal);
+          } catch {
+            setAlert("error");
+          }
           await refetchUsers();
         }}
       >

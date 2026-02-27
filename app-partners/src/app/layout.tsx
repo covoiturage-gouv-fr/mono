@@ -57,10 +57,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <AppFooter />
             </MuiDsfrThemeProvider>
           </DsfrProvider>
+          <Suspense fallback={null}>
+            <MatomoAnalytics />
+          </Suspense>
         </AuthProvider>
-        <Suspense fallback={null}>
-          <MatomoAnalytics />
-        </Suspense>
       </body>
     </html>
   );

@@ -1,8 +1,0 @@
-Contact: mailto:security@covoiturage.beta.gouv.fr
-Expires: 2024-12-31T23:00:00.000Z
-Encryption: https://keys.openpgp.org/vks/v1/by-fingerprint/48103904BA3365543B27BF28F92CCE0585A4AE8F
-Encryption: https://observatoire.covoiturage.gouv.fr/.well-known/security.asc
-Preferred-Languages: fr, en
-Canonical: https://app.covoiturage.beta.gouv.fr/.well-known/security.txt
-Policy: https://observatoire.covoiturage.gouv.fr/.well-known/security-policy.txt
-Acknowledgments: https://observatoire.covoiturage.gouv.fr/.well-known/security-policy.txt

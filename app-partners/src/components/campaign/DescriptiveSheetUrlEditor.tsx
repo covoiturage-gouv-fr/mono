@@ -103,7 +103,8 @@ export default function DescriptiveSheetUrlEditor({ campaignId, initialValue }: 
                 void sendEvent({
                   category: "campagne",
                   action: "Consultation de la fiche descriptive",
-                  name: `Campaign ID: ${campaignId}`,
+                  name: `Campaign ID`,
+                  value: `${campaignId}`,
                 });
 
                 // Navigate to URL in new tab
