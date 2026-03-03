@@ -6,11 +6,7 @@ import { ValidatorExtension, ValidatorMiddleware } from "../../providers/validat
 import { ApplyAction } from "./actions/ApplyAction.ts";
 import { FinalizeAction } from "./actions/FinalizeAction.ts";
 import { FindAction } from "./actions/FindAction.ts";
-import { GetPastSimulationOrComputeAction } from "./actions/GetPastSimulationOrComputeAction.ts";
 import { ListAction } from "./actions/ListAction.ts";
-import { SimulateOnFutureAction } from "./actions/SimulateOnFutureAction.ts";
-import { SimulateOnPastAction } from "./actions/SimulateOnPastAction.ts";
-import { SimulateOnPastByGeoAction } from "./actions/SimulateOnPastByGeoAction.ts";
 import { StatsAction } from "./actions/StatsAction.ts";
 import { syncIncentiveSumAction } from "./actions/SyncIncentiveSumAction.ts";
 import { UpdateDescriptiveSheetUrlAction } from "./actions/UpdateDescriptiveSheetUrlAction.ts";
@@ -23,9 +19,6 @@ import { binding as applySchemaBinding } from "./contracts/apply.schema.ts";
 import { binding as finalizeSchemaBinding } from "./contracts/finalize.schema.ts";
 import { binding as findSchemaBinding } from "./contracts/find.schema.ts";
 import { binding as listSchemaBinding } from "./contracts/list.schema.ts";
-import { binding as simulateOnFutureSchemaBinding } from "./contracts/simulateOnFuture.schema.ts";
-import { binding as simulateOnSchemaBinding } from "./contracts/simulateOnPast.schema.ts";
-import { binding as simulateOnPastGeoSchemaBinding } from "./contracts/simulateOnPastGeo.schema.ts";
 import { binding as statsSchemaBinding } from "./contracts/stats.schema.ts";
 import { binding as syncIncentiveSumSchemaBinding } from "./contracts/syncIncentiveSum.schema.ts";
 import { binding as updateDescriptiveSheetUrlSchemaBinding } from "./contracts/updateDescriptiveSheetUrl.schema.ts";
@@ -50,9 +43,6 @@ import { TripRepositoryProvider } from "./providers/TripRepositoryProvider.ts";
     finalizeSchemaBinding,
     findSchemaBinding,
     listSchemaBinding,
-    simulateOnFutureSchemaBinding,
-    simulateOnPastGeoSchemaBinding,
-    simulateOnSchemaBinding,
     statsSchemaBinding,
     syncIncentiveSumSchemaBinding,
     updateDescriptiveSheetUrlSchemaBinding,
@@ -61,11 +51,7 @@ import { TripRepositoryProvider } from "./providers/TripRepositoryProvider.ts";
     ApplyAction,
     FinalizeAction,
     FindAction,
-    GetPastSimulationOrComputeAction,
     ListAction,
-    SimulateOnFutureAction,
-    SimulateOnPastAction,
-    SimulateOnPastByGeoAction,
     StatsAction,
     syncIncentiveSumAction,
     UpdateDescriptiveSheetUrlAction,

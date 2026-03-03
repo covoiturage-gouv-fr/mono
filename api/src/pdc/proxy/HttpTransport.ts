@@ -86,7 +86,6 @@ export class HttpTransport implements TransportInterface {
     this.registerGlobalMiddlewares();
     this.registerCache();
     this.registerNestedRoutes();
-    this.registerSimulationRoutes();
     this.registerHonorRoutes();
     this.registerCallHandler();
     this.registerAfterAllHandlers();
@@ -150,7 +149,7 @@ export class HttpTransport implements TransportInterface {
 
     // apply CORS to all routes except the following ones
     this.app.use(
-      /\/((?!honor|policy\/simulate|v3\/observatory|geo\/search).)*/,
+      /\/((?!honor|v3\/observatory|geo\/search).)*/,
       cors({
         origin: [this.config.get("proxy.cors"), this.config.get("proxy.dashboardV2Cors")],
         optionsSuccessStatus: 200,
@@ -177,13 +176,6 @@ export class HttpTransport implements TransportInterface {
     );
     this.app.use(
       "/geo/search",
-      cors({
-        origin: this.config.get("proxy.showcase"),
-        optionsSuccessStatus: 200,
-      }),
-    );
-    this.app.use(
-      "/policy/simulate",
       cors({
         origin: this.config.get("proxy.showcase"),
         optionsSuccessStatus: 200,
@@ -237,24 +229,6 @@ export class HttpTransport implements TransportInterface {
       "/metrics",
       metricsMiddleware("metrics"),
       prometheusMetricsFactory(),
-    );
-  }
-
-  private registerSimulationRoutes(): void {
-    // Routes have been migrated to apiRoute annotations in the action handlers
-    this.app.post(
-      "/policy/simulate",
-      rateLimiter({ max: 1 }, "rl-policy-simulate"),
-      asyncHandler(async (req: Request, res: Response, _next: NextFunction) => {
-        // TODO : Should be queued
-        await this.kernel.call("user:sendSimulationEmail", req.body, {
-          call: { user: { permissions: ["common.user.policySimulate"] } },
-          channel: {
-            service: "proxy",
-          },
-        });
-        this.send(res, { id: 1, jsonrpc: "2.0" });
-      }),
     );
   }
 

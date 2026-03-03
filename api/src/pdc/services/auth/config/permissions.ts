@@ -1,4 +1,5 @@
 const permissions = {
+  // Journeys acquisition
   "acquisition.create": ["operator.application", "operator.admin"],
   "acquisition.cancel": ["operator.application", "operator.admin"],
   "acquisition.status": [
@@ -6,20 +7,26 @@ const permissions = {
     "operator.application",
     "operator.admin",
   ],
-  "application.create": ["operator.admin"],
-  "application.find": ["operator.user", "operator.admin"],
-  "application.list": ["operator.user", "operator.admin"],
-  "application.revoke": ["operator.admin"],
+
+  // DEX credentials and access tokens
   "credentials.create": ["registry.admin", "operator.admin"],
   "credentials.read": ["registry.admin", "operator.admin"],
   "credentials.delete": ["registry.admin", "operator.admin"],
   "access_token.create": ["operator.application"],
+
+  // Companies
   "company.fetch": ["common"],
   "company.find": ["common"],
+
+  // Honor certificates
   "honor.save": ["common"],
   "honor.stats": ["common"],
+
+  // @deprecated stats
   "monitoring.journeysstats": ["registry.admin"],
   "observatory.stats": ["common"],
+
+  // Operators CRUD
   "operator.create": ["registry.admin"],
   "operator.list": ["common"],
   "operator.find": [
@@ -30,12 +37,19 @@ const permissions = {
   ],
   "operator.delete": ["registry.admin"],
   "operator.update": ["operator.admin", "registry.admin"],
+
+  // @deprecated
   "operator.patchContacts": ["operator.admin", "registry.admin"],
+
+  // @deprecated
   "operator.patchThumbnail": ["operator.admin", "registry.admin"],
-  "policy.create": ["territory.demo", "territory.admin", "registry.admin"],
-  "policy.delete": ["territory.demo", "territory.admin", "registry.admin"],
+
+  // Campaigns
+  "policy.create": ["territory.admin", "registry.admin"],
+
+  // @deprecated
+  "policy.delete": ["territory.admin", "registry.admin"],
   "policy.find": [
-    "territory.demo",
     "territory.user",
     "territory.admin",
     "registry.user",
@@ -43,38 +57,36 @@ const permissions = {
     "operator.admin",
     "operator.user",
   ],
+
+  // @deprecated
   "policy.launch": ["territory.admin"],
+
   "policy.list": [
     "common",
-    "territory.demo",
     "territory.user",
     "territory.admin",
     "registry.user",
     "registry.admin",
   ],
+
+  // @deprecated
   "policy.patch": ["territory.admin", "registry.admin"],
-  "policy.simulate.past": [
-    "territory.admin",
-    "territory.demo",
-    "registry.admin",
-  ],
-  "policy.simulate.fake": ["territory.admin", "registry.admin"],
-  "policy.simulate.future": [
-    "operator.application",
-    "operator.admin",
-    "territory.admin",
-  ],
   "policy.list.templates": ["common"],
+
+  // Territories
   "territory.create": ["registry.admin"],
+
+  // @deprecated
   "territory.delete": ["registry.admin"],
   "territory.find": [
     "common",
-    "territory.demo",
     "territory.user",
     "territory.admin",
     "registry.user",
     "registry.admin",
   ],
+
+  // @deprecated
   "territory.update": ["territory.admin", "registry.admin"],
   "territory.list": ["common"],
   "territory.read": [
@@ -84,18 +96,25 @@ const permissions = {
     "registry.user",
     "registry.admin",
   ],
+
+  // @deprecated
   "territory.patchOperator": ["operator.admin"],
+
+  // @deprecated
   "territory.patchContacts": ["territory.admin", "registry.admin"],
+
+  // @deprecated
   "trip.stats": [
     "common",
     "operator.user",
     "operator.admin",
-    "territory.demo",
     "territory.user",
     "territory.admin",
     "registry.user",
     "registry.admin",
   ],
+
+  // @deprecated
   "trip.export": [
     "operator.user",
     "operator.admin",
@@ -104,6 +123,8 @@ const permissions = {
     "registry.user",
     "registry.admin",
   ],
+
+  // APDF
   "apdf.list": [
     "operator.admin",
     "territory.admin",
@@ -112,15 +133,19 @@ const permissions = {
   ],
   "apdf.listCurrentMonth": ["registry.admin"],
   "apdf.export": ["registry.admin"],
+
+  // @deprecated
   "trip.list": [
     "operator.user",
     "operator.admin",
-    "territory.demo",
     "territory.user",
     "territory.admin",
     "registry.user",
     "registry.admin",
   ],
+
+  // TODO Check if still in use
+  // Users
   "user.update": [
     "common",
     "operator.admin",
@@ -138,14 +163,12 @@ const permissions = {
   "user.list": [
     "operator.user",
     "operator.admin",
-    "territory.demo",
     "territory.user",
     "territory.admin",
     "registry.user",
     "registry.admin",
   ],
   "user.sendEmail": ["operator.admin", "territory.admin", "registry.admin"],
-  "user.policySimulate": ["common"],
 
   // export service
   "export.create": ["common"],
@@ -165,12 +188,11 @@ function dispatchPermissionsFromMatrix(
 ) {
   const permissionsByGroup: Record<string, string[]> = {
     common: [],
-    "territory.demo": [],
     "territory.user": [],
     "territory.admin": [],
     "operator.user": [],
-    "operator.application": [],
     "operator.admin": [],
+    "operator.application": [],
     "registry.user": [],
     "registry.admin": [],
   };
@@ -207,14 +229,6 @@ export const territory = {
       ...permissionsByRoles["territory.admin"],
     ],
   },
-  demo: {
-    slug: "demo",
-    name: "Demo",
-    permissions: [
-      ...permissionsByRoles["common"],
-      ...permissionsByRoles["territory.demo"],
-    ],
-  },
   user: {
     slug: "user",
     name: "User",
@@ -232,14 +246,6 @@ export const operator = {
     permissions: [
       ...permissionsByRoles["common"],
       ...permissionsByRoles["operator.admin"],
-    ],
-  },
-  application: {
-    slug: "application",
-    name: "Application",
-    permissions: [
-      ...permissionsByRoles["common"],
-      ...permissionsByRoles["operator.application"],
     ],
   },
   user: {
