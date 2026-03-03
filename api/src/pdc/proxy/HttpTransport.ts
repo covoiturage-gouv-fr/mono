@@ -4,7 +4,6 @@ import express, { NextFunction, Request, Response } from "dep:express";
 import helmet from "dep:helmet";
 import { Server } from "dep:http";
 import { Redis } from "dep:redis";
-
 import {
   children,
   ConfigInterface,
@@ -26,9 +25,7 @@ import { logger } from "@/lib/logger/index.ts";
 import { get } from "@/lib/object/index.ts";
 import { join } from "@/lib/path/index.ts";
 import { Sentry, SentryProvider } from "@/pdc/providers/sentry/index.ts";
-import { TokenProvider, TokenProviderInterfaceResolver } from "@/pdc/providers/token/index.ts";
 import { registerExpressRoute } from "@/pdc/proxy/helpers/registerExpressRoute.ts";
-import { TokenPayloadInterface } from "@/pdc/services/application/contracts/common/interfaces/TokenPayloadInterface.ts";
 import {
   ParamsInterface as GetAuthorizedCodesParams,
   ResultInterface as GetAuthorizedCodesResult,
@@ -56,7 +53,6 @@ export class HttpTransport implements TransportInterface {
   config: ConfigInterface;
   port: string;
   server: Server;
-  tokenProvider: TokenProviderInterfaceResolver;
   cache: CacheMiddleware;
 
   constructor(private kernel: KernelInterface) {}
@@ -136,7 +132,6 @@ export class HttpTransport implements TransportInterface {
 
   private async getProviders(): Promise<void> {
     this.config = this.kernel.getContainer().get(ConfigInterfaceResolver);
-    this.tokenProvider = this.kernel.get(TokenProvider);
   }
 
   private registerBeforeAllHandlers(): void {

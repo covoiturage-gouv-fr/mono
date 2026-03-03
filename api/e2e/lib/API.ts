@@ -103,27 +103,6 @@ export class API {
     this.#accessToken = null;
   }
 
-  public async legacyAuthenticate(email: string, password: string): Promise<void> {
-    // Login with OIDC like callback
-    await this.callback(email, password);
-
-    // Create a new application and get the access token
-    const appResponse = await this.post("/applications", {
-      name: `APIE2E Application ${faker.string.nanoid()}`,
-    });
-
-    if (!appResponse.ok) {
-      throw new Error(`Failed to create application: ${appResponse.statusText}`);
-    }
-
-    const { token } = appResponse.body as { application: unknown; token: string };
-    if (!token || typeof token !== "string") {
-      throw new Error("Invalid access token received from application creation");
-    }
-
-    this.#accessToken = token;
-  }
-
   /**
    * -------------------------------------------------------------------------------------------------------------------
    * CREDENTIALS MANAGEMENT
