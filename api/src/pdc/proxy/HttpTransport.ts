@@ -96,7 +96,6 @@ export class HttpTransport implements TransportInterface {
     this.registerGlobalMiddlewares();
     this.registerCache();
     this.registerNestedRoutes();
-    this.registerApplicationRoutes();
     this.registerAcquisitionRoutes();
     this.registerSimulationRoutes();
     this.registerCeeRoutes();
@@ -312,51 +311,6 @@ export class HttpTransport implements TransportInterface {
    */
   private registerAcquisitionRoutes(): void {
     // Routes have been migrated to apiRoute annotations in the action handlers
-  }
-
-  private registerApplicationRoutes(): void {
-    /**
-     * Create an application
-     */
-    this.app.post(
-      "/applications",
-      rateLimiter(),
-      asyncHandler(async (req: Request, res: Response, _next: NextFunction) => {
-        if (Array.isArray(req.body)) {
-          throw new InvalidRequestException(
-            "Cannot create multiple applications at once",
-          );
-        }
-
-        const user = get(req, "session.user", null);
-        if (!user) throw new UnauthorizedException();
-        if (!user.operator_id) {
-          throw new UnauthorizedException(
-            "Only operators can create applications",
-          );
-        }
-
-        const response = (await this.kernel.handle(
-          createRPCPayload("application:create", { name: req.body.name }, user),
-        )) as RPCResponseType;
-
-        if ("error" in (response as any)) {
-          return this.send(res, response);
-        }
-
-        const application = (response as any).result;
-
-        const token = await this.tokenProvider.sign<TokenPayloadInterface>({
-          a: application.uuid,
-          o: application.owner_id,
-          s: application.owner_service,
-          p: application.permissions,
-          v: 2,
-        });
-
-        res.status(201).json({ application, token });
-      }),
-    );
   }
 
   private registerAfterAllHandlers(): void {
