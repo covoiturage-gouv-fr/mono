@@ -9,7 +9,6 @@ import {
   ConfigInterface,
   ConfigInterfaceResolver,
   HandlerConfigType,
-  InvalidRequestException,
   KernelInterface,
   proxy,
   RegisterHookInterface,
@@ -40,12 +39,7 @@ import { prometheusMetricsFactory } from "./helpers/prometheusMetricsFactory.ts"
 import { CacheMiddleware, cacheMiddleware } from "./middlewares/cacheMiddleware.ts";
 import { dataWrapMiddleware, errorHandlerMiddleware } from "./middlewares/index.ts";
 import { metricsMiddleware } from "./middlewares/metricsMiddleware.ts";
-import {
-  apiRateLimiter,
-  contactformRateLimiter,
-  monHonorCertificateRateLimiter,
-  rateLimiter,
-} from "./middlewares/rateLimiter.ts";
+import { apiRateLimiter, monHonorCertificateRateLimiter, rateLimiter } from "./middlewares/rateLimiter.ts";
 import { sessionMiddleware } from "./middlewares/sessionMiddleware.ts";
 
 export class HttpTransport implements TransportInterface {
@@ -92,12 +86,8 @@ export class HttpTransport implements TransportInterface {
     this.registerGlobalMiddlewares();
     this.registerCache();
     this.registerNestedRoutes();
-    this.registerAcquisitionRoutes();
     this.registerSimulationRoutes();
-    this.registerCeeRoutes();
     this.registerHonorRoutes();
-    this.registerObservatoryRoutes();
-    this.registerContactformRoute();
     this.registerCallHandler();
     this.registerAfterAllHandlers();
     this.registerGeoRoutes();
@@ -160,7 +150,7 @@ export class HttpTransport implements TransportInterface {
 
     // apply CORS to all routes except the following ones
     this.app.use(
-      /\/((?!honor|contactform|policy\/simulate|v3\/observatory|geo\/search).)*/,
+      /\/((?!honor|policy\/simulate|v3\/observatory|geo\/search).)*/,
       cors({
         origin: [this.config.get("proxy.cors"), this.config.get("proxy.dashboardV2Cors")],
         optionsSuccessStatus: 200,
@@ -182,13 +172,6 @@ export class HttpTransport implements TransportInterface {
       "/honor",
       cors({
         origin: this.config.get("proxy.certUrl"),
-        optionsSuccessStatus: 200,
-      }),
-    );
-    this.app.use(
-      "/contactform",
-      cors({
-        origin: this.config.get("proxy.showcase"),
         optionsSuccessStatus: 200,
       }),
     );
@@ -257,10 +240,6 @@ export class HttpTransport implements TransportInterface {
     );
   }
 
-  private registerCeeRoutes(): void {
-    // Routes have been migrated to apiRoute annotations in the action handlers
-  }
-
   private registerSimulationRoutes(): void {
     // Routes have been migrated to apiRoute annotations in the action handlers
     this.app.post(
@@ -294,18 +273,6 @@ export class HttpTransport implements TransportInterface {
         this.send(res, response as RPCResponseType);
       }),
     );
-
-    // Routes have been migrated to apiRoute annotations in the action handlers
-  }
-
-  /**
-   * Journeys routes
-   * - check status
-   * - invalidate
-   * - save
-   */
-  private registerAcquisitionRoutes(): void {
-    // Routes have been migrated to apiRoute annotations in the action handlers
   }
 
   private registerAfterAllHandlers(): void {
@@ -372,33 +339,6 @@ export class HttpTransport implements TransportInterface {
     );
   }
 
-  private registerObservatoryRoutes() {
-    // Routes have been migrated to apiRoute annotations in the action handlers
-  }
-
-  /**
-   * Used by showcase website's contact form.
-   * Gets data and sends it by email
-   */
-  private registerContactformRoute() {
-    this.app.post(
-      "/contactform",
-      contactformRateLimiter(),
-      asyncHandler(async (req: Request, res: Response, _next: NextFunction) => {
-        const { name, email, company, job, subject, body } = req.body;
-        const response = await this.kernel.handle(
-          createRPCPayload(
-            "user:contactform",
-            { name, email, company, job, subject, body },
-            { permissions: ["common.user.contactform"] },
-          ),
-        );
-
-        this.send(res, response as RPCResponseType);
-      }),
-    );
-  }
-
   /**
    * Serve static files
    * Files must be copied to dist/public folder
@@ -430,7 +370,7 @@ export class HttpTransport implements TransportInterface {
         rateLimiter(),
         asyncHandler(
           async (_req: Request, res: Response, _next: NextFunction) => {
-            const response = await this.kernel
+            const response = this.kernel
               .getContainer()
               .getHandlers()
               .map((def) => ({

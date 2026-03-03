@@ -92,13 +92,3 @@ export function monHonorCertificateRateLimiter(
     "rl-monitoring-cert",
   );
 }
-
-// shortcut for /contactform route
-export function contactformRateLimiter(
-  opts: Partial<RateLimiterOptions> = {},
-): RateLimitRequestHandler {
-  return rateLimiter(
-    { windowMs: 1 * minute, max: 3, ...opts },
-    "rl-contactform",
-  );
-}
