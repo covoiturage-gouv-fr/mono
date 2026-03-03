@@ -45,9 +45,7 @@ import { dataWrapMiddleware, errorHandlerMiddleware } from "./middlewares/index.
 import { metricsMiddleware } from "./middlewares/metricsMiddleware.ts";
 import {
   apiRateLimiter,
-  authRateLimiter,
   contactformRateLimiter,
-  loginRateLimiter,
   monHonorCertificateRateLimiter,
   rateLimiter,
 } from "./middlewares/rateLimiter.ts";
@@ -98,7 +96,6 @@ export class HttpTransport implements TransportInterface {
     this.registerGlobalMiddlewares();
     this.registerCache();
     this.registerNestedRoutes();
-    this.registerLegacyAuthRoutes();
     this.registerApplicationRoutes();
     this.registerAcquisitionRoutes();
     this.registerSimulationRoutes();
@@ -315,130 +312,6 @@ export class HttpTransport implements TransportInterface {
    */
   private registerAcquisitionRoutes(): void {
     // Routes have been migrated to apiRoute annotations in the action handlers
-  }
-
-  private registerLegacyAuthRoutes(): void {
-    /**
-     * Log the user in based on email and password combination
-     */
-    this.app.post(
-      "/login",
-      loginRateLimiter(),
-      asyncHandler(async (req: Request, res: Response, _next: NextFunction) => {
-        const response = (await this.kernel.handle(
-          createRPCPayload("user:login", req.body),
-        )) as RPCResponseType;
-
-        if (!response || Array.isArray(response) || "error" in response) {
-          res.status(mapStatusCode(response)).json(
-            this.parseErrorData(response),
-          );
-        } else {
-          const user = Array.isArray(response) ? response[0].result : response.result;
-          req.session.user = {
-            ...user,
-            ...(await this.getTerritoryInfos(user)),
-          };
-
-          this.send(res, response);
-        }
-      }),
-    );
-
-    /**
-     * Get the user profile (reads from the session rather than the database)
-     */
-    this.app.get(
-      "/profile",
-      authRateLimiter(),
-      (req: Request, res: Response, _next: NextFunction) => {
-        res.json(get(req.session, "user"));
-      },
-    );
-
-    /**
-     * Kill the current session
-     */
-    this.app.post(
-      "/logout",
-      authRateLimiter(),
-      (req: Request, res: Response, _next: NextFunction) => {
-        req.session.destroy((err: Error) => {
-          if (err) throw err;
-          res.status(204).end();
-        });
-      },
-    );
-
-    /**
-     * Let the user request a new password by supplying her email
-     */
-    this.app.post(
-      "/auth/reset-password",
-      authRateLimiter(),
-      asyncHandler(async (req: Request, res: Response, _next: NextFunction) => {
-        const response = (await this.kernel.handle(
-          createRPCPayload("user:forgottenPassword", { email: req.body.email }),
-        )) as RPCResponseType;
-
-        this.send(res, response);
-      }),
-    );
-
-    /**
-     * Let the front-end check an email/password couple for password recovery
-     */
-    this.app.post(
-      "/auth/check-token",
-      authRateLimiter(),
-      asyncHandler(async (req: Request, res: Response, _next: NextFunction) => {
-        const response = (await this.kernel.handle(
-          createRPCPayload("user:checkForgottenToken", {
-            email: req.body.email,
-            token: req.body.token,
-          }),
-        )) as RPCResponseType;
-
-        this.send(res, response);
-      }),
-    );
-
-    /**
-     * Let the user change her password by supplying an email, a token and a new password
-     */
-    this.app.post(
-      "/auth/change-password",
-      authRateLimiter(),
-      asyncHandler(async (req: Request, res: Response, _next: NextFunction) => {
-        const response = (await this.kernel.handle(
-          createRPCPayload("user:changePasswordWithToken", {
-            email: req.body.email,
-            token: req.body.token,
-            password: req.body.password,
-          }),
-        )) as RPCResponseType;
-
-        this.send(res, response);
-      }),
-    );
-
-    /**
-     * Let the front-end confirm a pending email with an email and a token
-     */
-    this.app.post(
-      "/auth/confirm-email",
-      authRateLimiter(),
-      asyncHandler(async (req: Request, res: Response, _next: NextFunction) => {
-        const response = (await this.kernel.handle(
-          createRPCPayload("user:confirmEmail", {
-            email: req.body.email,
-            token: req.body.token,
-          }),
-        )) as RPCResponseType;
-
-        this.send(res, response);
-      }),
-    );
   }
 
   private registerApplicationRoutes(): void {
