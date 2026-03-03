@@ -31,7 +31,6 @@ Migrations are ordered by name in the `src/db/migrations` folder.
 
 ```shell
 pg_dump --no-owner --no-acl --no-comments -s -n geo > geo.sql
-pg_dump --no-owner --no-acl --no-comments -s -n cee > cee.sql
 pg_dump --no-owner --no-acl --no-comments -s \
    -n dashboard_stats -n geo_stats -n observatoire_stats -n observatory \
     > observatory.sql
