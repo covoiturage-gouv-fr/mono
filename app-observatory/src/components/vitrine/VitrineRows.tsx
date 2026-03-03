@@ -2,8 +2,6 @@ import { RowsProps } from '@/interfaces/vitrine/componentsInterfaces';
 import { fr } from '@codegouvfr/react-dsfr';
 import VitrineCard from './VitrineCard';
 
-
-
 export default function VitrineRows(props: RowsProps) {
   return (
     <div className={fr.cx('fr-grid-row','fr-grid-row--gutters', 'fr-mt-5w')}>
@@ -17,10 +15,9 @@ export default function VitrineRows(props: RowsProps) {
                 </div>
               )
             case 'row.card':
-              return(
-                <div className={fr.cx('fr-col-12', 'fr-col-md-6')}>
+              return (
+                <div key={i} className={fr.cx('fr-col-12', 'fr-col-md-6')}>
                   <VitrineCard 
-                    key={i} 
                     title={r.title}
                     content={r.content}
                     img={r.img.data.attributes.url}
@@ -28,9 +25,9 @@ export default function VitrineRows(props: RowsProps) {
                     buttons={r.buttons}
                   />
                 </div>
-              )             
+              )
           }
-        }            
+        }
       )}
     </div>
   );
