@@ -13,7 +13,7 @@ import { regex_jwt } from "../../lib/regex.ts";
 describe("Credentials Authentication", () => {
   it("should authenticate an operator", async () => {
     const http = new API();
-    const operator = await http.login(OPERATOR_EMAIL, OPERATOR_PASSWORD);
+    const operator = await http.callback(OPERATOR_EMAIL, OPERATOR_PASSWORD);
 
     expect(operator).toMatchObject({
       operator_id: 1,
@@ -24,7 +24,7 @@ describe("Credentials Authentication", () => {
 
   it("should create credentials and authenticate with them", async () => {
     const http = new API();
-    const operator = await http.login<{ operator_id: number }>(OPERATOR_EMAIL, OPERATOR_PASSWORD);
+    const operator = await http.callback<{ operator_id: number }>(OPERATOR_EMAIL, OPERATOR_PASSWORD);
     const credentials = await http.createCredentials(operator.operator_id);
     expect(credentials).toMatchObject({
       access_key: expect.any(String),
@@ -50,7 +50,7 @@ describe("Credentials Authentication", () => {
 
   it("should create, read and delete credentials", async () => {
     const http = new API();
-    const operator = await http.login<{ operator_id: number }>(OPERATOR_EMAIL, OPERATOR_PASSWORD);
+    const operator = await http.callback<{ operator_id: number }>(OPERATOR_EMAIL, OPERATOR_PASSWORD);
     const credentials = await http.createCredentials(operator.operator_id);
     expect(credentials).toMatchObject({
       access_key: expect.any(String),

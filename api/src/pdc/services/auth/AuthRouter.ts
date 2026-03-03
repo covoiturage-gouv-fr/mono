@@ -5,7 +5,7 @@ import express, { NextFunction, Request, Response } from "dep:express";
 import { session } from "../../../config/proxy.ts";
 import { authGuard } from "../../proxy/middlewares/authGuard.ts";
 import { sessionMiddleware } from "../../proxy/middlewares/sessionMiddleware.ts";
-import { testLoginRoute } from "./test/login.ts";
+import { testCallbackRoute } from "./test/callback.ts";
 
 @injectable()
 export class AuthRouter {
@@ -111,7 +111,7 @@ export class AuthRouter {
      * This route should only be available in test environments.
      */
     if (["demo", "production"].includes(this.config.get("env")) === false) {
-      this.app.post("/auth/test/login", testLoginRoute.bind(this)(this.config));
+      this.app.post("/auth/test/callback", testCallbackRoute.bind(this)(this.config));
     }
   }
 }

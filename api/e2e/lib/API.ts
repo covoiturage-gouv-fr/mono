@@ -4,7 +4,7 @@ import {
   DeleteCredentialsResult,
   ReadCredentialsResult,
 } from "@/pdc/services/auth/dto/Credentials.ts";
-import { newExceptionFromHttpStatus } from "../../src/ilos/common/newExceptionFromHttpStatus.ts";
+import { newExceptionFromHttpStatus } from "@/ilos/common/newExceptionFromHttpStatus.ts";
 import { env } from "./config.ts";
 import { faker } from "./faker.ts";
 import { RPCResponse } from "./types.ts";
@@ -77,10 +77,10 @@ export class API {
   }
 
   // Connect to the API using email and password, and retrieve a session cookie.
-  public async login<T = unknown>(email: string, password: string): Promise<T> {
+  public async callback<T = unknown>(email: string, password: string): Promise<T> {
     await this.logout();
 
-    const res = await this.post<RPCResponse<T>>("/auth/test/login", { email, password });
+    const res = await this.post<RPCResponse<T>>("/auth/test/callback", { email, password });
     if (!res.ok) {
       throw new UnauthorizedException();
     }
@@ -104,8 +104,8 @@ export class API {
   }
 
   public async legacyAuthenticate(email: string, password: string): Promise<void> {
-    // Login
-    await this.login(email, password);
+    // Login with OIDC like callback
+    await this.callback(email, password);
 
     // Create a new application and get the access token
     const appResponse = await this.post("/applications", {

@@ -3,7 +3,7 @@ import { asyncHandler } from "@/pdc/proxy/helpers/asyncHandler.ts";
 import { Request, Response } from "dep:express";
 import { getPermissions } from "../config/permissions.ts";
 
-export const testLoginRoute = (config: ConfigInterfaceResolver) =>
+export const testCallbackRoute = (config: ConfigInterfaceResolver) =>
   asyncHandler(async (req: Request, res: Response) => {
     const { email } = req.body;
 
@@ -53,7 +53,7 @@ export const testLoginRoute = (config: ConfigInterfaceResolver) =>
 
     // Create session
     req.session = req.session || {};
-    req.session.auth = { test_login: true };
+    req.session.auth = { id_token: 1, test_login: true };
     req.session.user = user;
 
     return res.json(req.session.user);
