@@ -53,9 +53,6 @@ import { GrandPoitiers2026 } from "./20260101_GrandPoitiers2026.ts";
 import { LaRochelle2026 } from "./20260101_LaRochelle.ts";
 import { MontluconCommunaute2026 } from "./20260101_Montlucon_2026.ts";
 import { Occitanie20262027 } from "./20260101_Occitanie.ts";
-import { PolicyTemplateOne } from "./unbound/PolicyTemplateOne.ts";
-import { PolicyTemplateThree } from "./unbound/PolicyTemplateThree.ts";
-import { PolicyTemplateTwo } from "./unbound/PolicyTemplateTwo.ts";
 
 export const policies: Map<string, PolicyHandlerStaticInterface> = new Map(
   [
@@ -105,9 +102,6 @@ export const policies: Map<string, PolicyHandlerStaticInterface> = new Map(
     PaysDeLaLoire2024,
     PetrLunevillois092024032025,
     PetrLunevilloisS12023,
-    PolicyTemplateOne,
-    PolicyTemplateThree,
-    PolicyTemplateTwo,
     Rennes2025,
     SMT2022,
     SMT2023,

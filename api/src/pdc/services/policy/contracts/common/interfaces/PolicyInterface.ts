@@ -4,7 +4,6 @@ import { BoundedSlices, UnboundedSlices } from "./Slices.ts";
 export enum PolicyStatusEnum {
   ACTIVE = "active",
   DRAFT = "draft",
-  TEMPLATE = "template",
   FINISHED = "finished",
 }
 
