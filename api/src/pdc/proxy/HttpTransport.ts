@@ -194,8 +194,6 @@ export class HttpTransport implements TransportInterface {
       next();
     });
 
-    // FIXME : expressMung.jsonAsync makes the response body undefined
-    // this.app.use(signResponseMiddleware);
     this.app.use(dataWrapMiddleware);
   }
 
