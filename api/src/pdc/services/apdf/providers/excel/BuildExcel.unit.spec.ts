@@ -1,8 +1,9 @@
+import { afterEach, assertEquals, beforeEach, describe, it } from "@/dev_deps.ts";
+import { KernelInterfaceResolver } from "@/ilos/common/index.ts";
+import { NativeCursor } from "@/ilos/connection-postgres/LegacyPostgresConnection.ts";
+import { APDFNameProvider } from "@/pdc/providers/storage/index.ts";
 import excel from "dep:excel";
-import { afterEach, assertEquals, beforeEach, describe, it, sinon } from "../../../../../dev_deps.ts";
-import { KernelInterfaceResolver } from "../../../../../ilos/common/index.ts";
-import { NativeCursor } from "../../../../../ilos/connection-postgres/LegacyPostgresConnection.ts";
-import { APDFNameProvider } from "../../../../providers/storage/index.ts";
+import sinon from "dev:sinon";
 import { PolicyStatusEnum } from "../../../policy/contracts/common/interfaces/PolicyInterface.ts";
 import { SliceInterface } from "../../../policy/contracts/common/interfaces/Slices.ts";
 import { PolicyStatsInterface } from "../../contracts/interfaces/PolicySliceStatInterface.ts";

@@ -1,5 +1,6 @@
-import { it, sinon } from "../../../../../dev_deps.ts";
-import { v4 as uuidV4 } from "../../../../../lib/uuid/index.ts";
+import { it } from "@/dev_deps.ts";
+import { v4 as uuidV4 } from "@/lib/uuid/index.ts";
+import sinon from "dev:sinon";
 import { OperatorsEnum } from "../../interfaces/index.ts";
 import { dateRange } from "../helpers/dateRange.ts";
 import { makeProcessHelper } from "../tests/macro.ts";

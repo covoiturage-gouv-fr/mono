@@ -75,7 +75,8 @@
     "dep:bcrypt": "https://deno.land/x/bcrypt@v0.4.1/mod.ts",
     // worker.ts must be listed to be listed in deno.lock and cached
     "dep:bcrypt-worker": "https://deno.land/x/bcrypt@v0.4.1/src/worker.ts",
-    "dep:grpc": "https://deno.land/x/grpc_basic@0.4.7/client.ts"
+    "dep:grpc": "https://deno.land/x/grpc_basic@0.4.7/client.ts",
+    "dev:sinon": "npm:sinon@18"
   },
   "compilerOptions": {
     // keep them even if deprecated as the code uses legacy decorators

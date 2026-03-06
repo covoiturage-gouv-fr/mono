@@ -1,7 +1,7 @@
-import { assertEquals, beforeEach, describe, it, sinon, SinonStub } from "../../../../dev_deps.ts";
+import { assertEquals, beforeEach, describe, it } from "@/dev_deps.ts";
+import { ContextType, KernelInterfaceResolver } from "@/ilos/common/index.ts";
+import sinon, { SinonStub } from "dev:sinon";
 import { ResultInterface as OperatorResultInterface } from "../../operator/contracts/find.contract.ts";
-
-import { ContextType, KernelInterfaceResolver } from "../../../../ilos/common/index.ts";
 import { PolicyStatusEnum } from "../contracts/common/interfaces/PolicyInterface.ts";
 import { ParamsInterface, ResultInterface } from "../contracts/find.contract.ts";
 import {
@@ -28,25 +28,23 @@ describe("FindAction", () => {
   >;
 
   class FakePolicyRepositoryProvider extends PolicyRepositoryProviderInterfaceResolver {
-    find(
-      id: number,
-      territoryId?: number,
-    ): Promise<SerializedPolicyInterface | undefined> {
+    override updateDescriptiveSheetUrl(_id: number, _descriptiveSheetUrl: string | null): Promise<void> {
       throw new Error("Method not implemented.");
     }
-    create(
-      data: Omit<SerializedPolicyInterface, "_id">,
-    ): Promise<SerializedPolicyInterface> {
+    find(_id: number, _territoryId?: number): Promise<SerializedPolicyInterface | undefined> {
       throw new Error("Method not implemented.");
     }
-    patch(data: SerializedPolicyInterface): Promise<SerializedPolicyInterface> {
+    create(_data: Omit<SerializedPolicyInterface, "_id">): Promise<SerializedPolicyInterface> {
       throw new Error("Method not implemented.");
     }
-    delete(id: number): Promise<void> {
+    patch(_data: SerializedPolicyInterface): Promise<SerializedPolicyInterface> {
+      throw new Error("Method not implemented.");
+    }
+    delete(_id: number): Promise<void> {
       throw new Error("Method not implemented.");
     }
     findWhere(
-      search: {
+      _search: {
         _id?: number;
         territory_id?: number | null | number[];
         status?: PolicyStatusEnum;
@@ -59,10 +57,10 @@ describe("FindAction", () => {
     listApplicablePoliciesId(): Promise<number[]> {
       throw new Error("Method not implemented.");
     }
-    activeOperators(policy_id: number): Promise<number[]> {
+    activeOperators(_policy_id: number): Promise<number[]> {
       throw new Error("Method not implemented.");
     }
-    syncIncentiveSum(campaign_id: number): Promise<void> {
+    syncIncentiveSum(_campaign_id: number): Promise<void> {
       throw new Error("Method not implemented.");
     }
     updateAllCampaignStatuses(): Promise<void> {

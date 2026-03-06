@@ -1,4 +1,5 @@
-import { assertEquals, describe, it, sinon } from "@/dev_deps.ts";
+import sinon from "dev:sinon";
+import { assertEquals, describe, it } from "@/dev_deps.ts";
 import { serviceProvider as serviceProviderDecorator } from "@/ilos/common/Decorators.ts";
 import { ServiceProvider as AbstractServiceProvider } from "@/ilos/core/index.ts";
 import { command } from "../command.ts";
@@ -28,7 +29,7 @@ function setup() {
     commands: [BasicCommand],
   })
   class ServiceProvider extends AbstractServiceProvider {
-    extensions = [CommandExtension];
+    override extensions = [CommandExtension];
   }
 
   const serviceProvider = new ServiceProvider();

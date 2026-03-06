@@ -1,7 +1,7 @@
-import { assertEquals, beforeEach, describe, it, sinon, SinonStub } from "../../../../dev_deps.ts";
+import { assertEquals, beforeEach, describe, it } from "@/dev_deps.ts";
+import * as common from "@/ilos/common/index.ts";
+import sinon, { SinonStub } from "dev:sinon";
 import { ResultInterface as OperatorResultInterface } from "../../operator/contracts/find.contract.ts";
-
-import { ContextType, KernelInterfaceResolver } from "../../../../ilos/common/index.ts";
 import { PolicyStatusEnum } from "../contracts/common/interfaces/PolicyInterface.ts";
 import { ParamsInterface, ResultInterface } from "../contracts/list.contract.ts";
 import {
@@ -13,7 +13,7 @@ import { ListAction } from "./ListAction.ts";
 
 describe("ListAction", () => {
   // injected objects
-  let fakeKernelInterfaceResolver: KernelInterfaceResolver;
+  let fakeKernelInterfaceResolver: common.KernelInterfaceResolver;
   let repository: PolicyRepositoryProviderInterfaceResolver;
 
   // tested
@@ -21,32 +21,35 @@ describe("ListAction", () => {
 
   // sinon stubs
   let kernelInterfaceResolverStub: SinonStub<
-    [method: string, params: any, context: ContextType]
+    [method: string, params: any, context: common.ContextType]
   >;
   let repositoryStub: SinonStub<
-    [method: string, params: any, context: ContextType]
+    [method: string, params: any, context: common.ContextType]
   >;
 
   class FakePolicyRepositoryProvider extends PolicyRepositoryProviderInterfaceResolver {
+    override updateDescriptiveSheetUrl(_id: number, _descriptiveSheetUrl: string | null): Promise<void> {
+      throw new Error("Method not implemented.");
+    }
     find(
-      id: number,
-      territoryId?: number,
+      _id: number,
+      _territoryId?: number,
     ): Promise<SerializedPolicyInterface | undefined> {
       throw new Error("Method not implemented.");
     }
     create(
-      data: Omit<SerializedPolicyInterface, "_id">,
+      _data: Omit<SerializedPolicyInterface, "_id">,
     ): Promise<SerializedPolicyInterface> {
       throw new Error("Method not implemented.");
     }
-    patch(data: SerializedPolicyInterface): Promise<SerializedPolicyInterface> {
+    patch(_data: SerializedPolicyInterface): Promise<SerializedPolicyInterface> {
       throw new Error("Method not implemented.");
     }
-    delete(id: number): Promise<void> {
+    delete(_id: number): Promise<void> {
       throw new Error("Method not implemented.");
     }
     findWhere(
-      search: {
+      _search: {
         _id?: number;
         territory_id?: number | null | number[];
         status?: PolicyStatusEnum;
@@ -59,10 +62,10 @@ describe("ListAction", () => {
     listApplicablePoliciesId(): Promise<number[]> {
       throw new Error("Method not implemented.");
     }
-    activeOperators(policy_id: number): Promise<number[]> {
+    activeOperators(_policy_id: number): Promise<number[]> {
       throw new Error("Method not implemented.");
     }
-    syncIncentiveSum(campaign_id: number): Promise<void> {
+    syncIncentiveSum(_campaign_id: number): Promise<void> {
       throw new Error("Method not implemented.");
     }
     updateAllCampaignStatuses(): Promise<void> {
@@ -72,7 +75,7 @@ describe("ListAction", () => {
 
   beforeEach(() => {
     // object
-    fakeKernelInterfaceResolver = new (class extends KernelInterfaceResolver {})();
+    fakeKernelInterfaceResolver = new (class extends common.KernelInterfaceResolver {})();
     repository = new FakePolicyRepositoryProvider();
 
     // tested

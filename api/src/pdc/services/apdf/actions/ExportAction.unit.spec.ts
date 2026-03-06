@@ -1,5 +1,5 @@
-/* eslint-disable max-len */
-import { afterEach, assertEquals, beforeEach, describe, it, sinon } from "@/dev_deps.ts";
+import sinon from "dev:sinon";
+import { afterEach, assertEquals, beforeEach, describe, it } from "@/dev_deps.ts";
 import { KernelInterfaceResolver } from "@/ilos/common/index.ts";
 import { BucketName, S3StorageProvider } from "@/pdc/providers/storage/index.ts";
 import { uuid } from "@/pdc/providers/test/index.ts";

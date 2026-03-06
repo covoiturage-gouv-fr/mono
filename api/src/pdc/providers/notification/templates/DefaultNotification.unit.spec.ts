@@ -1,7 +1,8 @@
-import { assert, assertEquals, beforeEach, describe, it, sinon } from "@/dev_deps.ts";
+import { assert, assertEquals, beforeEach, describe, it } from "@/dev_deps.ts";
 import { Extensions } from "@/ilos/core/index.ts";
 import { HandlebarsTemplateProvider } from "@/pdc/providers/template/index.ts";
 import { Mail } from "dep:nodemailer";
+import sinon from "dev:sinon";
 import {
   DefaultNotification,
   DefaultTemplateData,
@@ -39,7 +40,7 @@ describe("default notification", () => {
     };
     const configProvider = new Extensions.ConfigStore(config);
     const templateProvider = new HandlebarsTemplateProvider();
-    await templateProvider.init();
+    templateProvider.init();
     transporter = new NotificationOverride(
       configProvider,
       templateProvider,

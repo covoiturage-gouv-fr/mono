@@ -9,13 +9,12 @@ import {
   beforeEach,
   describe,
   it,
-  sinon as Sinon,
-  SinonSandbox,
 } from "@/dev_deps.ts";
 import { ConflictException } from "@/ilos/common/index.ts";
 import sql, { raw } from "@/lib/pg/sql.ts";
 import { GeoProvider } from "@/pdc/providers/geo/index.ts";
 import { LegacyDbContext, makeLegacyDbBeforeAfter } from "@/pdc/providers/test/index.ts";
+import sinon, { SinonSandbox } from "dev:sinon";
 import { insertableCarpool, updatableCarpool } from "../mocks/database/carpool.ts";
 import { CarpoolGeoRepository } from "../repositories/CarpoolGeoRepository.ts";
 import { CarpoolLookupRepository } from "../repositories/CarpoolLookupRepository.ts";
@@ -32,12 +31,12 @@ describe("CarpoolAcquisitionService", () => {
   let geoRepository: CarpoolGeoRepository;
   let geoService: GeoProvider;
   let db: LegacyDbContext;
-  let sinon: SinonSandbox;
+  let sinonSB: SinonSandbox;
 
   const { before, after } = makeLegacyDbBeforeAfter();
   beforeAll(async () => {
     db = await before();
-    geoService = Sinon.createStubInstance(GeoProvider);
+    geoService = sinon.createStubInstance(GeoProvider);
     carpoolRepository = new CarpoolRepository(db.connection);
     statusRepository = new CarpoolStatusRepository(db.connection);
     requestRepository = new CarpoolRequestRepository(db.connection);
@@ -50,11 +49,11 @@ describe("CarpoolAcquisitionService", () => {
   });
 
   beforeEach(() => {
-    sinon = Sinon.createSandbox();
+    sinonSB = sinon.createSandbox();
   });
 
   afterEach(() => {
-    sinon.restore();
+    sinonSB.restore();
   });
 
   function getService(overrides: any): CarpoolAcquisitionService {
@@ -70,9 +69,9 @@ describe("CarpoolAcquisitionService", () => {
   }
 
   it("Should create carpool", async () => {
-    const carpoolRepositoryL = sinon.spy(carpoolRepository);
-    const requestRepositoryL = sinon.spy(requestRepository);
-    const statusRepositoryL = sinon.spy(statusRepository);
+    const carpoolRepositoryL = sinonSB.spy(carpoolRepository);
+    const requestRepositoryL = sinonSB.spy(requestRepository);
+    const statusRepositoryL = sinonSB.spy(statusRepository);
 
     const service = getService({
       carpoolRepository: carpoolRepositoryL,
@@ -103,9 +102,9 @@ describe("CarpoolAcquisitionService", () => {
 
   it("Should throw conflict exception on existing carpool", async () => {
     // Arrange
-    const carpoolRepositoryL = sinon.spy(carpoolRepository);
-    const requestRepositoryL = sinon.spy(requestRepository);
-    const statusRepositoryL = sinon.spy(statusRepository);
+    const carpoolRepositoryL = sinonSB.spy(carpoolRepository);
+    const requestRepositoryL = sinonSB.spy(requestRepository);
+    const statusRepositoryL = sinonSB.spy(statusRepository);
 
     const service = getService({
       carpoolRepository: carpoolRepositoryL,
@@ -141,9 +140,9 @@ describe("CarpoolAcquisitionService", () => {
   });
 
   it("Should patch carpool", async () => {
-    const carpoolRepositoryL = sinon.spy(carpoolRepository);
-    const requestRepositoryL = sinon.spy(requestRepository);
-    const statusRepositoryL = sinon.spy(statusRepository);
+    const carpoolRepositoryL = sinonSB.spy(carpoolRepository);
+    const requestRepositoryL = sinonSB.spy(requestRepository);
+    const statusRepositoryL = sinonSB.spy(statusRepository);
 
     const service = getService({
       carpoolRepository: carpoolRepositoryL,
@@ -179,9 +178,9 @@ describe("CarpoolAcquisitionService", () => {
   });
 
   it("Should cancel carpool", async () => {
-    const lookupRepositoryL = sinon.spy(lookupRepository);
-    const requestRepositoryL = sinon.spy(requestRepository);
-    const statusRepositoryL = sinon.spy(statusRepository);
+    const lookupRepositoryL = sinonSB.spy(lookupRepository);
+    const requestRepositoryL = sinonSB.spy(requestRepository);
+    const statusRepositoryL = sinonSB.spy(statusRepository);
 
     const service = getService({
       lookupRepository: lookupRepositoryL,
@@ -218,12 +217,12 @@ describe("CarpoolAcquisitionService", () => {
   });
 
   it("Should rollback if something fails", async () => {
-    const carpoolRepositoryL = sinon.spy(carpoolRepository);
-    const requestRepositoryL = sinon.spy(requestRepository);
-    sinon.replace(
+    const carpoolRepositoryL = sinonSB.spy(carpoolRepository);
+    const requestRepositoryL = sinonSB.spy(requestRepository);
+    sinonSB.replace(
       statusRepository,
       "saveAcquisitionStatus",
-      sinon.fake.throws(new Error("DB")),
+      sinonSB.fake.throws(new Error("DB")),
     );
 
     const service = getService({
@@ -251,7 +250,7 @@ describe("CarpoolAcquisitionService", () => {
   });
 
   it("Should raise error if distance too short terms is violated", async () => {
-    const carpoolL = sinon.spy(lookupRepository);
+    const carpoolL = sinonSB.spy(lookupRepository);
     const service = getService({
       CarpoolLookupRepository: carpoolL,
     });
@@ -307,7 +306,7 @@ describe("CarpoolAcquisitionService", () => {
   });
 
   it("Should raise error if expired terms is violated", async () => {
-    const carpoolL = sinon.spy(lookupRepository);
+    const carpoolL = sinonSB.spy(lookupRepository);
     const service = getService({
       CarpoolLookupRepository: carpoolL,
     });

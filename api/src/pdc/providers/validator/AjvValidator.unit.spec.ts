@@ -1,6 +1,7 @@
-import { afterEach, assert, assertRejects, beforeEach, describe, it, sinon } from "@/dev_deps.ts";
+import { afterEach, assert, assertRejects, beforeEach, describe, it } from "@/dev_deps.ts";
 import { InvalidParamsException } from "@/ilos/common/exceptions/index.ts";
 import { ConfigInterfaceResolver } from "@/ilos/common/index.ts";
+import sinon from "dev:sinon";
 import { AjvValidator } from "./AjvValidator.ts";
 
 describe("AjvValidator", () => {

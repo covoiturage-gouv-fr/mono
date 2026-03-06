@@ -1,5 +1,6 @@
-import { describe, it, sinon } from "../../../../../dev_deps.ts";
-import { v4 as uuidV4 } from "../../../../../lib/uuid/index.ts";
+import sinon from "dev:sinon";
+import { describe, it } from "@/dev_deps.ts";
+import { v4 as uuidV4 } from "@/lib/uuid/index.ts";
 import { OperatorsEnum, TerritoryCodeInterface } from "../../interfaces/index.ts";
 import { makeProcessHelper } from "../tests/macro.ts";
 import { PaysDeLaLoire2024 as Handler } from "./20240101_PaysDeLaLoire.ts";
