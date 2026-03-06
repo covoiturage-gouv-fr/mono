@@ -1,9 +1,27 @@
-# macros/create_index.py
 from sqlmesh import macro
 
 
+def _parse_options(columns):
+    """Sépare les vraies colonnes des options encodées (name=, type=, where=)."""
+    col_names = []
+    opts = {"name": None, "type": None, "where": None}
+
+    for c in columns:
+        s = str(c).strip("'\"")
+        if s.startswith("name="):
+            opts["name"] = s[5:]
+        elif s.startswith("type="):
+            opts["type"] = s[5:]
+        elif s.startswith("where="):
+            opts["where"] = s[6:]
+        else:
+            col_names.append(s.replace('"', '').replace("'", ''))
+
+    return col_names, opts
+
+
 def _build_index_sql(table_str, unique, col_names, index_type_str, index_name_str, where_str):
-    prefix   = "uq" if unique else "idx"
+    prefix = "uq" if unique else "idx"
     idx_name = index_name_str or f"{prefix}_{'_'.join(col_names)}"
     if len(idx_name) > 63:
         idx_name = idx_name[:63]
@@ -20,36 +38,33 @@ def _build_index_sql(table_str, unique, col_names, index_type_str, index_name_st
 
 
 @macro()
-def create_index(evaluator, table, *columns, index_type=None, index_name=None, where=None):
+def create_index(evaluator, table, *columns):
     """
-    @CREATE_INDEX(@this_model, col1, col2)
-    @CREATE_INDEX(@this_model, geom, index_type='GIST')
+    @create_index(@this_model, col1, col2)
+    @create_index(@this_model, col1, 'name=my_index')
+    @create_index(@this_model, geom, 'type=GIST', 'name=my_geom_idx')
+    @create_index(@this_model, email, 'where=deleted_at IS NULL')
     """
     if evaluator.runtime_stage != "creating":
         return None
 
-    table_str      = str(table)
-    col_names      = [str(c).replace('"', '').replace("'", '') for c in columns]
-    index_type_str = str(index_type).strip("'\"") if index_type else None
-    index_name_str = str(index_name).strip("'\"") if index_name else None
-    where_str      = str(where).strip("'\"") if where else None
+    table_str = str(table)
+    col_names, opts = _parse_options(columns)
 
-    return _build_index_sql(table_str, False, col_names, index_type_str, index_name_str, where_str)
+    return _build_index_sql(table_str, False, col_names, opts["type"], opts["name"], opts["where"])
 
 
 @macro()
-def create_unique_index(evaluator, table, *columns, index_type=None, index_name=None, where=None):
+def create_unique_index(evaluator, table, *columns):
     """
-    @CREATE_UNIQUE_INDEX(@this_model, col1, col2, col3)
-    @CREATE_UNIQUE_INDEX(@this_model, email, where='deleted_at IS NULL')
+    @create_unique_index(@this_model, col1, col2)
+    @create_unique_index(@this_model, email, 'name=uq_email')
+    @create_unique_index(@this_model, email, 'where=deleted_at IS NULL')
     """
     if evaluator.runtime_stage != "creating":
         return None
 
-    table_str      = str(table)
-    col_names      = [str(c).replace('"', '').replace("'", '') for c in columns]
-    index_type_str = str(index_type).strip("'\"") if index_type else None
-    index_name_str = str(index_name).strip("'\"") if index_name else None
-    where_str      = str(where).strip("'\"") if where else None
+    table_str = str(table)
+    col_names, opts = _parse_options(columns)
 
-    return _build_index_sql(table_str, True, col_names, index_type_str, index_name_str, where_str)
+    return _build_index_sql(table_str, True, col_names, opts["type"], opts["name"], opts["where"])
