@@ -1,4 +1,5 @@
-import { assert, assertEquals, assertRejects, it } from "@/dev_deps.ts";
+import { assert, assertEquals, assertRejects } from "dep:assert";
+import { it } from "dep:testing-bdd";
 
 import { Extensions } from "@/ilos/core/index.ts";
 import { env } from "@/lib/env/index.ts";

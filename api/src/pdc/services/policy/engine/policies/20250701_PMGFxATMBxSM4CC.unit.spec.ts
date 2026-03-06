@@ -1,4 +1,4 @@
-import { it } from "../../../../../dev_deps.ts";
+import { it } from "dep:testing-bdd";
 import { v4 as uuidV4 } from "../../../../../lib/uuid/index.ts";
 import { OperatorsEnum } from "../../interfaces/index.ts";
 import { makeProcessHelper } from "../tests/macro.ts";

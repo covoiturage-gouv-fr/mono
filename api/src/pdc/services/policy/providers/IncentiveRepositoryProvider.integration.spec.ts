@@ -1,4 +1,5 @@
-import { afterAll, assertEquals, beforeAll, describe, it } from "@/dev_deps.ts";
+import { assertEquals } from "dep:assert";
+import { afterAll, beforeAll, describe, it } from "dep:testing-bdd";
 import { LegacyDbContext, makeLegacyDbBeforeAfter } from "@/pdc/providers/test/index.ts";
 
 import { IncentiveStateEnum, IncentiveStatusEnum } from "../interfaces/index.ts";

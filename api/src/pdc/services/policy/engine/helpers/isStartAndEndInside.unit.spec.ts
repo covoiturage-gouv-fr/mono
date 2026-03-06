@@ -1,4 +1,5 @@
-import { assertEquals, assertThrows, it } from "@/dev_deps.ts";
+import { assertEquals, assertThrows } from "dep:assert";
+import { it } from "dep:testing-bdd";
 
 import type { GeoJSON } from "@/pdc/services/geo/contracts/GeoJson.ts";
 import { StatelessContext } from "../entities/Context.ts";

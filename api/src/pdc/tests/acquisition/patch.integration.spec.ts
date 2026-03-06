@@ -1,4 +1,5 @@
-import { afterAll, assert, assertEquals, beforeAll, describe, it } from "@/dev_deps.ts";
+import { assert, assertEquals } from "dep:assert";
+import { afterAll, beforeAll, describe, it } from "dep:testing-bdd";
 import { LegacyPostgresConnection } from "@/ilos/connection-postgres/index.ts";
 import {
   CarpoolAcquisitionService,

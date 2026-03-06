@@ -1,14 +1,6 @@
-import {
-  afterAll,
-  assert,
-  assertEquals,
-  assertSpyCall,
-  assertSpyCalls,
-  beforeEach,
-  describe,
-  it,
-  stub,
-} from "@/dev_deps.ts";
+import { assert, assertEquals } from "dep:assert";
+import { assertSpyCall, assertSpyCalls, stub } from "dep:testing-mock";
+import { afterAll, beforeEach, describe, it } from "dep:testing-bdd";
 import { createHash } from "@/lib/crypto/index.ts";
 import { exists } from "@/lib/file/index.ts";
 import { join } from "@/lib/path/index.ts";

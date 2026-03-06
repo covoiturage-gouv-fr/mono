@@ -1,4 +1,5 @@
-import { assertEquals, beforeEach, describe, it } from "@/dev_deps.ts";
+import { assertEquals } from "dep:assert";
+import { beforeEach, describe, it } from "dep:testing-bdd";
 import { ContextType, KernelInterfaceResolver } from "@/ilos/common/index.ts";
 import sinon, { SinonStub } from "dep:sinon";
 import { ResultInterface as OperatorResultInterface } from "../../operator/contracts/find.contract.ts";

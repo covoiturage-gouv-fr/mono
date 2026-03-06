@@ -1,5 +1,6 @@
 import sinon from "dep:sinon";
-import { assertEquals, describe, it } from "@/dev_deps.ts";
+import { assertEquals } from "dep:assert";
+import { describe, it } from "dep:testing-bdd";
 import { serviceProvider as serviceProviderDecorator } from "@/ilos/common/Decorators.ts";
 import { ServiceProvider as AbstractServiceProvider } from "@/ilos/core/index.ts";
 import { command } from "../command.ts";

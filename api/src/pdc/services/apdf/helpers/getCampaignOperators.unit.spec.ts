@@ -1,4 +1,5 @@
-import { afterEach, assertEquals, assertRejects, beforeEach, describe, it } from "@/dev_deps.ts";
+import { assertEquals, assertRejects } from "dep:assert";
+import { afterEach, beforeEach, describe, it } from "dep:testing-bdd";
 import { KernelInterfaceResolver, NotFoundException } from "@/ilos/common/index.ts";
 import sinon from "dep:sinon";
 import {

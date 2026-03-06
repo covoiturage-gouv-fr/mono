@@ -1,4 +1,5 @@
-import { afterEach, assert, assertRejects, beforeEach, describe, it } from "@/dev_deps.ts";
+import { assert, assertRejects } from "dep:assert";
+import { afterEach, beforeEach, describe, it } from "dep:testing-bdd";
 import { ContextType, KernelInterfaceResolver, NotFoundException } from "@/ilos/common/index.ts";
 import { PolicyStatusEnum } from "@/pdc/services/policy/contracts/common/interfaces/PolicyInterface.ts";
 import { ResultInterface as GetCampaignResultInterface } from "@/pdc/services/policy/contracts/find.contract.ts";

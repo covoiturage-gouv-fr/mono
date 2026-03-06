@@ -1,4 +1,5 @@
-import { assert, assertEquals, assertThrows, it } from "@/dev_deps.ts";
+import { assert, assertEquals, assertThrows } from "dep:assert";
+import { it } from "dep:testing-bdd";
 
 import { dateCast } from "./dateCast.ts";
 

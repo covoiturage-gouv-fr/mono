@@ -1,4 +1,5 @@
-import { assertEquals, assertThrows, describe, it } from "@/dev_deps.ts";
+import { assertEquals, assertThrows } from "dep:assert";
+import { describe, it } from "dep:testing-bdd";
 import { MethodNotFoundException } from "@/ilos/common/index.ts";
 import {
   getConfigBySignature,

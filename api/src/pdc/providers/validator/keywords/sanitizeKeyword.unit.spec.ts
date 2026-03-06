@@ -1,4 +1,5 @@
-import { assertEquals, it } from "@/dev_deps.ts";
+import { assertEquals } from "dep:assert";
+import { it } from "dep:testing-bdd";
 import { IFilterXSSOptions } from "dep:xss";
 
 import { sanitizeKeyword } from "./sanitizeKeyword.ts";

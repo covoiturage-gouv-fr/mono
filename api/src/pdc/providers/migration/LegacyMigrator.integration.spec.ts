@@ -1,4 +1,5 @@
-import { afterAll, assertEquals, beforeAll, describe, it } from "@/dev_deps.ts";
+import { assertEquals } from "dep:assert";
+import { afterAll, beforeAll, describe, it } from "dep:testing-bdd";
 import { env_or_fail } from "@/lib/env/index.ts";
 import { LegacyMigrator } from "./LegacyMigrator.ts";
 

@@ -1,4 +1,5 @@
-import { assert, describe, it } from "@/dev_deps.ts";
+import { assert } from "dep:assert";
+import { describe, it } from "dep:testing-bdd";
 import { handler } from "@/ilos/common/index.ts";
 import { Action } from "../foundation/Action.ts";
 import { Container } from "../index.ts";

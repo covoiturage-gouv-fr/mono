@@ -1,4 +1,5 @@
-import { assertEquals, assertRejects, it } from "@/dev_deps.ts";
+import { assertEquals, assertRejects } from "dep:assert";
+import { it } from "dep:testing-bdd";
 
 import { EtalabAPIGeoProvider } from "../providers/index.ts";
 import { insee, inseeError, inseeGeo, inseeGeoError } from "./data.ts";

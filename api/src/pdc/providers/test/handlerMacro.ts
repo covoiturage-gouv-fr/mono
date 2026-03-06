@@ -1,5 +1,5 @@
-import { assertEquals, assertRejects } from "@/dev_deps.ts";
 import { ContextType } from "@/ilos/common/index.ts";
+import { assertEquals } from "dep:assert";
 import { KernelContext } from "./helpers.ts";
 
 interface HandlerConfigInterface {

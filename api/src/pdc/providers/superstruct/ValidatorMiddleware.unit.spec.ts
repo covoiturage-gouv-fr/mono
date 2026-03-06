@@ -1,4 +1,5 @@
-import { assert, assertEquals, assertRejects, beforeAll, describe, it } from "@/dev_deps.ts";
+import { assert, assertEquals, assertRejects } from "dep:assert";
+import { beforeAll, describe, it } from "dep:testing-bdd";
 import { handler, kernel as kernelDecorator, serviceProvider } from "@/ilos/common/Decorators.ts";
 import { Exception } from "@/ilos/common/index.ts";
 import { Action as AbstractAction, ServiceProvider as AbstractServiceProvider } from "@/ilos/core/index.ts";

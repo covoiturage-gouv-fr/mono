@@ -1,4 +1,5 @@
-import { assert, assertRejects, beforeAll, describe, it } from "@/dev_deps.ts";
+import { assert, assertRejects } from "dep:assert";
+import { beforeAll, describe, it } from "dep:testing-bdd";
 import { Extensions } from "@/ilos/core/index.ts";
 import { AjvValidator } from "@/pdc/providers/validator/index.ts";
 

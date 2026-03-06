@@ -1,15 +1,5 @@
-import {
-  afterAll,
-  afterEach,
-  assert,
-  assertEquals,
-  assertObjectMatch,
-  assertRejects,
-  beforeAll,
-  beforeEach,
-  describe,
-  it,
-} from "@/dev_deps.ts";
+import { assert, assertEquals, assertObjectMatch, assertRejects } from "dep:assert";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, it } from "dep:testing-bdd";
 import { ConflictException } from "@/ilos/common/index.ts";
 import sql, { raw } from "@/lib/pg/sql.ts";
 import { GeoProvider } from "@/pdc/providers/geo/index.ts";

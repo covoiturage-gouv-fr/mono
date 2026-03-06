@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, it } from "@/dev_deps.ts";
+import { afterAll, beforeAll, describe, it } from "dep:testing-bdd";
 import {
   ContextType,
   handler as handlerDecorator,

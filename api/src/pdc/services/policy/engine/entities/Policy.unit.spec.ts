@@ -1,4 +1,4 @@
-import { it } from "../../../../../dev_deps.ts";
+import { it } from "dep:testing-bdd";
 import {
   PolicyHandlerInterface,
   PolicyHandlerParamsInterface,

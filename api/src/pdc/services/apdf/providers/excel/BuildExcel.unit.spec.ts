@@ -1,4 +1,5 @@
-import { afterEach, assertEquals, beforeEach, describe, it } from "@/dev_deps.ts";
+import { assertEquals } from "dep:assert";
+import { afterEach, beforeEach, describe, it } from "dep:testing-bdd";
 import { KernelInterfaceResolver } from "@/ilos/common/index.ts";
 import { NativeCursor } from "@/ilos/connection-postgres/LegacyPostgresConnection.ts";
 import { APDFNameProvider } from "@/pdc/providers/storage/index.ts";

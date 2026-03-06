@@ -1,4 +1,5 @@
-import { assertEquals, describe, it } from "@/dev_deps.ts";
+import { assertEquals } from "dep:assert";
+import { describe, it } from "dep:testing-bdd";
 import { CarpoolRow } from "@/pdc/services/export/models/CarpoolRow.ts";
 import { CarpoolListType } from "@/pdc/services/export/repositories/queries/carpoolListQuery.ts";
 

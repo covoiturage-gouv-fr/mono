@@ -1,4 +1,5 @@
-import { assertObjectMatch, assertThrows, describe, it } from "@/dev_deps.ts";
+import { assertObjectMatch, assertThrows } from "dep:assert";
+import { describe, it } from "dep:testing-bdd";
 import { ConfigStore } from "./Config.ts";
 
 describe("Config provider", () => {

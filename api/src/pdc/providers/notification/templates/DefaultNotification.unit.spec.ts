@@ -1,4 +1,5 @@
-import { assert, assertEquals, beforeEach, describe, it } from "@/dev_deps.ts";
+import { assert, assertEquals } from "dep:assert";
+import { beforeEach, describe, it } from "dep:testing-bdd";
 import { Extensions } from "@/ilos/core/index.ts";
 import { HandlebarsTemplateProvider } from "@/pdc/providers/template/index.ts";
 import { Mail } from "dep:nodemailer";

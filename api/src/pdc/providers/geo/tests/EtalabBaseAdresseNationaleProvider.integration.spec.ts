@@ -1,4 +1,5 @@
-import { assertEquals, assertRejects, it } from "@/dev_deps.ts";
+import { assertEquals, assertRejects } from "dep:assert";
+import { it } from "dep:testing-bdd";
 
 import { EtalabBaseAdresseNationaleProvider } from "../providers/index.ts";
 import { geo, geoError, insee, inseeError } from "./data.ts";

@@ -1,4 +1,5 @@
-import { assertEquals, assertRejects, it } from "@/dev_deps.ts";
+import { assertEquals, assertRejects } from "dep:assert";
+import { it } from "dep:testing-bdd";
 import { ContextType, ParamsType, ResultType } from "@/ilos/common/index.ts";
 
 import { HasPermissionMiddleware } from "./HasPermissionMiddleware.ts";

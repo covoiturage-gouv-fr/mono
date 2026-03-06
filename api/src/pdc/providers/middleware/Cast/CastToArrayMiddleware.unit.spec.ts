@@ -1,6 +1,7 @@
 // deno-fmt-ignore-file
 
-import { assertEquals, describe, it } from "@/dev_deps.ts";
+import { assertEquals } from "dep:assert";
+import { describe, it } from "dep:testing-bdd";
 import { ContextType } from "@/ilos/common/index.ts";
 import { CastToArrayMiddleware, HelperArgs } from "./CastToArrayMiddleware.ts";
 

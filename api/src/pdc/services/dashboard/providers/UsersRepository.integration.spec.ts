@@ -1,4 +1,5 @@
-import { afterAll, assertEquals, assertRejects, beforeAll, describe, it } from "@/dev_deps.ts";
+import { assertEquals, assertRejects } from "dep:assert";
+import { afterAll, beforeAll, describe, it } from "dep:testing-bdd";
 import { NotFoundException } from "@/ilos/common/index.ts";
 import { DenoDbContext, makeDenoDbBeforeAfter } from "@/pdc/providers/test/index.ts";
 import { UsersRepository } from "./UsersRepository.ts";
