@@ -72,3 +72,7 @@ export async function assertErrorHandler<P = unknown, R = unknown>(
     )
   );
 }
+
+function assertRejects(arg0: () => Promise<R>) {
+  throw new Error("Function not implemented.");
+}
