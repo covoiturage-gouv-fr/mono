@@ -14,7 +14,7 @@ JINJA_QUERY_BEGIN;
 {{ journeys_model_generator("@start_ds", "@end_ds") }}
 JINJA_END;
 
-CREATE INDEX IF NOT EXISTS journeys_latest_id_index ON @this_model USING btree (_id);
-CREATE INDEX IF NOT EXISTS journeys_latest_start_datetime_tz_index ON @this_model USING btree (start_datetime_tz);
-CREATE INDEX IF NOT EXISTS journeys_latest_start_h3_index_index ON @this_model USING btree (start_h3_index);
-CREATE INDEX IF NOT EXISTS journeys_latest_end_h3_index_index ON @this_model USING btree (end_h3_index);
+@create_index(@this_model, _id, index_name='journeys_latest_id_index');
+@create_index(@this_model, start_datetime_tz, index_name='journeys_latest_start_datetime_tz_index');
+@create_index(@this_model, start_h3_index, index_name='journeys_latest_start_h3_index_index');
+@create_index(@this_model, end_h3_index, index_name='journeys_latest_end_h3_index_index');
