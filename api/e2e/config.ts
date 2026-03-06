@@ -8,8 +8,9 @@ import { env } from "./lib/config.ts";
  * - 2025-05-22: v3, v3.2
  * - 2025-07-04: v3, v3.2, v3.3
  * - 2026-03-03: v3, v3.3
+ * - 2026-03-04: v3, v3.3, v3.4
  */
-export const SUPPORTED_VERSIONS = ["v3", "v3.3"];
+export const SUPPORTED_VERSIONS = ["v3", "v3.3", "v3.4"];
 export const UNSUPPORTED_VERSIONS = ["v3.1", "v3.2", "v4"];
 
 export const ADMIN_EMAIL = env("APIE2E_AUTH_ADMIN_EMAIL", "admin@example.com");

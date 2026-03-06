@@ -10,7 +10,6 @@ import { NotificationMailTransporter } from "../providers/notification/Notificat
 import { HandlebarsTemplateProvider } from "../providers/template/HandlebarsTemplateProvider.ts";
 import { AcquisitionServiceProvider } from "../services/acquisition/AcquisitionServiceProvider.ts";
 import { APDFServiceProvider } from "../services/apdf/APDFServiceProvider.ts";
-import { CeeServiceProvider } from "../services/cee/CeeServiceProvider.ts";
 import { CompanyServiceProvider } from "../services/company/CompanyServiceProvider.ts";
 import { DashboardServiceProvider } from "../services/dashboard/DashboardServiceProvider.ts";
 import { ExportServiceProvider } from "../services/export/ExportServiceProvider.ts";
@@ -28,7 +27,6 @@ import { config } from "./config/index.ts";
     AuthServiceProvider,
     AcquisitionServiceProvider,
     APDFServiceProvider,
-    CeeServiceProvider,
     CompanyServiceProvider,
     ExportServiceProvider,
     HonorServiceProvider,

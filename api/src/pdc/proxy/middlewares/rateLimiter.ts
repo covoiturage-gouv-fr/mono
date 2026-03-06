@@ -66,13 +66,6 @@ export function acquisitionRateLimiter(
   );
 }
 
-// shortcut for cee route
-export function ceeRateLimiter(
-  opts: Partial<RateLimiterOptions> = {},
-): RateLimitRequestHandler {
-  return rateLimiter({ windowMs: 1 * minute, max: 20000, ...opts }, "rl-cee");
-}
-
 // shortcut for journey status route
 export function checkRateLimiter(
   opts: Partial<RateLimiterOptions> = {},
