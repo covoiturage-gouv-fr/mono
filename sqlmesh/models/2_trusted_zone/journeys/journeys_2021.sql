@@ -73,7 +73,7 @@ FROM raw_zone.journeys_2021
 WHERE start_datetime >= @start_ds
 AND start_datetime < @end_ds;
 
-CREATE INDEX IF NOT EXISTS journeys_2021_id_index ON @this_model USING btree (_id);
-CREATE INDEX IF NOT EXISTS journeys_2021_start_datetime_tz_index ON @this_model USING btree (start_datetime_tz);
-CREATE INDEX IF NOT EXISTS journeys_2021_start_h3_index_index ON @this_model USING btree (start_h3_index);
-CREATE INDEX IF NOT EXISTS journeys_2021_end_h3_index_index ON @this_model USING btree (end_h3_index);
+@create_index(@this_model, _id, index_name='journeys_2021_id_index');
+@create_index(@this_model, start_datetime_tz, index_name='journeys_2021_start_datetime_tz_index');
+@create_index(@this_model, start_h3_index, index_name='journeys_2021_start_h3_index_index');
+@create_index(@this_model, end_h3_index, index_name='journeys_2021_end_h3_index_index');
