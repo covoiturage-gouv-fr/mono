@@ -36,7 +36,7 @@ function filterInnerAOMOrThrow(ctx: StatelessContextInterface): void {
   const isInner = startsAndEndsAt(ctx, { [TerritoryCodeEnum.Mobility]: inner });
   if (!isInner) return;
 
-  // throw if startn and end are within the same AOM
+  // throw if start and end are within the same AOM
   if (ctx.carpool.start[TerritoryCodeEnum.Mobility] === ctx.carpool.end[TerritoryCodeEnum.Mobility]) {
     throw new NotEligibleTargetException("Trips within the same inner AOM are rejected");
   }
@@ -140,13 +140,13 @@ export const Occitanie20262027 = class extends AbstractPolicyHandler implements 
     // Exclusion des trajets dont la contribution passager est nulle
     // Le ticket passager minimum est de 0,5 € par trajet.
     if (getContribution(ctx) < 50) {
-      throw new NotEligibleTargetException("Passager contribution is too low");
+      throw new NotEligibleTargetException("Passenger contribution is too low");
     }
 
-    // Départ ET arrivée dans le périmètre de la région Occitanie...
-    startsAndEndsAtOrThrow(ctx, {
-      [TerritoryCodeEnum.Region]: [occitanie2026Data.region[TerritoryCodeEnum.Region]],
-    });
+    // Départ ET arrivée dans la région Occitanie (limite max)
+    startsAndEndsAtOrThrow(ctx, { [TerritoryCodeEnum.Region]: [occitanie2026Data.region[TerritoryCodeEnum.Region]] });
+
+    // Départ ET arrivée dans le périmètre de l'AOM Région et des AOM locales...
     startsAndEndsAtOrThrow(ctx, {
       [TerritoryCodeEnum.Mobility]: [
         ...occitanie2026Data.inner,
@@ -167,7 +167,7 @@ export const Occitanie20262027 = class extends AbstractPolicyHandler implements 
     // Distance : au minimum 2.000 et au maximum 30.000 inclus sauf sur les bassins de mobilité
     // de Mende, d’Armagnac, de Rodez, d’Alès (cf. Annexe 1) et dans ce cas les trajets éligibles
     // sont au minimum 2.000 et au maximum 50.000 inclus dont l’origine et/ou la destination est dans le bassin.
-    set(ctx, "data.area", startsOrEndsWithinArea(ctx));
+    set(ctx, "data.area", startsOrEndsWithinArea(ctx)); // boolean
     const max = ctx.data!.area ? 50_000 : 30_000;
     onDistanceRangeOrThrow(ctx, { min: 2_000, max });
   }
