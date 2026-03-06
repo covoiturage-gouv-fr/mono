@@ -138,14 +138,6 @@ describe("Occitanie 2026 - Exclusions", () => {
       ],
     }, { incentive: [0, 0] }));
 
-  it("sunday rides", async () =>
-    await process({
-      policy: { handler: Handler.id },
-      carpool: [
-        { datetime: new Date("2026-02-01") }, // Sunday
-      ],
-    }, { incentive: [0] }));
-
   it("trip outside of campaign dates", async () =>
     await process({
       policy: { handler: Handler.id },

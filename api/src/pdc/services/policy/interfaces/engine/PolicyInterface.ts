@@ -81,7 +81,7 @@ export interface PolicyHandlerInterface {
   processStateful(context: StatefulContextInterface): void;
   params(): PolicyHandlerParamsInterface;
   describe(): string;
-  getOperators?(datetime?: Date): OperatorsEnum[]; // TODO generalise this from GrandPoitiers campaign
+  getOperators?(datetime?: Date): OperatorsEnum[];
 }
 
 export type StatelessRuleHelper<P> = (

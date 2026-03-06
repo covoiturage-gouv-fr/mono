@@ -137,11 +137,6 @@ export const Occitanie20262027 = class extends AbstractPolicyHandler implements 
   }
 
   protected processExclusions(ctx: StatelessContextInterface) {
-    // Exclusion des trajets effectué le dimanche
-    if (onWeekday(ctx, { days: [0] })) {
-      throw new NotEligibleTargetException("Sundays are off");
-    }
-
     // Exclusion des trajets dont la contribution passager est nulle
     // Le ticket passager minimum est de 0,5 € par trajet.
     if (getContribution(ctx) < 50) {
