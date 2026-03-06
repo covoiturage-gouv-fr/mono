@@ -3,6 +3,7 @@
     "@/": "./src/",
     "dep:assert": "jsr:@std/assert@^1.0.12",
     "dep:expect": "jsr:@std/expect@^1.0.14",
+    "dep:testing-mock": "jsr:@std/testing@^1.0.9/mock",
     "dep:testing-bdd": "jsr:@std/testing@^1.0.9/bdd",
     "dep:reflect-metadata": "npm:reflect-metadata@0.2.2",
     "dep:inversify": "npm:inversify@6.2.2",

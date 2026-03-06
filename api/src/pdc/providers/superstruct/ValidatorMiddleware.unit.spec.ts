@@ -6,7 +6,7 @@ import { Kernel as AbstractKernel } from "@/ilos/framework/index.ts";
 import { ValidatorMiddleware } from "@/pdc/providers/superstruct/ValidatorMiddleware.ts";
 import * as superstruct from "dep:superstruct";
 
-describe("Validator Middleware v2", async () => {
+describe("Validator Middleware v2", () => {
   const Test = superstruct.object({
     id: superstruct.number(),
     name: superstruct.string(),
@@ -18,7 +18,7 @@ describe("Validator Middleware v2", async () => {
     middlewares: [["validate", Test]],
   })
   class ActionA extends AbstractAction {
-    protected async handle(): Promise<string> {
+    protected override async handle(): Promise<string> {
       return "ok";
     }
   }
@@ -29,7 +29,7 @@ describe("Validator Middleware v2", async () => {
     middlewares: [["validate", {}]],
   })
   class ActionB extends AbstractAction {
-    protected async handle(): Promise<string> {
+    protected override async handle(): Promise<string> {
       return "ok";
     }
   }
