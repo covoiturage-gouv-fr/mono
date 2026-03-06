@@ -1,5 +1,5 @@
 import { provider } from "@/ilos/common/index.ts";
-import { LegacyPostgresConnection } from "@/ilos/connection-postgres/index.ts";
+import { DenoPostgresConnection } from "@/ilos/connection-postgres/index.ts";
 import sql, { join, raw } from "@/lib/pg/sql.ts";
 import { checkTerritoryParam } from "../helpers/checkParams.ts";
 import {
@@ -13,14 +13,14 @@ import {
   identifier: IncentiveCampaignsRepositoryInterfaceResolver,
 })
 export class IncentiveCampaignsRepositoryProvider implements IncentiveCampaignsRepositoryInterface {
-  private readonly table = "observatoire_stats.incentive_campaigns";
-  private readonly perim_table = "geo_stats.perimeters_aggregate";
+  private readonly table = "raw_zone.incentive_campaigns";
+  private readonly perim_table = "trusted_zone.perimeters_agg";
 
-  constructor(private pg: LegacyPostgresConnection) {}
+  constructor(private pgConnection: DenoPostgresConnection) {}
 
   async getCampaigns(
     params: CampaignsParamsInterface,
-  ): Promise<CampaignsResultInterface> {
+  ): Promise<CampaignsResultInterface[]> {
     const typeParam = params.type !== undefined ? checkTerritoryParam(params.type) : null;
     const filters = [
       sql`b.geom IS NOT NULL`,
@@ -48,7 +48,7 @@ export class IncentiveCampaignsRepositoryProvider implements IncentiveCampaignsR
       AND b.year = geo.get_latest_millesime()
       WHERE ${join(filters, " AND ")}
     `;
-    const response = await this.pg.getClient().query(query);
-    return response.rows;
+    const rows = await this.pgConnection.query<CampaignsResultInterface>(query);
+    return rows;
   }
 }
