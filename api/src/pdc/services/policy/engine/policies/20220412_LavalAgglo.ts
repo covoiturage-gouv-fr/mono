@@ -12,7 +12,6 @@ import { isOperatorOrThrow } from "../helpers/isOperatorOrThrow.ts";
 import { LimitTargetEnum, watchForGlobalMaxAmount, watchForPersonMaxTripByDay } from "../helpers/limits.ts";
 import { onDistanceRange, onDistanceRangeOrThrow } from "../helpers/onDistanceRange.ts";
 import { perSeat } from "../helpers/per.ts";
-import { description } from "./20220412_LavalAgglo.html.ts";
 import { AbstractPolicyHandler } from "./AbstractPolicyHandler.ts";
 
 // Politique de la Communauté D'Agglomeration De Laval
@@ -83,7 +82,4 @@ export const LavalAgglo2022: PolicyHandlerStaticInterface = class extends Abstra
     };
   }
 
-  describe(): string {
-    return description;
-  }
 };

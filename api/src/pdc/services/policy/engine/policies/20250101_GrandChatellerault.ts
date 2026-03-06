@@ -21,7 +21,6 @@ import {
 import { onDistanceRange, onDistanceRangeOrThrow } from "../helpers/onDistanceRange.ts";
 import { perSeat } from "../helpers/per.ts";
 import { endsAt, startsAt } from "../helpers/position.ts";
-import { description } from "./20250101_GrandChatellerault.html.ts";
 import { AbstractPolicyHandler } from "./AbstractPolicyHandler.ts";
 
 // Politique de Grand Chatellerault 2025
@@ -144,7 +143,4 @@ export const GrandChatellerault2025: PolicyHandlerStaticInterface = class extend
     };
   }
 
-  describe(): string {
-    return description;
-  }
 };

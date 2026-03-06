@@ -23,7 +23,6 @@ import {
 import { onDistanceRange, onDistanceRangeOrThrow } from "../helpers/onDistanceRange.ts";
 import { perKm, perSeat } from "../helpers/per.ts";
 import { endsAt, startsAt } from "../helpers/position.ts";
-import { description } from "./20240101_NantesMetropole.html.ts";
 import { AbstractPolicyHandler } from "./AbstractPolicyHandler.ts";
 
 // Politique de Pays de la Loire 2024
@@ -236,10 +235,6 @@ export const NantesMetropole2024: PolicyHandlerStaticInterface = class extends A
         glob: this.max_amount,
       },
     };
-  }
-
-  public describe(): string {
-    return description;
   }
 
   protected processExclusions(ctx: StatelessContextInterface) {

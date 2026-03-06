@@ -137,8 +137,4 @@ export const GrandChatellerault2026: PolicyHandlerStaticInterface = class extend
       },
     };
   }
-
-  describe(): string {
-    return "";
-  }
 };

@@ -104,8 +104,4 @@ export const GrandPoitiers2026: PolicyHandlerStaticInterface = class extends Abs
       limits: { glob: this.max_amount },
     };
   }
-
-  describe(): string {
-    return "";
-  }
 };

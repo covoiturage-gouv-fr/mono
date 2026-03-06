@@ -135,8 +135,4 @@ export const MontluconCommunaute2026: PolicyHandlerStaticInterface = class exten
       extras: {},
     };
   }
-
-  describe(): string {
-    return "";
-  }
 };

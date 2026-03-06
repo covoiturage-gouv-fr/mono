@@ -17,7 +17,6 @@ import {
 } from "../helpers/limits.ts";
 import { onDistanceRange, onDistanceRangeOrThrow } from "../helpers/onDistanceRange.ts";
 import { perKm, perSeat } from "../helpers/per.ts";
-import { description } from "./20221206_Montpellier.html.ts";
 import { AbstractPolicyHandler } from "./AbstractPolicyHandler.ts";
 
 /* eslint-disable-next-line */
@@ -99,7 +98,4 @@ export const Montpellier: PolicyHandlerStaticInterface = class extends AbstractP
     };
   }
 
-  describe(): string {
-    return description;
-  }
 };

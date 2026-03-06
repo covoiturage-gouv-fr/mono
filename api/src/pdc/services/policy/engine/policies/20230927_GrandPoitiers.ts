@@ -17,7 +17,6 @@ import {
 } from "../helpers/limits.ts";
 import { onDistanceRange, onDistanceRangeOrThrow } from "../helpers/onDistanceRange.ts";
 import { perSeat } from "../helpers/per.ts";
-import { description } from "./20230927_GrandPoitiers.html.ts";
 import { AbstractPolicyHandler } from "./AbstractPolicyHandler.ts";
 
 // Politique Grands poitiers
@@ -123,7 +122,4 @@ export const GrandPoitiers: PolicyHandlerStaticInterface = class extends Abstrac
     };
   }
 
-  describe(): string {
-    return description;
-  }
 };

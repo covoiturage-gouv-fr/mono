@@ -13,7 +13,6 @@ import { isOperatorOrThrow } from "../helpers/isOperatorOrThrow.ts";
 import { LimitTargetEnum, watchForGlobalMaxAmount, watchForPersonMaxTripByDay } from "../helpers/limits.ts";
 import { onDistanceRange, onDistanceRangeOrThrow } from "../helpers/onDistanceRange.ts";
 import { perKm, perSeat } from "../helpers/per.ts";
-import { description } from "./20230501_Lannion.html.ts";
 import { AbstractPolicyHandler } from "./AbstractPolicyHandler.ts";
 
 // Politique de la Communauté D'Agglomeration De Lannion-Tregor
@@ -94,7 +93,4 @@ export const Lannion202305: PolicyHandlerStaticInterface = class extends Abstrac
     };
   }
 
-  describe(): string {
-    return description;
-  }
 };

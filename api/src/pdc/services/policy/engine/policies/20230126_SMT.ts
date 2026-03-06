@@ -18,7 +18,6 @@ import {
 } from "../helpers/limits.ts";
 import { onDistanceRange, onDistanceRangeOrThrow } from "../helpers/onDistanceRange.ts";
 import { perKm, perSeat } from "../helpers/per.ts";
-import { description } from "./20230126_SMT.html.ts";
 import { AbstractPolicyHandler } from "./AbstractPolicyHandler.ts";
 
 // Politique du Syndicat des Mobilités de Touraine
@@ -139,7 +138,4 @@ export const SMT2023: PolicyHandlerStaticInterface = class extends AbstractPolic
     };
   }
 
-  describe(): string {
-    return description;
-  }
 };

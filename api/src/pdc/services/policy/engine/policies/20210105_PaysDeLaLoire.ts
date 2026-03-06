@@ -14,7 +14,6 @@ import { LimitTargetEnum, watchForGlobalMaxAmount, watchForPersonMaxTripByDay } 
 import { onDistanceRange, onDistanceRangeOrThrow } from "../helpers/onDistanceRange.ts";
 import { perKm, perSeat } from "../helpers/per.ts";
 import { endsAt, startsAndEndsAt, startsAt } from "../helpers/position.ts";
-import { description } from "./20210105_PaysDeLaLoire.html.ts";
 import { AbstractPolicyHandler } from "./AbstractPolicyHandler.ts";
 
 // Politique de Pays de la Loire
@@ -114,7 +113,4 @@ export const PaysDeLaLoire2021: PolicyHandlerStaticInterface = class extends Abs
     };
   }
 
-  describe(): string {
-    return description;
-  }
 };

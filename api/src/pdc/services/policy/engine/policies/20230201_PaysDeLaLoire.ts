@@ -20,7 +20,6 @@ import {
 import { onDistanceRange, onDistanceRangeOrThrow } from "../helpers/onDistanceRange.ts";
 import { perKm, perSeat } from "../helpers/per.ts";
 import { endsAt, startsAndEndsAt, startsAt } from "../helpers/position.ts";
-import { description } from "./20230201_PaysDeLaLoire.html.ts";
 import { AbstractPolicyHandler } from "./AbstractPolicyHandler.ts";
 
 // Politique de Pays de la Loire
@@ -138,7 +137,4 @@ export const PaysDeLaLoire2023: PolicyHandlerStaticInterface = class extends Abs
     };
   }
 
-  describe(): string {
-    return description;
-  }
 };

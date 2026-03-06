@@ -12,7 +12,6 @@ import { isOperatorOrThrow } from "../helpers/isOperatorOrThrow.ts";
 import { LimitTargetEnum, watchForGlobalMaxAmount, watchForPersonMaxTripByDay } from "../helpers/limits.ts";
 import { onDistanceRange, onDistanceRangeOrThrow } from "../helpers/onDistanceRange.ts";
 import { perKm, perSeat } from "../helpers/per.ts";
-import { description } from "./20240101_SMTC2024Passenger.html.ts";
 import { AbstractPolicyHandler } from "./AbstractPolicyHandler.ts";
 
 // Politique Syndicat Mixte des Transports en Commun de l’Agglomération Clermontoise (SMTC)
@@ -88,7 +87,4 @@ export const SMTC2024Passenger: PolicyHandlerStaticInterface = class extends Abs
     };
   }
 
-  describe(): string {
-    return description;
-  }
 };

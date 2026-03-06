@@ -17,7 +17,6 @@ import {
 } from "../helpers/limits.ts";
 import { onDistanceRange, onDistanceRangeOrThrow } from "../helpers/onDistanceRange.ts";
 import { perKm, perSeat } from "../helpers/per.ts";
-import { description } from "./20250101_LaRochelle.html.ts";
 import { AbstractPolicyHandler } from "./AbstractPolicyHandler.ts";
 
 export const LaRochelle2025: PolicyHandlerStaticInterface = class extends AbstractPolicyHandler
@@ -97,10 +96,6 @@ export const LaRochelle2025: PolicyHandlerStaticInterface = class extends Abstra
         glob: this.max_amount,
       },
     };
-  }
-
-  public describe(): string {
-    return description;
   }
 
   protected processExclusion(ctx: StatelessContextInterface) {

@@ -21,7 +21,6 @@ import {
 import { onDistanceRange, onDistanceRangeOrThrow } from "../helpers/onDistanceRange.ts";
 import { perSeat } from "../helpers/per.ts";
 import { endsAt, startsAt } from "../helpers/position.ts";
-import { description } from "./20240201_GrandChatellerault.html.ts";
 import { AbstractPolicyHandler } from "./AbstractPolicyHandler.ts";
 
 // Politique de Pays de la Loire 2024
@@ -134,7 +133,4 @@ export const GrandChatellerault2024: PolicyHandlerStaticInterface = class extend
     };
   }
 
-  describe(): string {
-    return description;
-  }
 };
