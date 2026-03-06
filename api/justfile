@@ -362,7 +362,10 @@ cache-migrator:
 # refresh the deno.lock file
 [group('deno')]
 lock:
+  #!/usr/bin/env bash
   deno install --frozen=false --allow-import=cdn.sheetjs.com:443,cdn.esm.sh:443,deno.land:443,raw.githubusercontent.com:443,jsr.io:443
+  deno cache --frozen=false --allow-import=cdn.sheetjs.com:443,cdn.esm.sh:443,deno.land:443,raw.githubusercontent.com:443,jsr.io:443 ./**/*.spec.ts
+  deno cache --frozen=false --allow-import=cdn.sheetjs.com:443,cdn.esm.sh:443,deno.land:443,raw.githubusercontent.com:443,jsr.io:443 ./**/*.test.ts
 
 # Eval and run a file
 [group('development')]
