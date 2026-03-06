@@ -172,8 +172,4 @@ export const CovoitIDFM2026: PolicyHandlerStaticInterface = class extends Abstra
       extras: {},
     };
   }
-
-  describe(): string {
-    return "";
-  }
 };

@@ -125,8 +125,4 @@ export const ATMBx2CCAM2026: PolicyHandlerStaticInterface = class extends Abstra
       extras: {},
     };
   }
-
-  describe(): string {
-    return "";
-  }
 };

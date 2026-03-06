@@ -18,7 +18,6 @@ import {
 } from "../helpers/limits.ts";
 import { onDistanceRange, onDistanceRangeOrThrow } from "../helpers/onDistanceRange.ts";
 import { perKm, perSeat } from "../helpers/per.ts";
-import { description } from "./20230401_PaysBasqueAdour.html.ts";
 import { AbstractPolicyHandler } from "./AbstractPolicyHandler.ts";
 
 // Pays Basque Adour
@@ -121,9 +120,6 @@ export const PaysBasque20232024: PolicyHandlerStaticInterface = class extends Ab
     };
   }
 
-  describe(): string {
-    return description;
-  }
 
   private applyRuleChangeFor2024(ctx: StatelessContextInterface) {
     return ctx.carpool.datetime >= this.operators[1].date;

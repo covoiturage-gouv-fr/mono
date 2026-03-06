@@ -20,7 +20,6 @@ import {
 import { onDistanceRange, onDistanceRangeOrThrow } from "../helpers/onDistanceRange.ts";
 import { perKm, perSeat } from "../helpers/per.ts";
 import { startsOrEndsAtOrThrow } from "../helpers/startsOrEndsAtOrThrow.ts";
-import { description } from "./20240805_CCVMM_2024_05.html.ts";
 import { AbstractPolicyHandler } from "./AbstractPolicyHandler.ts";
 
 /* eslint-disable-next-line */
@@ -121,7 +120,4 @@ export const CCVMM202405: PolicyHandlerStaticInterface = class extends AbstractP
     };
   }
 
-  describe(): string {
-    return description;
-  }
 };

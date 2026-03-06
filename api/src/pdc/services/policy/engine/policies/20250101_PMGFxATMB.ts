@@ -16,7 +16,6 @@ import { onDistanceRange, onDistanceRangeOrThrow } from "../helpers/onDistanceRa
 import { perKm, perSeat } from "../helpers/per.ts";
 import { startsAndEndsAt } from "../helpers/position.ts";
 import { startsOrEndsAtOrThrow } from "../helpers/startsOrEndsAtOrThrow.ts";
-import { description } from "./20250101_PMGFxATMB.html.ts";
 import { AbstractPolicyHandler } from "./AbstractPolicyHandler.ts";
 
 // INSERT INTO policy.policies (territory_id, start_date, end_date, name, unit, status, handler, max_amount)
@@ -221,7 +220,4 @@ export const PMGFxATMB2025: PolicyHandlerStaticInterface = class extends Abstrac
     };
   }
 
-  describe(): string {
-    return description;
-  }
 };

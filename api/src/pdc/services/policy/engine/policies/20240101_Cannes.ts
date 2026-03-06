@@ -17,7 +17,6 @@ import {
 } from "../helpers/limits.ts";
 import { onDistanceRange, onDistanceRangeOrThrow } from "../helpers/onDistanceRange.ts";
 import { perKm, perSeat } from "../helpers/per.ts";
-import { description } from "./20240101_Cannes.html.ts";
 import { AbstractPolicyHandler } from "./AbstractPolicyHandler.ts";
 
 // Politique Cannes
@@ -105,7 +104,4 @@ export const Cannes2024: PolicyHandlerStaticInterface = class extends AbstractPo
     };
   }
 
-  describe(): string {
-    return description;
-  }
 };

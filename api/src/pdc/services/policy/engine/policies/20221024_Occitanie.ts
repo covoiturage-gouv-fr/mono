@@ -15,7 +15,6 @@ import { LimitTargetEnum, watchForGlobalMaxAmount, watchForPersonMaxTripByDay } 
 import { onDistanceRangeOrThrow } from "../helpers/onDistanceRange.ts";
 import { onWeekday } from "../helpers/onWeekday.ts";
 import { startsAndEndsAtOrThrow } from "../helpers/startsAndEndsAtOrThrow.ts";
-import { description } from "./20221024_Occitanie.html.ts";
 import { AbstractPolicyHandler } from "./AbstractPolicyHandler.ts";
 
 function getContribution(ctx: StatelessContextInterface): number {
@@ -126,7 +125,4 @@ export const Occitanie20232024: PolicyHandlerStaticInterface = class extends Abs
     };
   }
 
-  describe(): string {
-    return description;
-  }
 };

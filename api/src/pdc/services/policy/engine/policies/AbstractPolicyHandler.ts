@@ -23,5 +23,4 @@ export abstract class AbstractPolicyHandler implements PolicyHandlerInterface {
   }
 
   abstract params(): PolicyHandlerParamsInterface;
-  abstract describe(): string;
 }

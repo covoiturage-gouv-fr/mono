@@ -48,7 +48,6 @@ export class FindAction extends AbstractAction {
 
     const result: ResultInterface = {
       ...policy.export(),
-      description: policy.describe(),
       params: policy.params(),
     };
 

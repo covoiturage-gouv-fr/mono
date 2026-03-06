@@ -22,7 +22,6 @@ import {
 import { onDistanceRange, onDistanceRangeOrThrow } from "../helpers/onDistanceRange.ts";
 import { perKm, perSeat } from "../helpers/per.ts";
 import { endsAt, startsAt, startsOrEndsAt } from "../helpers/position.ts";
-import { description } from "./20210520_IDFM.html.ts";
 import { AbstractPolicyHandler } from "./AbstractPolicyHandler.ts";
 
 // Campagne d'Île-de-France Mobilité
@@ -248,7 +247,4 @@ export const IDFMPeriodeNormale2021: PolicyHandlerStaticInterface = class extend
     };
   }
 
-  describe(): string {
-    return description;
-  }
 };

@@ -35,7 +35,6 @@ export interface PolicyInterface {
     incentive: SerializedIncentiveInterface,
   ): Promise<StatefulIncentiveInterface>;
   params(): PolicyHandlerParamsInterface;
-  describe(): string;
 }
 
 export interface SerializedPolicyInterface {
@@ -80,7 +79,6 @@ export interface PolicyHandlerInterface {
   processStateless(context: StatelessContextInterface): void;
   processStateful(context: StatefulContextInterface): void;
   params(): PolicyHandlerParamsInterface;
-  describe(): string;
   getOperators?(datetime?: Date): OperatorsEnum[];
 }
 

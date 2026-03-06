@@ -112,7 +112,4 @@ export const LaRochelle2026: PolicyHandlerStaticInterface = class extends Abstra
     };
   }
 
-  public describe(): string {
-    return "";
-  }
 };

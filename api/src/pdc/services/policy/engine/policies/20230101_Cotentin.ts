@@ -13,7 +13,6 @@ import { isOperatorOrThrow } from "../helpers/isOperatorOrThrow.ts";
 import { LimitTargetEnum, watchForGlobalMaxAmount, watchForPersonMaxTripByDay } from "../helpers/limits.ts";
 import { onDistanceRange, onDistanceRangeOrThrow } from "../helpers/onDistanceRange.ts";
 import { perKm, perSeat } from "../helpers/per.ts";
-import { description } from "./20230101_Cotentin.html.ts";
 import { AbstractPolicyHandler } from "./AbstractPolicyHandler.ts";
 
 // Politique de la Communauté D'Agglomeration du Cotentin
@@ -98,7 +97,4 @@ export const Cotentin2023: PolicyHandlerStaticInterface = class extends Abstract
     };
   }
 
-  describe(): string {
-    return description;
-  }
 };

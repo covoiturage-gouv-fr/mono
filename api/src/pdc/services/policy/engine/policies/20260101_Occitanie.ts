@@ -197,8 +197,4 @@ export const Occitanie20262027 = class extends AbstractPolicyHandler implements 
       limits: { glob: this.max_amount },
     };
   }
-
-  describe(): string {
-    return "";
-  }
 };

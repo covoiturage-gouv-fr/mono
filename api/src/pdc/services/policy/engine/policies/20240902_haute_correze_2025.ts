@@ -18,7 +18,6 @@ import {
 import { onDistanceRange, onDistanceRangeOrThrow } from "../helpers/onDistanceRange.ts";
 import { perKm, perSeat } from "../helpers/per.ts";
 import { startsOrEndsAtOrThrow } from "../helpers/startsOrEndsAtOrThrow.ts";
-import { description } from "./20240902_haute_correze_2025.html.ts";
 import { AbstractPolicyHandler } from "./AbstractPolicyHandler.ts";
 
 /* eslint-disable-next-line */
@@ -107,7 +106,4 @@ export const HauteCorreze2025: PolicyHandlerStaticInterface = class extends Abst
     };
   }
 
-  describe(): string {
-    return description;
-  }
 };

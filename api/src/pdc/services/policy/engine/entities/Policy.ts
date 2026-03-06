@@ -153,8 +153,4 @@ export class Policy implements PolicyInterface {
   params(): PolicyHandlerParamsInterface {
     return this.handler.params();
   }
-
-  describe(): string {
-    return this.handler.describe();
-  }
 }

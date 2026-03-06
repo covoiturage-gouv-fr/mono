@@ -18,7 +18,6 @@ import {
 } from "../helpers/limits.ts";
 import { onDistanceRange, onDistanceRangeOrThrow } from "../helpers/onDistanceRange.ts";
 import { perSeat } from "../helpers/per.ts";
-import { description } from "./20240101_SMTCDriver.html.ts";
 import { AbstractPolicyHandler } from "./AbstractPolicyHandler.ts";
 
 // Politique Syndicat Mixte des Transports en Commun de l’Agglomération Clermontoise (SMTC)
@@ -106,7 +105,4 @@ export const SMTC2024Driver: PolicyHandlerStaticInterface = class extends Abstra
     };
   }
 
-  describe(): string {
-    return description;
-  }
 };

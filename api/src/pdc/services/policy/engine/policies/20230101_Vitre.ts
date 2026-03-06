@@ -20,7 +20,6 @@ import {
 import { onDistanceRange, onDistanceRangeOrThrow } from "../helpers/onDistanceRange.ts";
 import { perKm, perSeat } from "../helpers/per.ts";
 import { endsAt, startsAt } from "../helpers/position.ts";
-import { description } from "./20230101_Vitre.html.ts";
 import { AbstractPolicyHandler } from "./AbstractPolicyHandler.ts";
 
 // Politique Vitré Communauté
@@ -160,7 +159,4 @@ export const Vitre2023: PolicyHandlerStaticInterface = class extends AbstractPol
     };
   }
 
-  describe(): string {
-    return description;
-  }
 };

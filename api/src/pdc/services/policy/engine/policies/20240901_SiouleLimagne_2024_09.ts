@@ -15,7 +15,6 @@ import { isOperatorOrThrow } from "../helpers/isOperatorOrThrow.ts";
 import { LimitTargetEnum, watchForGlobalMaxAmount, watchForPersonMaxTripByDay } from "../helpers/limits.ts";
 import { onDistanceRange, onDistanceRangeOrThrow } from "../helpers/onDistanceRange.ts";
 import { perSeat } from "../helpers/per.ts";
-import { description } from "./20240901_SiouleLimagne_2024_09.html.ts";
 import { AbstractPolicyHandler } from "./AbstractPolicyHandler.ts";
 
 /* eslint-disable-next-line */
@@ -101,7 +100,4 @@ export const SiouleLimagne: PolicyHandlerStaticInterface = class extends Abstrac
     };
   }
 
-  describe(): string {
-    return description;
-  }
 };

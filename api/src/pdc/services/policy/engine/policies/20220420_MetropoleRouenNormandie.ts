@@ -13,7 +13,6 @@ import { isOperatorOrThrow } from "../helpers/isOperatorOrThrow.ts";
 import { LimitTargetEnum, watchForGlobalMaxAmount, watchForPersonMaxTripByDay } from "../helpers/limits.ts";
 import { onDistanceRange, onDistanceRangeOrThrow } from "../helpers/onDistanceRange.ts";
 import { perKm, perSeat } from "../helpers/per.ts";
-import { description } from "./20220420_MetropoleRouenNormandie.html.ts";
 import { AbstractPolicyHandler } from "./AbstractPolicyHandler.ts";
 
 // Politique de Métropole Rouen Normandie
@@ -95,7 +94,4 @@ export const MetropoleRouenNormandie2022: PolicyHandlerStaticInterface = class e
     };
   }
 
-  describe(): string {
-    return description;
-  }
 };
