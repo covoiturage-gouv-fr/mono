@@ -73,7 +73,7 @@ FROM raw_zone.journeys_2025
 WHERE start_datetime >= @start_ds
 AND start_datetime < @end_ds;
 
-@create_index(@this_model, _id, index_name='journeys_2025_id_index');
-@create_index(@this_model, start_datetime_tz, index_name='journeys_2025_start_datetime_tz_index');
-@create_index(@this_model, start_h3_index, index_name='journeys_2025_start_h3_index_index');
-@create_index(@this_model, end_h3_index, index_name='journeys_2025_end_h3_index_index');
+@create_index(@this_model, _id, 'name=journeys_2025_id_index');
+@create_index(@this_model, start_datetime_tz, 'name=journeys_2025_start_datetime_tz_index');
+@create_index(@this_model, start_h3_index, 'name=journeys_2025_start_h3_index_index');
+@create_index(@this_model, end_h3_index, 'name=journeys_2025_end_h3_index_index');
