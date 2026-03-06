@@ -40,7 +40,6 @@
     "dep:turf-boolean-point-in-polygon": "npm:@turf/boolean-point-in-polygon",
     "dep:turf-distance": "npm:@turf/distance",
     "dep:date-fns-locale": "npm:date-fns@^3.6/locale",
-    "dep:pdf-lib": "npm:pdf-lib@^1.17",
     "dep:turf-helpers": "npm:@turf/helpers",
     "dep:sentry": "npm:@sentry/node@^8.2",
     "dep:express-rate-limit": "npm:express-rate-limit@^7.3",
