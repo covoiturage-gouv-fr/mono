@@ -6,7 +6,7 @@ import {
   NewableType,
 } from "@/ilos/common/index.ts";
 import { Kernel } from "@/ilos/core/index.ts";
-import sinon from "dev:sinon";
+import sinon from "dep:sinon";
 import { CommandExtension } from "../extensions/CommandExtension.ts";
 import { CliTransport } from "./CliTransport.ts";
 

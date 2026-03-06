@@ -1,5 +1,5 @@
 import { assertEquals, it } from "@/dev_deps.ts";
-import sinon from "dev:sinon";
+import sinon from "dep:sinon";
 import { todayFrequencies } from "./todayFrequencies.helper.ts";
 
 it("On Monday", () => {

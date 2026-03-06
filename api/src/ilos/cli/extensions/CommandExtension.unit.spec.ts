@@ -1,4 +1,4 @@
-import sinon from "dev:sinon";
+import sinon from "dep:sinon";
 import { assertEquals, describe, it } from "@/dev_deps.ts";
 import { serviceProvider as serviceProviderDecorator } from "@/ilos/common/Decorators.ts";
 import { ServiceProvider as AbstractServiceProvider } from "@/ilos/core/index.ts";

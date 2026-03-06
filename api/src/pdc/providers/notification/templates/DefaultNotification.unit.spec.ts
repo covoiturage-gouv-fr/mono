@@ -2,7 +2,7 @@ import { assert, assertEquals, beforeEach, describe, it } from "@/dev_deps.ts";
 import { Extensions } from "@/ilos/core/index.ts";
 import { HandlebarsTemplateProvider } from "@/pdc/providers/template/index.ts";
 import { Mail } from "dep:nodemailer";
-import sinon from "dev:sinon";
+import sinon from "dep:sinon";
 import {
   DefaultNotification,
   DefaultTemplateData,

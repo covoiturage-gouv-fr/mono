@@ -14,7 +14,7 @@ import { ConflictException } from "@/ilos/common/index.ts";
 import sql, { raw } from "@/lib/pg/sql.ts";
 import { GeoProvider } from "@/pdc/providers/geo/index.ts";
 import { LegacyDbContext, makeLegacyDbBeforeAfter } from "@/pdc/providers/test/index.ts";
-import sinon, { SinonSandbox } from "dev:sinon";
+import sinon, { SinonSandbox } from "dep:sinon";
 import { insertableCarpool, updatableCarpool } from "../mocks/database/carpool.ts";
 import { CarpoolGeoRepository } from "../repositories/CarpoolGeoRepository.ts";
 import { CarpoolLookupRepository } from "../repositories/CarpoolLookupRepository.ts";

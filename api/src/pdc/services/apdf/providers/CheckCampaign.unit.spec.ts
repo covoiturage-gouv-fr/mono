@@ -3,7 +3,7 @@ import { ContextType, KernelInterfaceResolver, NotFoundException } from "@/ilos/
 import { PolicyStatusEnum } from "@/pdc/services/policy/contracts/common/interfaces/PolicyInterface.ts";
 import { ResultInterface as GetCampaignResultInterface } from "@/pdc/services/policy/contracts/find.contract.ts";
 import { faker } from "dep:faker";
-import sinon from "dev:sinon";
+import sinon from "dep:sinon";
 import { createGetCampaignResult } from "../helpers/createGetCampaignResult.helper.ts";
 import { CheckCampaign } from "./CheckCampaign.ts";
 

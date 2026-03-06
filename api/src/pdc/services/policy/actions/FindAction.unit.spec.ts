@@ -1,6 +1,6 @@
 import { assertEquals, beforeEach, describe, it } from "@/dev_deps.ts";
 import { ContextType, KernelInterfaceResolver } from "@/ilos/common/index.ts";
-import sinon, { SinonStub } from "dev:sinon";
+import sinon, { SinonStub } from "dep:sinon";
 import { ResultInterface as OperatorResultInterface } from "../../operator/contracts/find.contract.ts";
 import { PolicyStatusEnum } from "../contracts/common/interfaces/PolicyInterface.ts";
 import { ParamsInterface, ResultInterface } from "../contracts/find.contract.ts";

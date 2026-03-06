@@ -1,4 +1,4 @@
-import sinon from "dev:sinon";
+import sinon from "dep:sinon";
 import { afterEach, assertEquals, beforeEach, describe, it } from "@/dev_deps.ts";
 import { KernelInterfaceResolver } from "@/ilos/common/index.ts";
 import { BucketName, S3StorageProvider } from "@/pdc/providers/storage/index.ts";

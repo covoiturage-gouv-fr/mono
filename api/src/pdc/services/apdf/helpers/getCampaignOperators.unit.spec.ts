@@ -1,6 +1,6 @@
 import { afterEach, assertEquals, assertRejects, beforeEach, describe, it } from "@/dev_deps.ts";
 import { KernelInterfaceResolver, NotFoundException } from "@/ilos/common/index.ts";
-import sinon from "dev:sinon";
+import sinon from "dep:sinon";
 import {
   ParamsInterface as FindByUuidParams,
   ResultInterface as FindByUuidResult,

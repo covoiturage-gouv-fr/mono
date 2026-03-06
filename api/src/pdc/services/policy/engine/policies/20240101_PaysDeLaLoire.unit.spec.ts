@@ -1,4 +1,4 @@
-import sinon from "dev:sinon";
+import sinon from "dep:sinon";
 import { describe, it } from "@/dev_deps.ts";
 import { v4 as uuidV4 } from "@/lib/uuid/index.ts";
 import { OperatorsEnum, TerritoryCodeInterface } from "../../interfaces/index.ts";
