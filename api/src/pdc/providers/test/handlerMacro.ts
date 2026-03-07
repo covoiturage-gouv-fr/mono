@@ -1,5 +1,5 @@
 import { ContextType } from "@/ilos/common/index.ts";
-import { assertEquals } from "dep:assert";
+import { assertEquals, assertRejects } from "dep:assert";
 import { KernelContext } from "./helpers.ts";
 
 interface HandlerConfigInterface {
@@ -71,8 +71,4 @@ export async function assertErrorHandler<P = unknown, R = unknown>(
       callContext,
     )
   );
-}
-
-function assertRejects(arg0: () => Promise<R>) {
-  throw new Error("Function not implemented.");
 }
