@@ -60,13 +60,13 @@
     "dep:crypto": "jsr:@std/crypto@^1",
     "dep:encoding": "jsr:@std/encoding@^1",
     "dep:openid-client": "jsr:@panva/openid-client@6.3.4",
-    "dep:datetime": "jsr:@std/datetime@0.225.7",
-    "dep:log": "jsr:@std/log@0.224.14", // will be removed in favour of OpenTelemetry
+    "dep:datetime": "jsr:@std/datetime@^0",
+    "dep:log": "jsr:@std/log@^0", // will be removed in favour of OpenTelemetry
     "dep:s3-lite-client": "jsr:@bradenmacdonald/s3-lite-client@^0.8.0",
     "dep:postgres": "jsr:@db/postgres@0.19.5",
     "dep:jose": "https://deno.land/x/jose@v5.6.3/index.ts",
     "dep:xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/package/xlsx.mjs",
-    "dep:path": "jsr:@std/path@1.1.4/posix",
+    "dep:path": "jsr:@std/path@^1/posix",
     "dep:bcrypt": "https://deno.land/x/bcrypt@v0.4.1/mod.ts", // replace with @felix/bcrypt
     // worker.ts must be listed to be listed in deno.lock and cached
     "dep:bcrypt-worker": "https://deno.land/x/bcrypt@v0.4.1/src/worker.ts",
