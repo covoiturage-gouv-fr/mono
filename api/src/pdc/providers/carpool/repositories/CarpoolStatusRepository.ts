@@ -2,7 +2,6 @@ import { provider } from "@/ilos/common/index.ts";
 import { LegacyPostgresConnection, PoolClient } from "@/ilos/connection-postgres/index.ts";
 import sql, { join, raw } from "@/lib/pg/sql.ts";
 import { CarpoolFraudStatusEnum } from "@/pdc/providers/carpool/interfaces/common.ts";
-import { OperatorJourneyId } from "../../../services/cee/contracts/common/CeeApplicationInterface.ts";
 import { CarpoolStatus } from "../interfaces/database/label.ts";
 import { Id, InsertableCarpoolAcquisitionStatus } from "../interfaces/index.ts";
 
@@ -74,7 +73,7 @@ export class CarpoolStatusRepository {
 
   public async getStatusByOperatorJourneyId(
     operator_id: Id,
-    operator_journey_id: OperatorJourneyId,
+    operator_journey_id: string,
     client?: PoolClient,
   ): Promise<CarpoolStatus & { created_at: Date; legacy_id: number } | undefined> {
     const cl = client ?? this.connection.getClient();

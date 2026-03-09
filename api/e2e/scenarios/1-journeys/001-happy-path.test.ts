@@ -10,7 +10,7 @@ describe("Journey creation", () => {
   const http = new API();
 
   beforeEach(async () => {
-    const operator = await http.login<{ operator_id: number }>(OPERATOR_EMAIL, OPERATOR_PASSWORD);
+    const operator = await http.callback<{ operator_id: number }>(OPERATOR_EMAIL, OPERATOR_PASSWORD);
     const { access_key, secret_key } = await http.createCredentials(operator.operator_id);
     if (!http.token) await http.authenticate(access_key, secret_key);
   });

@@ -4,7 +4,7 @@ import {
   DeleteCredentialsResult,
   ReadCredentialsResult,
 } from "@/pdc/services/auth/dto/Credentials.ts";
-import { newExceptionFromHttpStatus } from "../../src/ilos/common/newExceptionFromHttpStatus.ts";
+import { newExceptionFromHttpStatus } from "@/ilos/common/newExceptionFromHttpStatus.ts";
 import { env } from "./config.ts";
 import { faker } from "./faker.ts";
 import { RPCResponse } from "./types.ts";
@@ -77,10 +77,10 @@ export class API {
   }
 
   // Connect to the API using email and password, and retrieve a session cookie.
-  public async login<T = unknown>(email: string, password: string): Promise<T> {
+  public async callback<T = unknown>(email: string, password: string): Promise<T> {
     await this.logout();
 
-    const res = await this.post<RPCResponse<T>>("/auth/test/login", { email, password });
+    const res = await this.post<RPCResponse<T>>("/auth/test/callback", { email, password });
     if (!res.ok) {
       throw new UnauthorizedException();
     }
@@ -101,27 +101,6 @@ export class API {
 
   public clearAccessToken(): void {
     this.#accessToken = null;
-  }
-
-  public async legacyAuthenticate(email: string, password: string): Promise<void> {
-    // Login
-    await this.login(email, password);
-
-    // Create a new application and get the access token
-    const appResponse = await this.post("/applications", {
-      name: `APIE2E Application ${faker.string.nanoid()}`,
-    });
-
-    if (!appResponse.ok) {
-      throw new Error(`Failed to create application: ${appResponse.statusText}`);
-    }
-
-    const { token } = appResponse.body as { application: unknown; token: string };
-    if (!token || typeof token !== "string") {
-      throw new Error("Invalid access token received from application creation");
-    }
-
-    this.#accessToken = token;
   }
 
   /**

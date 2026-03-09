@@ -2,7 +2,6 @@ import { kernel } from "@/ilos/common/index.ts";
 import { RedisConnection } from "@/ilos/connection-redis/index.ts";
 import { Kernel as BaseKernel } from "@/ilos/framework/index.ts";
 import { SentryProvider } from "@/pdc/providers/sentry/index.ts";
-import { TokenProvider } from "@/pdc/providers/token/index.ts";
 import { ListCommand } from "@/pdc/proxy/commands/ListCommand.ts";
 import { AuthServiceProvider } from "@/pdc/services/auth/AuthServiceProvider.ts";
 import { MonitoringServiceProvider } from "@/pdc/services/monitoring/MonitoringServiceProvider.ts";
@@ -11,8 +10,6 @@ import { NotificationMailTransporter } from "../providers/notification/Notificat
 import { HandlebarsTemplateProvider } from "../providers/template/HandlebarsTemplateProvider.ts";
 import { AcquisitionServiceProvider } from "../services/acquisition/AcquisitionServiceProvider.ts";
 import { APDFServiceProvider } from "../services/apdf/APDFServiceProvider.ts";
-import { ApplicationServiceProvider } from "../services/application/ApplicationServiceProvider.ts";
-import { CeeServiceProvider } from "../services/cee/CeeServiceProvider.ts";
 import { CompanyServiceProvider } from "../services/company/CompanyServiceProvider.ts";
 import { DashboardServiceProvider } from "../services/dashboard/DashboardServiceProvider.ts";
 import { ExportServiceProvider } from "../services/export/ExportServiceProvider.ts";
@@ -30,8 +27,6 @@ import { config } from "./config/index.ts";
     AuthServiceProvider,
     AcquisitionServiceProvider,
     APDFServiceProvider,
-    ApplicationServiceProvider,
-    CeeServiceProvider,
     CompanyServiceProvider,
     ExportServiceProvider,
     HonorServiceProvider,
@@ -46,7 +41,6 @@ import { config } from "./config/index.ts";
   commands: [ListCommand],
   providers: [
     SentryProvider,
-    TokenProvider,
     NotificationMailTransporter,
     HandlebarsTemplateProvider,
     [RedisConnection, new RedisConnection(config.connections.redis)],

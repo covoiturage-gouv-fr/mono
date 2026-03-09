@@ -16,7 +16,7 @@ sqlmesh.db
 
 # Données temporaires ou locales
 data/
-tmp/
+.tmp/
 logs/
 .cache/
 *.log

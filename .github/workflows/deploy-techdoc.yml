@@ -20,7 +20,7 @@ jobs:
     strategy:
       matrix:
         # List all versions of the API documentation to deploy
-        version: [v3.2, v3.3]
+        version: [v3.3, v3.4]
 
     steps:
       - name: Checkout

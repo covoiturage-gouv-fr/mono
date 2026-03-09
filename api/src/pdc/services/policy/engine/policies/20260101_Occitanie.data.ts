@@ -619,12 +619,19 @@ const aom20250101 = new Map([
 ]);
 
 export const occitanie2026Data = {
+  // AOM Région
   region: {
     [TerritoryCodeEnum.Mobility]: "200053791",
     [TerritoryCodeEnum.Region]: "76",
   },
+
+  // AOM locales
   inner: aom20250101.keys().toArray() as TerritoryCodeEnum.Mobility[],
+
+  // Bassins
   areas: bassins20260101.keys().toArray() as TerritoryCodeEnum.Arr[],
+
+  // Helper
   innerByName(name: string): string {
     const r = new RegExp(`${name.trim()}`, "i");
     return ([...aom20250101].filter(([, v]) => r.test(v))[0] || [])[0] || "";

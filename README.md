@@ -6,7 +6,7 @@ Le Registre de preuve de covoiturage est un produit [beta.gouv.fr](https://beta.
 - [Espace partenaire (territoires/opérateurs)](https://partenaire.covoiturage.beta.gouv.fr)
 - [Documentation générale](https://doc.covoiturage.beta.gouv.fr)
 - [Documentation technique](https://tech.covoiturage.beta.gouv.fr)
-- [Statistiques publiques](https://stats.covoiturage.beta.gouv.fr/public/dashboard/2084d346-8e3b-495e-9b10-b4870a35632a)
+- [Statistiques publiques](https://covoiturage.beta.gouv.fr/statistiques)
 - [Metabase (interne)](https://stats.covoiturage.beta.gouv.fr)
 - [Matomo (interne)](https://matomo.covoiturage.beta.gouv.fr)
 - [Page de statut des services](https://status.covoiturage.beta.gouv.fr)
@@ -57,7 +57,7 @@ Les différents fichiers `docker-compose.*.yml` sont utilisés en _overlay_ pour
 - Afficher les logs des services: `just logs [<service>] [-f]`
 - Stopper les services: `just stop | just down`
 
-#### Misc.
+#### Misc
 
 - Se connecter à la DB avec pgcli: `just db`
 - Lancer un REPL avec le kernel de l'API: `just debug`

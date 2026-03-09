@@ -12,6 +12,7 @@ import Button from "@codegouvfr/react-dsfr/Button";
 import { RadioButtons } from "@codegouvfr/react-dsfr/RadioButtons";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { sendEvent } from "@socialgouv/matomo-next";
 import dayjs, { type Dayjs } from "dayjs";
 import "dayjs/locale/fr";
 import { useEffect, useRef, useState } from "react";
@@ -51,6 +52,12 @@ export default function TabExport() {
   }, [error]);
 
   const handleExport = async () => {
+    void sendEvent({
+      category: "export",
+      action: "Export",
+      name: `Territory ID | Operator ID | TerritorySelector`,
+      value: `${territorySelectors ? "N/A" : territoryId ?? "N/A"} | ${user?.operator_id ?? "N/A"} | ${territorySelectors ? JSON.stringify(territorySelectors) : "N/A"}`,
+    });
     try {
       await createExport({
         tz: "Europe/Paris",
@@ -121,14 +128,14 @@ export default function TabExport() {
                 label: "Périmètre géographique",
                 nativeInputProps: {
                   checked: geoSelector === "geo",
-                  onChange: () => setGeoSelector("geo"),
+                  onChange: () => { setGeoSelector("geo"); setTerritoryId(undefined); },
                 },
               },
               {
                 label: "Périmètre campagne",
                 nativeInputProps: {
                   checked: geoSelector === "campaign",
-                  onChange: () => setGeoSelector("campaign"),
+                  onChange: () => { setGeoSelector("campaign"); setTerritorySelectors(undefined); },
                 },
               },
             ]}

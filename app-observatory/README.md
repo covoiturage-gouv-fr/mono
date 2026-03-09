@@ -86,6 +86,29 @@ npm run dev
 # Build de production (export statique)
 npm run build
 ```
+src/
+├── app/                    # Routes Next.js (App Router)
+│   ├── page.tsx           # Page d'accueil
+│   ├── observatoire/      # Tableaux de bord
+│   │   ├── territoire/    # Données par territoire
+│   │   └── campagnes-incitation/  # Suivi des incitations
+│   ├── actualites/        # Section actualités
+│   ├── ressources/        # Ressources documentaires
+│   ├── collectivites/     # Pages pour collectivités
+│   └── autres-acteurs/    # Employeurs, particuliers, plateformes
+├── components/            # Composants React
+│   ├── common/            # Composants réutilisables
+│   ├── layout/            # Header, Footer, Navigation
+│   └── observatoire/      # Composants du tableau de bord
+├── config/                # Configuration (CMS, analytics, cartes)
+├── context/               # Providers React Context
+├── helpers/               # Fonctions utilitaires
+├── hooks/                 # Custom hooks React
+├── interfaces/            # Types TypeScript
+└── styles/                # Styles globaux SCSS
+```
+
+## Fonctionnalités principales
 
 ## Variables d'environnement
 

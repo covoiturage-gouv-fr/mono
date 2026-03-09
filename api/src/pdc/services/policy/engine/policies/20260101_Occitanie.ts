@@ -13,7 +13,6 @@ import { isOperatorClassOrThrow } from "../helpers/isOperatorClassOrThrow.ts";
 import { isOperatorOrThrow } from "../helpers/isOperatorOrThrow.ts";
 import { LimitTargetEnum, watchForGlobalMaxAmount, watchForPersonMaxTripByDay } from "../helpers/limits.ts";
 import { onDistanceRange, onDistanceRangeOrThrow } from "../helpers/onDistanceRange.ts";
-import { onWeekday } from "../helpers/onWeekday.ts";
 import { perKm, perSeat } from "../helpers/per.ts";
 import { startsAndEndsAt, startsOrEndsAt } from "../helpers/position.ts";
 import { startsAndEndsAtOrThrow } from "../helpers/startsAndEndsAtOrThrow.ts";
@@ -36,7 +35,7 @@ function filterInnerAOMOrThrow(ctx: StatelessContextInterface): void {
   const isInner = startsAndEndsAt(ctx, { [TerritoryCodeEnum.Mobility]: inner });
   if (!isInner) return;
 
-  // throw if startn and end are within the same AOM
+  // throw if start and end are within the same AOM
   if (ctx.carpool.start[TerritoryCodeEnum.Mobility] === ctx.carpool.end[TerritoryCodeEnum.Mobility]) {
     throw new NotEligibleTargetException("Trips within the same inner AOM are rejected");
   }
@@ -137,31 +136,11 @@ export const Occitanie20262027 = class extends AbstractPolicyHandler implements 
   }
 
   protected processExclusions(ctx: StatelessContextInterface) {
-    // Exclusion des trajets effectué le dimanche
-    if (onWeekday(ctx, { days: [0] })) {
-      throw new NotEligibleTargetException("Sundays are off");
-    }
-
     // Exclusion des trajets dont la contribution passager est nulle
     // Le ticket passager minimum est de 0,5 € par trajet.
     if (getContribution(ctx) < 50) {
-      throw new NotEligibleTargetException("Passager contribution is too low");
+      throw new NotEligibleTargetException("Passenger contribution is too low");
     }
-
-    // Départ ET arrivée dans le périmètre de la région Occitanie...
-    startsAndEndsAtOrThrow(ctx, {
-      [TerritoryCodeEnum.Region]: [occitanie2026Data.region[TerritoryCodeEnum.Region]],
-    });
-    startsAndEndsAtOrThrow(ctx, {
-      [TerritoryCodeEnum.Mobility]: [
-        ...occitanie2026Data.inner,
-        occitanie2026Data.region[TerritoryCodeEnum.Mobility],
-      ],
-    });
-
-    // ...hors trajets internes aux autres Autorités Organisatrices de Mobilité de la Région (cf. Annexe 2) ;
-    // sauf si les AOM sont différentes
-    filterInnerAOMOrThrow(ctx);
 
     // Opérateurs : BlaBlaCar Daily, Karos, Mobicoop
     isOperatorOrThrow(ctx, getOperatorsAt(this.operators, ctx.carpool.datetime));
@@ -169,12 +148,30 @@ export const Occitanie20262027 = class extends AbstractPolicyHandler implements 
     // Classe de preuve : B ou C
     isOperatorClassOrThrow(ctx, this.operator_class);
 
+    // Départ ou Arrivée dans un bassin
     // Distance : au minimum 2.000 et au maximum 30.000 inclus sauf sur les bassins de mobilité
     // de Mende, d’Armagnac, de Rodez, d’Alès (cf. Annexe 1) et dans ce cas les trajets éligibles
     // sont au minimum 2.000 et au maximum 50.000 inclus dont l’origine et/ou la destination est dans le bassin.
-    set(ctx, "data.area", startsOrEndsWithinArea(ctx));
-    const max = ctx.data!.area ? 50_000 : 30_000;
-    onDistanceRangeOrThrow(ctx, { min: 2_000, max });
+    set(ctx, "data.area", startsOrEndsWithinArea(ctx)); // boolean
+    if (ctx.data!.area) {
+      onDistanceRangeOrThrow(ctx, { min: 2_000, max: 50_000 });
+    } else {
+      onDistanceRangeOrThrow(ctx, { min: 2_000, max: 30_000 });
+      // Départ ET arrivée dans la région Occitanie (limite max)
+      startsAndEndsAtOrThrow(ctx, { [TerritoryCodeEnum.Region]: [occitanie2026Data.region[TerritoryCodeEnum.Region]] });
+
+      // Départ ET arrivée dans le périmètre de l'AOM Région et des AOM locales...
+      startsAndEndsAtOrThrow(ctx, {
+        [TerritoryCodeEnum.Mobility]: [
+          ...occitanie2026Data.inner,
+          occitanie2026Data.region[TerritoryCodeEnum.Mobility],
+        ],
+      });
+
+      // ...hors trajets internes aux autres Autorités Organisatrices de Mobilité de la Région (cf. Annexe 2) ;
+      // sauf si les AOM sont différentes
+      filterInnerAOMOrThrow(ctx);
+    }
   }
 
   override processStateless(ctx: StatelessContextInterface): void {
@@ -201,9 +198,5 @@ export const Occitanie20262027 = class extends AbstractPolicyHandler implements 
       operators: getOperatorsAt(this.operators),
       limits: { glob: this.max_amount },
     };
-  }
-
-  describe(): string {
-    return "";
   }
 };

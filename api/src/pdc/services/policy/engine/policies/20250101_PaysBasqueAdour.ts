@@ -18,7 +18,6 @@ import {
 } from "../helpers/limits.ts";
 import { onDistanceRange, onDistanceRangeOrThrow } from "../helpers/onDistanceRange.ts";
 import { perKm, perSeat } from "../helpers/per.ts";
-import { description } from "./20250101_PaysBasqueAdour.html.ts";
 import { AbstractPolicyHandler } from "./AbstractPolicyHandler.ts";
 
 // Pays Basque Adour
@@ -110,7 +109,4 @@ export const PaysBasque2025: PolicyHandlerStaticInterface = class extends Abstra
     };
   }
 
-  describe(): string {
-    return description;
-  }
 };

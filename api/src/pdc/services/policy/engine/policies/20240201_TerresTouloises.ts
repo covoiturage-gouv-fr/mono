@@ -21,7 +21,6 @@ import {
 import { onDistanceRange, onDistanceRangeOrThrow } from "../helpers/onDistanceRange.ts";
 import { perSeat } from "../helpers/per.ts";
 import { startsAt } from "../helpers/position.ts";
-import { description } from "./20240201_TerresTouloises.html.ts";
 import { AbstractPolicyHandler } from "./AbstractPolicyHandler.ts";
 
 /* eslint-disable-next-line */
@@ -128,7 +127,4 @@ export const TerresTouloises2024: PolicyHandlerStaticInterface = class extends A
     };
   }
 
-  describe(): string {
-    return description;
-  }
 };

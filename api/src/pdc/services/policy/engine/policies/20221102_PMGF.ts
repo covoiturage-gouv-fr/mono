@@ -13,7 +13,6 @@ import { LimitTargetEnum, watchForGlobalMaxAmount, watchForPersonMaxAmountByMont
 import { onDistanceRange, onDistanceRangeOrThrow } from "../helpers/onDistanceRange.ts";
 import { perKm, perSeat } from "../helpers/per.ts";
 import { startsAndEndsAt } from "../helpers/position.ts";
-import { description } from "./20221102_PMGF.html.ts";
 import { AbstractPolicyHandler } from "./AbstractPolicyHandler.ts";
 
 // Politique du Pôle Métropolitain Genevois Français
@@ -228,7 +227,4 @@ export const PMGF2022: PolicyHandlerStaticInterface = class extends AbstractPoli
     };
   }
 
-  describe(): string {
-    return description;
-  }
 };

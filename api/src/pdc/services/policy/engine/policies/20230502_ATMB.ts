@@ -14,7 +14,6 @@ import { LimitTargetEnum, watchForGlobalMaxAmount, watchForPersonMaxAmountByMont
 import { onDistanceRange, onDistanceRangeOrThrow } from "../helpers/onDistanceRange.ts";
 import { perKm, perSeat } from "../helpers/per.ts";
 import { startsAndEndsAtOrThrow } from "../helpers/startsAndEndsAtOrThrow.ts";
-import { description } from "./20230502_ATMB.html.ts";
 import { AbstractPolicyHandler } from "./AbstractPolicyHandler.ts";
 
 // Politique sur le réseau ATMB
@@ -116,7 +115,4 @@ export const ATMB202305: PolicyHandlerStaticInterface = class extends AbstractPo
     };
   }
 
-  describe(): string {
-    return description;
-  }
 };

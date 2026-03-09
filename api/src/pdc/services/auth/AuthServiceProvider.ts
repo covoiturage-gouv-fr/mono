@@ -2,8 +2,6 @@ import { router, serviceProvider } from "../../../ilos/common/index.ts";
 import { ServiceProvider as AbstractServiceProvider } from "../../../ilos/core/index.ts";
 import { defaultMiddlewareBindings } from "../../providers/middleware/index.ts";
 import { ValidatorMiddleware } from "../../providers/superstruct/ValidatorMiddleware.ts";
-import { TokenProvider } from "../../providers/token/index.ts";
-import { ApplicationPgRepositoryProvider } from "../application/providers/ApplicationPgRepositoryProvider.ts";
 import { CreateAccessTokenAction } from "./actions/CreateAccessTokenAction.ts";
 import { CreateCredentialsAction } from "./actions/CreateCredentialsAction.ts";
 import { DeleteCredentialsAction } from "./actions/DeleteCredentialsAction.ts";
@@ -23,9 +21,6 @@ import { UserRepository } from "./providers/UserRepository.ts";
     DexOIDCProvider,
     ProConnectOIDCProvider,
     [router, AuthRouter],
-    // TODO : clean me after migration
-    ApplicationPgRepositoryProvider,
-    TokenProvider,
   ],
   middlewares: [
     ["validate", ValidatorMiddleware],

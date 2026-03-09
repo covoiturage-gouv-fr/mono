@@ -2,7 +2,6 @@ node_modules
 .DS_Store
 .idea
 .ignore
-.claude
 !.vscode/settings.json
 .env
 .env.disabled
@@ -31,3 +30,9 @@ logs/dbt.log
 dbt/target
 dbt/edr_target
 .aider*
+
+# Claude code
+# Exclude local settings to let each dev
+# set its own permissions.
+.claude/settings.local.json
+

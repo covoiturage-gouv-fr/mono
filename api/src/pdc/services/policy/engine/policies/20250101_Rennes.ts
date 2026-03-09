@@ -22,7 +22,6 @@ import {
 import { onDistanceRange, onDistanceRangeOrThrow } from "../helpers/onDistanceRange.ts";
 import { perKm, perSeat } from "../helpers/per.ts";
 import { endsAt } from "../helpers/position.ts";
-import { description } from "./20250101_Rennes.html.ts";
 import { AbstractPolicyHandler } from "./AbstractPolicyHandler.ts";
 
 // INSERT INTO policy.policies (territory_id, start_date, end_date, name, unit, status, handler, max_amount)
@@ -485,7 +484,4 @@ export const Rennes2025: PolicyHandlerStaticInterface = class extends AbstractPo
     };
   }
 
-  describe(): string {
-    return description;
-  }
 };

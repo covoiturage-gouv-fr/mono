@@ -11,9 +11,9 @@ export default function SelectIncentiveYear(props: {
   const router = useRouter();
   const list = [
     { val: undefined, name: "En cours" },
-    { val: "2023", name: "2023" },
     { val: "2024", name: "2024" },
     { val: "2025", name: "2025" },
+    { val: "2026", name: "2026" },
   ];
   const currentYear = props.params.year ? props.params.year : undefined;
   const onClick = (v: string | undefined) => {
@@ -22,7 +22,7 @@ export default function SelectIncentiveYear(props: {
         territory: props.params.code,
         type: props.params.type,
         l_territory: "",
-      })}${v !== undefined ? `&year=${v}` : ""}`
+      })}${v !== undefined ? `&year=${v}` : ""}`,
     );
   };
 

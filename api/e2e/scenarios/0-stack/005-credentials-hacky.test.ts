@@ -15,26 +15,26 @@ import { regex_jwt } from "../../lib/regex.ts";
 describe("Credentials Creation", () => {
   it("should fail to create credentials for another operator", async () => {
     const http = new API();
-    await http.login<{ operator_id: number }>(OPERATOR_EMAIL, OPERATOR_PASSWORD);
+    await http.callback<{ operator_id: number }>(OPERATOR_EMAIL, OPERATOR_PASSWORD);
     await expect(http.createCredentials(999)).rejects.toThrow(ForbiddenException);
   });
 
   it("should fail a territory trying to create credentials", async () => {
     const http = new API();
-    await http.login<{ operator_id: number }>(TERRITORY_EMAIL, TERRITORY_PASSWORD);
+    await http.callback<{ operator_id: number }>(TERRITORY_EMAIL, TERRITORY_PASSWORD);
     await expect(http.createCredentials(1)).rejects.toThrow(ForbiddenException);
   });
 
   it("should fail a super admin creating for a missing operator", async () => {
     const http = new API();
-    await http.login<{ operator_id: number }>(ADMIN_EMAIL, ADMIN_PASSWORD);
+    await http.callback<{ operator_id: number }>(ADMIN_EMAIL, ADMIN_PASSWORD);
     await expect(http.createCredentials(2)).rejects.toThrow(NotFoundException);
   });
 
   it("should succeed to create credentials as a super admin", async () => {
     const operator_id = 1;
     const http = new API();
-    await http.login<{ operator_id: number }>(ADMIN_EMAIL, ADMIN_PASSWORD);
+    await http.callback<{ operator_id: number }>(ADMIN_EMAIL, ADMIN_PASSWORD);
     const credentials = await http.createCredentials(operator_id);
     expect(credentials).toMatchObject({
       access_key: expect.any(String),
@@ -60,7 +60,7 @@ describe("Credentials Creation", () => {
 
   it("should fail on empty body", async () => {
     const http = new API();
-    await http.login<{ operator_id: number }>(OPERATOR_EMAIL, OPERATOR_PASSWORD);
+    await http.callback<{ operator_id: number }>(OPERATOR_EMAIL, OPERATOR_PASSWORD);
 
     // @ts-expect-error type error to simulate empty body
     await expect(http.createCredentials(undefined)).rejects.toThrow(ForbiddenException);
@@ -68,7 +68,7 @@ describe("Credentials Creation", () => {
 
   it("should fail on wrong payload", async () => {
     const http = new API();
-    await http.login<{ operator_id: number }>(OPERATOR_EMAIL, OPERATOR_PASSWORD);
+    await http.callback<{ operator_id: number }>(OPERATOR_EMAIL, OPERATOR_PASSWORD);
 
     // @ts-expect-error type error to simulate wrong payload
     await expect(http.createCredentials("wrong")).rejects.toThrow(ForbiddenException);
@@ -78,26 +78,26 @@ describe("Credentials Creation", () => {
 describe("Credentials Reading", () => {
   it("should fail to read credentials for another operator", async () => {
     const http = new API();
-    await http.login<{ operator_id: number }>(OPERATOR_EMAIL, OPERATOR_PASSWORD);
+    await http.callback<{ operator_id: number }>(OPERATOR_EMAIL, OPERATOR_PASSWORD);
     await expect(http.readCredentials(999)).rejects.toThrow(ForbiddenException);
   });
 
   it("should fail a territory trying to read credentials", async () => {
     const http = new API();
-    await http.login<{ operator_id: number }>(TERRITORY_EMAIL, TERRITORY_PASSWORD);
+    await http.callback<{ operator_id: number }>(TERRITORY_EMAIL, TERRITORY_PASSWORD);
     await expect(http.readCredentials(1)).rejects.toThrow(ForbiddenException);
   });
 
   it("should fail a super admin reading for a missing operator", async () => {
     const http = new API();
-    await http.login<{ operator_id: number }>(ADMIN_EMAIL, ADMIN_PASSWORD);
+    await http.callback<{ operator_id: number }>(ADMIN_EMAIL, ADMIN_PASSWORD);
     await expect(http.readCredentials(2)).rejects.toThrow(NotFoundException);
   });
 
   it("should succeed to read credentials as a super admin", async () => {
     const operator_id = 1;
     const http = new API();
-    await http.login<{ operator_id: number }>(ADMIN_EMAIL, ADMIN_PASSWORD);
+    await http.callback<{ operator_id: number }>(ADMIN_EMAIL, ADMIN_PASSWORD);
     const credentials = await http.readCredentials(operator_id);
     expect(credentials).toBeDefined();
     expect(credentials.length).toBeGreaterThan(0);
@@ -112,26 +112,26 @@ describe("Credentials Reading", () => {
 describe("Credentials Deletion", () => {
   it("should fail to delete credentials for another operator", async () => {
     const http = new API();
-    await http.login<{ operator_id: number }>(OPERATOR_EMAIL, OPERATOR_PASSWORD);
+    await http.callback<{ operator_id: number }>(OPERATOR_EMAIL, OPERATOR_PASSWORD);
     await expect(http.deleteCredentials(999, "token_id")).rejects.toThrow(ForbiddenException);
   });
 
   it("should fail a territory trying to delete credentials", async () => {
     const http = new API();
-    await http.login<{ operator_id: number }>(TERRITORY_EMAIL, TERRITORY_PASSWORD);
+    await http.callback<{ operator_id: number }>(TERRITORY_EMAIL, TERRITORY_PASSWORD);
     await expect(http.deleteCredentials(1, "token_id")).rejects.toThrow(ForbiddenException);
   });
 
   it("should fail a super admin deleting for a missing operator", async () => {
     const http = new API();
-    await http.login<{ operator_id: number }>(ADMIN_EMAIL, ADMIN_PASSWORD);
+    await http.callback<{ operator_id: number }>(ADMIN_EMAIL, ADMIN_PASSWORD);
     await expect(http.deleteCredentials(2, "token_id")).rejects.toThrow(NotFoundException);
   });
 
   it("should succeed to delete credentials as a super admin", async () => {
     const operator_id = 1;
     const http = new API();
-    await http.login<{ operator_id: number }>(ADMIN_EMAIL, ADMIN_PASSWORD);
+    await http.callback<{ operator_id: number }>(ADMIN_EMAIL, ADMIN_PASSWORD);
     const created = await http.createCredentials(operator_id);
     expect(created).toBeDefined();
 

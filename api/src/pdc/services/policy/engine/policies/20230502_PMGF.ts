@@ -12,7 +12,6 @@ import { isOperatorOrThrow } from "../helpers/isOperatorOrThrow.ts";
 import { LimitTargetEnum, watchForGlobalMaxAmount, watchForPersonMaxAmountByMonth } from "../helpers/limits.ts";
 import { onDistanceRange, onDistanceRangeOrThrow } from "../helpers/onDistanceRange.ts";
 import { perKm, perSeat } from "../helpers/per.ts";
-import { description } from "./20230502_PMGF.html.ts";
 import { AbstractPolicyHandler } from "./AbstractPolicyHandler.ts";
 
 // Politique Pole Métropolitain du Genevois
@@ -97,7 +96,4 @@ export const PMGF2023: PolicyHandlerStaticInterface = class extends AbstractPoli
     };
   }
 
-  describe(): string {
-    return description;
-  }
 };

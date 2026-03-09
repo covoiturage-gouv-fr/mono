@@ -29,7 +29,7 @@ export function VitrineFooter() {
             },
             {
               linkProps: {
-                href: "https://stats.covoiturage.beta.gouv.fr/public/dashboard/2084d346-8e3b-495e-9b10-b4870a35632a",
+                href: "https://covoiturage.beta.gouv.fr/statistiques",
                 target: "_blank",
                 title: "Notre impact | nouvelle fenêtre",
                 "aria-label": "Notre impact | nouvelle fenêtre",

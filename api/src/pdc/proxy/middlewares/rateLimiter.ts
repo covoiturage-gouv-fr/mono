@@ -66,13 +66,6 @@ export function acquisitionRateLimiter(
   );
 }
 
-// shortcut for cee route
-export function ceeRateLimiter(
-  opts: Partial<RateLimiterOptions> = {},
-): RateLimitRequestHandler {
-  return rateLimiter({ windowMs: 1 * minute, max: 20000, ...opts }, "rl-cee");
-}
-
 // shortcut for journey status route
 export function checkRateLimiter(
   opts: Partial<RateLimiterOptions> = {},
@@ -90,15 +83,5 @@ export function monHonorCertificateRateLimiter(
   return rateLimiter(
     { windowMs: 1 * minute, max: 10, ...opts },
     "rl-monitoring-cert",
-  );
-}
-
-// shortcut for /contactform route
-export function contactformRateLimiter(
-  opts: Partial<RateLimiterOptions> = {},
-): RateLimitRequestHandler {
-  return rateLimiter(
-    { windowMs: 1 * minute, max: 3, ...opts },
-    "rl-contactform",
   );
 }

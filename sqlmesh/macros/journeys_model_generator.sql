@@ -116,6 +116,7 @@
       SELECT
         oi.carpool_id,
         ARRAY_AGG(DISTINCT oi.siret) AS operator_incentives_sirets,
+        ARRAY_AGG(DISTINCT oi.amount) AS operator_incentives_amounts,
         SUM(oi.amount) AS operator_incentives_amount_total
       FROM carpool_v2.operator_incentives AS oi
       INNER JOIN carpools AS c ON oi.carpool_id = c._id
@@ -190,6 +191,7 @@
       c.passenger_contribution,
       c.passenger_payments,
       oi.operator_incentives_sirets,
+      oi.operator_incentives_amounts,
       oi.operator_incentives_amount_total,
       pi.policy_id,
       pi.policy_incentives_amount_total,

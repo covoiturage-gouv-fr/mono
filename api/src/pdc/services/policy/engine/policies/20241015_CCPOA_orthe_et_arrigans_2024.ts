@@ -18,7 +18,6 @@ import {
 import { onDistanceRange, onDistanceRangeOrThrow } from "../helpers/onDistanceRange.ts";
 import { perKm, perSeat } from "../helpers/per.ts";
 import { startsOrEndsAtOrThrow } from "../helpers/startsOrEndsAtOrThrow.ts";
-import { description } from "./20241015_CCPOA_orthe_et_arrigans_2024.html.ts";
 import { AbstractPolicyHandler } from "./AbstractPolicyHandler.ts";
 
 /* eslint-disable-next-line */
@@ -107,7 +106,4 @@ export const CCPOA202410: PolicyHandlerStaticInterface = class extends AbstractP
     };
   }
 
-  describe(): string {
-    return description;
-  }
 };

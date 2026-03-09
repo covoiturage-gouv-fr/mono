@@ -13,7 +13,6 @@ import { watchForGlobalMaxAmount } from "../helpers/limits.ts";
 import { onDistanceRange, onDistanceRangeOrThrow } from "../helpers/onDistanceRange.ts";
 import { perKm, perSeat } from "../helpers/per.ts";
 import { startsAndEndsAtOrThrow } from "../helpers/startsAndEndsAtOrThrow.ts";
-import { description } from "./20230124_MetropoleSavoie.html.ts";
 import { AbstractPolicyHandler } from "./AbstractPolicyHandler.ts";
 
 /* eslint-disable-next-line */
@@ -88,7 +87,4 @@ export const MetropoleSavoie: PolicyHandlerStaticInterface = class extends Abstr
     };
   }
 
-  describe(): string {
-    return description;
-  }
 };

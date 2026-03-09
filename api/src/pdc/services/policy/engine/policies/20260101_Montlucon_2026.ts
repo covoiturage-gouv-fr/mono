@@ -19,7 +19,6 @@ import {
 import { onDistanceRange, onDistanceRangeOrThrow } from "../helpers/onDistanceRange.ts";
 import { perKm, perSeat } from "../helpers/per.ts";
 import { endsAt, startsAt } from "../helpers/position.ts";
-import { description } from "./20260101_Montlucon_2026.html.ts";
 import { AbstractPolicyHandler } from "./AbstractPolicyHandler.ts";
 
 // INSERT INTO policy.policies ( territory_id, start_date, end_date, name, unit, status, handler, max_amount )
@@ -135,9 +134,5 @@ export const MontluconCommunaute2026: PolicyHandlerStaticInterface = class exten
       limits: { glob: this.max_amount },
       extras: {},
     };
-  }
-
-  describe(): string {
-    return description;
   }
 };

@@ -4,13 +4,11 @@ import express, { NextFunction, Request, Response } from "dep:express";
 import helmet from "dep:helmet";
 import { Server } from "dep:http";
 import { Redis } from "dep:redis";
-
 import {
   children,
   ConfigInterface,
   ConfigInterfaceResolver,
   HandlerConfigType,
-  InvalidRequestException,
   KernelInterface,
   proxy,
   RegisterHookInterface,
@@ -26,9 +24,7 @@ import { logger } from "@/lib/logger/index.ts";
 import { get } from "@/lib/object/index.ts";
 import { join } from "@/lib/path/index.ts";
 import { Sentry, SentryProvider } from "@/pdc/providers/sentry/index.ts";
-import { TokenProvider, TokenProviderInterfaceResolver } from "@/pdc/providers/token/index.ts";
 import { registerExpressRoute } from "@/pdc/proxy/helpers/registerExpressRoute.ts";
-import { TokenPayloadInterface } from "@/pdc/services/application/contracts/common/interfaces/TokenPayloadInterface.ts";
 import {
   ParamsInterface as GetAuthorizedCodesParams,
   ResultInterface as GetAuthorizedCodesResult,
@@ -43,14 +39,7 @@ import { prometheusMetricsFactory } from "./helpers/prometheusMetricsFactory.ts"
 import { CacheMiddleware, cacheMiddleware } from "./middlewares/cacheMiddleware.ts";
 import { dataWrapMiddleware, errorHandlerMiddleware } from "./middlewares/index.ts";
 import { metricsMiddleware } from "./middlewares/metricsMiddleware.ts";
-import {
-  apiRateLimiter,
-  authRateLimiter,
-  contactformRateLimiter,
-  loginRateLimiter,
-  monHonorCertificateRateLimiter,
-  rateLimiter,
-} from "./middlewares/rateLimiter.ts";
+import { apiRateLimiter, monHonorCertificateRateLimiter, rateLimiter } from "./middlewares/rateLimiter.ts";
 import { sessionMiddleware } from "./middlewares/sessionMiddleware.ts";
 
 export class HttpTransport implements TransportInterface {
@@ -58,7 +47,6 @@ export class HttpTransport implements TransportInterface {
   config: ConfigInterface;
   port: string;
   server: Server;
-  tokenProvider: TokenProviderInterfaceResolver;
   cache: CacheMiddleware;
 
   constructor(private kernel: KernelInterface) {}
@@ -98,14 +86,7 @@ export class HttpTransport implements TransportInterface {
     this.registerGlobalMiddlewares();
     this.registerCache();
     this.registerNestedRoutes();
-    this.registerLegacyAuthRoutes();
-    this.registerApplicationRoutes();
-    this.registerAcquisitionRoutes();
-    this.registerSimulationRoutes();
-    this.registerCeeRoutes();
     this.registerHonorRoutes();
-    this.registerObservatoryRoutes();
-    this.registerContactformRoute();
     this.registerCallHandler();
     this.registerAfterAllHandlers();
     this.registerGeoRoutes();
@@ -140,7 +121,6 @@ export class HttpTransport implements TransportInterface {
 
   private async getProviders(): Promise<void> {
     this.config = this.kernel.getContainer().get(ConfigInterfaceResolver);
-    this.tokenProvider = this.kernel.get(TokenProvider);
   }
 
   private registerBeforeAllHandlers(): void {
@@ -169,7 +149,7 @@ export class HttpTransport implements TransportInterface {
 
     // apply CORS to all routes except the following ones
     this.app.use(
-      /\/((?!honor|contactform|policy\/simulate|v3\/observatory|geo\/search).)*/,
+      /\/((?!honor|v3\/observatory|geo\/search).)*/,
       cors({
         origin: [this.config.get("proxy.cors"), this.config.get("proxy.dashboardV2Cors")],
         optionsSuccessStatus: 200,
@@ -195,21 +175,7 @@ export class HttpTransport implements TransportInterface {
       }),
     );
     this.app.use(
-      "/contactform",
-      cors({
-        origin: this.config.get("proxy.showcase"),
-        optionsSuccessStatus: 200,
-      }),
-    );
-    this.app.use(
       "/geo/search",
-      cors({
-        origin: this.config.get("proxy.showcase"),
-        optionsSuccessStatus: 200,
-      }),
-    );
-    this.app.use(
-      "/policy/simulate",
       cors({
         origin: this.config.get("proxy.showcase"),
         optionsSuccessStatus: 200,
@@ -228,8 +194,6 @@ export class HttpTransport implements TransportInterface {
       next();
     });
 
-    // FIXME : expressMung.jsonAsync makes the response body undefined
-    // this.app.use(signResponseMiddleware);
     this.app.use(dataWrapMiddleware);
   }
 
@@ -266,28 +230,6 @@ export class HttpTransport implements TransportInterface {
     );
   }
 
-  private registerCeeRoutes(): void {
-    // Routes have been migrated to apiRoute annotations in the action handlers
-  }
-
-  private registerSimulationRoutes(): void {
-    // Routes have been migrated to apiRoute annotations in the action handlers
-    this.app.post(
-      "/policy/simulate",
-      rateLimiter({ max: 1 }, "rl-policy-simulate"),
-      asyncHandler(async (req: Request, res: Response, _next: NextFunction) => {
-        // TODO : Should be queued
-        await this.kernel.call("user:sendSimulationEmail", req.body, {
-          call: { user: { permissions: ["common.user.policySimulate"] } },
-          channel: {
-            service: "proxy",
-          },
-        });
-        this.send(res, { id: 1, jsonrpc: "2.0" });
-      }),
-    );
-  }
-
   private registerGeoRoutes(): void {
     this.app.post(
       "/geo/search",
@@ -301,187 +243,6 @@ export class HttpTransport implements TransportInterface {
           ),
         );
         this.send(res, response as RPCResponseType);
-      }),
-    );
-
-    // Routes have been migrated to apiRoute annotations in the action handlers
-  }
-
-  /**
-   * Journeys routes
-   * - check status
-   * - invalidate
-   * - save
-   */
-  private registerAcquisitionRoutes(): void {
-    // Routes have been migrated to apiRoute annotations in the action handlers
-  }
-
-  private registerLegacyAuthRoutes(): void {
-    /**
-     * Log the user in based on email and password combination
-     */
-    this.app.post(
-      "/login",
-      loginRateLimiter(),
-      asyncHandler(async (req: Request, res: Response, _next: NextFunction) => {
-        const response = (await this.kernel.handle(
-          createRPCPayload("user:login", req.body),
-        )) as RPCResponseType;
-
-        if (!response || Array.isArray(response) || "error" in response) {
-          res.status(mapStatusCode(response)).json(
-            this.parseErrorData(response),
-          );
-        } else {
-          const user = Array.isArray(response) ? response[0].result : response.result;
-          req.session.user = {
-            ...user,
-            ...(await this.getTerritoryInfos(user)),
-          };
-
-          this.send(res, response);
-        }
-      }),
-    );
-
-    /**
-     * Get the user profile (reads from the session rather than the database)
-     */
-    this.app.get(
-      "/profile",
-      authRateLimiter(),
-      (req: Request, res: Response, _next: NextFunction) => {
-        res.json(get(req.session, "user"));
-      },
-    );
-
-    /**
-     * Kill the current session
-     */
-    this.app.post(
-      "/logout",
-      authRateLimiter(),
-      (req: Request, res: Response, _next: NextFunction) => {
-        req.session.destroy((err: Error) => {
-          if (err) throw err;
-          res.status(204).end();
-        });
-      },
-    );
-
-    /**
-     * Let the user request a new password by supplying her email
-     */
-    this.app.post(
-      "/auth/reset-password",
-      authRateLimiter(),
-      asyncHandler(async (req: Request, res: Response, _next: NextFunction) => {
-        const response = (await this.kernel.handle(
-          createRPCPayload("user:forgottenPassword", { email: req.body.email }),
-        )) as RPCResponseType;
-
-        this.send(res, response);
-      }),
-    );
-
-    /**
-     * Let the front-end check an email/password couple for password recovery
-     */
-    this.app.post(
-      "/auth/check-token",
-      authRateLimiter(),
-      asyncHandler(async (req: Request, res: Response, _next: NextFunction) => {
-        const response = (await this.kernel.handle(
-          createRPCPayload("user:checkForgottenToken", {
-            email: req.body.email,
-            token: req.body.token,
-          }),
-        )) as RPCResponseType;
-
-        this.send(res, response);
-      }),
-    );
-
-    /**
-     * Let the user change her password by supplying an email, a token and a new password
-     */
-    this.app.post(
-      "/auth/change-password",
-      authRateLimiter(),
-      asyncHandler(async (req: Request, res: Response, _next: NextFunction) => {
-        const response = (await this.kernel.handle(
-          createRPCPayload("user:changePasswordWithToken", {
-            email: req.body.email,
-            token: req.body.token,
-            password: req.body.password,
-          }),
-        )) as RPCResponseType;
-
-        this.send(res, response);
-      }),
-    );
-
-    /**
-     * Let the front-end confirm a pending email with an email and a token
-     */
-    this.app.post(
-      "/auth/confirm-email",
-      authRateLimiter(),
-      asyncHandler(async (req: Request, res: Response, _next: NextFunction) => {
-        const response = (await this.kernel.handle(
-          createRPCPayload("user:confirmEmail", {
-            email: req.body.email,
-            token: req.body.token,
-          }),
-        )) as RPCResponseType;
-
-        this.send(res, response);
-      }),
-    );
-  }
-
-  private registerApplicationRoutes(): void {
-    /**
-     * Create an application
-     */
-    this.app.post(
-      "/applications",
-      rateLimiter(),
-      asyncHandler(async (req: Request, res: Response, _next: NextFunction) => {
-        if (Array.isArray(req.body)) {
-          throw new InvalidRequestException(
-            "Cannot create multiple applications at once",
-          );
-        }
-
-        const user = get(req, "session.user", null);
-        if (!user) throw new UnauthorizedException();
-        if (!user.operator_id) {
-          throw new UnauthorizedException(
-            "Only operators can create applications",
-          );
-        }
-
-        const response = (await this.kernel.handle(
-          createRPCPayload("application:create", { name: req.body.name }, user),
-        )) as RPCResponseType;
-
-        if ("error" in (response as any)) {
-          return this.send(res, response);
-        }
-
-        const application = (response as any).result;
-
-        const token = await this.tokenProvider.sign<TokenPayloadInterface>({
-          a: application.uuid,
-          o: application.owner_id,
-          s: application.owner_service,
-          p: application.permissions,
-          v: 2,
-        });
-
-        res.status(201).json({ application, token });
       }),
     );
   }
@@ -550,33 +311,6 @@ export class HttpTransport implements TransportInterface {
     );
   }
 
-  private registerObservatoryRoutes() {
-    // Routes have been migrated to apiRoute annotations in the action handlers
-  }
-
-  /**
-   * Used by showcase website's contact form.
-   * Gets data and sends it by email
-   */
-  private registerContactformRoute() {
-    this.app.post(
-      "/contactform",
-      contactformRateLimiter(),
-      asyncHandler(async (req: Request, res: Response, _next: NextFunction) => {
-        const { name, email, company, job, subject, body } = req.body;
-        const response = await this.kernel.handle(
-          createRPCPayload(
-            "user:contactform",
-            { name, email, company, job, subject, body },
-            { permissions: ["common.user.contactform"] },
-          ),
-        );
-
-        this.send(res, response as RPCResponseType);
-      }),
-    );
-  }
-
   /**
    * Serve static files
    * Files must be copied to dist/public folder
@@ -608,7 +342,7 @@ export class HttpTransport implements TransportInterface {
         rateLimiter(),
         asyncHandler(
           async (_req: Request, res: Response, _next: NextFunction) => {
-            const response = await this.kernel
+            const response = this.kernel
               .getContainer()
               .getHandlers()
               .map((def) => ({

@@ -19,7 +19,6 @@ import {
 import { onDistanceRange, onDistanceRangeOrThrow } from "../helpers/onDistanceRange.ts";
 import { perKm, perSeat } from "../helpers/per.ts";
 import { startsAndEndsAtOrThrow } from "../helpers/startsAndEndsAtOrThrow.ts";
-import { description } from "./20211202_NantesMetropoleXP.html.ts";
 import { AbstractPolicyHandler } from "./AbstractPolicyHandler.ts";
 
 // Politique de Nantes Métropole
@@ -116,7 +115,4 @@ export const NantesMetropoleXPCovoitan2021: PolicyHandlerStaticInterface = class
     };
   }
 
-  describe(): string {
-    return description;
-  }
 };

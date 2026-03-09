@@ -13,7 +13,6 @@ import { LimitTargetEnum, watchForGlobalMaxAmount, watchForPersonMaxTripByDay } 
 import { onDistanceRange, onDistanceRangeOrThrow } from "../helpers/onDistanceRange.ts";
 import { perKm, perSeat } from "../helpers/per.ts";
 import { startsAndEndsAtOrThrow } from "../helpers/startsAndEndsAtOrThrow.ts";
-import { description } from "./20240108_PetrLunevillois.html.ts";
 import { AbstractPolicyHandler } from "./AbstractPolicyHandler.ts";
 
 /* eslint-disable-next-line */
@@ -89,7 +88,4 @@ export const PetrLunevilloisS12023: PolicyHandlerStaticInterface = class extends
     };
   }
 
-  describe(): string {
-    return description;
-  }
 };
