@@ -120,8 +120,29 @@ describe("Occitanie 2026 - Exclusions", () => {
   it("trip outside the region", async () =>
     await process({
       policy: { handler: Handler.id },
-      carpool: [{ start: { ...defaultPosition, reg: "84" } }],
-    }, { incentive: [0] }));
+      carpool: [
+        { start: { ...defaultPosition, reg: "84" } },
+        { end: { ...defaultPosition, reg: "84" } },
+      ],
+    }, { incentive: [0, 0] }));
+
+  // Trips starting or ending in a bassin can start/end outside the Region
+  it("trip in bassin but other end outside the region", async () =>
+    await process({
+      policy: { handler: Handler.id },
+      carpool: [
+        // start in bassin, end outside Occitanie
+        {
+          start: { ...defaultPosition, arr: occitanie2026Data.areas[0] },
+          end: { ...defaultPosition, reg: "84" },
+        },
+        // start outside Occitanie, end in bassin
+        {
+          start: { ...defaultPosition, reg: "84" },
+          end: { ...defaultPosition, arr: occitanie2026Data.areas[0] },
+        },
+      ],
+    }, { incentive: [150, 150] }));
 
   it("operator class not eligible", async () =>
     await process({
