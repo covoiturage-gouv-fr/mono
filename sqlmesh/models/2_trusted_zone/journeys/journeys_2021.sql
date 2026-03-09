@@ -55,6 +55,7 @@ SELECT
   passenger_contribution,
   passenger_payments,
   operator_incentives_sirets,
+  operator_incentives_amounts,
   operator_incentives_amount_total,
   policy_id,
   policy_incentives_amount_total,
