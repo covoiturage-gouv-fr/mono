@@ -1,4 +1,5 @@
-import { afterAll, assertEquals, assertRejects, beforeAll, describe, it } from "@/dev_deps.ts";
+import { assertEquals, assertRejects } from "dep:assert";
+import { afterAll, beforeAll, describe, it } from "dep:testing-bdd";
 import { ContextType, ForbiddenException } from "@/ilos/common/index.ts";
 import { LegacyPostgresConnection } from "@/ilos/connection-postgres/index.ts";
 import { env_or_default } from "@/lib/env/index.ts";

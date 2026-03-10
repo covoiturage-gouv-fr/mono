@@ -1,4 +1,5 @@
-import { assertEquals, assertObjectMatch, describe, it } from "@/dev_deps.ts";
+import { assertEquals, assertObjectMatch } from "dep:assert";
+import { describe, it } from "dep:testing-bdd";
 import { getTmpDir } from "@/lib/file/index.ts";
 import { join } from "@/lib/path/index.ts";
 import { APDFNameProvider } from "./APDFNameProvider.ts";

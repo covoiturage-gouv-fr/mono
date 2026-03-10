@@ -1,4 +1,5 @@
-import { assertEquals, it } from "@/dev_deps.ts";
+import { assertEquals } from "dep:assert";
+import { it } from "dep:testing-bdd";
 
 import { StatelessContext } from "../entities/Context.ts";
 import { generateCarpool } from "../tests/helpers.ts";

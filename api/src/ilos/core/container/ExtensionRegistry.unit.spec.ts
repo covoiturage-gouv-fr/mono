@@ -1,4 +1,5 @@
-import { assert, assertEquals, describe, it } from "@/dev_deps.ts";
+import { assert, assertEquals } from "dep:assert";
+import { describe, it } from "dep:testing-bdd";
 import {
   extension,
   extensionConfigurationMetadataKey,

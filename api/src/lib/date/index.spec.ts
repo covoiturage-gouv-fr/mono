@@ -1,4 +1,4 @@
-import { assertEquals } from "@/dev_deps.ts";
+import { assertEquals } from "dep:assert";
 import { differenceInHours } from "@/lib/date/index.ts";
 
 Deno.test("should return difference in hours", () => {

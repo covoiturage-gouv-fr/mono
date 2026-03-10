@@ -1,5 +1,6 @@
 import { ClientOptions, PostgresError, TransactionError } from "dep:postgres";
-import { afterAll, assert, beforeAll, describe, it } from "../../dev_deps.ts";
+import { assert } from "dep:assert";
+import { afterAll, beforeAll, describe, it } from "dep:testing-bdd";
 import { env } from "../../lib/env/index.ts";
 import sql from "../../lib/pg/sql.ts";
 import { DenoPostgresConnection } from "./DenoPostgresConnection.ts";

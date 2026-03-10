@@ -3,26 +3,22 @@
     "@/": "./src/",
     "dep:assert": "jsr:@std/assert@^1.0.12",
     "dep:expect": "jsr:@std/expect@^1.0.14",
+    "dep:testing-mock": "jsr:@std/testing@^1.0.9/mock",
     "dep:testing-bdd": "jsr:@std/testing@^1.0.9/bdd",
     "dep:reflect-metadata": "npm:reflect-metadata@0.2.2",
     "dep:inversify": "npm:inversify@6.2.2",
-    "dep:https": "node:https",
     "dep:http": "node:http",
-    "dep:process": "node:process",
     "dep:superstruct": "jsr:@superstruct/core@^2",
     "dep:buffer": "node:buffer",
-    "dep:stream": "node:stream",
-    "dep:url": "node:url",
-    "dep:worker": "node:worker_threads",
+    "dep:url": "node:url", // native -> remove dep
     "dep:zlib": "node:zlib",
-    "dep:fs": "node:fs",
-    "dep:fs-promises": "node:fs/promises",
-    "dep:net": "node:net",
+    "dep:fs": "node:fs", // replace by Deno native
+    "dep:fs-promises": "node:fs/promises", // replace by Deno native
     "dep:faker": "npm:@faker-js/faker@^9.8",
     "dep:commander": "npm:commander@^12.1",
     "dep:csv-parse": "npm:csv-parse@^5.5",
     "dep:redis": "npm:ioredis@^5.3",
-    "dep:pg": "npm:pg@^8.12",
+    "dep:pg": "npm:pg@^8.12", // migrate to DenoPostgresConnection
     "dep:express": "npm:express@^4",
     "dep:extract-zip": "npm:extract-zip@^2.0",
     "dep:node-7z": "npm:node-7z@^3.0",
@@ -30,7 +26,6 @@
     "dep:ajverrors": "npm:ajv-errors@^3",
     "dep:ajvformats": "npm:ajv-formats@^3",
     "dep:ajvkeywords": "npm:ajv-keywords@^5",
-    "dep:formdata": "npm:form-data@^4.0",
     "dep:mapshaper": "npm:mapshaper@^0.6",
     "dep:ajv": "npm:ajv@^8.12",
     "dep:csv-stringify": "npm:csv-stringify@^6.5",
@@ -40,13 +35,12 @@
     "dep:turf-boolean-point-in-polygon": "npm:@turf/boolean-point-in-polygon",
     "dep:turf-distance": "npm:@turf/distance",
     "dep:date-fns-locale": "npm:date-fns@^3.6/locale",
-    "dep:pdf-lib": "npm:pdf-lib@^1.17",
     "dep:turf-helpers": "npm:@turf/helpers",
     "dep:sentry": "npm:@sentry/node@^8.2",
     "dep:express-rate-limit": "npm:express-rate-limit@^7.3",
     "dep:h3-js": "npm:h3-js@^4.1",
     "dep:handlebars": "npm:handlebars@^4.7",
-    "dep:ibantools": "npm:ibantools@^4.5",
+    "dep:ibantools": "npm:ibantools@^4.5", // useless : remove use and clear
     "dep:libphonenumber-js": "npm:libphonenumber-js@^1.11",
     "dep:xss": "npm:xss@^1",
     "dep:adm-zip": "npm:adm-zip@^0.5",
@@ -66,17 +60,18 @@
     "dep:crypto": "jsr:@std/crypto@^1",
     "dep:encoding": "jsr:@std/encoding@^1",
     "dep:openid-client": "jsr:@panva/openid-client@6.3.4",
-    "dep:datetime": "https://deno.land/std@0.224.0/datetime/mod.ts",
-    "dep:log": "https://deno.land/std@0.224.0/log/mod.ts",
+    "dep:datetime": "jsr:@std/datetime@^0",
+    "dep:log": "jsr:@std/log@^0", // will be removed in favour of OpenTelemetry
     "dep:s3-lite-client": "jsr:@bradenmacdonald/s3-lite-client@^0.8.0",
     "dep:postgres": "jsr:@db/postgres@0.19.5",
     "dep:jose": "https://deno.land/x/jose@v5.6.3/index.ts",
     "dep:xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/package/xlsx.mjs",
-    "dep:path": "https://deno.land/std@0.224.0/path/posix/mod.ts",
-    "dep:bcrypt": "https://deno.land/x/bcrypt@v0.4.1/mod.ts",
+    "dep:path": "jsr:@std/path@^1/posix",
+    "dep:bcrypt": "https://deno.land/x/bcrypt@v0.4.1/mod.ts", // replace with @felix/bcrypt
     // worker.ts must be listed to be listed in deno.lock and cached
     "dep:bcrypt-worker": "https://deno.land/x/bcrypt@v0.4.1/src/worker.ts",
-    "dep:grpc": "https://deno.land/x/grpc_basic@0.4.7/client.ts"
+    "dep:grpc": "https://deno.land/x/grpc_basic@0.4.7/client.ts",
+    "dep:sinon": "npm:sinon@18"
   },
   "compilerOptions": {
     // keep them even if deprecated as the code uses legacy decorators

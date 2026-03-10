@@ -1,4 +1,5 @@
-import { assertEquals, describe, it, sinon } from "@/dev_deps.ts";
+import { assertEquals } from "dep:assert";
+import { describe, it } from "dep:testing-bdd";
 import {
   command as commandDecorator,
   ExtensionInterface,
@@ -6,6 +7,7 @@ import {
   NewableType,
 } from "@/ilos/common/index.ts";
 import { Kernel } from "@/ilos/core/index.ts";
+import sinon from "dep:sinon";
 import { CommandExtension } from "../extensions/CommandExtension.ts";
 import { CliTransport } from "./CliTransport.ts";
 
@@ -31,7 +33,7 @@ describe("Cli transport", () => {
     commands: [BasicCommand],
   })
   class BasicKernel extends Kernel {
-    readonly extensions: NewableType<ExtensionInterface>[] = [CommandExtension];
+    override readonly extensions: NewableType<ExtensionInterface>[] = [CommandExtension];
   }
 
   const kernel = new BasicKernel();

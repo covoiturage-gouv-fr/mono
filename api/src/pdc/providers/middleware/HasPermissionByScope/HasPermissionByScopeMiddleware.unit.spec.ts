@@ -1,4 +1,5 @@
-import { assertEquals, assertRejects, describe, it } from "@/dev_deps.ts";
+import { assertEquals, assertRejects } from "dep:assert";
+import { describe, it } from "dep:testing-bdd";
 import { ContextType } from "@/ilos/common/index.ts";
 
 import {

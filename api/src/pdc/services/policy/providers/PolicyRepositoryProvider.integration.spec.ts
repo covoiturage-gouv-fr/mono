@@ -1,4 +1,5 @@
-import { afterAll, assert, assertEquals, assertNotEquals, beforeAll, describe, it } from "../../../../dev_deps.ts";
+import { assert, assertEquals, assertNotEquals } from "dep:assert";
+import { afterAll, beforeAll, describe, it } from "dep:testing-bdd";
 import { LegacyDbContext, makeLegacyDbBeforeAfter } from "../../../providers/test/index.ts";
 
 import { PolicyStatusEnum } from "../contracts/common/interfaces/PolicyInterface.ts";

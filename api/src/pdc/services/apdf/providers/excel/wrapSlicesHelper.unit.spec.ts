@@ -1,4 +1,5 @@
-import { assertEquals, assertObjectMatch, it } from "@/dev_deps.ts";
+import { assertEquals, assertObjectMatch } from "dep:assert";
+import { it } from "dep:testing-bdd";
 import { BoundedSlices, UnboundedSlices } from "@/pdc/services/policy/contracts/common/interfaces/Slices.ts";
 import { findBoundary, toBoundedSlices, wrapSlices as wrap } from "./wrapSlicesHelper.ts";
 

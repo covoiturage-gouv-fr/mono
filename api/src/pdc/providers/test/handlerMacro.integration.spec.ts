@@ -1,19 +1,12 @@
-import { afterAll, beforeAll, describe, it } from "@/dev_deps.ts";
+import { afterAll, beforeAll, describe, it } from "dep:testing-bdd";
 import {
   ContextType,
   handler as handlerDecorator,
   serviceProvider as serviceProviderDecorator,
 } from "@/ilos/common/index.ts";
-import {
-  Action as AbstractAction,
-  ServiceProvider as AbstractServiceProvider,
-} from "@/ilos/core/index.ts";
+import { Action as AbstractAction, ServiceProvider as AbstractServiceProvider } from "@/ilos/core/index.ts";
 import { makeKernelBeforeAfter } from "@/pdc/providers/test/helpers.ts";
-import {
-  assertErrorHandler,
-  assertSuccessHandler,
-  KernelContext,
-} from "@/pdc/providers/test/index.ts";
+import { assertErrorHandler, assertSuccessHandler, KernelContext } from "@/pdc/providers/test/index.ts";
 
 describe("handler macro", () => {
   const handlerConfig = {
@@ -31,9 +24,9 @@ describe("handler macro", () => {
 
   @handlerDecorator(handlerConfig)
   class Action extends AbstractAction {
-    async handle(
+    override async handle(
       params: ParamsInterface,
-      context: ContextType,
+      _context: ContextType,
     ): Promise<ResultInterface> {
       if (params === "error") {
         throw new CustomError("test");

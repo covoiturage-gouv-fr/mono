@@ -1,4 +1,5 @@
-import { assertEquals, it } from "@/dev_deps.ts";
+import { assertEquals } from "dep:assert";
+import { it } from "dep:testing-bdd";
 import { CarpoolAnomalyStatusEnum } from "@/pdc/providers/carpool/interfaces/common.ts";
 import { CarpoolAcquisitionStatusEnum, CarpoolFraudStatusEnum, CarpoolStatusEnum } from "../interfaces/index.ts";
 import { castFromStatusEnum, castToStatusEnum } from "./castStatus.ts";

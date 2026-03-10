@@ -1,4 +1,5 @@
-import { afterAll, assert, assertEquals, beforeAll, describe, it } from "@/dev_deps.ts";
+import { assertEquals } from "dep:assert";
+import { afterAll, beforeAll, describe, it } from "dep:testing-bdd";
 import { LegacyDbContext, makeLegacyDbBeforeAfter } from "@/pdc/providers/test/index.ts";
 
 import { IncentiveStateEnum, IncentiveStatusEnum } from "../interfaces/index.ts";
@@ -179,40 +180,5 @@ describe("IncentiveRepositoryProvider", () => {
       incentiveResults.rows.filter((i) => i.state === "null").length,
       3,
     );
-  });
-
-  // FIXME
-  // Leak on cursor
-  it.skip("Should list draft incentive", async () => {
-    const cursor = repository?.findDraftIncentive(new Date());
-    const { value } = await cursor?.next() || {};
-    await cursor?.next();
-    assert(Array.isArray(value));
-    const incentives = (Array.isArray(value) ? value : []).map((v) => ({
-      operator_id: v.operator_id,
-      operator_journey_id: v.operator_journey_id,
-      statefulAmount: v.statefulAmount,
-      statelessAmount: v.statelessAmount,
-    }));
-    assertEquals(incentives, [
-      {
-        operator_id: 1,
-        operator_journey_id: "operator_journey_id-1",
-        statefulAmount: 0,
-        statelessAmount: 0,
-      },
-      {
-        operator_id: 1,
-        operator_journey_id: "operator_journey_id-2",
-        statefulAmount: 0,
-        statelessAmount: 500,
-      },
-      {
-        operator_id: 1,
-        operator_journey_id: "operator_journey_id-3",
-        statefulAmount: 0,
-        statelessAmount: 100,
-      },
-    ]);
   });
 });

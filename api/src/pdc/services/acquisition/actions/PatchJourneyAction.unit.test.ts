@@ -1,10 +1,11 @@
-import { assertEquals, beforeAll, describe, it } from "@/dev_deps.ts";
 import { ContextType } from "@/ilos/common/index.ts";
 import { CarpoolAcquisitionService } from "@/pdc/providers/carpool/index.ts";
 import { PatchRequest } from "@/pdc/providers/carpool/interfaces/acquisition.ts";
 import { OperatorClass, Position } from "@/pdc/providers/carpool/interfaces/common.ts";
 import { PatchJourneyAction } from "@/pdc/services/acquisition/actions/PatchJourneyAction.ts";
 import { ParamsInterface } from "@/pdc/services/acquisition/contracts/patch.contract.ts";
+import { assertEquals } from "dep:assert";
+import { beforeAll, describe, it } from "dep:testing-bdd";
 
 describe("PatchJourneyAction", () => {
   class TestPatchJourneyAction extends PatchJourneyAction {

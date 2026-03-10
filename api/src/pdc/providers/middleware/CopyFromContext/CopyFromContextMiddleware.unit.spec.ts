@@ -1,4 +1,5 @@
-import { assertObjectMatch, it } from "@/dev_deps.ts";
+import { assertObjectMatch } from "dep:assert";
+import { it } from "dep:testing-bdd";
 import { ContextType, ParamsType, ResultType } from "@/ilos/common/index.ts";
 import { CopyFromContextMiddleware } from "./CopyFromContextMiddleware.ts";
 

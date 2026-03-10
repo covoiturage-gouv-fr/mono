@@ -1,4 +1,5 @@
-import { assertEquals, describe, it } from "@/dev_deps.ts";
+import { assertEquals } from "dep:assert";
+import { describe, it } from "dep:testing-bdd";
 import { sha256sum } from "@/lib/crypto/index.ts";
 import { getTmpDir, remove, writeSync } from "@/lib/file/index.ts";
 

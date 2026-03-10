@@ -13,7 +13,8 @@
  * - store: check response
  * - store: check existence in DB
  */
-import { afterAll, assertEquals, beforeAll, describe, it } from "@/dev_deps.ts";
+import { assertEquals } from "dep:assert";
+import { afterAll, beforeAll, describe, it } from "dep:testing-bdd";
 import { ContextType } from "@/ilos/common/index.ts";
 import { DenoPostgresConnection, LegacyPostgresConnection } from "@/ilos/connection-postgres/index.ts";
 import { set } from "@/lib/object/index.ts";

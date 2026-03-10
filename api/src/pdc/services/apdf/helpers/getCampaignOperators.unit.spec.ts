@@ -1,5 +1,7 @@
-import { afterEach, assertEquals, assertRejects, beforeEach, describe, it, sinon } from "../../../../dev_deps.ts";
-import { KernelInterfaceResolver, NotFoundException } from "../../../../ilos/common/index.ts";
+import { assertEquals, assertRejects } from "dep:assert";
+import { afterEach, beforeEach, describe, it } from "dep:testing-bdd";
+import { KernelInterfaceResolver, NotFoundException } from "@/ilos/common/index.ts";
+import sinon from "dep:sinon";
 import {
   ParamsInterface as FindByUuidParams,
   ResultInterface as FindByUuidResult,

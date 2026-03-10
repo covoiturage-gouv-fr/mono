@@ -1,4 +1,5 @@
-import { assertEquals, describe, it } from "@/dev_deps.ts";
+import { assertEquals } from "dep:assert";
+import { describe, it } from "dep:testing-bdd";
 import { flow, State, StaticMigrable } from "../interfaces/index.ts";
 import { MemoryStateManager } from "./index.ts";
 

@@ -1,4 +1,5 @@
-import { assertEquals, assertThrows, it } from "@/dev_deps.ts";
+import { assertEquals, assertThrows } from "dep:assert";
+import { it } from "dep:testing-bdd";
 import { injectable } from "@/ilos/common/index.ts";
 import { AbstractTemplate, HandlebarsTemplateProvider } from "./index.ts";
 

@@ -1,4 +1,5 @@
-import { assert, assertFalse, it } from "@/dev_deps.ts";
+import { assert, assertFalse } from "dep:assert";
+import { it } from "dep:testing-bdd";
 import { bicCustomFormat } from "./bicCustomFormat.ts";
 
 it("valid BIC short string", () => {

@@ -1,4 +1,5 @@
-import { assertEquals, describe, it } from "@/dev_deps.ts";
+import { assertEquals } from "dep:assert";
+import { describe, it } from "dep:testing-bdd";
 import { DenoPostgresConnection } from "@/ilos/connection-postgres/index.ts";
 import { TerritoryRepository } from "@/pdc/services/export/repositories/TerritoryRepository.ts";
 import { TerritoryCodeEnum } from "@/pdc/services/policy/interfaces/index.ts";

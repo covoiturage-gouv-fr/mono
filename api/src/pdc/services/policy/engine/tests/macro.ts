@@ -1,4 +1,4 @@
-import { assertEquals } from "../../../../../dev_deps.ts";
+import { assertEquals } from "dep:assert";
 import { PolicyStatusEnum } from "../../contracts/common/interfaces/PolicyInterface.ts";
 import {
   CarpoolInterface,

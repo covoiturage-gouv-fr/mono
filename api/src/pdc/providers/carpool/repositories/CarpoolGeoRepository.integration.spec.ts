@@ -1,13 +1,5 @@
-import {
-  afterAll,
-  afterEach,
-  assertEquals,
-  assertObjectMatch,
-  beforeAll,
-  beforeEach,
-  describe,
-  it,
-} from "@/dev_deps.ts";
+import { assertEquals, assertObjectMatch } from "dep:assert";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, it } from "dep:testing-bdd";
 import { PoolClient } from "@/ilos/connection-postgres/index.ts";
 import sql, { raw } from "@/lib/pg/sql.ts";
 import { LegacyDbContext, makeLegacyDbBeforeAfter } from "@/pdc/providers/test/index.ts";

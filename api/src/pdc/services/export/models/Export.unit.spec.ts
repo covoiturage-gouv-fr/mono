@@ -1,4 +1,5 @@
-import { assert, describe, it } from "@/dev_deps.ts";
+import { assert } from "dep:assert";
+import { describe, it } from "dep:testing-bdd";
 import { ContextType } from "@/ilos/common/index.ts";
 import { Export, ExportTarget } from "./Export.ts";
 

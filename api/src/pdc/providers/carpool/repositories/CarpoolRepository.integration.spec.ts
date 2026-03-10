@@ -1,4 +1,5 @@
-import { afterAll, assertObjectMatch, beforeAll, describe, it } from "@/dev_deps.ts";
+import { assertObjectMatch } from "dep:assert";
+import { afterAll, beforeAll, describe, it } from "dep:testing-bdd";
 import { LegacyDbContext, makeLegacyDbBeforeAfter } from "@/pdc/providers/test/index.ts";
 import { Id } from "../interfaces/index.ts";
 import { insertableCarpool, updatableCarpool } from "../mocks/database/carpool.ts";

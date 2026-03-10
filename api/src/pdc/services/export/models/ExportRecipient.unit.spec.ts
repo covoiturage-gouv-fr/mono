@@ -1,4 +1,5 @@
-import { assertObjectMatch, describe, it } from "@/dev_deps.ts";
+import { assertObjectMatch } from "dep:assert";
+import { describe, it } from "dep:testing-bdd";
 import { ExportRecipient } from "./ExportRecipient.ts";
 
 describe("ExportRecipient", () => {
