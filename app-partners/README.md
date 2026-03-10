@@ -2,14 +2,6 @@
 
 Portail partenaires pour la gestion des incitations au covoiturage. Application destinée aux collectivités territoriales et aux opérateurs.
 
-## Ownership
-
-| Rôle               | Personne          | Contact       |
-| ------------------ | ----------------- | ------------- |
-| Tech Lead / Expert | Benjamin Guendouz | [Slack/Email] |
-| Backup             | Ludovic Delhomme  | [Slack/Email] |
-| Product Owner      | Nicolas Viennot   | [Slack/Email] |
-
 > **Note** : Le Tech Lead est la personne référente pour les questions techniques sur ce projet. Le Backup peut répondre en son absence.
 
 ## Stack Technique
