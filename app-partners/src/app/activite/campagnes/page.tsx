@@ -104,60 +104,62 @@ export default function TabCampaigns() {
     }
   }, [router, campaignId]);
 
-  if (loading) return <Loading />;
   return (
     <>
-      {!campaignId && (
+      {!campaignId && !user?.territory_id && (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-end",
+            marginBottom: "1rem",
+          }}
+        >
+          <h3 className={fr.cx("fr-callout__title")}>Campagnes d'incitation</h3>
+          <Input
+            label="Rechercher"
+            state={search !== "" ? (totalRecords <= 0 ? "error" : "success") : "default"}
+            stateRelatedMessage={totalRecords + " résultats"}
+            hintText="Nom de la campagne / Territoire"
+            nativeInputProps={{
+              type: "text",
+              value: search ?? "",
+              onChange: (e) => onChangeSearch(e.target.value),
+            }}
+          />
+        </div>
+      )}
+      {loading ? (
+        <Loading />
+      ) : !campaignId && (dataTable.length > 0 || search !== "") ? (
         <>
-          {!user?.territory_id ? (
-            <div
-              style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "1rem" }}
-            >
-              <h3 className={fr.cx("fr-callout__title")}>Campagnes d'incitation</h3>
-              <Input
-                label="Rechercher"
-                state={search !== "" ? (totalRecords <= 0 ? "error" : "success") : "default"}
-                stateRelatedMessage={totalRecords + " résultats"}
-                hintText="Nom de la campagne / Territoire"
-                nativeInputProps={{
-                  type: "text",
-                  value: search ?? "",
-                  onChange: (e) => onChangeSearch(e.target.value),
-                }}
+          <Table data={dataTable} headers={headers} colorVariant="blue-ecume" fixed />
+          <div className={fr.cx("fr-grid-row", "fr-mt-5w")}>
+            <div className={fr.cx("fr-mx-auto")}>
+              <Pagination
+                defaultPage={page}
+                count={pageCount}
+                getPageLinkProps={(value) => ({
+                  onClick: () => setPage(value),
+                  href: "#",
+                })}
+                showFirstLast
               />
             </div>
-          ) : null}
-          {dataTable.length > 0 || search !== "" ? (
-            <>
-              <Table data={dataTable} headers={headers} colorVariant="blue-ecume" fixed />
-              <div className={fr.cx("fr-grid-row", "fr-mt-5w")}>
-                <div className={fr.cx("fr-mx-auto")}>
-                  <Pagination
-                    defaultPage={page}
-                    count={pageCount}
-                    getPageLinkProps={(value) => ({
-                      onClick: () => setPage(value),
-                      href: "#",
-                    })}
-                    showFirstLast
-                  />
-                </div>
-              </div>
-            </>
-          ) : (
-            <Alert
-              title={"Pas de campagne en cours"}
-              severity="info"
-              description={
-                <p>
-                  A date, nous n&apos;effectuons pas le suivi de vos campagnes d&apos;incitations financières,
-                  n&apos;hésitez pas à nous contacter en cas de besoin. Vous avez par contre accès à la fonctionnalité
-                  d&apos;export de données.
-                </p>
-              }
-            />
-          )}
+          </div>
         </>
+      ) : (
+        <Alert
+          title={"Pas de campagne en cours"}
+          severity="info"
+          description={
+            <p>
+              A date, nous n&apos;effectuons pas le suivi de vos campagnes d&apos;incitations financières,
+              n&apos;hésitez pas à nous contacter en cas de besoin. Vous avez par contre accès à la fonctionnalité
+              d&apos;export de données.
+            </p>
+          }
+        />
       )}
     </>
   );
