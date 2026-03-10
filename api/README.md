@@ -147,7 +147,6 @@ Copier `.env.example` vers `.env` et configurer les valeurs.
 | `APP_API_URL` | Non | `http://localhost:8080` | URL du backend REST/RPC |
 | `APP_APP_URL` | Non | `http://localhost:4200` | URL du frontend. Utilisée pour le CORS et les redirections |
 | `APP_CERT_URL` | Non | `http://localhost:4200` | URL du générateur d'attestations d'honneur. Utilisée pour le CORS sur `/honor` |
-| `APP_SHOWCASE_URL` | Non | `http://localhost:1313` | URL du site vitrine. Utilisée pour le CORS sur `/contactform`, `/geo/search`, `/policy/simulate` |
 
 #### Sécurité & Authentification
 
