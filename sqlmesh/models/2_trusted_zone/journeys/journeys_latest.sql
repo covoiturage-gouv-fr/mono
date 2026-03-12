@@ -5,13 +5,13 @@ MODEL (
     lookback 1,
     batch_size 30
   ),
-  start '2026-01-01',
+  start '2026-01-01 00:00:00+0100',
   end 'now()',
   grain '_id',
   tags ['trusted', 'journeys', 'latest'],
 );
 JINJA_QUERY_BEGIN;
-{{ journeys_model_generator("@start_ds", "@end_ds") }}
+{{ journeys_model_generator("@start_ts", "@end_ts") }}
 JINJA_END;
 
 @create_index(@this_model, _id, 'name=journeys_latest_id_index');

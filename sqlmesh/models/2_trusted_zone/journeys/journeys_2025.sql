@@ -4,8 +4,8 @@ MODEL (
     time_column start_datetime,
     batch_size 30
   ),
-  start '2025-01-01',
-  end '2026-01-01',
+  start '2025-01-01 00:00:00+0100',
+  end '2025-12-31 23:59:59+0100',
   grain '_id',
   tags ['trusted', 'journeys', '2025'],
 );
@@ -71,8 +71,7 @@ SELECT
   uuid,
   legacy_id
 FROM raw_zone.journeys_2025
-WHERE start_datetime >= @start_ds
-AND start_datetime < @end_ds;
+WHERE start_datetime BETWEEN @start_ts AND @end_ts;
 
 @create_index(@this_model, _id, 'name=journeys_2025_id_index');
 @create_index(@this_model, start_datetime_tz, 'name=journeys_2025_start_datetime_tz_index');
