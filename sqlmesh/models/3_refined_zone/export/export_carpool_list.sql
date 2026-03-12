@@ -6,7 +6,7 @@ MODEL (
     lookback 7,
     batch_size 30,
   ),
-  start '2020-01-01',
+  start '2020-01-01 00:00:00+0100',
   grain '_id',
   tags ['refined', 'export'],
 );
@@ -154,9 +154,8 @@ LEFT JOIN LATERAL (
     AND pi.operator_journey_id = j.operator_journey_id
 ) rpc ON TRUE
 
-WHERE j.start_datetime >= @start_ds
-  AND j.start_datetime <  @end_ds
-  AND j.valid_acquisition_status;
+WHERE j.valid_acquisition_status
+  AND j.start_datetime BETWEEN @start_ts AND @end_ts;
 
 -- Primary lookup by carpool ID
 @create_index(@this_model, _id, 'name=export_carpool_list_id');
