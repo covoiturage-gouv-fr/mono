@@ -11,5 +11,5 @@ dependencies = [
     "pyarrow>=22.0.0",
     "python-dotenv>=1.2.1",
     "requests>=2.32.5",
-    "sqlmesh[postgres]>=0.227.1",
+    "sqlmesh[postgres]>=0",
 ]
