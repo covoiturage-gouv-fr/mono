@@ -112,10 +112,6 @@ SELECT
   -- RPC incentives: JSONB array [{campaign_id, campaign_name, siret, name, amount}, ...] capped at 3 items.
   jsonb_path_query_array(rpc.incentive_rpc, '$[0 to 2]')        AS incentive_rpc,
 
-  -- Offer data (not yet implemented upstream)
-  TRUE                                                           AS offer_public,
-  j.start_datetime                                               AS offer_accepted_at
-
 FROM trusted_zone.journeys j
 
 LEFT JOIN latest_perimeters gps ON j.start_geo_code = gps.arr

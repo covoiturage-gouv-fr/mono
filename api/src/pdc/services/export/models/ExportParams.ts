@@ -91,7 +91,7 @@ export class ExportParams {
         const type = key as keyof TerritorySelectorsInterface;
         const local: string[] = [];
         (geo_selector[type] || []).forEach((code: string) => {
-          local.push(`gps.${type} = '${code}'`);
+          local.push(`start_${type} = '${code}'`);
         });
 
         if (local.length) {
@@ -101,7 +101,7 @@ export class ExportParams {
         return p;
       }, [] as string[]).join(" OR ");
 
-    return start.length ? `AND ((${start}) ${mode} (${start.replace(/gps\./g, "gpe.")}))` : "";
+    return start.length ? `AND ((${start}) ${mode} (${start.replace(/start_/g, "end_")}))` : "";
   }
 
   /**
