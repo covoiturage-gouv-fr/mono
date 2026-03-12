@@ -2,10 +2,11 @@ MODEL (
   name trusted_zone.journeys_2024,
   kind INCREMENTAL_BY_TIME_RANGE (
     time_column start_datetime,
-    batch_size 30
+    batch_size 30,
+    batch_concurrency 12
   ),
-  start '2024-01-01',
-  end '2025-01-01',
+  start '2024-01-01 00:00:00+0100',
+  end '2024-12-31 23:59:59+0100',
   grain '_id',
   tags ['trusted', 'journeys', '2024'],
 );
@@ -71,8 +72,7 @@ SELECT
   uuid,
   legacy_id
 FROM raw_zone.journeys_2024
-WHERE start_datetime >= @start_ds
-AND start_datetime < @end_ds;
+WHERE start_datetime BETWEEN @start_ts AND @end_ts;
 
 @create_index(@this_model, _id, 'name=journeys_2024_id_index');
 @create_index(@this_model, start_datetime_tz, 'name=journeys_2024_start_datetime_tz_index');

@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "zammad": {
+      "command": "uvx",
+      "args": ["--from", "git+https://github.com/basher83/zammad-mcp.git", "mcp-zammad"],
+      "env": {
+        "ZAMMAD_URL": "https://covoiturage-betagouv.zammad.com/api/v1",
+        "ZAMMAD_HTTP_TOKEN": "${ZAMMAD_HTTP_TOKEN}"
+      }
+    }
+  }
+}
