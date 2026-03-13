@@ -78,3 +78,11 @@ LEFT JOIN policy.policies pp             ON pi.policy_id    = pp._id
 LEFT JOIN territory.territory_group ttg  ON pp.territory_id = ttg._id
 LEFT JOIN company.companies ccp          ON ttg.company_id  = ccp._id
 
+ORDER BY pi.datetime
+
+-- add index
+-- check against policy.incentives
+-- check empty columns
+-- write tests
+-- update journeys ?
+-- archive incentives by year
