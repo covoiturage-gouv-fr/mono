@@ -20,15 +20,10 @@
 --
 
 MODEL (
-  name raw_zone.campaign_incentives,
-  kind INCREMENTAL_BY_TIME_RANGE (
-    time_column datetime,
-    lookback 7,
-    batch_size 30,
-  ),
-  start '2020-01-01 00:00:00+0100',
-  grain '_id',
-  tags ['raw', 'campaign', 'incentives'],
+  name archive_zone.archive_incentives_view,
+  kind VIEW (),
+  tags ['archive', 'view' 'campaign', 'incentives'],
+--  audits (assert_campaign_incentives_complete),
 );
 
 WITH ni AS (
@@ -41,7 +36,6 @@ WITH ni AS (
   LEFT JOIN carpool.carpools c1 ON pi.carpool_id = c1._id
   LEFT JOIN carpool_v2.carpools c2 ON c1.acquisition_id = c2.legacy_id
   WHERE pi.carpool_id IS NOT NULL
-    AND pi.datetime BETWEEN @start_ts AND @end_ts
 
   UNION
 
@@ -54,7 +48,6 @@ WITH ni AS (
   LEFT JOIN carpool_v2.carpools c2
     ON pi.operator_id = c2.operator_id AND pi.operator_journey_id = c2.operator_journey_id
   WHERE pi.operator_id IS NOT NULL AND pi.operator_journey_id IS NOT NULL
-    AND pi.datetime BETWEEN @start_ts AND @end_ts
 )
 
 SELECT
