@@ -23,7 +23,7 @@ SELECT
   status::text,
   state::text
 FROM archive_zone.archive_incentives_view
-WHERE datetime >= date_trunc('year', current_date at time zone 'Europe/Paris')
+WHERE datetime >= date_trunc('year', current_date)
 ORDER BY datetime
 ;
 
