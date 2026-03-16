@@ -54,7 +54,7 @@ def build_and_upload_incentives_year(context, year: int) -> dict | None:
         return None
 
     query = (
-        build_select_query(COLUMNS_TYPES, "archive_zone.archive_incentives_view")
+        build_select_query(COLUMNS_TYPES, "archive_zone.campaign_incentives_{year}")
         + f" WHERE datetime >= '{start.isoformat()}' AND datetime < '{end.isoformat()}'"
     )
     output_file = f"/tmp/incentives_{year}.parquet"

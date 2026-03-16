@@ -1,7 +1,6 @@
 import pandas as pd
 from sqlmesh import ExecutionContext, model
-from utils.incentives_export import MODEL_COLUMNS, build_and_upload_incentives_year
-
+from .exporter import MODEL_COLUMNS, build_and_upload_incentives_year
 
 @model(
     "archive_zone.archive_incentives_2021",

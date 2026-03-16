@@ -11,8 +11,8 @@ SQLMesh est une librairie Python. Elle nécessite un environnement virtuel (venv
 Le shell Nix à la racine du monorepo configure et active l'environnement virtuel automatiquement. Les dépendances sont installées automatiquement avec `uv`.
 
 ```shell
-$ nix develop
-$ (nix-shell) cd ./sqlmesh
+nix develop
+(nix-shell) cd ./sqlmesh
 ```
 
 **Installation manuelle**
@@ -20,9 +20,9 @@ $ (nix-shell) cd ./sqlmesh
 Prérequis : installer [Python](https://www.python.org/downloads/) et [uv](https://docs.astral.sh/uv/).
 
 ```shell
-$ cd ./sqlmesh
-$ uv venv
-$ uv sync
+cd ./sqlmesh
+uv venv
+uv sync
 ```
 
 ## Configuration
@@ -37,7 +37,8 @@ cp .env.example .env
 
 Les données sont organisées en 3 zones :
 
-- **raw** : Données brutes importées depuis les sources externes.
+- **archive** : Consolidation des données du RPC par années + backup au format `.parquet` sur S3.
+- **raw** : Données brutes importées depuis les sources externes + archives RPC.
 - **trusted** : Données transformées et nettoyées, prêtes pour l'analyse.
 - **refined** : Données finales pour les utilisateurs.
 
@@ -67,6 +68,6 @@ $ sqlmesh fetchdf "SELECT * <zone>[__<env>].<table>"
 Exemples :
 
 ```shell
-$ sqlmesh fetchdf "SELECT * FROM raw_zone__dev.aires_covoiturage"
-$ sqlmesh fetchdf "SELECT * FROM refined_zone.part_campaigns_by_month"
+sqlmesh fetchdf "SELECT * FROM raw_zone__dev.aires_covoiturage"
+sqlmesh fetchdf "SELECT * FROM refined_zone.part_campaigns_by_month"
 ```
