@@ -1,18 +1,18 @@
-{% macro journeys_model_generator(start_date, end_date) %}
+{% macro journeys_model_generator(start_ts, end_ts) %}
     WITH carpools AS (
       SELECT *
       FROM carpool_v2.carpools
-      WHERE start_datetime >= ({{start_date}}::timestamp - INTERVAL '1 day') AND start_datetime < ({{end_date}}::timestamp + INTERVAL '1 day')
+      WHERE start_datetime >= ({{start_ts}}::timestamp - INTERVAL '1 day') AND start_datetime < ({{end_ts}}::timestamp + INTERVAL '1 day')
     ),
 
     perimeters_retablissement AS (
       SELECT com, geom 
       FROM trusted_zone.perimeters
-      WHERE year = EXTRACT(YEAR FROM {{start_date}}::date)
+      WHERE year = EXTRACT(YEAR FROM {{start_ts}}::date)
         AND com IN (
           SELECT DISTINCT new_com 
           FROM trusted_zone.com_evolution 
-          WHERE year = EXTRACT(YEAR FROM {{start_date}}::date) 
+          WHERE year = EXTRACT(YEAR FROM {{start_ts}}::date) 
             AND mod = 21
         )
     ),
@@ -30,20 +30,20 @@
       LEFT JOIN trusted_zone.com_evolution cs 
         ON g.start_geo_code = cs.old_com 
         AND cs.mod = 32 
-        AND cs.year = EXTRACT(YEAR FROM {{start_date}}::date)
+        AND cs.year = EXTRACT(YEAR FROM {{start_ts}}::date)
       LEFT JOIN trusted_zone.com_evolution ce 
         ON g.end_geo_code = ce.old_com 
         AND ce.mod = 32 
-        AND ce.year = EXTRACT(YEAR FROM {{start_date}}::date)
+        AND ce.year = EXTRACT(YEAR FROM {{start_ts}}::date)
       WHERE g.start_geo_code NOT IN (
         SELECT DISTINCT old_com 
         FROM trusted_zone.com_evolution 
-        WHERE year = EXTRACT(YEAR FROM {{start_date}}::date) AND mod = 21
+        WHERE year = EXTRACT(YEAR FROM {{start_ts}}::date) AND mod = 21
       )
         OR g.end_geo_code NOT IN (
         SELECT DISTINCT old_com 
         FROM trusted_zone.com_evolution 
-        WHERE year = EXTRACT(YEAR FROM {{start_date}}::date) AND mod = 21
+        WHERE year = EXTRACT(YEAR FROM {{start_ts}}::date) AND mod = 21
       )
 
       UNION ALL
@@ -64,12 +64,12 @@
       WHERE g.start_geo_code IN (
         SELECT DISTINCT old_com 
         FROM trusted_zone.com_evolution 
-        WHERE year = EXTRACT(YEAR FROM {{start_date}}::date) AND mod = 21
+        WHERE year = EXTRACT(YEAR FROM {{start_ts}}::date) AND mod = 21
       )
         OR g.end_geo_code IN (
         SELECT DISTINCT old_com 
         FROM trusted_zone.com_evolution 
-        WHERE year = EXTRACT(YEAR FROM {{start_date}}::date) AND mod = 21
+        WHERE year = EXTRACT(YEAR FROM {{start_ts}}::date) AND mod = 21
       )
     ),
 
@@ -122,18 +122,6 @@
       INNER JOIN carpools AS c ON oi.carpool_id = c._id
       WHERE oi.amount > 0
       GROUP BY 1
-    ),
-
-    policy_incentives AS (
-      SELECT
-        pi.carpool_id,
-        pi.policy_id,
-        SUM(pi.amount) AS policy_incentives_amount_total,
-        SUM(pi.result) AS policy_incentives_result_total
-      FROM policy.incentives AS pi
-      INNER JOIN carpools AS c ON pi.carpool_id = c._id
-      WHERE pi.status = 'validated'
-      GROUP BY 1, 2
     )
 
     SELECT
@@ -193,9 +181,11 @@
       oi.operator_incentives_sirets,
       oi.operator_incentives_amounts,
       oi.operator_incentives_amount_total,
-      pi.policy_id,
-      pi.policy_incentives_amount_total,
-      pi.policy_incentives_result_total,
+
+      rpc.incentive_rpc AS rpc_incentives,
+      rpc.policy_incentives_amount_total,
+      rpc.policy_incentives_result_total,
+
       cs.fraud_status::VARCHAR AS fraud_status,
       fl.fraud_labels,
       cs.anomaly_status::VARCHAR AS anomaly_status,
@@ -212,8 +202,31 @@
     LEFT JOIN fraud_labels AS fl ON c._id = fl.carpool_id
     LEFT JOIN anomaly_labels AS al ON c._id = al.carpool_id
     LEFT JOIN operator_incentives AS oi ON c._id = oi.carpool_id
-    LEFT JOIN policy_incentives AS pi ON c._id = pi.carpool_id
     LEFT JOIN operator.operators AS o ON c.operator_id = o._id
-    WHERE {{get_timezoned_timestamp("g.start_geo_code", "c.start_datetime")}} >= {{start_date}}::timestamp 
-    AND {{get_timezoned_timestamp("g.start_geo_code", "c.start_datetime")}} < {{end_date}}::timestamp;
+
+    -- RPC incentives with campaign and territory details.
+    -- LATERAL join avoids a full-table scan on policy.incentives.
+    LEFT JOIN LATERAL (
+      SELECT
+        jsonb_agg(
+          jsonb_build_object(
+            'campaign_id',   pp._id,
+            'campaign_name', pp.name,
+            'siret',         ccp.siret,
+            'name',          ttg.name,
+            'amount',        pi.amount::float / 100,
+            'result',        pi.result::float / 100
+          )
+        ) AS incentive_rpc,
+        SUM(pi.amount)::float / 100 AS policy_incentives_amount_total,
+        SUM(pi.result)::float / 100 AS policy_incentives_result_total
+      FROM archive_zone.campaign_incentives pi
+      LEFT JOIN policy.policies pp             ON pi.campaign_id    = pp._id
+      LEFT JOIN territory.territory_group ttg  ON pp.territory_id = ttg._id
+      LEFT JOIN company.companies ccp          ON ttg.company_id  = ccp._id
+      WHERE pi.carpool_v2_id = c._id
+    ) rpc ON TRUE
+
+    WHERE {{get_timezoned_timestamp("g.start_geo_code", "c.start_datetime")}} >= {{start_ts}}::timestamp 
+    AND {{get_timezoned_timestamp("g.start_geo_code", "c.start_datetime")}} < {{end_ts}}::timestamp;
 {% endmacro %}
