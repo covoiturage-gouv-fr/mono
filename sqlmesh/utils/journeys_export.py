@@ -2,6 +2,8 @@ from utils.upload import upload_to_s3, s3_file_exists
 
 COLUMNS_TYPES = [
     ("_id", "BIGINT", "_id"),
+    ("uuid::VARCHAR", "VARCHAR", "uuid"),
+    ("legacy_id", "BIGINT", "legacy_id"),
     ("created_at", "TIMESTAMP", "created_at"),
     ("updated_at", "TIMESTAMP", "updated_at"),
     ("operator_id", "BIGINT", "operator_id"),
@@ -12,8 +14,8 @@ COLUMNS_TYPES = [
     ("operator_class", "VARCHAR", "operator_class"),
     ("start_datetime", "TIMESTAMP", "start_datetime"),
     ("start_datetime_tz", "TIMESTAMP", "start_datetime_tz"),
-    ("st_x(start_position::geometry)", "FLOAT4", "start_position_x"),
-    ("st_y(start_position::geometry)", "FLOAT4", "start_position_y"),
+    ("start_position_x", "FLOAT4", "start_position_x"),
+    ("start_position_y", "FLOAT4", "start_position_y"),
     ("start_h3_index::VARCHAR", "VARCHAR", "start_h3_index"),
     ("start_geo_code::VARCHAR", "VARCHAR", "start_geo_code"),
     ("end_datetime::TIMESTAMP", "TIMESTAMP", "end_datetime"),
@@ -49,9 +51,10 @@ COLUMNS_TYPES = [
     ("operator_incentives_sirets::VARCHAR[]", "VARCHAR[]", "operator_incentives_sirets"),
     ("operator_incentives_amounts::INTEGER[]", "INTEGER[]", "operator_incentives_amounts"),
     ("operator_incentives_amount_total::INTEGER", "INTEGER", "operator_incentives_amount_total"),
-    ("policy_id", "BIGINT", "policy_id"),
-    ("policy_incentives_amount_total::INTEGER", "INTEGER", "policy_incentives_amount_total"),
-    ("policy_incentives_result_total::INTEGER", "INTEGER", "policy_incentives_result_total"),
+    ("operator_incentives::JSONB", "JSONB", "operator_incentives"),
+    ("campaign_incentives_amount_total::INTEGER", "INTEGER", "campaign_incentives_amount_total"),
+    ("campaign_incentives_result_total::INTEGER", "INTEGER", "campaign_incentives_result_total"),
+    ("campaign_incentives::JSONB", "JSONB", "campaign_incentives"),
     ("fraud_status::VARCHAR", "VARCHAR", "fraud_status"),
     ("fraud_labels::VARCHAR[]", "VARCHAR[]", "fraud_labels"),
     ("anomaly_status::VARCHAR", "VARCHAR", "anomaly_status"),
@@ -60,8 +63,7 @@ COLUMNS_TYPES = [
     ("status_updated_at::TIMESTAMP", "TIMESTAMP", "status_updated_at"),
     ("final_acquisition_status::BOOLEAN", "BOOLEAN", "final_acquisition_status"),
     ("valid_acquisition_status::BOOLEAN", "BOOLEAN", "valid_acquisition_status"),
-    ("uuid::VARCHAR", "VARCHAR", "uuid"),
-    ("legacy_id", "BIGINT", "legacy_id"),
+    ("cee_application::INTEGER","INTEGER","cee_application"),
 ]
 
 MODEL_COLUMNS = {

@@ -3,14 +3,14 @@ from sqlmesh import ExecutionContext, model
 from utils.journeys_export import MODEL_COLUMNS, build_and_upload_journeys_year
 
 @model(
-    "archive_zone.archive_journeys_2021",
+    "archive_zone.archive_journeys_2020",
     kind="FULL",
     columns=MODEL_COLUMNS,
-    tags=["archive", "journeys", "2021"],
-    depends_on=["archive_zone.carpools_to_journeys_2021"],
+    tags=["archive", "journeys", "2020"],
+    depends_on=["archive_zone.journeys_2020"],
 )
 def execute(context: ExecutionContext, **kwargs):
-    result = build_and_upload_journeys_year(context, 2021)
+    result = build_and_upload_journeys_year(context, 2020)
     if result:
         yield pd.DataFrame([result])
     yield from ()

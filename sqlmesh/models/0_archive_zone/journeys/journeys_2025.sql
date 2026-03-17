@@ -1,5 +1,5 @@
 MODEL (
-  name archive_zone.carpools_to_journeys_2025,
+  name archive_zone.journeys_2025,
   kind INCREMENTAL_BY_TIME_RANGE (
     time_column start_datetime,
     batch_size 30,

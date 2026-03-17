@@ -12,6 +12,8 @@ MODEL (
 
 SELECT
   _id,
+  uuid,
+  legacy_id,
   created_at,
   updated_at,
   operator_id,
@@ -57,8 +59,10 @@ SELECT
   operator_incentives_sirets,
   operator_incentives_amounts,
   operator_incentives_amount_total,
+  operator_incentives::jsonb AS operator_incentives,
   campaign_incentives_amount_total,
   campaign_incentives_result_total,
+  campaign_incentives::jsonb AS campaign_incentives,
   fraud_status,
   fraud_labels,
   anomaly_status,
@@ -66,9 +70,7 @@ SELECT
   acquisition_status,
   status_updated_at,
   final_acquisition_status,
-  valid_acquisition_status,
-  uuid,
-  legacy_id
+  valid_acquisition_status
 FROM raw_zone.journeys_2025
 WHERE start_datetime BETWEEN @start_ts AND @end_ts;
 
