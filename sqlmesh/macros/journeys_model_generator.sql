@@ -193,9 +193,9 @@
       oi.operator_incentives,
 
       -- RPC incentives
-      rpc.incentive_rpc AS rpc_incentives,
-      rpc.policy_incentives_amount_total,
-      rpc.policy_incentives_result_total,
+      rpc.incentive_rpc AS campaign_incentives,
+      rpc.campaign_incentives_amount_total,
+      rpc.campaign_incentives_result_total,
 
       -- fraud status
       cs.fraud_status::VARCHAR AS fraud_status,
