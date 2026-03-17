@@ -221,7 +221,10 @@
       cs.acquisition_status::VARCHAR AS acquisition_status,
       cs.status_updated_at,
       cs.final_acquisition_status,
-      cs.valid_acquisition_status
+      cs.valid_acquisition_status,
+
+      -- CEE applications existence
+      cee._id IS NOT NULL AS cee_application
     
     FROM carpools AS c
 
@@ -230,6 +233,9 @@
     LEFT JOIN fraud_labels AS fl ON c._id = fl.carpool_id
     LEFT JOIN anomaly_labels AS al ON c._id = al.carpool_id
     LEFT JOIN operator.operators AS o ON c.operator_id = o._id
+
+    -- Join CEE applications to build a true/false flag
+    LEFT JOIN archive_zone.cee_applications cee ON cee.carpool_v2_id = c._id
 
     -- Perimeter labels for start point, resolved against the carpool's own year.
     LEFT JOIN LATERAL (
