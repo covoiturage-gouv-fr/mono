@@ -110,44 +110,49 @@
       FROM fraudcheck.labels AS al
       INNER JOIN carpools AS c ON al.carpool_id = c._id
       GROUP BY 1
-    ),
-
-    operator_incentives AS (
-      SELECT
-        oi.carpool_id,
-        ARRAY_AGG(DISTINCT oi.siret) AS operator_incentives_sirets,
-        ARRAY_AGG(DISTINCT oi.amount) AS operator_incentives_amounts,
-        SUM(oi.amount) AS operator_incentives_amount_total
-      FROM carpool_v2.operator_incentives AS oi
-      INNER JOIN carpools AS c ON oi.carpool_id = c._id
-      WHERE oi.amount > 0
-      GROUP BY 1
     )
 
     SELECT
+      -- carpool_v2.carpools._id
       c._id,
+      c.uuid::VARCHAR AS uuid,
+      c.legacy_id, -- carpool_v1.carpools.acquisition_id
       c.created_at,
       c.updated_at,
+
+      -- operator
       c.operator_id,
       o.name AS operator_name,
       o.siret AS operator_siret,
+
+      -- journey
       c.operator_journey_id,
       c.operator_trip_id,
       c.operator_class,
+
+      -- start
       c.start_datetime,
       {{get_timezoned_timestamp("g.start_geo_code", "c.start_datetime")}} AS start_datetime_tz,
       c.start_position::geometry AS start_position,
       h3_lat_lng_to_cell((c.start_position::geometry)::point, 9) AS start_h3_index,
       g.start_geo_code,
+
+      -- end
       c.end_datetime,
       {{get_timezoned_timestamp("g.end_geo_code", "c.end_datetime")}} AS end_datetime_tz,
       c.end_position::geometry AS end_position,
       h3_lat_lng_to_cell((c.end_position::geometry)::point, 9) AS end_h3_index,
       g.end_geo_code,
+
+      -- geo
       g.geo_errors,
       g.geo_updated_at,
+
+      -- distance and duration
       c.distance,
       EXTRACT(EPOCH FROM c.end_datetime - c.start_datetime)::integer AS duration,
+
+      -- driver
       c.licence_plate,
       c.driver_identity_key,
       c.driver_operator_user_id,
@@ -162,6 +167,8 @@
       c.driver_travelpass_name,
       c.driver_travelpass_user_id,
       c.driver_revenue,
+
+      -- passenger
       c.passenger_identity_key,
       c.passenger_operator_user_id,
       c.passenger_phone,
@@ -178,14 +185,19 @@
       c.passenger_seats,
       c.passenger_contribution,
       c.passenger_payments,
+
+      -- operator incentives
       oi.operator_incentives_sirets,
       oi.operator_incentives_amounts,
       oi.operator_incentives_amount_total,
+      oi.operator_incentives,
 
+      -- RPC incentives
       rpc.incentive_rpc AS rpc_incentives,
       rpc.policy_incentives_amount_total,
       rpc.policy_incentives_result_total,
 
+      -- fraud status
       cs.fraud_status::VARCHAR AS fraud_status,
       fl.fraud_labels,
       cs.anomaly_status::VARCHAR AS anomaly_status,
@@ -193,16 +205,35 @@
       cs.acquisition_status::VARCHAR AS acquisition_status,
       cs.status_updated_at,
       cs.final_acquisition_status,
-      cs.valid_acquisition_status,
-      c.uuid::VARCHAR AS uuid,
-      c.legacy_id
+      cs.valid_acquisition_status
+    
     FROM carpools AS c
+
     LEFT JOIN carpools_status AS cs ON c._id = cs.carpool_id
     LEFT JOIN geocoding AS g ON c._id = g.carpool_id
     LEFT JOIN fraud_labels AS fl ON c._id = fl.carpool_id
     LEFT JOIN anomaly_labels AS al ON c._id = al.carpool_id
-    LEFT JOIN operator_incentives AS oi ON c._id = oi.carpool_id
     LEFT JOIN operator.operators AS o ON c.operator_id = o._id
+
+    -- Operator incentives with company names.
+    -- LATERAL join produces both aggregated arrays and a JSONB array [{siret, name, amount}, ...].
+    LEFT JOIN LATERAL (
+      SELECT
+        ARRAY_AGG(DISTINCT t.siret)  AS operator_incentives_sirets,
+        ARRAY_AGG(DISTINCT t.amount) AS operator_incentives_amounts,
+        SUM(t.amount)                AS operator_incentives_amount_total,
+        jsonb_agg(
+          jsonb_build_object(
+            'siret',  t.siret,
+            'name',   comp.legal_name,
+            'amount', t.amount
+          ) ORDER BY t.siret
+        )                            AS operator_incentives
+      FROM carpool_v2.operator_incentives t
+      LEFT JOIN company.companies comp ON comp.siret = t.siret
+      WHERE t.carpool_id = c._id
+        AND t.amount > 0
+    ) oi ON TRUE
 
     -- RPC incentives with campaign and territory details.
     -- LATERAL join avoids a full-table scan on policy.incentives.
@@ -214,8 +245,8 @@
             'campaign_name', pp.name,
             'siret',         ccp.siret,
             'name',          ttg.name,
-            'amount',        pi.amount::float / 100,
-            'result',        pi.result::float / 100
+            'amount',        pi.amount,
+            'result',        pi.result
           )
         ) AS incentive_rpc,
         SUM(pi.amount)::float / 100 AS policy_incentives_amount_total,
@@ -228,5 +259,7 @@
     ) rpc ON TRUE
 
     WHERE {{get_timezoned_timestamp("g.start_geo_code", "c.start_datetime")}} >= {{start_ts}}::timestamp 
-    AND {{get_timezoned_timestamp("g.start_geo_code", "c.start_datetime")}} < {{end_ts}}::timestamp;
+      AND {{get_timezoned_timestamp("g.start_geo_code", "c.start_datetime")}} < {{end_ts}}::timestamp
+    ;
+
 {% endmacro %}
