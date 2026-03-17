@@ -133,16 +133,32 @@
       -- start
       c.start_datetime,
       {{get_timezoned_timestamp("g.start_geo_code", "c.start_datetime")}} AS start_datetime_tz,
-      c.start_position::geometry AS start_position,
-      h3_lat_lng_to_cell((c.start_position::geometry)::point, 9) AS start_h3_index,
+      c.start_position::geometry                                          AS start_position,
+      h3_lat_lng_to_cell((c.start_position::geometry)::point, 9)          AS start_h3_index,
       g.start_geo_code,
+
+      -- Geo labels for display
+      gps.l_arr                                                        AS start_commune,
+      gps.l_dep                                                        AS start_departement,
+      gps.l_epci                                                       AS start_epci_name,
+      gps.l_aom                                                        AS start_aom_name,
+      gps.l_reg                                                        AS start_region,
+      gps.l_country                                                    AS start_pays,
 
       -- end
       c.end_datetime,
-      {{get_timezoned_timestamp("g.end_geo_code", "c.end_datetime")}} AS end_datetime_tz,
-      c.end_position::geometry AS end_position,
-      h3_lat_lng_to_cell((c.end_position::geometry)::point, 9) AS end_h3_index,
+      {{get_timezoned_timestamp("g.end_geo_code", "c.end_datetime")}}  AS end_datetime_tz,
+      c.end_position::geometry                                         AS end_position,
+      h3_lat_lng_to_cell((c.end_position::geometry)::point, 9)         AS end_h3_index,
       g.end_geo_code,
+
+      -- Geo labels for display
+      gpe.l_arr                                                        AS end_commune,
+      gpe.l_dep                                                        AS end_departement,
+      gpe.l_epci                                                       AS end_epci_name,
+      gpe.l_aom                                                        AS end_aom_name,
+      gpe.l_reg                                                        AS end_region,
+      gpe.l_country                                                    AS end_pays,
 
       -- geo
       g.geo_errors,
@@ -215,6 +231,36 @@
     LEFT JOIN anomaly_labels AS al ON c._id = al.carpool_id
     LEFT JOIN operator.operators AS o ON c.operator_id = o._id
 
+    -- Perimeter labels for start point, resolved against the carpool's own year.
+    LEFT JOIN LATERAL (
+      SELECT
+        p.dep, p.l_dep,
+        p.epci, p.l_epci,
+        p.aom, p.l_aom,
+        p.reg, p.l_reg,
+        CASE WHEN p.arr <> p.country THEN p.l_arr    ELSE NULL  END AS l_arr,
+        CASE WHEN p.arr <> p.country THEN p.l_country ELSE p.l_arr END AS l_country
+      FROM trusted_zone.perimeters p
+      WHERE p.arr = g.start_geo_code
+        AND p.year = EXTRACT(YEAR FROM c.start_datetime)
+      LIMIT 1
+    ) gps ON TRUE
+
+    -- Perimeter labels for end point, resolved against the carpool's own year.
+    LEFT JOIN LATERAL (
+      SELECT
+        p.dep, p.l_dep,
+        p.epci, p.l_epci,
+        p.aom, p.l_aom,
+        p.reg, p.l_reg,
+        CASE WHEN p.arr <> p.country THEN p.l_arr    ELSE NULL  END AS l_arr,
+        CASE WHEN p.arr <> p.country THEN p.l_country ELSE p.l_arr END AS l_country
+      FROM trusted_zone.perimeters p
+      WHERE p.arr = g.end_geo_code
+        AND p.year = EXTRACT(YEAR FROM c.start_datetime)
+      LIMIT 1
+    ) gpe ON TRUE
+
     -- Operator incentives with company names.
     -- LATERAL join produces both aggregated arrays and a JSONB array [{siret, name, amount}, ...].
     LEFT JOIN LATERAL (
@@ -249,8 +295,8 @@
             'result',        pi.result
           )
         ) AS incentive_rpc,
-        SUM(pi.amount)::float / 100 AS policy_incentives_amount_total,
-        SUM(pi.result)::float / 100 AS policy_incentives_result_total
+        SUM(pi.amount) AS campaign_incentives_amount_total,
+        SUM(pi.result) AS campaign_incentives_result_total
       FROM archive_zone.campaign_incentives pi
       LEFT JOIN policy.policies pp             ON pi.campaign_id    = pp._id
       LEFT JOIN territory.territory_group ttg  ON pp.territory_id = ttg._id
