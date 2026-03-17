@@ -7,6 +7,7 @@ from .exporter import MODEL_COLUMNS, build_and_upload_incentives_year
     kind="FULL",
     columns=MODEL_COLUMNS,
     tags=["archive", "incentives"],
+    depends_on=["archive_zone.campaign_incentives_2020"],
 )
 def execute(context: ExecutionContext, **kwargs):
     result = build_and_upload_incentives_year(context, 2020)

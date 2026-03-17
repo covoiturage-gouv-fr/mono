@@ -7,6 +7,7 @@ from utils.journeys_export import MODEL_COLUMNS, build_and_upload_journeys_year
     kind="FULL",
     columns=MODEL_COLUMNS,
     tags=["archive", "journeys", "2019"],
+    depends_on=["archive_zone.carpools_to_journeys_2019"],
 )
 def execute(context: ExecutionContext, **kwargs):
     result = build_and_upload_journeys_year(context, 2019)
