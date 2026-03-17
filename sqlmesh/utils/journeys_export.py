@@ -1,4 +1,3 @@
-import pandas as pd
 from utils.upload import upload_to_s3, s3_file_exists
 
 COLUMNS_TYPES = [
