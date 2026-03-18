@@ -35,5 +35,3 @@ LEFT JOIN carpool_v2.carpools cv2_journey
   AND cv2_journey.operator_journey_id = cee.operator_journey_id
 ;
 
-CREATE INDEX IF NOT EXISTS cee_applications_carpool_v2_id_idx
-  ON @this_model USING btree (carpool_v2_id);
