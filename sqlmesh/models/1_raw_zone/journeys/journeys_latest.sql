@@ -2,11 +2,11 @@ MODEL (
   name raw_zone.journeys_latest,
   kind INCREMENTAL_BY_TIME_RANGE (
     time_column start_datetime,
-    lookback 1,
+    lookback 2,
     batch_size 30
   ),
   start '2026-01-01 00:00:00+0100',
-  grain '_id',
+  grain ['_id', 'fraud_status', 'anomaly_status', 'acquisition_status'],
   tags ['raw', 'journeys', 'latest'],
 );
 JINJA_QUERY_BEGIN;
