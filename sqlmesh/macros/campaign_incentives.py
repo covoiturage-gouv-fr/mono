@@ -1,7 +1,7 @@
 from sqlmesh import macro
 
 
-def build_incentives_query(start_ts: str, end_ts: str) -> str:
+def build_incentives_query(start_ts, end_ts) -> str:
     """Build the incentives SELECT query for a given date range.
 
     Queries policy.incentives and related source tables directly.
