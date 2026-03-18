@@ -19,7 +19,7 @@ WITH ni AS (
   LEFT JOIN carpool.carpools c1 ON pi.carpool_id = c1._id
   LEFT JOIN carpool_v2.carpools c2 ON c1.acquisition_id = c2.legacy_id
   WHERE pi.carpool_id IS NOT NULL
-    AND pi.datetime BETWEEN '{start_ts}' AND '{end_ts}'
+    AND pi.datetime BETWEEN {start_ts} AND {end_ts}
 
   UNION
 
@@ -32,7 +32,7 @@ WITH ni AS (
   LEFT JOIN carpool_v2.carpools c2
     ON pi.operator_id = c2.operator_id AND pi.operator_journey_id = c2.operator_journey_id
   WHERE pi.operator_id IS NOT NULL AND pi.operator_journey_id IS NOT NULL
-    AND pi.datetime BETWEEN '{start_ts}' AND '{end_ts}'
+    AND pi.datetime BETWEEN {start_ts} AND {end_ts}
 )
 
 SELECT
