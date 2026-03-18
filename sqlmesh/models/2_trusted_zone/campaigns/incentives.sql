@@ -115,6 +115,7 @@ SELECT
   status,
   state
 FROM raw_zone.campaign_incentives_2025
+UNION
 SELECT
   _id,
   carpool_v2_id,

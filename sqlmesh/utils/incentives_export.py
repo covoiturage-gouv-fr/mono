@@ -56,7 +56,7 @@ def build_and_upload_incentives_year(context, year: int) -> dict | None:
         print(f"--- Skipping {year}: s3://{s3_key} already exists ---")
         return None
 
-    query = build_incentives_query(f"'{start.isoformat()}'", f"'{end.isoformat()}'")
+    query = build_incentives_query(start.isoformat(), end.isoformat())
     output_file = f"/tmp/incentives_{year}.parquet"
 
     print(f"--- Exporting {year} ---")
