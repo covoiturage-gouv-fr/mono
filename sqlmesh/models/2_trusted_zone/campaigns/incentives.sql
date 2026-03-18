@@ -18,7 +18,7 @@ SELECT
   result,
   status,
   state
-FROM raw_zone.campaign_incentives_archives
+FROM raw_zone.campaign_incentives_2019
 UNION
 SELECT
   _id,
@@ -34,7 +34,100 @@ SELECT
   result,
   status,
   state
-FROM raw_zone.campaign_incentives_latest
-ORDER BY datetime
-;
+FROM raw_zone.campaign_incentives_2020
+UNION
+SELECT
+  _id,
+  carpool_v2_id,
+  datetime,
+  operator_id,
+  operator_journey_id,
+  campaign_id,
+  campaign_name,
+  territory_siret,
+  territory_name,
+  amount,
+  result,
+  status,
+  state
+FROM raw_zone.campaign_incentives_2021
+UNION
+SELECT
+  _id,
+  carpool_v2_id,
+  datetime,
+  operator_id,
+  operator_journey_id,
+  campaign_id,
+  campaign_name,
+  territory_siret,
+  territory_name,
+  amount,
+  result,
+  status,
+  state
+FROM raw_zone.campaign_incentives_2022
+UNION
+SELECT
+  _id,
+  carpool_v2_id,
+  datetime,
+  operator_id,
+  operator_journey_id,
+  campaign_id,
+  campaign_name,
+  territory_siret,
+  territory_name,
+  amount,
+  result,
+  status,
+  state
+FROM raw_zone.campaign_incentives_2023
+UNION
+SELECT
+  _id,
+  carpool_v2_id,
+  datetime,
+  operator_id,
+  operator_journey_id,
+  campaign_id,
+  campaign_name,
+  territory_siret,
+  territory_name,
+  amount,
+  result,
+  status,
+  state
+FROM raw_zone.campaign_incentives_2024
+UNION
+SELECT
+  _id,
+  carpool_v2_id,
+  datetime,
+  operator_id,
+  operator_journey_id,
+  campaign_id,
+  campaign_name,
+  territory_siret,
+  territory_name,
+  amount,
+  result,
+  status,
+  state
+FROM raw_zone.campaign_incentives_2025
+SELECT
+  _id,
+  carpool_v2_id,
+  datetime,
+  operator_id,
+  operator_journey_id,
+  campaign_id,
+  campaign_name,
+  territory_siret,
+  territory_name,
+  amount,
+  result,
+  status,
+  state
+FROM raw_zone.campaign_incentives_latest;
 

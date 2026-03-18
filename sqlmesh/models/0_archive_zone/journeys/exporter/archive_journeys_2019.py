@@ -1,0 +1,17 @@
+import pandas as pd
+from sqlmesh import ExecutionContext, model
+from utils.journeys_export import MODEL_COLUMNS, build_and_upload_journeys_year
+
+@model(
+    "archive_zone.archive_journeys_2019",
+    kind="FULL",
+    columns=MODEL_COLUMNS,
+    tags=["archive", "journeys", "2019"],
+    depends_on=["archive_zone.journeys_2019"],
+)
+def execute(context: ExecutionContext, **kwargs):
+    result = build_and_upload_journeys_year(context, 2019)
+    if result:
+        yield pd.DataFrame([result])
+    yield from ()
+

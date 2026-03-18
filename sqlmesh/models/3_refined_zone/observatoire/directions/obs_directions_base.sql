@@ -9,7 +9,8 @@ MODEL (
   grain ['_id', 'direction', 'type', 'code'],
   tags ['refined', 'observatoire', 'directions_base'],
 );
-TRUNCATE TABLE refined_zone.obs_directions_base;
+
+@truncate_if_exist(@this_model);
 
 WITH journeys_raw AS (
   SELECT

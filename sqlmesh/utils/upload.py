@@ -5,6 +5,20 @@ import pandas as pd
 from dotenv import load_dotenv
 from boto3.s3.transfer import TransferConfig
 
+def s3_file_exists(key: str, bucket: t.Optional[str] = None) -> bool:
+  if not os.getenv("S3_BUCKET") and not bucket:
+    load_dotenv()
+  getBucket = bucket or os.getenv("S3_BUCKET")
+  try:
+    s3_client = get_s3_client()
+    s3_client.head_object(Bucket=getBucket, Key=key)
+    return True
+  except Exception as e:
+    if hasattr(e, "response") and e.response.get("Error", {}).get("Code") in ("404", "NoSuchKey"):
+      return False
+    raise
+
+
 def upload_to_s3(
     file_path: str,
     key: str,
