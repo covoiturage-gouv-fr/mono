@@ -18,15 +18,4 @@ MODEL (
   )
 );
 
-SELECT
-  uuid::UUID                       AS uuid,
-  carpool_v2_id::BIGINT            AS carpool_v2_id,
-  operator_id::BIGINT              AS operator_id,
-  operator_journey_id::VARCHAR     AS operator_journey_id,
-  datetime::TIMESTAMP              AS datetime,
-  journey_type::VARCHAR            AS journey_type,
-  is_specific::BOOLEAN             AS is_specific,
-  application_timestamp::TIMESTAMP AS application_timestamp,
-  created_at::TIMESTAMP            AS created_at,
-  updated_at::TIMESTAMP            AS updated_at
-FROM read_parquet('s3://geo-datasets-archives/exports/cee_applications.parquet');
+SELECT * FROM read_parquet('s3://geo-datasets-archives/exports/cee_applications.parquet');
