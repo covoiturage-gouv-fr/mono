@@ -2,6 +2,7 @@ import os
 import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
+import random
 
 def build_select_query(columns, table):
   select_list = [
@@ -63,7 +64,8 @@ def export_query_to_file(conn, query: str, columns: list, output_path: str, form
     column_names = [alias for _, _, alias in columns]
 
     try:
-      with conn.cursor(name="export_cursor") as cur:
+      cursor_name = f"export_cursor_{random.randint(0, 999999)}"
+      with conn.cursor(name=cursor_name) as cur:
           cur.itersize = chunksize
           print("Executing query...")
           cur.execute(query)

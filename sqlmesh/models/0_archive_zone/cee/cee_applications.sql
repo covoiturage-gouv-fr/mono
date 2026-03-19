@@ -3,6 +3,11 @@ MODEL (
   kind FULL,
   grain '_id',
   tags ['archive', 'cee'],
+  audits (
+    assert_cee_row_count_pg_to_archive,
+    assert_cee_missing_rows_pg_to_archive,
+    assert_cee_key_fields_pg_to_archive,
+  ),
 );
 
 SELECT

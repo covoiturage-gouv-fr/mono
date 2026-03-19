@@ -197,29 +197,45 @@ L'heure légale française est `+0100` en hiver (CET) et `+0200` en été (CEST)
 
 Les audits vérifient l'intégrité des données après chaque run. Ils sont définis dans `audits/` et référencés dans les modèles via la propriété `audits`.
 
-Un audit retourne les lignes en anomalie — s'il retourne zéro lignes, l'audit passe. L'option `blocking false` permet de signaler les anomalies sans interrompre le pipeline.
+Un audit retourne les lignes en anomalie — s'il retourne zéro lignes, l'audit passe. L'option `blocking true` interrompt le pipeline en cas d'anomalie ; `blocking false` signale sans bloquer.
 
-```sql
--- audits/campaigns/incentives.sql
-AUDIT (
-  name assert_campaign_incentives_complete,
-  blocking false
-);
+**Conventions :**
 
-SELECT pi._id
-FROM policy.incentives pi
-WHERE pi.datetime BETWEEN @start_ts AND @end_ts
-  AND NOT EXISTS (
-    SELECT 1 FROM @this_model ci WHERE ci._id = pi._id
-  );
-```
+- Chaque fichier d'audit contient un ou plusieurs blocs `AUDIT` pour un même domaine
+- 3 types d'audit : **row_count** (nombre de lignes), **missing_rows** (lignes manquantes), **key_fields** (cohérence des champs clés)
+- Direction de comparaison indiquée dans le nom : `pg_to_archive` (Live PG → Archive) ou `pg_to_raw` (Live PG → Raw)
+- Row count et missing rows sont **blocking**, key fields sont **non-blocking**
 
-Référencer l'audit dans le modèle :
+**Inventaire des audits :**
+
+| Fichier | Audit | Blocking | Modèles attachés |
+|---------|-------|----------|------------------|
+| `audits/journeys/row_count.sql` | `assert_journeys_row_count_pg_to_archive` | oui | `archive_zone.journeys_*` |
+| | `assert_journeys_row_count_pg_to_raw` | oui | `raw_zone.journeys_latest` |
+| `audits/journeys/missing_rows.sql` | `assert_journeys_missing_rows_pg_to_archive` | oui | `archive_zone.journeys_*` |
+| | `assert_journeys_missing_rows_pg_to_raw` | oui | `raw_zone.journeys_latest` |
+| `audits/journeys/key_fields.sql` | `assert_journeys_key_fields_pg_to_archive` | non | `archive_zone.journeys_*` |
+| | `assert_journeys_key_fields_pg_to_raw` | non | `raw_zone.journeys_latest` |
+| `audits/campaigns/incentives.sql` | `assert_campaign_incentives_complete` | non | `raw_zone.campaign_incentives_latest` |
+| `audits/campaigns/row_count.sql` | `assert_campaign_incentives_row_count_pg_to_raw` | oui | `raw_zone.campaign_incentives_latest` |
+| `audits/campaigns/missing_rows.sql` | `assert_campaign_incentives_missing_rows_pg_to_raw` | oui | `raw_zone.campaign_incentives_latest` |
+| `audits/campaigns/key_fields.sql` | `assert_campaign_incentives_key_fields_pg_to_raw` | non | `raw_zone.campaign_incentives_latest` |
+| `audits/cee/row_count.sql` | `assert_cee_row_count_pg_to_archive` | oui | `archive_zone.cee_applications` |
+| `audits/cee/missing_rows.sql` | `assert_cee_missing_rows_pg_to_archive` | oui | `archive_zone.cee_applications` |
+| `audits/cee/key_fields.sql` | `assert_cee_key_fields_pg_to_archive` | non | `archive_zone.cee_applications` |
+
+> **Note :** Les modèles annuels raw_zone (DuckDB/parquet) ne peuvent pas être audités cross-gateway depuis PostgreSQL. Les audits `pg_to_raw` ciblent les modèles `_latest` (gateway postgres) qui lisent directement la base live.
+
+**Exemple — référencer un audit dans un modèle :**
 
 ```sql
 MODEL (
-  name raw_zone.campaign_incentives_2024,
-  audits [assert_campaign_incentives_complete],
+  name archive_zone.journeys_2024,
+  audits (
+    assert_journeys_row_count_pg_to_archive,
+    assert_journeys_missing_rows_pg_to_archive,
+    assert_journeys_key_fields_pg_to_archive,
+  ),
   ...
 );
 ```
