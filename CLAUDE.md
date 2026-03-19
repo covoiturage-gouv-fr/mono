@@ -47,6 +47,7 @@ Use sub-agents to perform :
 Technical internal documentation is available on Notion.
 `api/specs` are published on <https://tech.covoiturage.beta.gouv.fr> using bump.sh in a Github Action.
 Local README.md files are used as entrypoints to the different applications and must be updated alongside code.
+`sqlmesh/README.md` is the primary reference for the data warehouse architecture and conventions — keep it in sync when modifying SQLMesh models.
 
 ### Git
 
