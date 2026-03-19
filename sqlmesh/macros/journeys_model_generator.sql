@@ -188,17 +188,6 @@
       c.passenger_contribution,
       c.passenger_payments,
 
-      -- operator incentives
-      oi.operator_incentives_sirets,
-      oi.operator_incentives_amounts,
-      oi.operator_incentives_amount_total,
-      oi.operator_incentives,
-
-      -- RPC incentives
-      rpc.incentive_rpc AS campaign_incentives,
-      rpc.campaign_incentives_amount_total,
-      rpc.campaign_incentives_result_total,
-
       -- fraud status
       cs.fraud_status::VARCHAR AS fraud_status,
       fl.fraud_labels,
@@ -222,49 +211,6 @@
 
     -- Join CEE applications to build a true/false flag
     LEFT JOIN archive_zone.cee_applications cee ON cee.carpool_v2_id = c._id
-
-    -- Operator incentives with company names.
-    -- LATERAL join produces both aggregated arrays and a JSONB array [{siret, name, amount}, ...].
-    LEFT JOIN LATERAL (
-      SELECT
-        ARRAY_AGG(DISTINCT t.siret)  AS operator_incentives_sirets,
-        ARRAY_AGG(DISTINCT t.amount) AS operator_incentives_amounts,
-        SUM(t.amount)                AS operator_incentives_amount_total,
-        jsonb_agg(
-          jsonb_build_object(
-            'siret',  t.siret,
-            'name',   comp.legal_name,
-            'amount', t.amount
-          ) ORDER BY t.siret
-        )                            AS operator_incentives
-      FROM carpool_v2.operator_incentives t
-      LEFT JOIN company.companies comp ON comp.siret = t.siret
-      WHERE t.carpool_id = c._id
-        AND t.amount > 0
-    ) oi ON TRUE
-
-    -- RPC incentives with campaign and territory details.
-    -- LATERAL join avoids a full-table scan on policy.incentives.
-    LEFT JOIN LATERAL (
-      SELECT
-        jsonb_agg(
-          jsonb_build_object(
-            'campaign_id',   pp._id,
-            'campaign_name', pp.name,
-            'siret',         ccp.siret,
-            'name',          ttg.name,
-            'amount',        pi.amount,
-            'result',        pi.result
-          )
-        ) AS incentive_rpc,
-        SUM(pi.amount) AS campaign_incentives_amount_total,
-        SUM(pi.result) AS campaign_incentives_result_total
-      FROM archive_zone.campaign_incentives pi
-      LEFT JOIN policy.policies pp             ON pi.campaign_id    = pp._id
-      LEFT JOIN territory.territory_group ttg  ON pp.territory_id = ttg._id
-      LEFT JOIN company.companies ccp          ON ttg.company_id  = ccp._id
-      WHERE pi.carpool_v2_id = c._id
-    ) rpc ON TRUE
 
     WHERE {{get_timezoned_timestamp("g.start_geo_code", "c.start_datetime")}} >= {{start_ts}}::timestamp 
       AND {{get_timezoned_timestamp("g.start_geo_code", "c.start_datetime")}} < {{end_ts}}::timestamp
