@@ -175,7 +175,9 @@ SQLMesh expose deux familles de variables pour les bornes temporelles des batche
 | `@start_ds` / `@end_ds` | Date (string) sans heure ni timezone | `'2024-03-15'` |
 | `@start_ts` / `@end_ts` | Timestamp avec timezone, dérivé des propriétés `start`/`end` du modèle | `'2024-03-15 00:00:00+0100'` |
 
-**Toujours utiliser `@start_ts` / `@end_ts`** pour filtrer les données horodatées. Les variables `_ds` tronquent l'heure à minuit UTC, ce qui provoque un saut d'un jour sur les données stockées en heure de Paris.
+**Toujours utiliser `@start_ts` / `@end_ts`** pour filtrer les données horodatées. Ne jamais utiliser `@start_ds` / `@end_ds`. Les variables `_ds` tronquent l'heure à minuit UTC, ce qui provoque un saut d'un jour sur les données stockées en heure de Paris.
+
+**Toujours filtrer sur `start_datetime` (UTC)**, jamais sur `start_datetime_tz` (heure locale). SQLMesh calcule les bornes de batch en UTC — filtrer sur `start_datetime_tz` provoquerait des chevauchements ou des lacunes selon le décalage horaire.
 
 Pour que `@start_ts`/`@end_ts` produisent des bornes à minuit heure de Paris, les propriétés `start` et `end` du modèle doivent inclure l'offset explicitement :
 

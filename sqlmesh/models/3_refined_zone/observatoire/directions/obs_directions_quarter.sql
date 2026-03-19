@@ -4,7 +4,7 @@ MODEL (
     time_column quarter_date,
     batch_size 3,
   ),
-  start '2020-01-01',
+  start '2020-01-01 00:00:00+0100',
   cron '@monthly',
   grain [ 'quarter_date', 'code', 'type', 'direction'],
   tags ['refined', 'observatoire', 'directions_quarter'],
@@ -25,8 +25,8 @@ WITH sum_directions AS (
     sum(incentive_others)            AS incentive_others,
     SUM(no_incentive)                AS no_incentive
   FROM refined_zone.obs_directions_day
-  WHERE journey_date >= @start_ds
-    AND journey_date <  @end_ds
+  WHERE journey_date >= @start_ts
+    AND journey_date <  @end_ts
   GROUP BY 1, 2, 3, 4, 5
   HAVING sum(journeys) > 0
 ),
@@ -39,8 +39,8 @@ hours_agg AS (
     extract('quarter' FROM journey_date)::int AS quarter,
     jsonb_object_agg(hour::text, journeys ORDER BY hour) AS hours_distribution
   FROM refined_zone.obs_directions_hours_day
-  WHERE journey_date >= @start_ds
-    AND journey_date <  @end_ds
+  WHERE journey_date >= @start_ts
+    AND journey_date <  @end_ts
   GROUP BY 1, 2, 3, 4, 5
 ),
 dist_agg AS (
@@ -52,8 +52,8 @@ dist_agg AS (
     extract('quarter' FROM journey_date)::int AS quarter,
     jsonb_object_agg(dist_class::text, journeys ORDER BY dist_class) AS dist_distribution
   FROM refined_zone.obs_directions_distances_day
-  WHERE journey_date >= @start_ds
-    AND journey_date <  @end_ds
+  WHERE journey_date >= @start_ts
+    AND journey_date <  @end_ts
   GROUP BY 1, 2, 3, 4, 5
 ),
 users as (
@@ -68,8 +68,8 @@ users as (
     new_drivers,
     new_passengers
   FROM refined_zone.obs_directions_users_quarter
-  WHERE quarter_date >= @start_ds
-    AND quarter_date <  @end_ds
+  WHERE quarter_date >= @start_ts
+    AND quarter_date <  @end_ts
 )
 
 SELECT
@@ -114,7 +114,7 @@ LEFT JOIN users u
   AND u.direction = a.direction
   AND u.year      = a.year
   AND u.quarter   = a.quarter
-LEFT JOIN @join_perimeters_agg(@start_ds, @end_ds) AS b
+LEFT JOIN @join_perimeters_agg(@start_ts, @end_ts) AS b
   ON  b.code    = a.code
   AND b.type    = a.type
   AND b.j_year = a.year

@@ -4,7 +4,7 @@ MODEL (
     time_column month_date,
     batch_size 1
   ),
-  start '2020-01-01',
+  start '2020-01-01 00:00:00+0100',
   cron '@monthly',
   grain [ 'month_date', 'h3_index'],
   tags ['refined', 'observatoire', 'density_month'],
@@ -25,6 +25,6 @@ CROSS JOIN LATERAL (
     (start_h3_index),
     (end_h3_index)
 ) AS t(h3_index)
-WHERE start_datetime >= @start_ds
-  AND start_datetime < @end_ds
+WHERE start_datetime >= @start_ts
+  AND start_datetime < @end_ts
 GROUP BY 1, 2, 3, 4
