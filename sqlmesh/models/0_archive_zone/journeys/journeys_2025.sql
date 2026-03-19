@@ -9,6 +9,11 @@ MODEL (
   end   '2025-12-31 23:59:59+0100',
   grain '_id',
   tags ['archive', 'carpools', 'journeys', '2025'],
+  audits (
+    assert_journeys_row_count_pg_to_archive,
+    assert_journeys_missing_rows_pg_to_archive,
+    assert_journeys_key_fields_pg_to_archive,
+  ),
 );
 
 JINJA_QUERY_BEGIN;
