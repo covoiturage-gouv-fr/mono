@@ -10,17 +10,19 @@ Registre de Preuve de Covoiturage (RPC) - A beta.gouv.fr initiative that certifi
 
 Monorepo with these main components:
 
-| Directory | Description | Tech Stack | Instructions |
-| --------- | ----------- | ---------- | ------------ |
-| `api/` | Main backend | Deno 2.x, TypeScript, Express, Inversify | `.claude/CLAUDE-API.md` |
-| `app-partners/` | Partner dashboard | Next.js 15, React 19, DSFR | `.claude/CLAUDE-APP-PARTNERS.md` |
-| `app-observatory/` | Public statistics | Next.js 15, React 19, MapLibre, Deck.gl | `.claude/CLAUDE-OBSERVATORY.md` |
-| `app-attestation/` | Certificate generator | Angular 16 | (frozen) |
-| `cms/` | Content management | Strapi 4 | (todo) |
-| `shared/` | Shared TypeScript types | TypeScript | (deprecated) |
-| `dbt/` | Analytics transformations | DBT, Python | (deprecated) |
-| `sqlmesh/` | SQL transformations | SQLMesh, Python | `.claude/CLAUDE-DATALAKE.md` |
-| `docker/` | Container configurations | Docker | |
+| Directory | Description | Tech Stack |
+| --------- | ----------- | ---------- |
+| `api/` | Main backend | Deno 2.x, TypeScript, Express, Inversify |
+| `app-partners/` | Partner dashboard | Next.js 15, React 19, DSFR |
+| `app-observatory/` | Public statistics | Next.js 15, React 19, MapLibre, Deck.gl |
+| `app-attestation/` | Certificate generator | Angular 16 (frozen) |
+| `cms/` | Content management | Strapi 4 |
+| `shared/` | Shared TypeScript types | TypeScript (deprecated) |
+| `dbt/` | Analytics transformations | DBT, Python (deprecated) |
+| `sqlmesh/` | SQL transformations | SQLMesh, Python |
+| `docker/` | Container configurations | Docker |
+
+Each directory has its own `README.md`. Claude skills in `.claude/skills/` provide coding patterns for each domain.
 
 ## Coding style
 
@@ -48,6 +50,10 @@ Technical internal documentation is available on Notion.
 `api/specs` are published on <https://tech.covoiturage.beta.gouv.fr> using bump.sh in a Github Action.
 Local README.md files are used as entrypoints to the different applications and must be updated alongside code.
 `sqlmesh/README.md` is the primary reference for the data warehouse architecture and conventions — keep it in sync when modifying SQLMesh models.
+
+### Skills
+
+Skills must be project-specific (`.claude/skills/`), never cross-project (`~/.claude/skills/`).
 
 ### Git
 
