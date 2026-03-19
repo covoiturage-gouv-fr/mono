@@ -1,4 +1,83 @@
 {% macro trusted_journeys_model_generator(source_table, start_ts, end_ts) %}
+WITH batch AS (
+  SELECT
+    _id,
+    start_position_x,
+    start_position_y,
+    end_position_x,
+    end_position_y
+  FROM {{source_table}}
+  WHERE start_datetime BETWEEN {{start_ts}} AND {{end_ts}}
+),
+
+perimeters_retablissement AS (
+  SELECT com, geom
+  FROM trusted_zone.perimeters
+  WHERE year = EXTRACT(YEAR FROM {{start_ts}}::date)
+    AND com IN (
+      SELECT DISTINCT new_com
+      FROM trusted_zone.com_evolution
+      WHERE year = EXTRACT(YEAR FROM {{start_ts}}::date)
+        AND mod = 21
+    )
+),
+
+geocoding AS (
+  -- Cas 1: Communes non fusionnées (mod = 32)
+  SELECT
+    g.carpool_id,
+    COALESCE(cs.new_com, g.start_geo_code) AS start_geo_code,
+    COALESCE(ce.new_com, g.end_geo_code)   AS end_geo_code,
+    g.updated_at                           AS geo_updated_at,
+    g.errors                               AS geo_errors
+  FROM carpool_v2.geo AS g
+  INNER JOIN batch AS b ON g.carpool_id = b._id
+  LEFT JOIN trusted_zone.com_evolution cs
+    ON g.start_geo_code = cs.old_com
+    AND cs.mod = 32
+    AND cs.year = EXTRACT(YEAR FROM {{start_ts}}::date)
+  LEFT JOIN trusted_zone.com_evolution ce
+    ON g.end_geo_code = ce.old_com
+    AND ce.mod = 32
+    AND ce.year = EXTRACT(YEAR FROM {{start_ts}}::date)
+  WHERE g.start_geo_code NOT IN (
+      SELECT DISTINCT old_com
+      FROM trusted_zone.com_evolution
+      WHERE year = EXTRACT(YEAR FROM {{start_ts}}::date) AND mod = 21
+    )
+    OR g.end_geo_code NOT IN (
+      SELECT DISTINCT old_com
+      FROM trusted_zone.com_evolution
+      WHERE year = EXTRACT(YEAR FROM {{start_ts}}::date) AND mod = 21
+    )
+
+  UNION ALL
+
+  -- Cas 2: Communes fusionnées (mod = 21) - utiliser perimetres
+  SELECT
+    g.carpool_id,
+    COALESCE(ps.com, g.start_geo_code) AS start_geo_code,
+    COALESCE(pe.com, g.end_geo_code)   AS end_geo_code,
+    g.updated_at                       AS geo_updated_at,
+    g.errors                           AS geo_errors
+  FROM carpool_v2.geo g
+  INNER JOIN batch AS b ON g.carpool_id = b._id
+  LEFT JOIN perimeters_retablissement ps
+    ON ST_Intersects(ST_Point(b.start_position_x, b.start_position_y)::geometry, ps.geom)
+  LEFT JOIN perimeters_retablissement pe
+    ON ST_Intersects(ST_Point(b.end_position_x, b.end_position_y)::geometry, pe.geom)
+  WHERE g.start_geo_code IN (
+      SELECT DISTINCT old_com
+      FROM trusted_zone.com_evolution
+      WHERE year = EXTRACT(YEAR FROM {{start_ts}}::date) AND mod = 21
+    )
+    OR g.end_geo_code IN (
+      SELECT DISTINCT old_com
+      FROM trusted_zone.com_evolution
+      WHERE year = EXTRACT(YEAR FROM {{start_ts}}::date) AND mod = 21
+    )
+)
+
 SELECT
   j._id,
   j.uuid,
@@ -11,18 +90,22 @@ SELECT
   j.operator_journey_id,
   j.operator_trip_id,
   j.operator_class::varchar AS operator_class,
+
   j.start_datetime,
-  j.start_datetime_tz,
+  {{get_timezoned_timestamp("COALESCE(geo.start_geo_code, j.start_geo_code)", "j.start_datetime")}} AS start_datetime_tz,
   ST_Point(j.start_position_x, j.start_position_y) AS start_position,
   j.start_h3_index::h3index AS start_h3_index,
-  j.start_geo_code,
+  COALESCE(geo.start_geo_code, j.start_geo_code) AS start_geo_code,
+
   j.end_datetime,
-  j.end_datetime_tz,
+  {{get_timezoned_timestamp("COALESCE(geo.end_geo_code, j.end_geo_code)", "j.end_datetime")}} AS end_datetime_tz,
   ST_Point(j.end_position_x, j.end_position_y) AS end_position,
   j.end_h3_index::h3index AS end_h3_index,
-  j.end_geo_code,
-  j.geo_errors::jsonb AS geo_errors,
-  j.geo_updated_at,
+  COALESCE(geo.end_geo_code, j.end_geo_code) AS end_geo_code,
+
+  COALESCE(geo.geo_errors, j.geo_errors)::jsonb AS geo_errors,
+  COALESCE(geo.geo_updated_at, j.geo_updated_at) AS geo_updated_at,
+
   j.distance,
   j.duration,
   j.licence_plate,
@@ -47,8 +130,10 @@ SELECT
   j.passenger_payments::jsonb AS passenger_payments,
 
   -- operator incentives
-  oi.operator_incentives,
+  oi.operator_incentives_sirets,
+  oi.operator_incentives_amounts,
   oi.operator_incentives_amount_total,
+  oi.operator_incentives,
 
   -- RPC incentives
   rpc.campaign_incentives,
@@ -66,10 +151,14 @@ SELECT
 
 FROM {{source_table}} AS j
 
+LEFT JOIN geocoding AS geo ON geo.carpool_id = j._id
+
 -- Operator incentives with company names.
 -- LATERAL join produces both aggregated arrays and a JSONB array [{siret, name, amount}, ...].
 LEFT JOIN LATERAL (
   SELECT
+    ARRAY_AGG(DISTINCT t.siret)  AS operator_incentives_sirets,
+    ARRAY_AGG(DISTINCT t.amount) AS operator_incentives_amounts,
     SUM(t.amount)                AS operator_incentives_amount_total,
     jsonb_agg(
       jsonb_build_object(
@@ -94,10 +183,12 @@ LEFT JOIN LATERAL (
         'campaign_name', pi.campaign_name,
         'siret',         pi.territory_siret,
         'name',          pi.territory_name,
-        'amount',        pi.amount
+        'amount',        pi.amount,
+        'result',        pi.result
       )
     ) AS campaign_incentives,
-    SUM(pi.amount) AS campaign_incentives_amount_total
+    SUM(pi.amount) AS campaign_incentives_amount_total,
+    SUM(pi.result) AS campaign_incentives_result_total
   FROM trusted_zone.campaign_incentives pi
   WHERE pi.carpool_v2_id = j._id
 ) rpc ON TRUE
