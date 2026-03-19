@@ -5,7 +5,7 @@ MODEL (
     lookback 1,
     batch_size 30,
   ),
-  start '2020-01-01',
+  start '2020-01-01 00:00:00+0100',
   grain ['_id', 'direction', 'type', 'code'],
   tags ['refined', 'observatoire', 'directions_base'],
 );
@@ -35,8 +35,8 @@ WITH journeys_raw AS (
     END AS dist_class
   FROM trusted_zone.journeys j
   WHERE j.valid_acquisition_status = true
-    AND j.start_datetime_tz >= @start_ds
-    AND j.start_datetime_tz <  @end_ds
+    AND j.start_datetime >= @start_ts
+    AND j.start_datetime <  @end_ts
 ),
 unnested_sirets AS (
   SELECT
@@ -68,9 +68,9 @@ incentives_agg AS (
 -- Agrégation par _id pour éviter la fuite des sirets lors des jointures
 -- (on reste grain = journey ici, pas encore de GROUP BY géo)
 journey_years AS (
-  SELECT EXTRACT(YEAR FROM @start_ds::date)::int AS year
+  SELECT EXTRACT(YEAR FROM @start_ts::date)::int AS year
   UNION
-  SELECT EXTRACT(YEAR FROM @end_ds::date)::int
+  SELECT EXTRACT(YEAR FROM @end_ts::date)::int
 ),
 perimeters_resolved AS (
   SELECT DISTINCT ON (p.arr, y.year)

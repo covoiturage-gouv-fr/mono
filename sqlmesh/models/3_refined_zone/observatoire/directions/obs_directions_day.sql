@@ -5,7 +5,7 @@ MODEL (
     lookback 1,
     batch_size 30,
   ),
-  start '2020-01-01',
+  start '2020-01-01 00:00:00+0100',
   end 'now()',
   grain ['code','type','journey_date','direction'],
   tags ['refined', 'observatoire', 'directions_day'],
@@ -28,16 +28,16 @@ WITH hours AS (
     jsonb_object_agg(hour::text, journeys ORDER BY hour) AS hours_distribution
   FROM refined_zone.obs_directions_hours_day
   WHERE code IS NOT NULL
-  AND journey_date >= @start_ds
-  AND journey_date <  @end_ds
+  AND journey_date >= @start_ts
+  AND journey_date <  @end_ts
   GROUP BY code, type, journey_date, direction
 ),
 users AS (
   SELECT *
   FROM refined_zone.obs_directions_users_day
   WHERE code IS NOT NULL
-    AND journey_date >= @start_ds
-    AND journey_date <  @end_ds
+    AND journey_date >= @start_ts
+    AND journey_date <  @end_ts
 ),
 distances AS (
   SELECT
@@ -48,8 +48,8 @@ distances AS (
     jsonb_object_agg(dist_class::text, journeys ORDER BY dist_class) AS dist_distribution
   FROM refined_zone.obs_directions_distances_day
   WHERE code IS NOT NULL
-  AND journey_date >= @start_ds
-  AND journey_date <  @end_ds
+  AND journey_date >= @start_ts
+  AND journey_date <  @end_ts
   GROUP BY code, type, journey_date, direction
 )
 SELECT

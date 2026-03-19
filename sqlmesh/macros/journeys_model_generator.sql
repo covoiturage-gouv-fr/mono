@@ -1,79 +1,18 @@
+{#
+  journeys_model_generator(start_ts, end_ts)
+
+  Generates the base journey SELECT from live carpool_v2 source tables.
+
+  Usage:
+    - archive_zone journey models (archive_zone.journeys_YYYY)
+    - raw_zone _latest models that ingest live data (raw_zone.journeys_latest)
+
+  Data sources: carpool_v2 schema only (carpools, status, geo) plus
+  operator.operators and fraudcheck.labels for enrichment.
+  Must NOT reference trusted_zone, refined_zone or any materialised model.
+#}
 {% macro journeys_model_generator(start_ts, end_ts) %}
-    WITH carpools AS (
-      SELECT *
-      FROM carpool_v2.carpools
-      WHERE start_datetime >= ({{start_ts}}::timestamp - INTERVAL '1 day') AND start_datetime < ({{end_ts}}::timestamp + INTERVAL '1 day')
-    ),
-
-    perimeters_retablissement AS (
-      SELECT com, geom 
-      FROM trusted_zone.perimeters
-      WHERE year = EXTRACT(YEAR FROM {{start_ts}}::date)
-        AND com IN (
-          SELECT DISTINCT new_com 
-          FROM trusted_zone.com_evolution 
-          WHERE year = EXTRACT(YEAR FROM {{start_ts}}::date) 
-            AND mod = 21
-        )
-    ),
-
-    geocoding AS (
-      -- Cas 1: Communes non fusionnées (mod = 32)
-      SELECT
-        g.carpool_id,
-        COALESCE(cs.new_com, g.start_geo_code) AS start_geo_code,
-        COALESCE(ce.new_com, g.end_geo_code) AS end_geo_code,
-        g.updated_at AS geo_updated_at,
-        g.errors AS geo_errors
-      FROM carpool_v2.geo AS g
-      INNER JOIN carpools AS c ON g.carpool_id = c._id
-      LEFT JOIN trusted_zone.com_evolution cs 
-        ON g.start_geo_code = cs.old_com 
-        AND cs.mod = 32 
-        AND cs.year = EXTRACT(YEAR FROM {{start_ts}}::date)
-      LEFT JOIN trusted_zone.com_evolution ce 
-        ON g.end_geo_code = ce.old_com 
-        AND ce.mod = 32 
-        AND ce.year = EXTRACT(YEAR FROM {{start_ts}}::date)
-      WHERE g.start_geo_code NOT IN (
-        SELECT DISTINCT old_com 
-        FROM trusted_zone.com_evolution 
-        WHERE year = EXTRACT(YEAR FROM {{start_ts}}::date) AND mod = 21
-      )
-        OR g.end_geo_code NOT IN (
-        SELECT DISTINCT old_com 
-        FROM trusted_zone.com_evolution 
-        WHERE year = EXTRACT(YEAR FROM {{start_ts}}::date) AND mod = 21
-      )
-
-      UNION ALL
-
-      -- Cas 2: Communes fusionnées (mod = 21) - utiliser perimetres
-      SELECT
-        g.carpool_id,
-        COALESCE(ps.com, g.start_geo_code) AS start_geo_code,
-        COALESCE(pe.com, g.end_geo_code) AS end_geo_code,
-        g.updated_at AS geo_updated_at,
-        g.errors AS geo_errors
-      FROM carpool_v2.geo g
-      INNER JOIN carpools AS c ON g.carpool_id = c._id
-      LEFT JOIN perimeters_retablissement ps 
-        ON ST_Intersects(c.start_position::geometry, ps.geom)
-      LEFT JOIN perimeters_retablissement pe 
-        ON ST_Intersects(c.end_position::geometry, pe.geom)
-      WHERE g.start_geo_code IN (
-        SELECT DISTINCT old_com 
-        FROM trusted_zone.com_evolution 
-        WHERE year = EXTRACT(YEAR FROM {{start_ts}}::date) AND mod = 21
-      )
-        OR g.end_geo_code IN (
-        SELECT DISTINCT old_com 
-        FROM trusted_zone.com_evolution 
-        WHERE year = EXTRACT(YEAR FROM {{start_ts}}::date) AND mod = 21
-      )
-    ),
-
-    carpools_status AS (
+    WITH carpools_status AS (
       SELECT
         s.carpool_id,
         s.updated_at AS status_updated_at,
@@ -91,7 +30,7 @@
           FALSE
         ) AS valid_acquisition_status
       FROM carpool_v2.status AS s
-      INNER JOIN carpools AS c ON s.carpool_id = c._id
+      INNER JOIN carpool_v2.carpools AS c ON s.carpool_id = c._id
     ),
 
     fraud_labels AS (
@@ -99,7 +38,7 @@
         fl.carpool_id,
         ARRAY_AGG(fl.label) AS fraud_labels
       FROM fraudcheck.labels AS fl
-      INNER JOIN carpools AS c ON fl.carpool_id = c._id
+      INNER JOIN carpool_v2.carpools AS c ON fl.carpool_id = c._id
       GROUP BY 1
     ),
 
@@ -108,7 +47,7 @@
         al.carpool_id,
         ARRAY_AGG(al.label) AS anomaly_labels
       FROM fraudcheck.labels AS al
-      INNER JOIN carpools AS c ON al.carpool_id = c._id
+      INNER JOIN carpool_v2.carpools AS c ON al.carpool_id = c._id
       GROUP BY 1
     )
 
@@ -133,22 +72,22 @@
       -- start
       c.start_datetime,
       {{get_timezoned_timestamp("g.start_geo_code", "c.start_datetime")}} AS start_datetime_tz,
-      st_x(c.start_position::geometry)::float4                            AS start_position_x,
-      st_y(c.start_position::geometry)::float4                            AS start_position_y,
-      h3_lat_lng_to_cell((c.start_position::geometry)::point, 9)          AS start_h3_index,
+      st_x(c.start_position::geometry)::float4                           AS start_position_x,
+      st_y(c.start_position::geometry)::float4                           AS start_position_y,
+      h3_lat_lng_to_cell((c.start_position::geometry)::point, 9)         AS start_h3_index,
       g.start_geo_code,
 
       -- end
       c.end_datetime,
-      {{get_timezoned_timestamp("g.end_geo_code", "c.end_datetime")}}  AS end_datetime_tz,
-      st_x(c.end_position::geometry)::float4                            AS end_position_x,
-      st_y(c.end_position::geometry)::float4                            AS end_position_y,
-      h3_lat_lng_to_cell((c.end_position::geometry)::point, 9)         AS end_h3_index,
+      {{get_timezoned_timestamp("g.end_geo_code", "c.end_datetime")}} AS end_datetime_tz,
+      st_x(c.end_position::geometry)::float4                          AS end_position_x,
+      st_y(c.end_position::geometry)::float4                          AS end_position_y,
+      h3_lat_lng_to_cell((c.end_position::geometry)::point, 9)        AS end_h3_index,
       g.end_geo_code,
 
       -- geo
-      g.geo_errors,
-      g.geo_updated_at,
+      g.errors    AS geo_errors,
+      g.updated_at AS geo_updated_at,
 
       -- distance and duration
       c.distance,
@@ -188,17 +127,6 @@
       c.passenger_contribution,
       c.passenger_payments,
 
-      -- operator incentives
-      oi.operator_incentives_sirets,
-      oi.operator_incentives_amounts,
-      oi.operator_incentives_amount_total,
-      oi.operator_incentives,
-
-      -- RPC incentives
-      rpc.incentive_rpc AS campaign_incentives,
-      rpc.campaign_incentives_amount_total,
-      rpc.campaign_incentives_result_total,
-
       -- fraud status
       cs.fraud_status::VARCHAR AS fraud_status,
       fl.fraud_labels,
@@ -207,67 +135,18 @@
       cs.acquisition_status::VARCHAR AS acquisition_status,
       cs.status_updated_at,
       cs.final_acquisition_status,
-      cs.valid_acquisition_status,
+      cs.valid_acquisition_status
 
-      -- CEE applications existence
-      cee._id IS NOT NULL AS cee_application
-    
-    FROM carpools AS c
+    FROM carpool_v2.carpools AS c
 
     LEFT JOIN carpools_status AS cs ON c._id = cs.carpool_id
-    LEFT JOIN geocoding AS g ON c._id = g.carpool_id
-    LEFT JOIN fraud_labels AS fl ON c._id = fl.carpool_id
-    LEFT JOIN anomaly_labels AS al ON c._id = al.carpool_id
+    LEFT JOIN carpool_v2.geo AS g   ON g.carpool_id = c._id
+    LEFT JOIN fraud_labels AS fl    ON c._id = fl.carpool_id
+    LEFT JOIN anomaly_labels AS al  ON c._id = al.carpool_id
     LEFT JOIN operator.operators AS o ON c.operator_id = o._id
 
-    -- Join CEE applications to build a true/false flag
-    LEFT JOIN archive_zone.cee_applications cee ON cee.carpool_v2_id = c._id
-
-    -- Operator incentives with company names.
-    -- LATERAL join produces both aggregated arrays and a JSONB array [{siret, name, amount}, ...].
-    LEFT JOIN LATERAL (
-      SELECT
-        ARRAY_AGG(DISTINCT t.siret)  AS operator_incentives_sirets,
-        ARRAY_AGG(DISTINCT t.amount) AS operator_incentives_amounts,
-        SUM(t.amount)                AS operator_incentives_amount_total,
-        jsonb_agg(
-          jsonb_build_object(
-            'siret',  t.siret,
-            'name',   comp.legal_name,
-            'amount', t.amount
-          ) ORDER BY t.siret
-        )                            AS operator_incentives
-      FROM carpool_v2.operator_incentives t
-      LEFT JOIN company.companies comp ON comp.siret = t.siret
-      WHERE t.carpool_id = c._id
-        AND t.amount > 0
-    ) oi ON TRUE
-
-    -- RPC incentives with campaign and territory details.
-    -- LATERAL join avoids a full-table scan on policy.incentives.
-    LEFT JOIN LATERAL (
-      SELECT
-        jsonb_agg(
-          jsonb_build_object(
-            'campaign_id',   pp._id,
-            'campaign_name', pp.name,
-            'siret',         ccp.siret,
-            'name',          ttg.name,
-            'amount',        pi.amount,
-            'result',        pi.result
-          )
-        ) AS incentive_rpc,
-        SUM(pi.amount) AS campaign_incentives_amount_total,
-        SUM(pi.result) AS campaign_incentives_result_total
-      FROM archive_zone.campaign_incentives pi
-      LEFT JOIN policy.policies pp             ON pi.campaign_id    = pp._id
-      LEFT JOIN territory.territory_group ttg  ON pp.territory_id = ttg._id
-      LEFT JOIN company.companies ccp          ON ttg.company_id  = ccp._id
-      WHERE pi.carpool_v2_id = c._id
-    ) rpc ON TRUE
-
-    WHERE {{get_timezoned_timestamp("g.start_geo_code", "c.start_datetime")}} >= {{start_ts}}::timestamp 
-      AND {{get_timezoned_timestamp("g.start_geo_code", "c.start_datetime")}} < {{end_ts}}::timestamp
+    WHERE c.start_datetime >= {{start_ts}}::timestamp
+      AND c.start_datetime <  {{end_ts}}::timestamp
     ;
 
 {% endmacro %}

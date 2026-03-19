@@ -5,7 +5,7 @@ MODEL (
     lookback 1,
     batch_size 3,
   ),
-  start '2020-01-01',
+  start '2020-01-01 00:00:00+0100',
   end 'now()',
   cron '@monthly',
   grain ['code','type','quarter_date','direction'],
@@ -13,9 +13,9 @@ MODEL (
 );
 
 WITH journey_years AS (
-  SELECT EXTRACT(YEAR FROM @start_ds::date)::int AS year
+  SELECT EXTRACT(YEAR FROM @start_ts::date)::int AS year
   UNION
-  SELECT EXTRACT(YEAR FROM @end_ds::date)::int
+  SELECT EXTRACT(YEAR FROM @end_ts::date)::int
 ),
 perimeters_resolved AS (
   SELECT DISTINCT ON (p.arr, y.year)
@@ -36,7 +36,7 @@ journeys_enriched AS (
     j._id,
     j.driver_id,
     j.passenger_id,
-    DATE_TRUNC('quarter', j.start_datetime_tz)::date AS quarter_date,
+    DATE_TRUNC('quarter', j.start_datetime)::date AS quarter_date,
     ps.epci    AS start_epci,
     pe.epci    AS end_epci,
     ps.aom     AS start_aom,
@@ -49,20 +49,20 @@ journeys_enriched AS (
     pe.country AS end_country,
     j.start_geo_code AS start_com,
     j.end_geo_code   AS end_com,
-    CASE WHEN u_driver.first_date_driver       = j.start_datetime_tz::date THEN TRUE ELSE FALSE END AS is_new_driver,
-    CASE WHEN u_passenger.first_date_passenger = j.start_datetime_tz::date THEN TRUE ELSE FALSE END AS is_new_passenger
+    CASE WHEN u_driver.first_date_driver       = j.start_datetime::date THEN TRUE ELSE FALSE END AS is_new_driver,
+    CASE WHEN u_passenger.first_date_passenger = j.start_datetime::date THEN TRUE ELSE FALSE END AS is_new_passenger
   FROM trusted_zone.journeys j
   LEFT JOIN perimeters_resolved ps
          ON ps.arr = j.start_geo_code
-        AND ps.journey_year = EXTRACT(YEAR FROM j.start_datetime_tz)::int
+        AND ps.journey_year = EXTRACT(YEAR FROM j.start_datetime)::int
   LEFT JOIN perimeters_resolved pe
          ON pe.arr = j.end_geo_code
-        AND pe.journey_year = EXTRACT(YEAR FROM j.start_datetime_tz)::int
+        AND pe.journey_year = EXTRACT(YEAR FROM j.start_datetime)::int
   LEFT JOIN refined_zone.obs_users u_driver    ON u_driver.user_id    = j.driver_id
   LEFT JOIN refined_zone.obs_users u_passenger ON u_passenger.user_id = j.passenger_id
   WHERE j.valid_acquisition_status = true
-    AND j.start_datetime_tz >= @start_ds
-    AND j.start_datetime_tz <  @end_ds
+    AND j.start_datetime >= @start_ts
+    AND j.start_datetime <  @end_ts
 ),
 directions_non_aom AS (
   SELECT

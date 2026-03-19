@@ -107,5 +107,5 @@ def export_query_to_file(conn, query: str, columns: list, output_path: str, form
         "format": format,
       }
     except Exception as e:
-      print(f"Erreur pendant l'export: {str(e)}", exc_info=True)
+      print(f"Erreur pendant l'export: {str(e)}")
       raise

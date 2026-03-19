@@ -5,7 +5,7 @@ MODEL (
     lookback 1,
     batch_size 30,
   ),
-  start '2020-01-01',
+  start '2020-01-01 00:00:00+0100',
   end 'now()',
   grain ['start_geo_code','end_geo_code','journey_date'],
   tags ['refined', 'observatoire', 'journeys_by_day'],
@@ -16,7 +16,7 @@ WITH unnested_sirets AS (
     a._id,
     a.start_geo_code,
     a.end_geo_code,
-    a.start_datetime_tz::date AS journey_date,
+    a.start_datetime::date AS journey_date,
     s.siret,
     CASE 
       WHEN d.code IS NOT NULL
@@ -32,7 +32,7 @@ WITH unnested_sirets AS (
   LEFT JOIN (select distinct left(siret,9) as siren from operator.operators) c ON left(s.siret,9) = c.siren
   LEFT JOIN (select distinct code FROM trusted_zone.perimeters_agg WHERE type = 'aom') d ON left(s.siret,9) = d.code
   WHERE a.valid_acquisition_status = true
-  AND a.start_datetime_tz BETWEEN @start_ds AND @end_ds
+  AND a.start_datetime BETWEEN @start_ts AND @end_ts
 ),
 
 incentives_agg AS (
@@ -52,7 +52,7 @@ journeys_agg AS (
 SELECT 
   start_geo_code,
   end_geo_code,
-  start_datetime_tz::date AS journey_date,
+  start_datetime::date AS journey_date,
   count(DISTINCT _id)::int AS journeys,
   count(DISTINCT driver_id)::int AS drivers,
   count(DISTINCT passenger_id)::int AS passengers,
@@ -61,7 +61,7 @@ SELECT
   sum(duration) AS duration
 FROM trusted_zone.journeys
 WHERE valid_acquisition_status = true
-AND start_datetime_tz BETWEEN @start_ds AND @end_ds
+AND start_datetime BETWEEN @start_ts AND @end_ts
 GROUP BY 1,2,3
 )
 

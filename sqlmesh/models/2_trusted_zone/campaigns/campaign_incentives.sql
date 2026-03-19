@@ -16,8 +16,8 @@ SELECT
   territory_name,
   amount,
   result,
-  status,
-  state
+  status::VARCHAR AS status,
+  state::VARCHAR AS state
 FROM raw_zone.campaign_incentives_2019
 UNION
 SELECT
@@ -32,8 +32,8 @@ SELECT
   territory_name,
   amount,
   result,
-  status,
-  state
+  status::VARCHAR AS status,
+  state::VARCHAR AS state
 FROM raw_zone.campaign_incentives_2020
 UNION
 SELECT
@@ -48,8 +48,8 @@ SELECT
   territory_name,
   amount,
   result,
-  status,
-  state
+  status::VARCHAR AS status,
+  state::VARCHAR AS state
 FROM raw_zone.campaign_incentives_2021
 UNION
 SELECT
@@ -64,8 +64,8 @@ SELECT
   territory_name,
   amount,
   result,
-  status,
-  state
+  status::VARCHAR AS status,
+  state::VARCHAR AS state
 FROM raw_zone.campaign_incentives_2022
 UNION
 SELECT
@@ -80,8 +80,8 @@ SELECT
   territory_name,
   amount,
   result,
-  status,
-  state
+  status::VARCHAR AS status,
+  state::VARCHAR AS state
 FROM raw_zone.campaign_incentives_2023
 UNION
 SELECT
@@ -96,8 +96,8 @@ SELECT
   territory_name,
   amount,
   result,
-  status,
-  state
+  status::VARCHAR AS status,
+  state::VARCHAR AS state
 FROM raw_zone.campaign_incentives_2024
 UNION
 SELECT
@@ -112,8 +112,8 @@ SELECT
   territory_name,
   amount,
   result,
-  status,
-  state
+  status::VARCHAR AS status,
+  state::VARCHAR AS state
 FROM raw_zone.campaign_incentives_2025
 UNION
 SELECT
@@ -128,7 +128,7 @@ SELECT
   territory_name,
   amount,
   result,
-  status,
-  state
+  status::VARCHAR AS status,
+  state::VARCHAR AS state
 FROM raw_zone.campaign_incentives_latest;
 

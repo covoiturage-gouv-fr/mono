@@ -14,7 +14,7 @@ MODEL_COLUMNS = {
 }
 
 COLUMNS_TYPES = [
-    ("uuid",                  "UUID",      "uuid"),
+    ("_id",                   "UUID",      "uuid"),
     ("carpool_v2_id",         "BIGINT",    "carpool_v2_id"),
     ("operator_id",           "BIGINT",    "operator_id"),
     ("operator_journey_id",   "VARCHAR",   "operator_journey_id"),

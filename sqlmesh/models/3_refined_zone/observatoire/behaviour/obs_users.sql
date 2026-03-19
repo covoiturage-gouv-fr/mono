@@ -13,7 +13,7 @@ MODEL (
     passenger_count      INTEGER,
     total_count          INTEGER
   ),
-  start '2020-01-01',
+  start '2020-01-01 00:00:00+0100',
   end 'now()',
   grain 'user_id',
   tags ['refined', 'observatoire', 'users'],
@@ -22,24 +22,24 @@ MODEL (
 WITH journeys AS (
   SELECT
       driver_id AS user_id,
-      start_datetime_tz   AS driver_date,
+      start_datetime   AS driver_date,
       NULL::timestamp    AS passenger_date,
-      start_datetime_tz   AS journey_date,
+      start_datetime   AS journey_date,
       1::bigint           AS driver_count,
       0::bigint           AS passenger_count
   FROM trusted_zone.journeys
-  WHERE start_datetime_tz BETWEEN @start_ds AND @end_ds
+  WHERE start_datetime BETWEEN @start_ts AND @end_ts
   AND driver_id IS NOT NULL
   UNION ALL
   SELECT
       passenger_id AS user_id,
       NULL::timestamp       AS driver_date,
-      start_datetime_tz     AS passenger_date,
-      start_datetime_tz   AS journey_date,
+      start_datetime     AS passenger_date,
+      start_datetime   AS journey_date,
       0::bigint           AS driver_count,
       1::bigint           AS passenger_count
   FROM trusted_zone.journeys
-  WHERE start_datetime_tz BETWEEN @start_ds AND @end_ds
+  WHERE start_datetime BETWEEN @start_ts AND @end_ts
   AND passenger_id IS NOT NULL
 ),
 agg AS (
@@ -89,4 +89,4 @@ SELECT
 FROM agg a
 LEFT JOIN refined_zone.obs_users t ON t.user_id = a.user_id;
 
-CREATE UNIQUE INDEX IF NOT EXISTS obs_users_pk ON refined_zone.obs_users (user_id);
+@create_unique_index(@this_model, user_id, 'name=obs_users_pk');
