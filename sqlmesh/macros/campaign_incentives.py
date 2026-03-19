@@ -47,8 +47,8 @@ SELECT
   ttg.name AS territory_name,
   pi.amount,
   pi.result,
-  pi.status,
-  pi.state
+  pi.status::VARCHAR AS status,
+  pi.state::VARCHAR AS state
 
 FROM policy.incentives pi
 JOIN ni                                  ON pi._id = ni._id

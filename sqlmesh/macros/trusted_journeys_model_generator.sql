@@ -103,7 +103,7 @@ SELECT
   j.end_h3_index::h3index AS end_h3_index,
   COALESCE(geo.end_geo_code, j.end_geo_code) AS end_geo_code,
 
-  COALESCE(geo.geo_errors, j.geo_errors)::jsonb AS geo_errors,
+  COALESCE(geo.geo_errors, j.geo_errors::jsonb)::jsonb AS geo_errors,
   COALESCE(geo.geo_updated_at, j.geo_updated_at) AS geo_updated_at,
 
   j.distance,

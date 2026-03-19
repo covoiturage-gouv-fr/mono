@@ -6,7 +6,7 @@ MODEL (
 );
 
 SELECT
-  cee._id::VARCHAR AS uuid,
+  cee._id,
   COALESCE(cv2_id._id, cv2_journey._id) AS carpool_v2_id,
   cee.operator_id,
   cee.operator_journey_id,
