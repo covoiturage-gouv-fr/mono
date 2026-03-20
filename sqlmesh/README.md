@@ -73,8 +73,8 @@ flowchart LR
 ### 0_archive — Consolidation & backup
 
 - Lit uniquement les tables live (PostgreSQL, gateway par défaut)
-- Compile les données par année (`INCREMENTAL_BY_TIME_RANGE`)
-- Exporte au format parquet sur S3 (modèles Python `FULL`)
+- Compile les données par année (obligatoirement en `INCREMENTAL_BY_TIME_RANGE` pour limiter la consommation mémoire)
+- Export au format parquet sur S3 à partir des modèles SQL
 - **Aucun lien direct** vers les autres zones — le pipeline repart des fichiers S3
 
 ### 1_raw — Ingestion
@@ -99,7 +99,7 @@ flowchart LR
 - Se base **uniquement sur 2_trusted**
 - Gateway postgres (défaut)
 
-## Misc.
+## Misc
 
 ### Nommage des fichiers
 

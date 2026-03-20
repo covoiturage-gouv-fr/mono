@@ -29,7 +29,7 @@ COLUMNS_TYPES = [
 @model(
     "archive_zone.archive_cee_applications",
     columns=MODEL_COLUMNS,
-    tags=["archive", "cee"],
+    tags=["archive", "stage-2"],
     depends_on = ["archive_zone.cee_applications"]
 )
 def execute(context: ExecutionContext, **kwargs):

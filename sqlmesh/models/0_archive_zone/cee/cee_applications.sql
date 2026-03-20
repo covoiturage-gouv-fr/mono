@@ -7,7 +7,7 @@ MODEL (
   start '2015-01-01 00:00:00+0100',
   end '2025-06-01 00:00:00+0100',
   grain '_id',
-  tags ['archive', 'cee'],
+  tags ['archive', 'stage-1'],
 );
 
 SELECT

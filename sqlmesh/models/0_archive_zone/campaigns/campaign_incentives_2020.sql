@@ -8,7 +8,7 @@ MODEL (
   start '2020-01-01 00:00:00+0100',
   end   '2020-12-31 23:59:59+0100',
   grain '_id',
-  tags ['archive', 'campaign', 'incentives', '2020'],
+  tags ['archive', 'stage-1'],
   audits (
     assert_campaign_incentives_row_count_pg_to_archive,
     assert_campaign_incentives_missing_rows_pg_to_archive,

@@ -6,7 +6,7 @@ from utils.incentives_export import MODEL_COLUMNS, build_and_upload_incentives_y
     "archive_zone.archive_incentives_2019",
     kind="FULL",
     columns=MODEL_COLUMNS,
-    tags=["archive", "incentives", "2019"],
+    tags=["archive", "stage-2"],
     depends_on=["archive_zone.campaign_incentives_2019"],
 )
 def execute(context: ExecutionContext, **kwargs):
