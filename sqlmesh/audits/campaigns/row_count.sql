@@ -21,3 +21,19 @@ WHERE (
 ) != (
   SELECT COUNT(*) FROM @this_model
 );
+
+-- Direction: PG → Archive
+-- Attach to: archive_zone.campaign_incentives_* models
+AUDIT (
+  name assert_campaign_incentives_row_count_pg_to_archive,
+  blocking true
+);
+
+SELECT 1 AS failure
+WHERE (
+  SELECT COUNT(*)
+  FROM policy.incentives
+  WHERE datetime BETWEEN @start_ts AND @end_ts
+) != (
+  SELECT COUNT(*) FROM @this_model
+);

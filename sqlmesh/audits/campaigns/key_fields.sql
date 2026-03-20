@@ -21,3 +21,20 @@ WHERE pi.datetime BETWEEN @start_ts AND @end_ts
     OR pi.amount    IS DISTINCT FROM t.amount
     OR pi.status::VARCHAR IS DISTINCT FROM t.status
   );
+
+-- Direction: PG → Archive
+-- Attach to: archive_zone.campaign_incentives_* models
+AUDIT (
+  name assert_campaign_incentives_key_fields_pg_to_archive,
+  blocking false
+);
+
+SELECT pi._id
+FROM policy.incentives pi
+INNER JOIN @this_model t ON t._id = pi._id
+WHERE pi.datetime BETWEEN @start_ts AND @end_ts
+  AND (
+    pi.policy_id    IS DISTINCT FROM t.campaign_id
+    OR pi.amount    IS DISTINCT FROM t.amount
+    OR pi.status::VARCHAR IS DISTINCT FROM t.status
+  );

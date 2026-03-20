@@ -18,3 +18,17 @@ WHERE pi.datetime BETWEEN @start_ts AND @end_ts
   AND NOT EXISTS (
     SELECT 1 FROM @this_model t WHERE t._id = pi._id
   );
+
+-- Direction: PG → Archive
+-- Attach to: archive_zone.campaign_incentives_* models
+AUDIT (
+  name assert_campaign_incentives_missing_rows_pg_to_archive,
+  blocking true
+);
+
+SELECT pi._id
+FROM policy.incentives pi
+WHERE pi.datetime BETWEEN @start_ts AND @end_ts
+  AND NOT EXISTS (
+    SELECT 1 FROM @this_model t WHERE t._id = pi._id
+  );
