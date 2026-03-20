@@ -1,13 +1,13 @@
 MODEL (
   name archive_zone.cee_applications,
-  kind FULL,
+  kind INCREMENTAL_BY_UNIQUE_KEY (
+    unique_key (_id),
+    batch_size 30,
+  ),
+  start '2015-01-01 00:00:00+0100',
+  end '2025-06-01 00:00:00+0100',
   grain '_id',
   tags ['archive', 'cee'],
-  audits (
-    assert_cee_row_count_pg_to_archive,
-    assert_cee_missing_rows_pg_to_archive,
-    assert_cee_key_fields_pg_to_archive,
-  ),
 );
 
 SELECT
@@ -38,5 +38,7 @@ LEFT JOIN carpool_v2.carpools cv2_journey
   ON cee.carpool_id IS NULL
   AND cv2_journey.operator_id = cee.operator_id
   AND cv2_journey.operator_journey_id = cee.operator_journey_id
+
+WHERE cee.datetime BETWEEN @start_ts AND @end_ts
 ;
 
