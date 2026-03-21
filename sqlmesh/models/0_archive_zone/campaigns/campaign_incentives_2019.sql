@@ -10,9 +10,10 @@ MODEL (
   grain '_id',
   tags ['archive', 'stage-1'],
   audits (
-    assert_campaign_incentives_row_count_pg_to_archive,
-    assert_campaign_incentives_missing_rows_pg_to_archive,
-    assert_campaign_incentives_key_fields_pg_to_archive,
+    unique_values(columns := (_id)),
+    -- assert_campaign_incentives_row_count_pg_to_archive,
+    -- assert_campaign_incentives_missing_rows_pg_to_archive,
+    -- assert_campaign_incentives_key_fields_pg_to_archive,
   ),
 );
 

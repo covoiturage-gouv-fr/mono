@@ -8,6 +8,9 @@ MODEL (
   end '2025-06-01 00:00:00+0100',
   grain '_id',
   tags ['archive', 'stage-1'],
+  audits (
+    unique_values(columns := (_id)),
+  ),
 );
 
 SELECT
