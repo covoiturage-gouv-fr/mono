@@ -35,7 +35,7 @@ cp .env.example .env
 
 ## Architecture en zones
 
-Les données sont organisées en 4 zones. Les modèles SQL sont définis dans `models/`, chaque zone dans son propre sous-dossier. L'organisation des dossiers n'influe pas sur les dépendances entre modèles, qui sont définies dans chacun d'eux.
+Les données sont organisées en 3 zones. Les modèles SQL sont définis dans `models/`, chaque zone dans son propre sous-dossier. L'organisation des dossiers n'influe pas sur les dépendances entre modèles, qui sont définies dans chacun d'eux.
 
 ### Cycle de la donnée
 
@@ -43,11 +43,9 @@ Les données sont organisées en 4 zones. Les modèles SQL sont définis dans `m
 flowchart LR
   subgraph sources["Sources externes"]
     tiers["Services tiers\n(IGN, INSEE, data.gouv.fr)"]
-    s3[("S3\nParquet")]
   end
 
   subgraph sqlmesh["SQLMesh"]
-    archive["0_archive\nConsolidation annuelle"]
     raw["1_raw\nIngestion"]
     trusted["2_trusted\nConsolidation"]
     refined["3_refined\nBI & exports"]
@@ -59,9 +57,7 @@ flowchart LR
     obs["Observatoire"]
   end
 
-  live[("Live DB\n(PostgreSQL)")] --> archive
-  archive -->|"export parquet"| s3
-  s3 -->|"read_parquet\n(DuckDB)"| raw
+  live[("Live DB\n(PostgreSQL)")] --> raw
   tiers -->|"Python models"| raw
   raw --> trusted
   trusted --> refined
@@ -70,18 +66,11 @@ flowchart LR
   refined --> obs
 ```
 
-### 0_archive — Consolidation & backup
-
-- Lit uniquement les tables live (PostgreSQL, gateway par défaut)
-- Compile les données par année (obligatoirement en `INCREMENTAL_BY_TIME_RANGE` pour limiter la consommation mémoire)
-- Export au format parquet sur S3 à partir des modèles SQL
-- **Aucun lien direct** vers les autres zones — le pipeline repart des fichiers S3
-
 ### 1_raw — Ingestion
 
 - Charge les données **externes** (IGN, INSEE, data.gouv.fr…) via des modèles Python
-- Charge les données RPC depuis les **fichiers parquet sur S3** (gateway `duckdb`, `read_parquet()`)
-- **Aucun lien vers 0_archive** — les parquets S3 sont traités comme une source externe
+- Charge les données RPC **directement depuis la base live** (PostgreSQL, gateway par défaut)
+- Données partitionnées par année (modèles `_YYYY`) + fenêtre glissante (`_latest`)
 - Pas de jointures complexes : trajets, incitations, données géo sont ingérés séparément
 - Crée les index nécessaires aux jointures des zones suivantes
 
@@ -132,7 +121,7 @@ Macros disponibles dans `macros/` :
 
 | Macro | Usage |
 |-------|-------|
-| `journeys_model_generator(start_ts, end_ts)` | Génère le SELECT de base depuis `carpool_v2` (archive + raw latest) |
+| `journeys_model_generator(start_ts, end_ts)` | Génère le SELECT de base depuis `carpool_v2` (raw yearly + raw latest) |
 | `trusted_journeys_model_generator(source, start_ts, end_ts)` | Transformations et enrichissements pour trusted_zone |
 | `get_timezoned_timestamp(geo_code, ts)` | Convertit un timestamp UTC en heure locale selon le code geo |
 | `get_final_acquisition_status_list()` | Retourne la liste des statuts d'acquisition finaux |
@@ -203,38 +192,33 @@ Un audit retourne les lignes en anomalie — s'il retourne zéro lignes, l'audit
 
 - Chaque fichier d'audit contient un ou plusieurs blocs `AUDIT` pour un même domaine
 - 3 types d'audit : **row_count** (nombre de lignes), **missing_rows** (lignes manquantes), **key_fields** (cohérence des champs clés)
-- Direction de comparaison indiquée dans le nom : `pg_to_archive` (Live PG → Archive) ou `pg_to_raw` (Live PG → Raw)
+- Direction de comparaison : `pg_to_raw` (Live PG → Raw)
 - Row count et missing rows sont **blocking**, key fields sont **non-blocking**
 
 **Inventaire des audits :**
 
 | Fichier | Audit | Blocking | Modèles attachés |
 |---------|-------|----------|------------------|
-| `audits/journeys/row_count.sql` | `assert_journeys_row_count_pg_to_archive` | oui | `archive_zone.journeys_*` |
-| | `assert_journeys_row_count_pg_to_raw` | oui | `raw_zone.journeys_latest` |
-| `audits/journeys/missing_rows.sql` | `assert_journeys_missing_rows_pg_to_archive` | oui | `archive_zone.journeys_*` |
-| | `assert_journeys_missing_rows_pg_to_raw` | oui | `raw_zone.journeys_latest` |
-| `audits/journeys/key_fields.sql` | `assert_journeys_key_fields_pg_to_archive` | non | `archive_zone.journeys_*` |
-| | `assert_journeys_key_fields_pg_to_raw` | non | `raw_zone.journeys_latest` |
-| `audits/campaigns/incentives.sql` | `assert_campaign_incentives_complete` | non | `raw_zone.campaign_incentives_latest` |
-| `audits/campaigns/row_count.sql` | `assert_campaign_incentives_row_count_pg_to_raw` | oui | `raw_zone.campaign_incentives_latest` |
-| `audits/campaigns/missing_rows.sql` | `assert_campaign_incentives_missing_rows_pg_to_raw` | oui | `raw_zone.campaign_incentives_latest` |
-| `audits/campaigns/key_fields.sql` | `assert_campaign_incentives_key_fields_pg_to_raw` | non | `raw_zone.campaign_incentives_latest` |
-| `audits/cee/row_count.sql` | `assert_cee_row_count_pg_to_archive` | oui | `archive_zone.cee_applications` |
-| `audits/cee/missing_rows.sql` | `assert_cee_missing_rows_pg_to_archive` | oui | `archive_zone.cee_applications` |
-| `audits/cee/key_fields.sql` | `assert_cee_key_fields_pg_to_archive` | non | `archive_zone.cee_applications` |
-
-> **Note :** Les modèles annuels raw_zone (DuckDB/parquet) ne peuvent pas être audités cross-gateway depuis PostgreSQL. Les audits `pg_to_raw` ciblent les modèles `_latest` (gateway postgres) qui lisent directement la base live.
+| `audits/journeys/row_count.sql` | `assert_journeys_row_count_pg_to_raw` | oui | `raw_zone.journeys_*` |
+| `audits/journeys/missing_rows.sql` | `assert_journeys_missing_rows_pg_to_raw` | oui | `raw_zone.journeys_*` |
+| `audits/journeys/key_fields.sql` | `assert_journeys_key_fields_pg_to_raw` | non | `raw_zone.journeys_*` |
+| `audits/campaigns/incentives.sql` | `assert_campaign_incentives_complete` | non | `raw_zone.campaign_incentives_*` |
+| `audits/campaigns/row_count.sql` | `assert_campaign_incentives_row_count_pg_to_raw` | oui | `raw_zone.campaign_incentives_*` |
+| `audits/campaigns/missing_rows.sql` | `assert_campaign_incentives_missing_rows_pg_to_raw` | oui | `raw_zone.campaign_incentives_*` |
+| `audits/campaigns/key_fields.sql` | `assert_campaign_incentives_key_fields_pg_to_raw` | non | `raw_zone.campaign_incentives_*` |
+| `audits/cee/row_count.sql` | `assert_cee_row_count_pg_to_raw` | oui | `raw_zone.cee_applications` |
+| `audits/cee/missing_rows.sql` | `assert_cee_missing_rows_pg_to_raw` | oui | `raw_zone.cee_applications` |
+| `audits/cee/key_fields.sql` | `assert_cee_key_fields_pg_to_raw` | non | `raw_zone.cee_applications` |
 
 **Exemple — référencer un audit dans un modèle :**
 
 ```sql
 MODEL (
-  name archive_zone.journeys_2024,
+  name raw_zone.journeys_2024,
   audits (
-    assert_journeys_row_count_pg_to_archive,
-    assert_journeys_missing_rows_pg_to_archive,
-    assert_journeys_key_fields_pg_to_archive,
+    assert_journeys_row_count_pg_to_raw,
+    assert_journeys_missing_rows_pg_to_raw,
+    assert_journeys_key_fields_pg_to_raw,
   ),
   ...
 );

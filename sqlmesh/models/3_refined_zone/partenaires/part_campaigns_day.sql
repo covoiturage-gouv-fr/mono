@@ -10,14 +10,15 @@ MODEL (
   tags ['refined', 'partenaires']
 );
 
-SELECT 
+SELECT
   b._id as campaign_id,
   a.start_datetime_tz::date as start_date,
   a.operator_id,
   COUNT(distinct a._id) AS journeys,
-  COUNT(distinct a._id) FILTER (WHERE a.policy_incentives_amount_total > 0) AS incented_journeys,
-  SUM(a.policy_incentives_amount_total) AS incentive_amount
+  COUNT(distinct a._id) FILTER (WHERE a.campaign_incentives_amount_total > 0) AS incented_journeys,
+  SUM(a.campaign_incentives_amount_total) AS incentive_amount
 FROM trusted_zone.journeys a
-LEFT JOIN policy.policies b ON a.policy_id = b._id
+LEFT JOIN trusted_zone.campaign_incentives ci ON ci.carpool_v2_id = a._id
+LEFT JOIN policy.policies b ON ci.campaign_id = b._id
 WHERE a.valid_acquisition_status
 GROUP BY 1, 2, 3;

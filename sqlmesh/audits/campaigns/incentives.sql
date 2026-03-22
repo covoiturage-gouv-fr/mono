@@ -1,10 +1,10 @@
--- Audit: assert_campaign_incentives_complete
+-- Audit: assert_incentives_complete
 -- Checks that every record in policy.incentives for the evaluated time window
--- has been normalised and is present in raw_zone.campaign_incentives.
+-- has been normalised and is present in raw_zone.incentives.
 -- Non-blocking: reports missing rows without halting the pipeline.
 
 AUDIT (
-  name assert_campaign_incentives_complete,
+  name assert_incentives_complete,
   blocking false
 );
 

@@ -2,10 +2,10 @@
 -- Finds rows present in source but absent in target (by _id).
 -- Any returned row means the audit fails.
 
--- Direction: PG → Archive
--- Attach to: archive_zone.cee_applications
+-- Direction: PG → Raw
+-- Attach to: raw_zone.cee_applications
 AUDIT (
-  name assert_cee_missing_rows_pg_to_archive,
+  name assert_cee_missing_rows_pg_to_raw,
   blocking true
 );
 
