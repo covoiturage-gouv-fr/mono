@@ -2,10 +2,10 @@
 -- Compares row counts between source and target.
 -- Returns a row when counts differ (causing the audit to fail).
 
--- Direction: PG → Archive
--- Attach to: archive_zone.cee_applications
+-- Direction: PG → Raw
+-- Attach to: raw_zone.cee_applications
 AUDIT (
-  name assert_cee_row_count_pg_to_archive,
+  name assert_cee_row_count_pg_to_raw,
   blocking true
 );
 

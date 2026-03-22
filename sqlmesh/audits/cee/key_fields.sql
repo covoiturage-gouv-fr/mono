@@ -1,14 +1,11 @@
 -- Audit: Key field consistency for CEE applications
 -- For rows that exist in both source and target, verifies critical columns match.
 -- Checked fields: operator_id, datetime, journey_type
---
--- Note: carpool_v2_id is resolved via joins in the archive model so we compare
--- the resolved value rather than the raw cee.carpool_id.
 
--- Direction: PG → Archive
--- Attach to: archive_zone.cee_applications
+-- Direction: PG → Raw
+-- Attach to: raw_zone.cee_applications
 AUDIT (
-  name assert_cee_key_fields_pg_to_archive,
+  name assert_cee_key_fields_pg_to_raw,
   blocking false
 );
 

@@ -1,14 +1,17 @@
-from sqlmesh import macro
+{#
+  incentives_model_generator(start_ts, end_ts)
 
+  Generates the incentives SELECT from live policy.incentives source tables.
 
-def build_incentives_query(start_ts, end_ts) -> str:
-    """Build the incentives SELECT query for a given date range.
+  Usage:
+    - raw_zone yearly models (raw_zone.incentives_YYYY)
+    - raw_zone _latest model (raw_zone.incentives_latest)
 
-    Queries policy.incentives and related source tables directly.
-    Can be imported by Python models/utilities or called as a SQLMesh macro
-    with @campaign_incentives(@start_ts, @end_ts) in SQL models.
-    """
-    return f"""
+  Data sources: policy.incentives, carpool_v2.carpools, carpool.carpools,
+  policy.policies, territory.territory_group, company.companies.
+  Must NOT reference trusted_zone, refined_zone or any materialised model.
+#}
+{% macro incentives_model_generator(start_ts, end_ts) %}
 WITH ni AS (
   SELECT
     pi._id,
@@ -19,7 +22,7 @@ WITH ni AS (
   LEFT JOIN carpool_v2.carpools c2
     ON pi.operator_id = c2.operator_id AND pi.operator_journey_id = c2.operator_journey_id
   WHERE pi.operator_id IS NOT NULL AND pi.operator_journey_id IS NOT NULL
-    AND pi.datetime BETWEEN '{start_ts}' AND '{end_ts}'
+    AND pi.datetime BETWEEN {{start_ts}}::timestamp AND {{end_ts}}::timestamp
 
   UNION
 
@@ -34,7 +37,7 @@ WITH ni AS (
   LEFT JOIN carpool_v2.carpools c2 ON c1.acquisition_id = c2.legacy_id
   WHERE pi.carpool_id IS NOT NULL
     AND (pi.operator_id IS NULL OR pi.operator_journey_id IS NULL)
-    AND pi.datetime BETWEEN '{start_ts}' AND '{end_ts}'
+    AND pi.datetime BETWEEN {{start_ts}}::timestamp AND {{end_ts}}::timestamp
 )
 
 SELECT DISTINCT
@@ -58,15 +61,7 @@ LEFT JOIN policy.policies pp             ON pi.policy_id    = pp._id
 LEFT JOIN territory.territory_group ttg  ON pp.territory_id = ttg._id
 LEFT JOIN company.companies ccp          ON ttg.company_id  = ccp._id
 
+WHERE pi.datetime BETWEEN {{start_ts}}::timestamp AND {{end_ts}}::timestamp
 ORDER BY pi.datetime
-"""
-
-
-@macro()
-def campaign_incentives(evaluator, start_ts, end_ts):
-    """SQLMesh macro wrapper around build_incentives_query.
-
-    Usage in SQL models:
-        @campaign_incentives(@start_ts, @end_ts)
-    """
-    return build_incentives_query(str(start_ts).strip("'"), str(end_ts).strip("'"))
+;
+{% endmacro %}

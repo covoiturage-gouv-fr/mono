@@ -4,8 +4,8 @@
   Generates the base journey SELECT from live carpool_v2 source tables.
 
   Usage:
-    - archive_zone journey models (archive_zone.journeys_YYYY)
-    - raw_zone _latest models that ingest live data (raw_zone.journeys_latest)
+    - raw_zone yearly models (raw_zone.journeys_YYYY)
+    - raw_zone _latest model (raw_zone.journeys_latest)
 
   Data sources: carpool_v2 schema only (carpools, status, geo) plus
   operator.operators and fraudcheck.labels for enrichment.

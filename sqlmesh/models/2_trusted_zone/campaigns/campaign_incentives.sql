@@ -18,7 +18,7 @@ SELECT
   result,
   status::VARCHAR AS status,
   state::VARCHAR AS state
-FROM raw_zone.campaign_incentives_2019
+FROM raw_zone.incentives_2019
 UNION
 SELECT
   _id,
@@ -34,7 +34,7 @@ SELECT
   result,
   status::VARCHAR AS status,
   state::VARCHAR AS state
-FROM raw_zone.campaign_incentives_2020
+FROM raw_zone.incentives_2020
 UNION
 SELECT
   _id,
@@ -50,7 +50,7 @@ SELECT
   result,
   status::VARCHAR AS status,
   state::VARCHAR AS state
-FROM raw_zone.campaign_incentives_2021
+FROM raw_zone.incentives_2021
 UNION
 SELECT
   _id,
@@ -66,7 +66,7 @@ SELECT
   result,
   status::VARCHAR AS status,
   state::VARCHAR AS state
-FROM raw_zone.campaign_incentives_2022
+FROM raw_zone.incentives_2022
 UNION
 SELECT
   _id,
@@ -82,7 +82,7 @@ SELECT
   result,
   status::VARCHAR AS status,
   state::VARCHAR AS state
-FROM raw_zone.campaign_incentives_2023
+FROM raw_zone.incentives_2023
 UNION
 SELECT
   _id,
@@ -98,7 +98,7 @@ SELECT
   result,
   status::VARCHAR AS status,
   state::VARCHAR AS state
-FROM raw_zone.campaign_incentives_2024
+FROM raw_zone.incentives_2024
 UNION
 SELECT
   _id,
@@ -114,7 +114,7 @@ SELECT
   result,
   status::VARCHAR AS status,
   state::VARCHAR AS state
-FROM raw_zone.campaign_incentives_2025
+FROM raw_zone.incentives_2025
 UNION
 SELECT
   _id,
@@ -130,5 +130,4 @@ SELECT
   result,
   status::VARCHAR AS status,
   state::VARCHAR AS state
-FROM raw_zone.campaign_incentives_latest;
-
+FROM raw_zone.incentives_latest;
