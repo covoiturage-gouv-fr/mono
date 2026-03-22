@@ -11,7 +11,10 @@ AUDIT (
 
 SELECT 1 AS failure
 WHERE (
-  SELECT COUNT(*) FROM cee.cee_applications
+  SELECT COUNT(*)
+  FROM cee.cee_applications
+  WHERE datetime >= @start_ts::timestamp
+    AND datetime <  @end_ts::timestamp
 ) != (
   SELECT COUNT(*) FROM @this_model
 );

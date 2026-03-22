@@ -12,8 +12,10 @@ AUDIT (
 SELECT cee._id
 FROM cee.cee_applications cee
 INNER JOIN @this_model t ON t._id = cee._id
-WHERE (
-  cee.operator_id    IS DISTINCT FROM t.operator_id
-  OR cee.datetime    IS DISTINCT FROM t.datetime
-  OR cee.journey_type::VARCHAR IS DISTINCT FROM t.journey_type
-);
+WHERE cee.datetime >= @start_ts::timestamp
+  AND cee.datetime <  @end_ts::timestamp
+  AND (
+    cee.operator_id    IS DISTINCT FROM t.operator_id
+    OR cee.datetime    IS DISTINCT FROM t.datetime
+    OR cee.journey_type::VARCHAR IS DISTINCT FROM t.journey_type
+  );

@@ -11,6 +11,8 @@ AUDIT (
 
 SELECT cee._id
 FROM cee.cee_applications cee
-WHERE NOT EXISTS (
-  SELECT 1 FROM @this_model t WHERE t._id = cee._id
-);
+WHERE cee.datetime >= @start_ts::timestamp
+  AND cee.datetime <  @end_ts::timestamp
+  AND NOT EXISTS (
+    SELECT 1 FROM @this_model t WHERE t._id = cee._id
+  );

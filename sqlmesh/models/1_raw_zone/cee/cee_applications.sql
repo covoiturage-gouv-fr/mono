@@ -1,6 +1,11 @@
 MODEL (
   name raw_zone.cee_applications,
-  kind FULL,
+  kind INCREMENTAL_BY_TIME_RANGE (
+    time_column datetime,
+    lookback 3,
+    batch_size 30,
+  ),
+  start '2020-01-01 00:00:00+0100',
   grain [_id],
   tags ['raw', 'cee'],
   audits (
@@ -8,18 +13,6 @@ MODEL (
     assert_cee_missing_rows_pg_to_raw,
     assert_cee_key_fields_pg_to_raw,
   ),
-  columns (
-    _id BIGINT,
-    carpool_v2_id BIGINT,
-    operator_id BIGINT,
-    operator_journey_id VARCHAR,
-    datetime TIMESTAMP,
-    journey_type VARCHAR,
-    is_specific BOOLEAN,
-    application_timestamp TIMESTAMP,
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP,
-  )
 );
 
 SELECT
@@ -41,4 +34,5 @@ LEFT JOIN carpool_v2.carpools cv2_id
 LEFT JOIN carpool_v2.carpools cv2_journey
   ON cee.carpool_id IS NULL
   AND cv2_journey.operator_id = cee.operator_id
-  AND cv2_journey.operator_journey_id = cee.operator_journey_id;
+  AND cv2_journey.operator_journey_id = cee.operator_journey_id
+WHERE cee.datetime BETWEEN @start_ts AND @end_ts;
