@@ -48,5 +48,8 @@ model_defaults:
 linter:
   enabled: true
   rules:
-    - ambiguousorinvalidcolumn
+    # 2026-03-22: disabled ambiguousorinvalidcolumn — DuckDB binder cannot
+    # handle LEFT JOIN LATERAL (PostgreSQL syntax) used in trusted_journeys_model_generator,
+    # causing false "column referenced before it is defined" errors during plan.
+    # - ambiguousorinvalidcolumn
     - invalidselectstarexpansion
