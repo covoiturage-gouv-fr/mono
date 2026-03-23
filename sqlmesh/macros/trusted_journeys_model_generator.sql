@@ -63,9 +63,9 @@ geocoding AS (
   FROM carpool_v2.geo g
   INNER JOIN batch AS b ON g.carpool_id = b._id
   LEFT JOIN perimeters_retablissement ps
-    ON ST_Intersects(ST_Point(b.start_position_x, b.start_position_y)::geometry, ps.geom)
+    ON ST_Intersects(ST_SetSRID(ST_Point(b.start_position_x, b.start_position_y), 4326), ps.geom)
   LEFT JOIN perimeters_retablissement pe
-    ON ST_Intersects(ST_Point(b.end_position_x, b.end_position_y)::geometry, pe.geom)
+    ON ST_Intersects(ST_SetSRID(ST_Point(b.end_position_x, b.end_position_y), 4326), pe.geom)
   WHERE g.start_geo_code IN (
       SELECT DISTINCT old_com
       FROM trusted_zone.com_evolution
@@ -93,13 +93,13 @@ SELECT
 
   j.start_datetime,
   {{get_timezoned_timestamp("COALESCE(geo.start_geo_code, j.start_geo_code)", "j.start_datetime")}} AS start_datetime_tz,
-  ST_Point(j.start_position_x, j.start_position_y) AS start_position,
+  ST_SetSRID(ST_Point(j.start_position_x, j.start_position_y), 4326) AS start_position,
   j.start_h3_index::h3index AS start_h3_index,
   COALESCE(geo.start_geo_code, j.start_geo_code) AS start_geo_code,
 
   j.end_datetime,
   {{get_timezoned_timestamp("COALESCE(geo.end_geo_code, j.end_geo_code)", "j.end_datetime")}} AS end_datetime_tz,
-  ST_Point(j.end_position_x, j.end_position_y) AS end_position,
+  ST_SetSRID(ST_Point(j.end_position_x, j.end_position_y), 4326) AS end_position,
   j.end_h3_index::h3index AS end_h3_index,
   COALESCE(geo.end_geo_code, j.end_geo_code) AS end_geo_code,
 
