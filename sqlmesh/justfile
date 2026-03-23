@@ -1,0 +1,10 @@
+set dotenv-load
+set shell := ["bash", "-uc"]
+
+# List available just commands
+default:
+  @just --list
+
+# Identify orphaned SQLMesh snapshot tables and views (--apply to execute drops)
+cleanup-orphans *args:
+  python scripts/cleanup_orphans.py {{ args }}
