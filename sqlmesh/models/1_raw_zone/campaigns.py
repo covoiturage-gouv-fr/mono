@@ -42,10 +42,10 @@ COLUMN_TYPES = {
 }
 
 @model(
-    "raw_zone.incentive_campaigns",
+    "raw_zone.campaigns",
     kind="FULL",
     columns=COLUMN_TYPES,
-    tags=["raw", "incentive_campaigns"],
+    tags=["raw", "campaigns"],
 )
 def execute(
     context: ExecutionContext,
