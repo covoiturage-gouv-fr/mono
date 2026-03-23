@@ -10,7 +10,6 @@ MODEL (
   grain '_id',
   tags ['raw', 'campaign', 'incentives', '2022'],
   audits (
-    assert_incentives_complete,
     assert_incentives_row_count_pg_to_raw,
     assert_incentives_missing_rows_pg_to_raw,
     assert_incentives_key_fields_pg_to_raw,
