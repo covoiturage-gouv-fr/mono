@@ -2,7 +2,7 @@
 
 RPC Data exploration with jupyter notebook
 
-## Python (3.10.6)
+##  Python (3.10.6)
 
 ## Create virtualenv
 
@@ -45,7 +45,7 @@ This will create a pre-commit hook in `.git` folder
 pre-commit install
 ```
 
-https://zhauniarovich.com/post/2020/2020-06-clearing-jupyter-output/
+<https://zhauniarovich.com/post/2020/2020-06-clearing-jupyter-output/>
 
 Please use untracked playground folder as much as possible for local analysis
 
@@ -56,6 +56,6 @@ Please use untracked playground folder as much as possible for local analysis
 - `/run/helpers` utility functions reused across notebooks
 - `/run/tests` unit tests for python helpers
 
-## Tips
+##  Tips
 
-- In order to run `distance_duration_anomalycheck.ipynb` localy, it is possible to proxy forward osrm that run on the cluster
+- OSRM runs on the cluster. Port-forward it locally with `just forward osrm` (from the infra repository) before running `distance_duration_anomalycheck.ipynb`

@@ -199,6 +199,14 @@ Copier `.env.example` vers `.env` et configurer les valeurs.
 > Préfixe de bucket configurable via `AWS_BUCKET_PREFIX`. Override par bucket possible via `AWS_BUCKET_{NAME}_ENDPOINT`.
 > Buckets utilisés : `APDF`, `Export`, `Public`, `GeoDatasetsMirror`.
 
+#### OSRM (calcul de routes)
+
+| Variable | Requis | Défaut | Description |
+| --- | --- | --- | --- |
+| `OSRM_URL` | Non | `http://localhost:5000` | URL du serveur OSRM pour le calcul distance/durée |
+
+> OSRM tourne sur le cluster Kubernetes. Pour le développement local, lancer `just forward osrm` pour exposer le service sur `localhost:5000` à partir du dépôt de l'infra.
+
 #### Cache de routes (proxy Redis)
 
 | Variable | Requis | Défaut | Description |

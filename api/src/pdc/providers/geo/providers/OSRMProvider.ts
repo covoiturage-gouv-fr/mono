@@ -3,17 +3,14 @@ import { env_or_fail } from "@/lib/env/index.ts";
 import fetcher from "@/lib/fetcher/index.ts";
 import { logger } from "@/lib/logger/index.ts";
 import { get } from "@/lib/object/index.ts";
-import {
-  PointInterface,
-  RouteMeta,
-  RouteMetaProviderInterface,
-} from "../interfaces/index.ts";
+import { PointInterface, RouteMeta, RouteMetaProviderInterface } from "../interfaces/index.ts";
 
 @provider()
 export class OSRMProvider implements RouteMetaProviderInterface {
+  // Requires port-forwarding: just forward osrm in the infra repository
   protected domain = env_or_fail(
     "OSRM_URL",
-    "http://osrm.covoiturage.beta.gouv.fr:5000",
+    "http://localhost:5000",
   );
 
   async getRouteMeta(
