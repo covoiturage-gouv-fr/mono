@@ -8,15 +8,10 @@ MODEL (
   start '2020-01-01 00:00:00+0100',
   grain ['code','type','journey_date','hour','direction'],
   tags ['refined', 'observatoire', 'directions_hours_day'],
-  pre_statements  [ 
-    @create_temp_table(@temp_table_name('refined_zone','temp_directions_hours', @start_ts, @end_ts), @temp_directions_query(@start_ts, @end_ts)),
-    @create_unique_index(@temp_table_name('refined_zone','temp_directions_hours', @start_ts, @end_ts), _id, code, type, direction),
-  ],
-  post_statements [ 
-    @drop_temp_table(@temp_table_name('refined_zone','temp_directions_hours', @start_ts, @end_ts)),
-    @create_unique_index(@this_model, code, type, journey_date, hour, direction)
-  ],
 );
+
+@create_temp_table(@temp_table_name('refined_zone','temp_directions_hours', @start_ts, @end_ts), @temp_directions_query(@start_ts, @end_ts));
+@create_unique_index(@temp_table_name('refined_zone','temp_directions_hours', @start_ts, @end_ts), _id, code, type, direction);
 
 SELECT
   code,
@@ -59,4 +54,7 @@ SELECT
 FROM @temp_table_name('refined_zone','temp_directions_hours', @start_ts, @end_ts)
 WHERE code IS NOT NULL
   AND direction = 'from'
-GROUP BY 1,2,3,4
+GROUP BY 1,2,3,4;
+
+@drop_temp_table(@temp_table_name('refined_zone','temp_directions_hours', @start_ts, @end_ts));
+@create_unique_index(@this_model, code, type, journey_date, hour, direction);
