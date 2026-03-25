@@ -3,18 +3,7 @@ MODEL (
   kind INCREMENTAL_BY_UNIQUE_KEY (
     unique_key (user_id)
   ),
-  columns (
-    user_id                VARCHAR,
-    first_date_driver      DATE,
-    first_date_passenger   DATE,
-    last_date_driver      DATE,
-    last_date_passenger   DATE,
-    driver_count         INTEGER,
-    passenger_count      INTEGER,
-    total_count          INTEGER
-  ),
   start '2020-01-01 00:00:00+0100',
-  end 'now()',
   grain 'user_id',
   tags ['refined', 'observatoire', 'users'],
 );
@@ -57,34 +46,34 @@ agg AS (
 )
 
 SELECT
-  a.user_id,
+  a.user_id::varchar,
   NULLIF(
     LEAST(
       COALESCE(t.first_date_driver, TIMESTAMP '9999-12-31'),
       COALESCE(a.first_date_driver, TIMESTAMP '9999-12-31')
     ),
     TIMESTAMP '9999-12-31'
-  ) AS first_date_driver,
+  )::date AS first_date_driver,
   NULLIF(
     LEAST(
       COALESCE(t.first_date_passenger, TIMESTAMP '9999-12-31'),
       COALESCE(a.first_date_passenger, TIMESTAMP '9999-12-31')
     ),
     TIMESTAMP '9999-12-31'
-  ) AS first_date_passenger,
+  )::date AS first_date_passenger,
   GREATEST(
     COALESCE(t.last_date_driver, TIMESTAMP '1970-01-01'),
     COALESCE(a.last_date_driver, TIMESTAMP '1970-01-01')
-  ) AS last_date_driver,
+  )::date AS last_date_driver,
   GREATEST(
     COALESCE(t.last_date_passenger, TIMESTAMP '1970-01-01'),
     COALESCE(a.last_date_passenger, TIMESTAMP '1970-01-01')
-  ) AS last_date_passenger,
-  COALESCE(t.driver_count, 0) + COALESCE(a.driver_count, 0)
+  )::date AS last_date_passenger,
+  (COALESCE(t.driver_count, 0) + COALESCE(a.driver_count, 0))::integer
     AS driver_count,
-  COALESCE(t.passenger_count, 0) + COALESCE(a.passenger_count, 0)
+  (COALESCE(t.passenger_count, 0) + COALESCE(a.passenger_count, 0))::integer
     AS passenger_count,
-  COALESCE(t.total_count, 0) + COALESCE(a.total_count, 0)
+  (COALESCE(t.total_count, 0) + COALESCE(a.total_count, 0))::integer
     AS total_count
 FROM agg a
 LEFT JOIN refined_zone.obs_users t ON t.user_id = a.user_id;

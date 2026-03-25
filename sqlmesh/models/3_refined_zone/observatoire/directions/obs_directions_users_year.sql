@@ -6,7 +6,6 @@ MODEL (
     batch_size 12,
   ),
   start '2020-01-01 00:00:00+0100',
-  end 'now()',
   cron '@monthly',
   grain ['code','type','year_date','direction'],
   tags ['refined', 'observatoire', 'directions_users_year'],
