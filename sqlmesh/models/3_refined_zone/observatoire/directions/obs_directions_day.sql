@@ -6,7 +6,6 @@ MODEL (
     batch_size 30,
   ),
   start '2020-01-01 00:00:00+0100',
-  end 'now()',
   grain ['code','type','journey_date','direction'],
   tags ['refined', 'observatoire', 'directions_day'],
 );
