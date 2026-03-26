@@ -10,8 +10,8 @@ MODEL (
   tags ['refined', 'observatoire', 'directions_hours_day'],
 );
 
-@create_temp_table(@temp_table_name('refined_zone','temp_directions_hours', @start_ts, @end_ts), @temp_directions_query(@start_ts, @end_ts));
-@create_unique_index(@temp_table_name('refined_zone','temp_directions_hours', @start_ts, @end_ts), _id, code, type, direction);
+@create_temp_table('refined_zone.temp_directions_hours', @temp_directions_query(@start_ts, @end_ts));
+@create_unique_index('refined_zone.temp_directions_hours', _id, code, type, direction);
 
 SELECT
   code,
@@ -29,7 +29,7 @@ SELECT
   SUM(incentive_operator)                     AS incentive_operator,
   SUM(incentive_others)                       AS incentive_others,
   SUM(no_incentive)                           AS no_incentive
-FROM @temp_table_name('refined_zone','temp_directions_hours', @start_ts, @end_ts)
+FROM refined_zone.temp_directions_hours
 WHERE code IS NOT NULL
 GROUP BY 1,2,3,4,5
 
@@ -51,10 +51,10 @@ SELECT
   SUM(incentive_operator)                     AS incentive_operator,
   SUM(incentive_others)                       AS incentive_others,
   SUM(no_incentive)                           AS no_incentive
-FROM @temp_table_name('refined_zone','temp_directions_hours', @start_ts, @end_ts)
+FROM refined_zone.temp_directions_hours
 WHERE code IS NOT NULL
   AND direction = 'from'
 GROUP BY 1,2,3,4;
 
-@drop_temp_table(@temp_table_name('refined_zone','temp_directions_hours', @start_ts, @end_ts));
+@drop_temp_table('refined_zone.temp_directions_hours');
 @create_unique_index(@this_model, code, type, journey_date, hour, direction);
