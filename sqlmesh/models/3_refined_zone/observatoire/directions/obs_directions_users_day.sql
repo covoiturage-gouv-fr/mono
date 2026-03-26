@@ -10,9 +10,6 @@ MODEL (
   tags ['refined', 'observatoire', 'directions_users_day'],
 );
 
-@create_temp_table('refined_zone.temp_directions_users', @temp_directions_query(@start_ts, @end_ts));
-@create_unique_index('refined_zone.temp_directions_users', _id, code, type, direction);
-
 SELECT
   code,
   type,
@@ -22,8 +19,10 @@ SELECT
   COUNT(DISTINCT passenger_id)                                 AS unique_passengers,
   COUNT(DISTINCT CASE WHEN is_new_driver    THEN driver_id    END) AS new_drivers,
   COUNT(DISTINCT CASE WHEN is_new_passenger THEN passenger_id END) AS new_passengers
-FROM refined_zone.temp_directions_users
+FROM trusted_zone.journeys_directions
 WHERE code IS NOT NULL
+  AND journey_date >= @start_ts::date
+  AND journey_date <  @end_ts::date
 GROUP BY 1,2,3,4
 
 UNION ALL
@@ -37,10 +36,11 @@ SELECT
   COUNT(DISTINCT passenger_id)                                 AS unique_passengers,
   COUNT(DISTINCT CASE WHEN is_new_driver    THEN driver_id    END) AS new_drivers,
   COUNT(DISTINCT CASE WHEN is_new_passenger THEN passenger_id END) AS new_passengers
-FROM refined_zone.temp_directions_users
+FROM trusted_zone.journeys_directions
 WHERE code IS NOT NULL
   AND direction = 'from'  -- une journey = une ligne, pas de doublon
+  AND journey_date >= @start_ts::date
+  AND journey_date <  @end_ts::date
 GROUP BY 1,2,3;
 
-@drop_temp_table('refined_zone.temp_directions_users');
 @create_unique_index(@this_model, code, type, journey_date, hour, direction);

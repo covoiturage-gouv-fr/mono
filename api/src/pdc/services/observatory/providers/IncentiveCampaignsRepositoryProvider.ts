@@ -13,7 +13,7 @@ import {
   identifier: IncentiveCampaignsRepositoryInterfaceResolver,
 })
 export class IncentiveCampaignsRepositoryProvider implements IncentiveCampaignsRepositoryInterface {
-  private readonly table = "raw_zone.incentive_campaigns";
+  private readonly table = "raw_zone.campaigns";
   private readonly perim_table = "trusted_zone.perimeters_agg";
 
   constructor(private pgConnection: DenoPostgresConnection) {}

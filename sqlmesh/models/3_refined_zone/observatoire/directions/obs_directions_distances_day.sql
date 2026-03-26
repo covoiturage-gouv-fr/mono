@@ -10,9 +10,6 @@ MODEL (
   tags ['refined', 'observatoire', 'directions_distances_day'],
 );
 
-@create_temp_table('refined_zone.temp_directions_distances', @temp_directions_query(@start_ts, @end_ts));
-@create_unique_index('refined_zone.temp_directions_distances', _id, code, type, direction);
-
 SELECT
   code,
   type,
@@ -29,8 +26,10 @@ SELECT
   SUM(incentive_operator)                     AS incentive_operator,
   SUM(incentive_others)                       AS incentive_others,
   SUM(no_incentive)                           AS no_incentive
-FROM refined_zone.temp_directions_distances
+FROM trusted_zone.journeys_directions
 WHERE code IS NOT NULL
+  AND journey_date >= @start_ts::date
+  AND journey_date <  @end_ts::date
 GROUP BY 1,2,3,4,5
 
 UNION ALL
@@ -51,10 +50,11 @@ SELECT
   SUM(incentive_operator)                     AS incentive_operator,
   SUM(incentive_others)                       AS incentive_others,
   SUM(no_incentive)                           AS no_incentive
-FROM refined_zone.temp_directions_distances
+FROM trusted_zone.journeys_directions
 WHERE code IS NOT NULL
   AND direction = 'from'  -- un journey = une ligne, pas de doublon
+  AND journey_date >= @start_ts::date
+  AND journey_date <  @end_ts::date
 GROUP BY 1,2,3,4;
 
-@drop_temp_table('refined_zone.temp_directions_distances');
 @create_unique_index(@this_model, code, type, journey_date, dist_class, direction);
