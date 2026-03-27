@@ -26,7 +26,7 @@ SELECT
   SUM(incentive_operator)                     AS incentive_operator,
   SUM(incentive_others)                       AS incentive_others,
   SUM(no_incentive)                           AS no_incentive
-FROM trusted_zone.journeys_directions
+FROM refined_zone.obs_directions_base
 WHERE code IS NOT NULL
   AND journey_date >= @start_ts::date
   AND journey_date <  @end_ts::date
@@ -50,7 +50,7 @@ SELECT
   SUM(incentive_operator)                     AS incentive_operator,
   SUM(incentive_others)                       AS incentive_others,
   SUM(no_incentive)                           AS no_incentive
-FROM trusted_zone.journeys_directions
+FROM refined_zone.obs_directions_base
 WHERE code IS NOT NULL
   AND direction = 'from'  -- un journey = une ligne, pas de doublon
   AND journey_date >= @start_ts::date

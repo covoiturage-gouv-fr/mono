@@ -19,7 +19,7 @@ SELECT
   COUNT(DISTINCT passenger_id)                                 AS unique_passengers,
   COUNT(DISTINCT CASE WHEN is_new_driver    THEN driver_id    END) AS new_drivers,
   COUNT(DISTINCT CASE WHEN is_new_passenger THEN passenger_id END) AS new_passengers
-FROM trusted_zone.journeys_directions
+FROM refined_zone.obs_directions_base
 WHERE code IS NOT NULL
   AND journey_date >= @start_ts::date
   AND journey_date <  @end_ts::date
@@ -36,7 +36,7 @@ SELECT
   COUNT(DISTINCT passenger_id)                                 AS unique_passengers,
   COUNT(DISTINCT CASE WHEN is_new_driver    THEN driver_id    END) AS new_drivers,
   COUNT(DISTINCT CASE WHEN is_new_passenger THEN passenger_id END) AS new_passengers
-FROM trusted_zone.journeys_directions
+FROM refined_zone.obs_directions_base
 WHERE code IS NOT NULL
   AND direction = 'from'  -- une journey = une ligne, pas de doublon
   AND journey_date >= @start_ts::date

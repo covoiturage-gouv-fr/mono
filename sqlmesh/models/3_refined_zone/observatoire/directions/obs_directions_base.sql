@@ -1,5 +1,5 @@
 MODEL (
-  name trusted_zone.journeys_directions,
+  name refined_zone.obs_directions_base,
   kind INCREMENTAL_BY_TIME_RANGE (
     time_column journey_date,
     lookback 1,
@@ -7,7 +7,7 @@ MODEL (
   ),
   start '2020-01-01 00:00:00+0100',
   grain ['_id','code','type','direction'],
-  tags ['trusted', 'journeys', 'directions'],
+  tags ['refined', 'journeys', 'directions'],
 );
 
 WITH journeys_raw AS (
