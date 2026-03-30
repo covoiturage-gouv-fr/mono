@@ -26,7 +26,7 @@ describe("ExportParams", () => {
     });
     assertEquals(
       ep.geoToSQL("AND"),
-      "AND ((start_aom = 'code') AND (end_aom = 'code'))",
+      "AND ((start_aom_code = 'code') AND (end_aom_code = 'code'))",
     );
   });
 
@@ -37,7 +37,7 @@ describe("ExportParams", () => {
     });
     assertEquals(
       ep.geoToSQL("OR"),
-      "AND ((start_aom = 'code') OR (end_aom = 'code'))",
+      "AND ((start_aom_code = 'code') OR (end_aom_code = 'code'))",
     );
   });
 
@@ -48,7 +48,7 @@ describe("ExportParams", () => {
     });
     assertEquals(
       ep.geoToSQL(),
-      "AND ((start_aom = 'code') OR (end_aom = 'code'))",
+      "AND ((start_aom_code = 'code') OR (end_aom_code = 'code'))",
     );
   });
 
@@ -59,7 +59,7 @@ describe("ExportParams", () => {
     });
     assertEquals(
       ep.geoToSQL(),
-      "AND ((start_aom = 'blue' OR start_aom = 'red') OR (end_aom = 'blue' OR end_aom = 'red'))",
+      "AND ((start_aom_code = 'blue' OR start_aom_code = 'red') OR (end_aom_code = 'blue' OR end_aom_code = 'red'))",
     );
   });
 
@@ -70,8 +70,8 @@ describe("ExportParams", () => {
     });
     assertEquals(
       ep.geoToSQL(),
-      "AND ((start_aom = 'blue' OR start_aom = 'red' OR start_com = '01010' OR start_com = '2A323') " +
-        "OR (end_aom = 'blue' OR end_aom = 'red' OR end_com = '01010' OR end_com = '2A323'))",
+      "AND ((start_aom_code = 'blue' OR start_aom_code = 'red' OR start_com = '01010' OR start_com = '2A323') " +
+        "OR (end_aom_code = 'blue' OR end_aom_code = 'red' OR end_com = '01010' OR end_com = '2A323'))",
     );
   });
 });
