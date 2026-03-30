@@ -2,7 +2,7 @@ MODEL (
   name refined_zone.obs_directions_month,
   kind INCREMENTAL_BY_TIME_RANGE (
     time_column month_date,
-    batch_size 3,
+    batch_size 1,
   ),
   start '2020-01-01 00:00:00+0100',
   cron '@monthly',
@@ -20,7 +20,10 @@ WITH sum_directions AS (
     sum(journeys)                         AS journeys,
     (sum(distance) / sum(journeys)) * sum(passenger_seats) AS passengers_distance,
     (sum(distance) / sum(journeys)) * sum(drivers) AS drivers_distance,
-    sum(incentive_collectivite)       AS incentive_collectivite,
+    sum(drivers)                     AS drivers,
+    sum(passengers)                  AS passengers,
+    sum(passenger_seats)             AS passenger_seats,
+    sum(incentive_collectivite)      AS incentive_collectivite,
     sum(incentive_operator)          AS incentive_operator,
     sum(incentive_others)            AS incentive_others,
     SUM(no_incentive)                AS no_incentive
@@ -30,30 +33,62 @@ WITH sum_directions AS (
   GROUP BY 1, 2, 3, 4, 5
   HAVING sum(journeys) > 0
 ),
-hours_agg AS (
+-- Dénormalisation hours
+hours_detail AS (
   SELECT
-    code,
-    type,
-    direction,
-    extract('year'  FROM journey_date)::int AS year,
+    code, 
+    type, 
+    direction, 
+    extract('year' FROM journey_date)::int  AS year,
     extract('month' FROM journey_date)::int AS month,
-    jsonb_object_agg(hour::text, journeys ORDER BY hour) AS hours_distribution
-  FROM refined_zone.obs_directions_hours_day
+    h.idx - 1                      AS hour,
+    SUM(hours_distribution[h.idx]) AS journeys
+  FROM refined_zone.obs_directions_day
+  CROSS JOIN LATERAL generate_series(1, 24) AS h(idx)
   WHERE journey_date >= @start_ts
     AND journey_date <  @end_ts
+  GROUP BY 1, 2, 3, 4, 5, 6
+),
+-- Dénormalisation distances
+dist_detail AS (
+  SELECT
+    code, 
+    type, 
+    direction, 
+    extract('year' FROM journey_date)::int  AS year,
+    extract('month' FROM journey_date)::int AS month,
+    dc.idx,
+    dc.label,
+    SUM(dist_distribution[dc.idx]) AS journeys
+  FROM refined_zone.obs_directions_day
+  CROSS JOIN LATERAL (
+    VALUES (1,'0-10'),(2,'10-20'),(3,'20-30'),
+           (4,'30-40'),(5,'40-50'),(6,'>50')
+  ) AS dc(idx, label)
+  WHERE journey_date >= @start_ts
+    AND journey_date <  @end_ts
+  GROUP BY 1, 2, 3, 4, 5, 6, 7
+),
+hours_agg AS (
+  SELECT
+    code, 
+    type, 
+    direction, 
+    year,
+    month,
+    jsonb_object_agg(hour, COALESCE(d.journeys, 0) ORDER BY hour) AS hours_distribution
+  FROM hours_detail
   GROUP BY 1, 2, 3, 4, 5
 ),
 dist_agg AS (
   SELECT
-    code,
-    type,
-    direction,
-    extract('year'  FROM journey_date)::int AS year,
-    extract('month' FROM journey_date)::int AS month,
-    jsonb_object_agg(dist_class::text, journeys ORDER BY dist_class) AS dist_distribution
-  FROM refined_zone.obs_directions_distances_day
-  WHERE journey_date >= @start_ts
-    AND journey_date <  @end_ts
+    code, 
+    type, 
+    direction, 
+    year,
+    month,
+    jsonb_object_agg(label, COALESCE(d.journeys, 0) ORDER BY idx) AS dist_distribution
+  FROM dist_detail
   GROUP BY 1, 2, 3, 4, 5
 ),
 users as (
@@ -85,6 +120,9 @@ SELECT
   a.incentive_operator,
   a.incentive_others,
   a.no_incentive,
+  a.drivers,
+  a.passengers,
+  a.passenger_seats,
   round(
     (drivers_distance + passengers_distance) / drivers_distance, 2
   )::float                      AS occupation_rate,

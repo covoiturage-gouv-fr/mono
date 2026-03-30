@@ -170,7 +170,6 @@ SELECT
   COUNT(DISTINCT CASE WHEN is_new_passenger THEN passenger_id END) AS new_passengers
 FROM all_directions
 WHERE code IS NOT NULL
-  AND direction = 'from'
 GROUP BY 1,2,3;
 
 @create_unique_index(@this_model, semester_date, code, type, direction);
