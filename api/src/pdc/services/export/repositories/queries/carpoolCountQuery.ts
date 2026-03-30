@@ -11,8 +11,8 @@ export function carpoolCountQuery(params: ExportParams): Sql {
     SELECT count(cc.*) as count
     FROM ${raw(table)} cc
     WHERE true
-      AND cc.start_datetime >= ${start_at}
-      AND cc.start_datetime <  ${end_at}
+      AND cc.start_date_filter >= ${start_at}
+      AND cc.start_date_filter  < ${end_at}
         ${raw(geo_selectors)}
         ${raw(operator_id)}
     `;
