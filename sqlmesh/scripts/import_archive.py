@@ -1,4 +1,4 @@
-from utils.duckdb import duckdb_client, export_tables
+from utils.duckdb import duckdb_client, import_tables
 
 conn = duckdb_client()
 TABLES = [
@@ -20,5 +20,6 @@ TABLES = [
   'journeys_latest',
   'cee_applications',
 ]
-export_tables(conn, TABLES, schema='raw_zone', folder='exports', view=True)
+
+import_tables(conn, TABLES, schema='archive_zone', folder='exports')
 
