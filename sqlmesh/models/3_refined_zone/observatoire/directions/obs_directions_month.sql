@@ -9,7 +9,7 @@ MODEL (
   grain [ 'month_date', 'code', 'type', 'direction'],
   tags ['refined', 'observatoire', 'directions_month'],
 );
--- sommes des metrics
+-- sommes des metrics 
 WITH sum_directions AS (
   SELECT
     code,
