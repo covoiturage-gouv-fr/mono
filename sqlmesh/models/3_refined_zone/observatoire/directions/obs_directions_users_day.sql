@@ -43,4 +43,4 @@ WHERE code IS NOT NULL
   AND journey_date <  @end_ts::date
 GROUP BY 1,2,3;
 
-@create_unique_index(@this_model, code, type, journey_date, hour, direction);
+@create_unique_index(@this_model, code, type, journey_date, direction);
