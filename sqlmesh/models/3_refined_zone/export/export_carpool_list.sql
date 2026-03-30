@@ -38,15 +38,15 @@ SELECT
   j.operator_id,
 
   -- date filtering column (raw DATE in Europe/Paris)
-  (j.start_datetime AT TIME ZONE 'Europe/Paris')::date           AS start_date_filter,
+  j.start_datetime_tz::date                                     AS start_date_filter,
 
   -- formatted dates (rounded to 10 min, Europe/Paris)
-  to_char(ts_ceil(j.start_datetime, 600) AT TIME ZONE 'Europe/Paris', 'YYYY-MM-DD HH24:MI:SS') AS start_datetime,
-  to_char(ts_ceil(j.start_datetime, 600) AT TIME ZONE 'Europe/Paris', 'YYYY-MM-DD')            AS start_date,
-  to_char(ts_ceil(j.start_datetime, 600) AT TIME ZONE 'Europe/Paris', 'HH24:MI:SS')            AS start_time,
-  to_char(ts_ceil(j.end_datetime,   600) AT TIME ZONE 'Europe/Paris', 'YYYY-MM-DD HH24:MI:SS') AS end_datetime,
-  to_char(ts_ceil(j.end_datetime,   600) AT TIME ZONE 'Europe/Paris', 'YYYY-MM-DD')            AS end_date,
-  to_char(ts_ceil(j.end_datetime,   600) AT TIME ZONE 'Europe/Paris', 'HH24:MI:SS')            AS end_time,
+  to_char(ts_ceil(j.start_datetime_tz, 600), 'YYYY-MM-DD HH24:MI:SS') AS start_datetime,
+  to_char(ts_ceil(j.start_datetime_tz, 600), 'YYYY-MM-DD')            AS start_date,
+  to_char(ts_ceil(j.start_datetime_tz, 600), 'HH24:MI:SS')            AS start_time,
+  to_char(ts_ceil(j.end_datetime_tz,   600), 'YYYY-MM-DD HH24:MI:SS') AS end_datetime,
+  to_char(ts_ceil(j.end_datetime_tz,   600), 'YYYY-MM-DD')            AS end_date,
+  to_char(ts_ceil(j.end_datetime_tz,   600), 'HH24:MI:SS')            AS end_time,
   to_char((j.duration || ' seconds')::interval, 'HH24:MI:SS')   AS duration,
 
   j.distance::float / 1000                                       AS distance,
