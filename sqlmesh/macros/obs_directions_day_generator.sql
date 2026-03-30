@@ -84,8 +84,8 @@ journeys_raw AS (
   -- obs_users
   LEFT JOIN refined_zone.obs_users ud ON ud.user_id = j.driver_id
   LEFT JOIN refined_zone.obs_users up ON up.user_id = j.passenger_id
-  WHERE j.start_datetime >= {{start_ts}}
-    AND j.start_datetime <  {{end_ts}}
+  WHERE j.start_datetime_tz >= {{start_ts}}
+    AND j.start_datetime_tz <  {{end_ts}}
     AND j.valid_acquisition_status = true
 ),
 
@@ -220,9 +220,9 @@ agg_detail AS (
     code,
     type,
     journey_date,
-    direction,
     hour,
     dist_class,
+    direction,
     COUNT(DISTINCT _id)                                              AS journeys,
     COUNT(DISTINCT _id)       FILTER (WHERE is_intra)               AS intra_journeys,
     COUNT(DISTINCT driver_id)                                        AS drivers,
@@ -237,54 +237,73 @@ agg_detail AS (
     SUM(no_incentive)                                                AS no_incentive
   FROM directions_exploded
   GROUP BY 1, 2, 3, 4, 5, 6
-),
 
--- Niveau 2 : grain (code, type, journey_date, direction)
--- jsonb_object_agg sur les buckets déjà agrégés — pas de doublons
-agg_final AS (
+  UNION ALL
+
   SELECT
     code,
     type,
     journey_date,
-    direction,
-    SUM(journeys)               AS journeys,
-    SUM(intra_journeys)         AS intra_journeys,
-    SUM(drivers)                AS drivers,
-    SUM(passengers)             AS passengers,
-    SUM(new_drivers)            AS new_drivers,
-    SUM(new_passengers)         AS new_passengers,
-    SUM(passenger_seats)        AS passenger_seats,
-    SUM(distance)               AS distance,
-    SUM(incentive_collectivite) AS incentive_collectivite,
-    SUM(incentive_operator)     AS incentive_operator,
-    SUM(incentive_others)       AS incentive_others,
-    SUM(no_incentive)           AS no_incentive,
-    jsonb_object_agg(hour::text, journeys ORDER BY hour)           AS hours_distribution,
-    jsonb_object_agg(dist_class, journeys ORDER BY dist_class)     AS dist_distribution
-  FROM agg_detail
-  GROUP BY 1, 2, 3, 4
+    hour,
+    dist_class,
+    'both' as direction,
+    COUNT(DISTINCT _id)                                              AS journeys,
+    COUNT(DISTINCT _id)       FILTER (WHERE is_intra)               AS intra_journeys,
+    COUNT(DISTINCT driver_id)                                        AS drivers,
+    COUNT(DISTINCT passenger_id)                                     AS passengers,
+    COUNT(DISTINCT CASE WHEN is_new_driver    THEN driver_id    END) AS new_drivers,
+    COUNT(DISTINCT CASE WHEN is_new_passenger THEN passenger_id END) AS new_passengers,
+    SUM(passenger_seats) - COALESCE(SUM(passenger_seats) FILTER (WHERE is_intra = TRUE AND direction = 'from'), 0) AS passenger_seats,
+    SUM(distance) - COALESCE(SUM(distance) FILTER (WHERE is_intra = TRUE AND direction = 'from'), 0)               AS distance,
+    SUM(incentive_collectivite) - COALESCE(SUM(incentive_collectivite) FILTER (WHERE is_intra = TRUE AND direction = 'from'), 0) AS incentive_collectivite,
+    SUM(incentive_operator) - COALESCE(SUM(incentive_operator) FILTER (WHERE is_intra = TRUE AND direction = 'from'), 0) AS incentive_operator,
+    SUM(incentive_others) - COALESCE(SUM(incentive_others) FILTER (WHERE is_intra = TRUE AND direction = 'from'), 0) AS incentive_others,
+    SUM(no_incentive) - COALESCE(SUM(no_incentive) FILTER (WHERE is_intra = TRUE AND direction = 'from'), 0) AS no_incentive
+  FROM directions_exploded
+  GROUP BY 1, 2, 3, 4, 5
 )
-
--- from + to
 SELECT
-  code, type, journey_date, direction,
-  journeys, intra_journeys, drivers, passengers,
-  new_drivers, new_passengers, passenger_seats, distance,
-  incentive_collectivite, incentive_operator, incentive_others, no_incentive,
-  hours_distribution, dist_distribution
-FROM agg_final
-
-UNION ALL
-
--- both : dédupliqué sur direction = 'from'
-SELECT
-  code, type, journey_date,
-  'both'        AS direction,
-  journeys, intra_journeys, drivers, passengers,
-  new_drivers, new_passengers, passenger_seats, distance,
-  incentive_collectivite, incentive_operator, incentive_others, no_incentive,
-  hours_distribution, dist_distribution
-FROM agg_final
-WHERE direction = 'from'
+  d.code,
+  d.type,
+  d.journey_date,
+  d.direction,
+  SUM(d.journeys)               AS journeys,
+  SUM(d.intra_journeys)         AS intra_journeys,
+  SUM(d.drivers)                AS drivers,
+  SUM(d.passengers)             AS passengers,
+  SUM(d.new_drivers)            AS new_drivers,
+  SUM(d.new_passengers)         AS new_passengers,
+  SUM(d.passenger_seats)        AS passenger_seats,
+  SUM(d.distance)               AS distance,
+  SUM(d.incentive_collectivite) AS incentive_collectivite,
+  SUM(d.incentive_operator)     AS incentive_operator,
+  SUM(d.incentive_others)       AS incentive_others,
+  SUM(d.no_incentive)           AS no_incentive,
+  ARRAY(
+  SELECT COALESCE(SUM(d2.journeys), 0)
+  FROM generate_series(0,23) AS h
+  LEFT JOIN agg_detail d2
+    ON d2.code = d.code
+    AND d2.type = d.type
+    AND d2.journey_date = d.journey_date
+    AND d2.direction = d.direction
+    AND d2.hour = h
+  GROUP BY h
+  ORDER BY h
+) AS hours_distribution,
+  ARRAY(
+  SELECT COALESCE(SUM(d2.journeys),0)
+  FROM (SELECT unnest(ARRAY['0-10','10-20','20-30','30-40','40-50','>50']) AS dist_class) dc
+  LEFT JOIN agg_detail d2
+    ON d2.code = d.code
+    AND d2.type = d.type
+    AND d2.journey_date = d.journey_date
+    AND d2.direction = d.direction
+    AND d2.dist_class = dc.dist_class
+  GROUP BY dc.dist_class
+  ORDER BY dc.dist_class
+) AS dist_distribution
+FROM agg_detail as d
+GROUP BY 1, 2, 3, 4
 
 {% endmacro %}
