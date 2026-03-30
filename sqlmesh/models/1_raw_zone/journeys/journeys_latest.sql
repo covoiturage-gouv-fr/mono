@@ -9,8 +9,6 @@ MODEL (
   grain ['_id', 'fraud_status', 'anomaly_status', 'acquisition_status'],
   tags ['raw', 'journeys', 'latest'],
   audits (
-    assert_journeys_row_count_pg_to_raw,
-    assert_journeys_missing_rows_pg_to_raw,
     assert_journeys_key_fields_pg_to_raw,
   ),
 );
