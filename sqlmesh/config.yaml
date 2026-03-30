@@ -9,6 +9,7 @@ gateways:
       password: {{ env_var('MESHPGPASSWORD') }}
       port: {{ env_var('MESHPGPORT') }}
       database: {{ env_var('MESHPGDBNAME') }}
+      concurrent_tasks: {{ env_var('MESHPG_CONCURRENT_TASKS', 4) }}
 physical_schema_mapping:
   raw_zone: raw_zone
   trusted_zone: trusted_zone

@@ -1,4 +1,4 @@
-import sql, { Sql } from "@/lib/pg/sql.ts";
+import sql, { raw, Sql } from "@/lib/pg/sql.ts";
 import { ExportParams } from "@/pdc/services/export/models/ExportParams.ts";
 import { DataGouvQueryConfig } from "@/pdc/services/export/repositories/CarpoolRepository.ts";
 
@@ -22,91 +22,22 @@ export type DataGouvStatsType = {
 };
 
 export function datagouvStatsQuery(params: ExportParams, config: DataGouvQueryConfig): Sql {
+  const table = "trusted_zone.insee_counters";
   const { start_at, end_at } = params.get();
-  const { min_occurrences, acquisition_status } = config;
+  const { min_occurrences } = config;
 
   return sql`
-    WITH
-
-    -- fetch the carpool_id of the carpools that have
-    -- less than min_occurrences start or end geo codes
-    exclude_start_full AS (
-      SELECT cg.start_geo_code, array_agg(cc._id) as _id
-      FROM carpool_v2.carpools cc
-      JOIN carpool_v2.status cs ON cc._id = cs.carpool_id
-      JOIN carpool_v2.geo cg ON cc._id = cg.carpool_id
-      WHERE true
-        AND cc.start_datetime >= ${start_at}
-        AND cc.start_datetime  < ${end_at}
-        AND cs.acquisition_status = ${acquisition_status}
-      GROUP BY 1
-      HAVING COUNT(cg.start_geo_code) < ${min_occurrences}
-    ),
-
-    exclude_end_full AS (
-      SELECT cg.end_geo_code, array_agg(cc._id) AS _id
-      FROM carpool_v2.carpools cc
-      JOIN carpool_v2.status cs ON cc._id = cs.carpool_id
-      JOIN carpool_v2.geo cg ON cc._id = cg.carpool_id
-      WHERE true
-        AND cc.start_datetime >= ${start_at}
-        AND cc.start_datetime  < ${end_at}
-        AND cs.acquisition_status = ${acquisition_status}
-      GROUP BY 1
-      HAVING COUNT(cg.end_geo_code) < ${min_occurrences}
-    ),
-
-    exclude_count_start AS (
-      SELECT COUNT(*) FROM (SELECT UNNEST(_id) AS _id FROM exclude_start_full GROUP BY 1) a
-    ),
-
-    exclude_count_end AS (
-      SELECT COUNT(*) FROM (SELECT UNNEST(_id) AS _id FROM exclude_end_full GROUP BY 1) a
-    ),
-
-    exclude_union AS (
-      SELECT COUNT(*) FROM (
-        SELECT * FROM (
-          SELECT UNNEST(_id) AS _id FROM exclude_start_full GROUP BY 1
-          UNION ALL
-          SELECT UNNEST(_id) AS _id FROM exclude_end_full GROUP BY 1
-        ) AS e
-        GROUP BY 1
-      ) a
-    ),
-
-    exclude_intersect AS (
-      SELECT COUNT(*) FROM (
-        SELECT * FROM (
-          SELECT UNNEST(_id) AS _id FROM exclude_start_full GROUP BY 1
-          UNION ALL
-          SELECT UNNEST(_id) AS _id FROM exclude_end_full GROUP BY 1
-        ) AS e
-        GROUP BY 1
-        HAVING COUNT(*) > 1
-      ) a
-    ),
-
-    count_total AS (
-      SELECT COUNT(*)
-      FROM carpool_v2.carpools cc
-      JOIN carpool_v2.status cs ON cc._id = cs.carpool_id
-      JOIN carpool_v2.geo cg ON cc._id = cg.carpool_id
-      WHERE true
-        AND cc.start_datetime >= ${start_at}
-        AND cc.start_datetime  < ${end_at}
-        AND cs.acquisition_status = ${acquisition_status}
-    )
-
     SELECT
-      ${start_at} as start_at,
-      ${end_at} as end_at,
-      count_total.count as count_total,
-      (count_total.count - exclude_union.count) as count_exposed,
-      exclude_union.count as count_removed,
-      exclude_count_start.count as count_removed_start,
-      exclude_count_end.count as count_removed_end,
-      exclude_intersect.count as count_removed_both
-    FROM count_total, exclude_count_start, exclude_count_end, exclude_union, exclude_intersect
+      ${start_at}::timestamp as start_at,
+      ${end_at}::timestamp as end_at,
+      count(*) as count_total,
+      count(*) FILTER (WHERE start_insee_count >= ${min_occurrences} AND end_insee_count >= ${min_occurrences}) as count_exposed,
+      count(*) FILTER (WHERE start_insee_count < ${min_occurrences} OR end_insee_count < ${min_occurrences}) as count_removed,
+      count(*) FILTER (WHERE start_insee_count < ${min_occurrences}) as count_removed_start,
+      count(*) FILTER (WHERE end_insee_count < ${min_occurrences}) as count_removed_end,
+      count(*) FILTER (WHERE start_insee_count < ${min_occurrences} AND end_insee_count < ${min_occurrences}) as count_removed_both
+    FROM ${raw(table)}
+    WHERE start_datetime >= ${start_at}
+      AND start_datetime < ${end_at}
   `;
 }

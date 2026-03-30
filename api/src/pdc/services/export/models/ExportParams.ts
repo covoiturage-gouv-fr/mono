@@ -81,6 +81,10 @@ export class ExportParams {
   public geoToSQL(mode: "AND" | "OR" = "OR"): string {
     const { geo_selector } = this.params;
     if (!geo_selector) return "";
+
+    // map territory selector keys to SQL column suffixes
+    const columnMap: Record<string, string> = { epci: "epci_code", aom: "aom_code" };
+
     const start = Object.keys(geo_selector)
       .filter((key) => {
         const type = key as keyof TerritorySelectorsInterface;
@@ -89,9 +93,10 @@ export class ExportParams {
       .reduce((p, key) => {
         // join all codes per type
         const type = key as keyof TerritorySelectorsInterface;
+        const col = columnMap[type] || type;
         const local: string[] = [];
         (geo_selector[type] || []).forEach((code: string) => {
-          local.push(`start_${type} = '${code}'`);
+          local.push(`start_${col} = '${code}'`);
         });
 
         if (local.length) {
@@ -111,7 +116,7 @@ export class ExportParams {
    */
   public operatorToSQL(): string {
     const { operator_id } = this.params;
-    return operator_id.length ? `AND cc.operator_id IN (${operator_id.join(",")})` : "";
+    return operator_id.length ? `AND operator_id IN (${operator_id.join(",")})` : "";
   }
 
   /**

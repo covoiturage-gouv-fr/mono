@@ -113,3 +113,5 @@ fileignoreconfig:
     checksum: ac106872e48c275810c85484a19a771f6cf4cf4256d5e9c7292cddab9d11c6d2
   - filename: sqlmesh/models/3_refined_zone/opendata/datagouv_journeys.sql
     checksum: a8f9d736473abdab68d3d3901a7d7088517a7e3450225af889826e6969b16bf6
+  - filename: docker/postgres/README.md
+    checksum: 7e939d42fcfbe82f58a5a221019158045938cb73e240689682b15aadbd72f8d2
