@@ -72,7 +72,7 @@ hours_agg AS (
     type, 
     direction, 
     year,
-    jsonb_object_agg(hour, COALESCE(d.journeys, 0) ORDER BY hour) AS hours_distribution
+    jsonb_object_agg(hour, COALESCE(journeys, 0) ORDER BY hour) AS hours_distribution
   FROM hours_detail
   GROUP BY 1, 2, 3, 4
 ),
@@ -82,7 +82,7 @@ dist_agg AS (
     type, 
     direction, 
     year,
-    jsonb_object_agg(label, COALESCE(d.journeys, 0) ORDER BY idx) AS dist_distribution
+    jsonb_object_agg(label, COALESCE(journeys, 0) ORDER BY idx) AS dist_distribution
   FROM dist_detail
   GROUP BY 1, 2, 3, 4
 ),
