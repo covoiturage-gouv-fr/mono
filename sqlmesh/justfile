@@ -8,3 +8,9 @@ default:
 # Identify orphaned SQLMesh snapshot tables and views (--apply to execute drops)
 cleanup-orphans *args:
   python scripts/cleanup_orphans.py {{ args }}
+# Export raw_zone to parquet files
+export:
+  python -m scripts.export_raw
+# Import parquet files to archive_zone
+import:
+  python -m scripts.import_archive

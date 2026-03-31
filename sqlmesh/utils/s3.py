@@ -39,3 +39,18 @@ def get_s3_client(
         endpoint_url=endpoint,
     )
 
+def s3_file_exists(bucket: str, key: str, client=None) -> bool:
+    """
+    Vérifie si un fichier existe sur S3.
+    """
+    client = client or get_s3_client()
+    try:
+        client.head_object(Bucket=bucket, Key=key)
+        return True
+    except client.exceptions.ClientError:
+        return False
+
+def build_s3_path(bucket: str, folder: str, table: str, ext: str) -> tuple[str, str]:
+    key = f"{folder}/{table}.{ext}"
+    path = f"s3://{bucket}/{key}"
+    return key, path
