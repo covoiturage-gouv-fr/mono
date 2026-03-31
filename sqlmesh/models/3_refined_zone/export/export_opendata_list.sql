@@ -28,12 +28,9 @@ SELECT
   (j.start_datetime AT TIME ZONE 'Europe/Paris')::date                     AS start_date_filter,
 
   -- start
-  to_char(ts_ceil(j.start_datetime, 600) AT TIME ZONE 'Europe/Paris',
-    'YYYY-MM-DD HH24:MI:SS')                                              AS journey_start_datetime,
-  to_char(ts_ceil(j.start_datetime, 600) AT TIME ZONE 'Europe/Paris',
-    'YYYY-MM-DD')                                                          AS journey_start_date,
-  to_char(ts_ceil(j.start_datetime, 600) AT TIME ZONE 'Europe/Paris',
-    'HH24:MI:SS')                                                          AS journey_start_time,
+  to_char(ts_ceil(j.start_datetime_tz, 600) AT TIME ZONE 'Europe/Paris', 'YYYY-MM-DD HH24:MI:SS') AS journey_start_datetime,
+  to_char(ts_ceil(j.start_datetime_tz, 600) AT TIME ZONE 'Europe/Paris', 'YYYY-MM-DD') AS journey_start_date,
+  to_char(ts_ceil(j.start_datetime_tz, 600) AT TIME ZONE 'Europe/Paris', 'HH24:MI:SS') AS journey_start_time,
   TRUNC(ST_X(j.start_position)::numeric, gps.precision)                    AS journey_start_lon,
   TRUNC(ST_Y(j.start_position)::numeric, gps.precision)                    AS journey_start_lat,
   gps.arr                                                                  AS journey_start_insee,
@@ -43,12 +40,9 @@ SELECT
   gps.l_country                                                            AS journey_start_country,
 
   -- end
-  to_char(ts_ceil(j.end_datetime, 600) AT TIME ZONE 'Europe/Paris',
-    'YYYY-MM-DD HH24:MI:SS')                                              AS journey_end_datetime,
-  to_char(ts_ceil(j.end_datetime, 600) AT TIME ZONE 'Europe/Paris',
-    'YYYY-MM-DD')                                                          AS journey_end_date,
-  to_char(ts_ceil(j.end_datetime, 600) AT TIME ZONE 'Europe/Paris',
-    'HH24:MI:SS')                                                          AS journey_end_time,
+  to_char(ts_ceil(j.end_datetime_tz, 600) AT TIME ZONE 'Europe/Paris', 'YYYY-MM-DD HH24:MI:SS') AS journey_end_datetime,
+  to_char(ts_ceil(j.end_datetime_tz, 600) AT TIME ZONE 'Europe/Paris', 'YYYY-MM-DD') AS journey_end_date,
+  to_char(ts_ceil(j.end_datetime_tz, 600) AT TIME ZONE 'Europe/Paris', 'HH24:MI:SS') AS journey_end_time,
   TRUNC(ST_X(j.end_position)::numeric, gpe.precision)                      AS journey_end_lon,
   TRUNC(ST_Y(j.end_position)::numeric, gpe.precision)                      AS journey_end_lat,
   gpe.arr                                                                  AS journey_end_insee,
