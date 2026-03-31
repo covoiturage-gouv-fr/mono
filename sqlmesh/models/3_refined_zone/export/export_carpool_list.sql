@@ -98,7 +98,7 @@ SELECT
   j.passenger_contribution::float / 100                          AS passenger_contribution,
   j.passenger_seats,
 
-  TRUE                                                           AS cee_application,
+  cee._id IS NOT NULL                                            AS cee_application,
 
   -- operator incentives (spread from JSONB array)
   j.operator_incentives[0]->>'siret'                             AS incentive_0_siret,
@@ -140,5 +140,6 @@ FROM trusted_zone.journeys j
 
 LEFT JOIN latest_perimeters gps ON j.start_geo_code = gps.arr
 LEFT JOIN latest_perimeters gpe ON j.end_geo_code   = gpe.arr
+LEFT JOIN trusted_zone.cee_applications cee ON cee.carpool_v2_id = j._id
 
 WHERE j.valid_acquisition_status = TRUE
