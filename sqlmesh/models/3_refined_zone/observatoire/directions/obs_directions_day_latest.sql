@@ -7,7 +7,7 @@ MODEL (
   ),
   start '2026-01-01 00:00:00+0100',
   grain ['code', 'type', 'journey_date', 'direction'],
-  tags  ['refined', 'observatoire', 'directions_day', '2024'],
+  tags  ['refined', 'observatoire', 'directions_day', 'latest'],
 );
 JINJA_QUERY_BEGIN;
 {{ obs_directions_day_generator("trusted_zone.journeys_latest", "@start_ts", "@end_ts") }}
