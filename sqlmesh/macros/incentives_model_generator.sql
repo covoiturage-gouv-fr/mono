@@ -23,8 +23,8 @@ WITH ni AS (
     ON pi.operator_id = c2.operator_id AND pi.operator_journey_id = c2.operator_journey_id
   WHERE pi.operator_id IS NOT NULL 
     AND pi.operator_journey_id IS NOT NULL
-    AND pi.datetime >= {{start_ts}} - INTERVAL '1 day'
-    AND pi.datetime < {{end_ts}} + INTERVAL '1 day'
+    AND pi.datetime >= {{start_ts}}::timestamp - INTERVAL '1 day'
+    AND pi.datetime < {{end_ts}}::timestamp + INTERVAL '1 day'
 
   UNION
 
@@ -39,8 +39,8 @@ WITH ni AS (
   LEFT JOIN carpool_v2.carpools c2 ON c1.acquisition_id = c2.legacy_id
   WHERE pi.carpool_id IS NOT NULL
     AND (pi.operator_id IS NULL OR pi.operator_journey_id IS NULL)
-    AND pi.datetime >= {{start_ts}} - INTERVAL '1 day'
-    AND pi.datetime < {{end_ts}} + INTERVAL '1 day'
+    AND pi.datetime >= {{start_ts}}::timestamp - INTERVAL '1 day'
+    AND pi.datetime < {{end_ts}}::timestamp + INTERVAL '1 day'
 )
 
 SELECT DISTINCT
@@ -64,7 +64,7 @@ LEFT JOIN policy.policies pp             ON pi.policy_id    = pp._id
 LEFT JOIN territory.territory_group ttg  ON pp.territory_id = ttg._id
 LEFT JOIN company.companies ccp          ON ttg.company_id  = ccp._id
 
-WHERE pi.datetime >= {{start_ts}} - INTERVAL '1 day'
-  AND pi.datetime < {{end_ts}} + INTERVAL '1 day'
+WHERE pi.datetime >= {{start_ts}}::timestamp - INTERVAL '1 day'
+  AND pi.datetime < {{end_ts}}::timestamp + INTERVAL '1 day'
 ;
 {% endmacro %}

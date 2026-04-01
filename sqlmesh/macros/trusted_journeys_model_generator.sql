@@ -7,8 +7,8 @@ WITH batch AS (
     end_position_x,
     end_position_y
   FROM {{source_table}}
-  WHERE start_datetime >= {{start_ts}} - INTERVAL '1 day' 
-    AND start_datetime < {{end_ts}} + INTERVAL '1 day'
+  WHERE start_datetime >= {{start_ts}}::timestamp - INTERVAL '1 day' 
+    AND start_datetime < {{end_ts}}::timestamp + INTERVAL '1 day'
 ),
 
 perimeters_retablissement AS (
@@ -194,8 +194,8 @@ journeys AS (
     FROM trusted_zone.campaign_incentives pi
     WHERE pi.carpool_v2_id = j._id
   ) rpc ON TRUE
-  WHERE j.start_datetime >= {{start_ts}} - INTERVAL '1 day' -- to capture any journey that starts in a different timezone but falls in the time range once timezoned
-    AND j.start_datetime <  {{end_ts}} + INTERVAL '1 day' --
+  WHERE j.start_datetime >= {{start_ts}}::timestamp - INTERVAL '1 day' -- to capture any journey that starts in a different timezone but falls in the time range once timezoned
+    AND j.start_datetime <  {{end_ts}}::timestamp + INTERVAL '1 day' --
 )
 
 SELECT * FROM journeys
