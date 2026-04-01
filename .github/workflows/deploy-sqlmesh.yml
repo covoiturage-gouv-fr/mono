@@ -2,6 +2,7 @@ name: "Deploy SQLMesh"
 
 permissions:
   contents: read
+  packages: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -42,5 +43,4 @@ jobs:
           context: ./sqlmesh
           tag: ${{ needs.tag.outputs.value }}
           dockerfile: ./docker/sqlmesh/prod/Dockerfile
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
