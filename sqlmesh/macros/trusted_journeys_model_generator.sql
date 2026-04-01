@@ -7,7 +7,8 @@ WITH batch AS (
     end_position_x,
     end_position_y
   FROM {{source_table}}
-  WHERE start_datetime BETWEEN {{start_ts}} AND {{end_ts}}
+  WHERE start_datetime >= {{start_ts}} - INTERVAL '1 day' 
+    AND start_datetime < {{end_ts}} + INTERVAL '1 day'
 ),
 
 perimeters_retablissement AS (
@@ -76,122 +77,128 @@ geocoding AS (
       FROM trusted_zone.com_evolution
       WHERE year = EXTRACT(YEAR FROM {{start_ts}}::date) AND mod = 21
     )
+),
+journeys AS (
+
+  SELECT
+    j._id,
+    j.uuid,
+    j.legacy_id,
+    j.created_at,
+    j.updated_at,
+    j.operator_id,
+    j.operator_name,
+    j.operator_siret,
+    j.operator_journey_id,
+    j.operator_trip_id,
+    j.operator_class::varchar AS operator_class,
+
+    j.start_datetime,
+    {{get_timezoned_timestamp("COALESCE(geo.start_geo_code, j.start_geo_code)", "j.start_datetime")}} AS start_datetime_tz,
+    ST_SetSRID(ST_Point(j.start_position_x, j.start_position_y), 4326) AS start_position,
+    h3_lat_lng_to_cell((ST_SetSRID(ST_Point(j.start_position_x, j.start_position_y), 4326)), 9) AS start_h3_index,
+    COALESCE(geo.start_geo_code, j.start_geo_code) AS start_geo_code,
+
+    j.end_datetime,
+    {{get_timezoned_timestamp("COALESCE(geo.end_geo_code, j.end_geo_code)", "j.end_datetime")}} AS end_datetime_tz,
+    ST_SetSRID(ST_Point(j.end_position_x, j.end_position_y), 4326) AS end_position,
+    h3_lat_lng_to_cell((ST_SetSRID(ST_Point(j.end_position_x, j.end_position_y), 4326)), 9) AS end_h3_index,
+    COALESCE(geo.end_geo_code, j.end_geo_code) AS end_geo_code,
+
+    COALESCE(to_jsonb(geo.geo_errors), to_jsonb(j.geo_errors)) AS geo_errors,
+    COALESCE(geo.geo_updated_at, j.geo_updated_at) AS geo_updated_at,
+
+    j.distance,
+    j.duration,
+    j.licence_plate,
+    j.driver_identity_key,
+    j.driver_operator_user_id,
+    j.driver_phone,
+    j.driver_phone_trunc,
+    j.driver_id,
+    j.driver_travelpass_name,
+    j.driver_travelpass_user_id,
+    j.driver_revenue,
+    j.passenger_identity_key,
+    j.passenger_operator_user_id,
+    j.passenger_phone,
+    j.passenger_phone_trunc,
+    j.passenger_id,
+    j.passenger_travelpass_name,
+    j.passenger_travelpass_user_id,
+    j.passenger_over_18,
+    j.passenger_seats,
+    j.passenger_contribution,
+    j.passenger_payments::jsonb AS passenger_payments,
+
+    -- operator incentives
+    oi.operator_incentives_sirets,
+    oi.operator_incentives_amounts,
+    oi.operator_incentives_amount_total,
+    oi.operator_incentives,
+
+    -- RPC incentives
+    rpc.campaign_incentives,
+    rpc.campaign_incentives_amount_total,
+    rpc.campaign_incentives_result_total,
+
+    j.fraud_status,
+    j.fraud_labels,
+    j.anomaly_status,
+    j.anomaly_labels,
+    j.acquisition_status,
+    j.status_updated_at,
+    j.final_acquisition_status,
+    j.valid_acquisition_status
+
+  FROM {{source_table}} AS j
+
+  LEFT JOIN geocoding AS geo ON geo.carpool_id = j._id
+
+  -- Operator incentives with company names.
+  -- LATERAL join produces both aggregated arrays and a JSONB array [{siret, name, amount}, ...].
+  LEFT JOIN LATERAL (
+    SELECT
+      ARRAY_AGG(DISTINCT t.siret)  AS operator_incentives_sirets,
+      ARRAY_AGG(DISTINCT t.amount) AS operator_incentives_amounts,
+      SUM(t.amount)                AS operator_incentives_amount_total,
+      jsonb_agg(
+        jsonb_build_object(
+          'siret',  t.siret,
+          'name',   comp.legal_name,
+          'amount', t.amount
+        ) ORDER BY t.siret
+      )                            AS operator_incentives
+    FROM carpool_v2.operator_incentives t
+    LEFT JOIN company.companies comp ON comp.siret = t.siret
+    WHERE t.carpool_id = j._id
+      AND t.amount > 0
+  ) oi ON TRUE
+
+  -- RPC incentives with campaign and territory details.
+  -- LATERAL join avoids a full-table scan on trusted_zone.campaign_incentives.
+  LEFT JOIN LATERAL (
+    SELECT
+      jsonb_agg(
+        jsonb_build_object(
+          'campaign_id',   pi.campaign_id,
+          'campaign_name', pi.campaign_name,
+          'siret',         pi.territory_siret,
+          'name',          pi.territory_name,
+          'amount',        pi.amount,
+          'result',        pi.result
+        )
+      ) AS campaign_incentives,
+      SUM(pi.amount) AS campaign_incentives_amount_total,
+      SUM(pi.result) AS campaign_incentives_result_total
+    FROM trusted_zone.campaign_incentives pi
+    WHERE pi.carpool_v2_id = j._id
+  ) rpc ON TRUE
+  WHERE j.start_datetime >= {{start_ts}} - INTERVAL '1 day' -- to capture any journey that starts in a different timezone but falls in the time range once timezoned
+    AND j.start_datetime <  {{end_ts}} + INTERVAL '1 day' --
 )
 
-SELECT
-  j._id,
-  j.uuid,
-  j.legacy_id,
-  j.created_at,
-  j.updated_at,
-  j.operator_id,
-  j.operator_name,
-  j.operator_siret,
-  j.operator_journey_id,
-  j.operator_trip_id,
-  j.operator_class::varchar AS operator_class,
-
-  j.start_datetime,
-  {{get_timezoned_timestamp("COALESCE(geo.start_geo_code, j.start_geo_code)", "j.start_datetime")}} AS start_datetime_tz,
-  ST_SetSRID(ST_Point(j.start_position_x, j.start_position_y), 4326) AS start_position,
-  j.start_h3_index::h3index AS start_h3_index,
-  COALESCE(geo.start_geo_code, j.start_geo_code) AS start_geo_code,
-
-  j.end_datetime,
-  {{get_timezoned_timestamp("COALESCE(geo.end_geo_code, j.end_geo_code)", "j.end_datetime")}} AS end_datetime_tz,
-  ST_SetSRID(ST_Point(j.end_position_x, j.end_position_y), 4326) AS end_position,
-  j.end_h3_index::h3index AS end_h3_index,
-  COALESCE(geo.end_geo_code, j.end_geo_code) AS end_geo_code,
-
-  COALESCE(to_jsonb(geo.geo_errors), to_jsonb(j.geo_errors)) AS geo_errors,
-  COALESCE(geo.geo_updated_at, j.geo_updated_at) AS geo_updated_at,
-
-  j.distance,
-  j.duration,
-  j.licence_plate,
-  j.driver_identity_key,
-  j.driver_operator_user_id,
-  j.driver_phone,
-  j.driver_phone_trunc,
-  j.driver_id,
-  j.driver_travelpass_name,
-  j.driver_travelpass_user_id,
-  j.driver_revenue,
-  j.passenger_identity_key,
-  j.passenger_operator_user_id,
-  j.passenger_phone,
-  j.passenger_phone_trunc,
-  j.passenger_id,
-  j.passenger_travelpass_name,
-  j.passenger_travelpass_user_id,
-  j.passenger_over_18,
-  j.passenger_seats,
-  j.passenger_contribution,
-  j.passenger_payments::jsonb AS passenger_payments,
-
-  -- operator incentives
-  oi.operator_incentives_sirets,
-  oi.operator_incentives_amounts,
-  oi.operator_incentives_amount_total,
-  oi.operator_incentives,
-
-  -- RPC incentives
-  rpc.campaign_incentives,
-  rpc.campaign_incentives_amount_total,
-  rpc.campaign_incentives_result_total,
-
-  j.fraud_status,
-  j.fraud_labels,
-  j.anomaly_status,
-  j.anomaly_labels,
-  j.acquisition_status,
-  j.status_updated_at,
-  j.final_acquisition_status,
-  j.valid_acquisition_status
-
-FROM {{source_table}} AS j
-
-LEFT JOIN geocoding AS geo ON geo.carpool_id = j._id
-
--- Operator incentives with company names.
--- LATERAL join produces both aggregated arrays and a JSONB array [{siret, name, amount}, ...].
-LEFT JOIN LATERAL (
-  SELECT
-    ARRAY_AGG(DISTINCT t.siret)  AS operator_incentives_sirets,
-    ARRAY_AGG(DISTINCT t.amount) AS operator_incentives_amounts,
-    SUM(t.amount)                AS operator_incentives_amount_total,
-    jsonb_agg(
-      jsonb_build_object(
-        'siret',  t.siret,
-        'name',   comp.legal_name,
-        'amount', t.amount
-      ) ORDER BY t.siret
-    )                            AS operator_incentives
-  FROM carpool_v2.operator_incentives t
-  LEFT JOIN company.companies comp ON comp.siret = t.siret
-  WHERE t.carpool_id = j._id
-    AND t.amount > 0
-) oi ON TRUE
-
--- RPC incentives with campaign and territory details.
--- LATERAL join avoids a full-table scan on trusted_zone.campaign_incentives.
-LEFT JOIN LATERAL (
-  SELECT
-    jsonb_agg(
-      jsonb_build_object(
-        'campaign_id',   pi.campaign_id,
-        'campaign_name', pi.campaign_name,
-        'siret',         pi.territory_siret,
-        'name',          pi.territory_name,
-        'amount',        pi.amount,
-        'result',        pi.result
-      )
-    ) AS campaign_incentives,
-    SUM(pi.amount) AS campaign_incentives_amount_total,
-    SUM(pi.result) AS campaign_incentives_result_total
-  FROM trusted_zone.campaign_incentives pi
-  WHERE pi.carpool_v2_id = j._id
-) rpc ON TRUE
-
-WHERE j.start_datetime BETWEEN {{start_ts}} AND {{end_ts}}
+SELECT * FROM journeys
+WHERE start_datetime_tz  >= {{start_ts}}::timestamp 
+  AND start_datetime_tz < {{end_ts}}::timestamp;
 {% endmacro %}
