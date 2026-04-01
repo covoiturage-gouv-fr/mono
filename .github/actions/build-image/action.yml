@@ -70,14 +70,14 @@ runs:
           org.opencontainers.image.created=${{ steps.buildx.outputs.start }}
           org.opencontainers.image.version=${{ inputs.tag }}
 
-#     - name: Run Trivy vulnerability scanner
-#       uses: aquasecurity/trivy-action@97e0b3872f55f89b95b2f65b3dbab56962816478 # v0.34.2
-#       with:
-#         image-ref: ghcr.io/${{ github.repository_owner }}/${{ inputs.name }}:${{ inputs.tag }}
-#         format: "template"
-#         template: "@/contrib/sarif.tpl"
-#         output: "trivy-results.sarif"
-#       continue-on-error: true
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1  # v0.35.0
+      with:
+        image-ref: ghcr.io/${{ github.repository_owner }}/${{ inputs.name }}:${{ inputs.tag }}
+        format: "template"
+        template: "@/contrib/sarif.tpl"
+        output: "trivy-results.sarif"
+      continue-on-error: true
 
     - name: Login to GitHub Container Registry
       uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1
