@@ -4,6 +4,8 @@ description: Build and push a Python image for notebooks (data).
 permissions:
   contents: read
   packages: write # zizmor: ignore[excessive-permissions]
+  id-token: write # zizmor: ignore[excessive-permissions]
+  attestations: write # zizmor: ignore[excessive-permissions]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}

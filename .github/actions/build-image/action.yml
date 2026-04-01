@@ -4,6 +4,8 @@ description: Build a Docker image using a specified Dockerfile and context.
 permissions:
   contents: read
   packages: write # zizmor: ignore[excessive-permissions]
+  id-token: write # zizmor: ignore[excessive-permissions]
+  attestations: write # zizmor: ignore[excessive-permissions]
 
 inputs:
   name:
@@ -93,6 +95,7 @@ runs:
         file: ${{ inputs.dockerfile }}
         push: true
         tags: ghcr.io/${{ github.repository_owner }}/${{ inputs.name }}:${{ inputs.tag }}
+        sbom: true
         cache-from: type=gha,scope=${{ inputs.name }}
         labels: |
           org.opencontainers.image.title=${{ inputs.name }} Image
@@ -100,3 +103,10 @@ runs:
           org.opencontainers.image.revision=${{ github.sha }}
           org.opencontainers.image.created=${{ steps.buildx.outputs.start }}
           org.opencontainers.image.version=${{ inputs.tag }}
+
+    - name: Attest build provenance
+      uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4
+      with:
+        subject-name: ghcr.io/${{ github.repository_owner }}/${{ inputs.name }}
+        subject-digest: ${{ steps.docker_build.outputs.digest }}
+        push-to-registry: true
