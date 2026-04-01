@@ -141,8 +141,8 @@
       LEFT JOIN anomaly_labels AS al  ON c._id = al.carpool_id
       LEFT JOIN operator.operators AS o ON c.operator_id = o._id
 
-      WHERE c.start_datetime >= {{start_ts}} - INTERVAL '1 day' -- to capture any journey that starts in a different timezone but falls in the time range once timezoned
-        AND c.start_datetime <  {{end_ts}} + INTERVAL '1 day' -- to capture any journey that starts in a different timezone but falls in the time range once timezoned
+      WHERE c.start_datetime >= {{start_ts}}::timestamp - INTERVAL '1 day' -- to capture any journey that starts in a different timezone but falls in the time range once timezoned
+        AND c.start_datetime <  {{end_ts}}::timestamp + INTERVAL '1 day' -- to capture any journey that starts in a different timezone but falls in the time range once timezoned
     ;
 
 {% endmacro %}
