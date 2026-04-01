@@ -3,7 +3,7 @@ description: Build a Docker image using a specified Dockerfile and context.
 
 permissions:
   contents: read
-  packages: write
+  packages: write # zizmor: ignore[excessive-permissions]
 
 inputs:
   name:
