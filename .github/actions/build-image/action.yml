@@ -3,6 +3,7 @@ description: Build a Docker image using a specified Dockerfile and context.
 
 permissions:
   contents: read
+  packages: write # zizmor: ignore[excessive-permissions]
 
 inputs:
   name:
@@ -18,10 +19,7 @@ inputs:
   dockerfile:
     required: true
     type: string
-  DOCKER_USERNAME:
-    required: true
-    type: string
-  DOCKER_PASSWORD:
+  GITHUB_TOKEN:
     required: true
     type: string
 
@@ -60,7 +58,7 @@ runs:
         file: ${{ inputs.dockerfile }}
         load: true
         push: false
-        tags: betagouvpdc/${{ inputs.name }}:${{ inputs.tag }}
+        tags: ghcr.io/${{ github.repository_owner }}/${{ inputs.name }}:${{ inputs.tag }}
         cache-from: type=gha,scope=${{ inputs.name }}
         cache-to: type=gha,mode=max,scope=${{ inputs.name }}
         labels: |
@@ -73,17 +71,18 @@ runs:
 #     - name: Run Trivy vulnerability scanner
 #       uses: aquasecurity/trivy-action@97e0b3872f55f89b95b2f65b3dbab56962816478 # v0.34.2
 #       with:
-#         image-ref: betagouvpdc/${{ inputs.name }}:${{ inputs.tag }}
+#         image-ref: ghcr.io/${{ github.repository_owner }}/${{ inputs.name }}:${{ inputs.tag }}
 #         format: "template"
 #         template: "@/contrib/sarif.tpl"
 #         output: "trivy-results.sarif"
 #       continue-on-error: true
 
-    - name: Login to DockerHub
+    - name: Login to GitHub Container Registry
       uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1
       with:
-        username: ${{ inputs.DOCKER_USERNAME }}
-        password: ${{ inputs.DOCKER_PASSWORD }}
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ inputs.GITHUB_TOKEN }}
 
     - name: Build and push ${{ inputs.name }}
       id: docker_build
@@ -93,7 +92,7 @@ runs:
         context: ${{ inputs.context }} # zizmor: ignore[template-injection]
         file: ${{ inputs.dockerfile }}
         push: true
-        tags: betagouvpdc/${{ inputs.name }}:${{ inputs.tag }}
+        tags: ghcr.io/${{ github.repository_owner }}/${{ inputs.name }}:${{ inputs.tag }}
         cache-from: type=gha,scope=${{ inputs.name }}
         labels: |
           org.opencontainers.image.title=${{ inputs.name }} Image
