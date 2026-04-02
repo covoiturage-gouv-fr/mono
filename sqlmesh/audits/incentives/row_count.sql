@@ -13,7 +13,8 @@ SELECT 1 AS failure
 WHERE (
   SELECT COUNT(*)
   FROM policy.incentives
-  WHERE datetime BETWEEN @start_ts AND @end_ts
+  WHERE datetime pi.datetime >= @start_ts::timestamp - INTERVAL '1 day' 
+  AND pi.datetime < @end_ts::timestamp + INTERVAL '1 day'
 ) != (
   SELECT COUNT(*) FROM @this_model
 );
