@@ -3,6 +3,7 @@ MODEL (
   kind INCREMENTAL_BY_TIME_RANGE (
     time_column journey_date,
     batch_size 1,
+    batch_concurrency 2,
   ),
   start '2025-01-01 00:00:00+0100',
   end '2025-12-31 23:59:59+0100',
