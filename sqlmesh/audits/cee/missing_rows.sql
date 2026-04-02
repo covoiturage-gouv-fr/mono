@@ -11,11 +11,8 @@ AUDIT (
 
 SELECT cee._id
 FROM cee.cee_applications cee
-WHERE cee.datetime >= @start_ts::timestamp - INTERVAL '1 day'
-  AND cee.datetime <  @end_ts::timestamp + INTERVAL '1 day'
+WHERE cee.datetime BETWEEN @start_ts AND @end_ts
   AND NOT EXISTS (
     SELECT 1 FROM @this_model t 
     WHERE t._id = cee._id
-      AND t.datetime >= @start_ts::timestamp - INTERVAL '1 day' 
-      AND t.datetime < @end_ts::timestamp + INTERVAL '1 day'
   );

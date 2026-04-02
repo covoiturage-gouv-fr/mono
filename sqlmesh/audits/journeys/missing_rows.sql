@@ -11,11 +11,8 @@ AUDIT (
 
 SELECT c._id
 FROM carpool_v2.carpools c
-WHERE c.start_datetime >= @start_ts::timestamp - INTERVAL '1 day'
-  AND c.start_datetime <  @end_ts::timestamp + INTERVAL '1 day'
+WHERE c.start_datetime BETWEEN @start_ts AND @end_ts
   AND NOT EXISTS (
     SELECT 1 FROM @this_model t 
     WHERE t._id = c._id
-      AND t.start_datetime >= @start_ts::timestamp - INTERVAL '1 day' 
-      AND t.start_datetime <  @end_ts::timestamp + INTERVAL '1 day'
   );

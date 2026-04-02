@@ -13,10 +13,7 @@ SELECT 1 AS failure
 WHERE (
   SELECT COUNT(*)
   FROM cee.cee_applications
-  WHERE datetime >= @start_ts::timestamp - INTERVAL '1 day'
-    AND datetime <  @end_ts::timestamp + INTERVAL '1 day'
+  WHERE datetime BETWEEN @start_ts AND @end_ts
 ) != (
   SELECT COUNT(*) FROM @this_model
-  WHERE datetime >= @start_ts::timestamp - INTERVAL '1 day'
-    AND datetime <  @end_ts::timestamp + INTERVAL '1 day'
 );
