@@ -96,13 +96,13 @@ journeys AS (
     j.start_datetime,
     {{get_timezoned_timestamp("COALESCE(geo.start_geo_code, j.start_geo_code)", "j.start_datetime")}} AS start_datetime_tz,
     ST_SetSRID(ST_Point(j.start_position_x, j.start_position_y), 4326) AS start_position,
-    h3_lat_lng_to_cell((ST_SetSRID(ST_Point(j.start_position_x, j.start_position_y), 4326)), 9) AS start_h3_index,
+    h3_lat_lng_to_cell((ST_SetSRID(ST_Point(j.start_position_x, j.start_position_y), 4326))::point, 9) AS start_h3_index,
     COALESCE(geo.start_geo_code, j.start_geo_code) AS start_geo_code,
 
     j.end_datetime,
     {{get_timezoned_timestamp("COALESCE(geo.end_geo_code, j.end_geo_code)", "j.end_datetime")}} AS end_datetime_tz,
     ST_SetSRID(ST_Point(j.end_position_x, j.end_position_y), 4326) AS end_position,
-    h3_lat_lng_to_cell((ST_SetSRID(ST_Point(j.end_position_x, j.end_position_y), 4326)), 9) AS end_h3_index,
+    h3_lat_lng_to_cell((ST_SetSRID(ST_Point(j.end_position_x, j.end_position_y), 4326))::point, 9) AS end_h3_index,
     COALESCE(geo.end_geo_code, j.end_geo_code) AS end_geo_code,
 
     COALESCE(to_jsonb(geo.geo_errors), to_jsonb(j.geo_errors)) AS geo_errors,
