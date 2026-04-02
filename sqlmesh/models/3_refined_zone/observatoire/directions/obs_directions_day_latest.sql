@@ -10,6 +10,9 @@ MODEL (
   grain ['code', 'type', 'journey_date', 'direction'],
   tags  ['refined', 'observatoire', 'directions_day', 'latest'],
 );
+
+SET work_mem = '512MB';
+
 JINJA_QUERY_BEGIN;
 {{ obs_directions_day_generator("trusted_zone.journeys_latest", "@start_ts", "@end_ts") }}
 JINJA_END;
