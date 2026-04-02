@@ -13,8 +13,8 @@ SELECT 1 AS failure
 WHERE (
   SELECT COUNT(*)
   FROM carpool_v2.carpools
-  WHERE start_datetime >= @start_ts::timestamp
-    AND start_datetime <  @end_ts::timestamp
+  WHERE start_datetime >= @start_ts::timestamp - INTERVAL '1 day'
+    AND start_datetime <  @end_ts::timestamp + INTERVAL '1 day'
 ) != (
   SELECT COUNT(*) FROM @this_model
 );

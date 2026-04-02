@@ -35,4 +35,5 @@ LEFT JOIN carpool_v2.carpools cv2_journey
   ON cee.carpool_id IS NULL
   AND cv2_journey.operator_id = cee.operator_id
   AND cv2_journey.operator_journey_id = cee.operator_journey_id
-WHERE cee.datetime BETWEEN @start_ts AND @end_ts;
+WHERE cee.datetime >= @start_ts::timestamp - INTERVAL '1 day'
+  AND cee.datetime < @end_ts::timestamp + INTERVAL '1 day';

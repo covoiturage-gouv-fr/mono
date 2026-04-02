@@ -12,7 +12,8 @@ AUDIT (
 SELECT pi._id
 FROM policy.incentives pi
 INNER JOIN @this_model t ON t._id = pi._id
-WHERE pi.datetime BETWEEN @start_ts AND @end_ts
+WHERE pi.datetime >= @start_ts::timestamp - INTERVAL '1 day' 
+  AND pi.datetime < @end_ts::timestamp + INTERVAL '1 day'
   AND (
     pi.policy_id    IS DISTINCT FROM t.campaign_id
     OR pi.amount    IS DISTINCT FROM t.amount
