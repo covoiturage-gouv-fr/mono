@@ -20,6 +20,4 @@ JINJA_QUERY_BEGIN;
 JINJA_END;
 
 @create_index(@this_model, _id, 'name=journeys_2022_id_index');
-@create_index(@this_model, start_datetime_tz, 'name=journeys_2022_start_datetime_tz_index');
-@create_index(@this_model, start_h3_index, 'name=journeys_2022_start_h3_index_index');
-@create_index(@this_model, end_h3_index, 'name=journeys_2022_end_h3_index_index');
+@create_index(@this_model, start_datetime, 'name=journeys_2022_start_datetime_index');
