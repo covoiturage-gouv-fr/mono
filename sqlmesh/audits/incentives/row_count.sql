@@ -17,4 +17,6 @@ WHERE (
   AND datetime < @end_ts::timestamp + INTERVAL '1 day'
 ) != (
   SELECT COUNT(*) FROM @this_model
+  WHERE datetime >= @start_ts::timestamp - INTERVAL '1 day' 
+  AND datetime < @end_ts::timestamp + INTERVAL '1 day'
 );
