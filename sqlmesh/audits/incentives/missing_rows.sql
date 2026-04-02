@@ -11,11 +11,8 @@ AUDIT (
 
 SELECT pi._id
 FROM policy.incentives pi
-WHERE pi.datetime >= @start_ts::timestamp - INTERVAL '1 day' 
-  AND pi.datetime < @end_ts::timestamp + INTERVAL '1 day'
+WHERE pi.datetime BETWEEN @start_ts AND @end_ts
   AND NOT EXISTS (
     SELECT 1 FROM @this_model t 
     WHERE t._id = pi._id
-      AND t.datetime >= @start_ts::timestamp - INTERVAL '1 day' 
-      AND t.datetime < @end_ts::timestamp + INTERVAL '1 day'
   );
