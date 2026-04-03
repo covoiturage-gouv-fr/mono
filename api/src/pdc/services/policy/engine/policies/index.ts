@@ -53,6 +53,7 @@ import { GrandPoitiers2026 } from "./20260101_GrandPoitiers2026.ts";
 import { LaRochelle2026 } from "./20260101_LaRochelle.ts";
 import { MontluconCommunaute2026 } from "./20260101_Montlucon_2026.ts";
 import { Occitanie20262027 } from "./20260101_Occitanie.ts";
+import { CCSPSL2026 } from "./20260301_CCSPSL_2026.ts";
 
 export const policies: Map<string, PolicyHandlerStaticInterface> = new Map(
   [
@@ -60,6 +61,7 @@ export const policies: Map<string, PolicyHandlerStaticInterface> = new Map(
     ATMB2025,
     ATMBx2CCAM2026,
     CCPOA202410,
+    CCSPSL2026,
     CCVMM202405,
     Cannes2024,
     Cotentin2023,
