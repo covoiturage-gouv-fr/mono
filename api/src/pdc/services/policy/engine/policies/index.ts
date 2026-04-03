@@ -47,12 +47,13 @@ import { HauteCorreze2026 } from "./20250902_haute_correze_2026.ts";
 import { ATMB2025 } from "./20251014_ATMB.ts";
 import { CovoitIDFM2026 } from "./20251201_Covoit_IDFM_2026.ts";
 import { LannionTregor2026 } from "./20251201_LannionTregor.ts";
-import { GrandChatellerault2026 } from "./20260101_GrandChatellerault.ts";
 import { ATMBx2CCAM2026 } from "./20260101_ATMBx2CCAM_2026.ts";
+import { GrandChatellerault2026 } from "./20260101_GrandChatellerault.ts";
 import { GrandPoitiers2026 } from "./20260101_GrandPoitiers2026.ts";
 import { LaRochelle2026 } from "./20260101_LaRochelle.ts";
 import { MontluconCommunaute2026 } from "./20260101_Montlucon_2026.ts";
 import { Occitanie20262027 } from "./20260101_Occitanie.ts";
+import { PMGF2026 } from "./20260101_PMGF.ts";
 import { CCSPSL2026 } from "./20260301_CCSPSL_2026.ts";
 
 export const policies: Map<string, PolicyHandlerStaticInterface> = new Map(
@@ -93,6 +94,7 @@ export const policies: Map<string, PolicyHandlerStaticInterface> = new Map(
     Occitanie20262027,
     PMGF2022,
     PMGF2023,
+    PMGF2026,
     PMGFOctobre2023,
     PMGFxATMB2024,
     PMGFxATMB2025,
