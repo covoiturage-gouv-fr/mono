@@ -41,15 +41,15 @@ geocoding AS (
     ON g.end_geo_code = ce.old_com
     AND ce.mod = 32
     AND ce.year = EXTRACT(YEAR FROM {{start_ts}}::date)
-  WHERE g.start_geo_code NOT IN (
-      SELECT DISTINCT old_com
-      FROM trusted_zone.com_evolution
-      WHERE year = EXTRACT(YEAR FROM {{start_ts}}::date) AND mod = 21
+  WHERE NOT EXISTS (
+      SELECT 1 FROM trusted_zone.com_evolution ce_s
+      WHERE ce_s.old_com = g.start_geo_code
+        AND ce_s.year = EXTRACT(YEAR FROM {{start_ts}}::date) AND ce_s.mod = 21
     )
-    OR g.end_geo_code NOT IN (
-      SELECT DISTINCT old_com
-      FROM trusted_zone.com_evolution
-      WHERE year = EXTRACT(YEAR FROM {{start_ts}}::date) AND mod = 21
+    OR NOT EXISTS (
+      SELECT 1 FROM trusted_zone.com_evolution ce_e
+      WHERE ce_e.old_com = g.end_geo_code
+        AND ce_e.year = EXTRACT(YEAR FROM {{start_ts}}::date) AND ce_e.mod = 21
     )
 
   UNION ALL
@@ -67,15 +67,15 @@ geocoding AS (
     ON ST_Intersects(ST_SetSRID(ST_Point(b.start_position_x, b.start_position_y), 4326), ps.geom)
   LEFT JOIN perimeters_retablissement pe
     ON ST_Intersects(ST_SetSRID(ST_Point(b.end_position_x, b.end_position_y), 4326), pe.geom)
-  WHERE g.start_geo_code IN (
-      SELECT DISTINCT old_com
-      FROM trusted_zone.com_evolution
-      WHERE year = EXTRACT(YEAR FROM {{start_ts}}::date) AND mod = 21
+  WHERE EXISTS (
+      SELECT 1 FROM trusted_zone.com_evolution ce_s
+      WHERE ce_s.old_com = g.start_geo_code
+        AND ce_s.year = EXTRACT(YEAR FROM {{start_ts}}::date) AND ce_s.mod = 21
     )
-    OR g.end_geo_code IN (
-      SELECT DISTINCT old_com
-      FROM trusted_zone.com_evolution
-      WHERE year = EXTRACT(YEAR FROM {{start_ts}}::date) AND mod = 21
+    OR EXISTS (
+      SELECT 1 FROM trusted_zone.com_evolution ce_e
+      WHERE ce_e.old_com = g.end_geo_code
+        AND ce_e.year = EXTRACT(YEAR FROM {{start_ts}}::date) AND ce_e.mod = 21
     )
 ),
 journeys AS (

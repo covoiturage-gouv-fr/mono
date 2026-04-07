@@ -19,7 +19,7 @@ SELECT
   status::VARCHAR AS status,
   state::VARCHAR AS state
 FROM raw_zone.incentives_2019
-UNION
+UNION ALL
 SELECT
   _id,
   carpool_v2_id,
@@ -35,7 +35,7 @@ SELECT
   status::VARCHAR AS status,
   state::VARCHAR AS state
 FROM raw_zone.incentives_2020
-UNION
+UNION ALL
 SELECT
   _id,
   carpool_v2_id,
@@ -51,7 +51,7 @@ SELECT
   status::VARCHAR AS status,
   state::VARCHAR AS state
 FROM raw_zone.incentives_2021
-UNION
+UNION ALL
 SELECT
   _id,
   carpool_v2_id,
@@ -67,7 +67,7 @@ SELECT
   status::VARCHAR AS status,
   state::VARCHAR AS state
 FROM raw_zone.incentives_2022
-UNION
+UNION ALL
 SELECT
   _id,
   carpool_v2_id,
@@ -83,7 +83,7 @@ SELECT
   status::VARCHAR AS status,
   state::VARCHAR AS state
 FROM raw_zone.incentives_2023
-UNION
+UNION ALL
 SELECT
   _id,
   carpool_v2_id,
@@ -99,7 +99,7 @@ SELECT
   status::VARCHAR AS status,
   state::VARCHAR AS state
 FROM raw_zone.incentives_2024
-UNION
+UNION ALL
 SELECT
   _id,
   carpool_v2_id,
@@ -115,7 +115,7 @@ SELECT
   status::VARCHAR AS status,
   state::VARCHAR AS state
 FROM raw_zone.incentives_2025
-UNION
+UNION ALL
 SELECT
   _id,
   carpool_v2_id,

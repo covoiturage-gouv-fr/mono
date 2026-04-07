@@ -31,6 +31,8 @@
         ) AS valid_acquisition_status
       FROM carpool_v2.status AS s
       INNER JOIN carpool_v2.carpools AS c ON s.carpool_id = c._id
+      WHERE c.start_datetime >= {{start_ts}}::timestamp - INTERVAL '1 day'
+        AND c.start_datetime <  {{end_ts}}::timestamp + INTERVAL '1 day'
     ),
 
     fraud_labels AS (
@@ -39,6 +41,8 @@
         ARRAY_AGG(fl.label) AS fraud_labels
       FROM fraudcheck.labels AS fl
       INNER JOIN carpool_v2.carpools AS c ON fl.carpool_id = c._id
+      WHERE c.start_datetime >= {{start_ts}}::timestamp - INTERVAL '1 day'
+        AND c.start_datetime <  {{end_ts}}::timestamp + INTERVAL '1 day'
       GROUP BY 1
     ),
 
@@ -48,6 +52,8 @@
         ARRAY_AGG(al.label) AS anomaly_labels
       FROM fraudcheck.labels AS al
       INNER JOIN carpool_v2.carpools AS c ON al.carpool_id = c._id
+      WHERE c.start_datetime >= {{start_ts}}::timestamp - INTERVAL '1 day'
+        AND c.start_datetime <  {{end_ts}}::timestamp + INTERVAL '1 day'
       GROUP BY 1
     )
       SELECT
