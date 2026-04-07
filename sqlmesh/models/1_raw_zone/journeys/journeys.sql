@@ -84,7 +84,7 @@ SELECT
   c.end_datetime,
   st_x(c.end_position::geometry)::float4 AS end_position_x,
   st_y(c.end_position::geometry)::float4 AS end_position_y,
-  h3_latlng_to_cell((c.end_position::geometry)::point, 9) AS end_h3_index,
+  h3_lat_lng_to_cell((c.end_position::geometry)::point, 9) AS end_h3_index,
   g.end_geo_code,
 
   g.errors AS geo_errors,
