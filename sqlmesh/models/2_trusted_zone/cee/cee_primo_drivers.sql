@@ -47,5 +47,7 @@ SELECT
 FROM batch_with_id b
 LEFT JOIN trusted_zone.cee_primo_drivers t ON t.driver_hash = b.driver_hash;
 
-@create_unique_index(@this_model, driver_hash, 'name=cee_primo_drivers_pk');
-@create_index(@this_model, carpool_v2_id, 'name=cee_primo_drivers_carpool_v2_id');
+@create_indexes(
+  'UNIQUE cee_primo_drivers_pk ON trusted_zone.cee_primo_drivers (driver_hash)',
+  'cee_primo_drivers_carpool_v2_id ON trusted_zone.cee_primo_drivers (carpool_v2_id)',
+);

@@ -3,7 +3,7 @@
 -- Checked fields: operator_id, start_datetime, distance, driver_revenue, passenger_contribution
 
 -- Direction: PG → Raw
--- Attach to: raw_zone.journeys_* models
+-- Attach to: raw_zone.journeys
 AUDIT (
   name assert_journeys_key_fields_pg_to_raw,
   blocking false

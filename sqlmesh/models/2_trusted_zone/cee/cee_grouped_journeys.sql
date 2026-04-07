@@ -23,7 +23,7 @@ WITH cee_roots AS (
   INNER JOIN trusted_zone.cee_primo_drivers p
     ON p.driver_hash = md5(j.driver_id)
     AND p.first_datetime BETWEEN j.start_datetime - INTERVAL '3 months'
-                              AND j.start_datetime + INTERVAL '3 months'
+                              AND j.start_datetime
   WHERE cee.journey_type = 'short'
 ),
 
@@ -48,7 +48,7 @@ related AS (
     AND j.operator_id = r.operator_id
     AND j._id != r.root_carpool_v2_id
     AND j.start_datetime BETWEEN r.root_datetime - INTERVAL '3 months'
-                              AND r.root_datetime + INTERVAL '3 months'
+                              AND r.root_datetime
     AND j.valid_acquisition_status = true
   ORDER BY j._id, ABS(EXTRACT(EPOCH FROM j.start_datetime - r.root_datetime))
 )

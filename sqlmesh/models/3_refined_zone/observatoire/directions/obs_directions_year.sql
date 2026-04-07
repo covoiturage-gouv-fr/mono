@@ -91,14 +91,14 @@ users as (
     code,
     type,
     direction,
-    extract('year'  FROM month_date)::int AS year,
+    extract('year'  FROM year_date)::int AS year,
     unique_drivers,
     unique_passengers,
     new_drivers,
     new_passengers
-  FROM refined_zone.obs_directions_users_month
-  WHERE month_date >= @start_ts
-    AND month_date <  @end_ts
+  FROM refined_zone.obs_directions_users_year
+  WHERE year_date >= @start_ts
+    AND year_date <  @end_ts
 )
 
 SELECT
@@ -152,4 +152,6 @@ WHERE
   AND a.passengers_distance > 0
 ORDER BY 1, 2, 3, 4, 5, 6;
 
-@create_unique_index(@this_model, year_date, code, type, direction);
+@create_indexes(
+  'UNIQUE uq_year_date_code_type_direction ON refined_zone.obs_directions_year (year_date, code, type, direction)',
+);

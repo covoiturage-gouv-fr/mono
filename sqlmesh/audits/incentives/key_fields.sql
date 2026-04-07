@@ -3,7 +3,7 @@
 -- Checked fields: policy_id/id, amount, status
 
 -- Direction: PG → Raw
--- Attach to: raw_zone.incentives_* models
+-- Attach to: raw_zone.incentives
 AUDIT (
   name assert_incentives_key_fields_pg_to_raw,
   blocking false

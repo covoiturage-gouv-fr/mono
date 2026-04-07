@@ -57,7 +57,7 @@ SELECT
   ROUND(j.duration / 60.0)                                                 AS journey_duration,
 
   EXISTS (
-    SELECT 1 FROM trusted_zone.campaign_incentives ci
+    SELECT 1 FROM trusted_zone.campaigns ci
     WHERE ci.carpool_v2_id = j._id AND ci.status = 'validated'
   )                                                                        AS has_incentive,
 
