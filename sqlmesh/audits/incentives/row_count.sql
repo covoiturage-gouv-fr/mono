@@ -3,7 +3,7 @@
 -- Returns a row when counts differ (causing the audit to fail).
 
 -- Direction: PG → Raw
--- Attach to: raw_zone.incentives_* models
+-- Attach to: raw_zone.incentives
 AUDIT (
   name assert_incentives_row_count_pg_to_raw,
   blocking true

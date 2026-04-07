@@ -3,7 +3,7 @@
 -- Any returned row means the audit fails.
 
 -- Direction: PG → Raw
--- Attach to: raw_zone.incentives_* models
+-- Attach to: raw_zone.incentives
 AUDIT (
   name assert_incentives_missing_rows_pg_to_raw,
   blocking true

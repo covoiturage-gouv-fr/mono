@@ -162,4 +162,6 @@ WHERE
   AND a.passengers_distance > 0
 ORDER BY 1, 2, 3, 4, 5, 6, 7;
 
-@create_unique_index(@this_model, month_date, code, type, direction);
+@create_indexes(
+  'UNIQUE uq_month_date_code_type_direction ON refined_zone.obs_directions_month (month_date, code, type, direction)',
+);

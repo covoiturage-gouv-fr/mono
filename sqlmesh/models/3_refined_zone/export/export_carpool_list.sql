@@ -114,23 +114,23 @@ SELECT
   j.operator_incentives[2]->>'amount'                            AS incentive_2_amount,
 
   -- RPC incentives (spread from JSONB array)
-  j.campaign_incentives[0]->>'campaign_id'                       AS incentive_rpc_0_campaign_id,
-  j.campaign_incentives[0]->>'campaign_name'                     AS incentive_rpc_0_campaign_name,
-  j.campaign_incentives[0]->>'siret'                             AS incentive_rpc_0_siret,
-  j.campaign_incentives[0]->>'name'                              AS incentive_rpc_0_name,
-  j.campaign_incentives[0]->>'amount'                            AS incentive_rpc_0_amount,
+  j.campaigns[0]->>'campaign_id'                       AS incentive_rpc_0_campaign_id,
+  j.campaigns[0]->>'campaign_name'                     AS incentive_rpc_0_campaign_name,
+  j.campaigns[0]->>'siret'                             AS incentive_rpc_0_siret,
+  j.campaigns[0]->>'name'                              AS incentive_rpc_0_name,
+  j.campaigns[0]->>'amount'                            AS incentive_rpc_0_amount,
 
-  j.campaign_incentives[1]->>'campaign_id'                       AS incentive_rpc_1_campaign_id,
-  j.campaign_incentives[1]->>'campaign_name'                     AS incentive_rpc_1_campaign_name,
-  j.campaign_incentives[1]->>'siret'                             AS incentive_rpc_1_siret,
-  j.campaign_incentives[1]->>'name'                              AS incentive_rpc_1_name,
-  j.campaign_incentives[1]->>'amount'                            AS incentive_rpc_1_amount,
+  j.campaigns[1]->>'campaign_id'                       AS incentive_rpc_1_campaign_id,
+  j.campaigns[1]->>'campaign_name'                     AS incentive_rpc_1_campaign_name,
+  j.campaigns[1]->>'siret'                             AS incentive_rpc_1_siret,
+  j.campaigns[1]->>'name'                              AS incentive_rpc_1_name,
+  j.campaigns[1]->>'amount'                            AS incentive_rpc_1_amount,
 
-  j.campaign_incentives[2]->>'campaign_id'                       AS incentive_rpc_2_campaign_id,
-  j.campaign_incentives[2]->>'campaign_name'                     AS incentive_rpc_2_campaign_name,
-  j.campaign_incentives[2]->>'siret'                             AS incentive_rpc_2_siret,
-  j.campaign_incentives[2]->>'name'                              AS incentive_rpc_2_name,
-  j.campaign_incentives[2]->>'amount'                            AS incentive_rpc_2_amount,
+  j.campaigns[2]->>'campaign_id'                       AS incentive_rpc_2_campaign_id,
+  j.campaigns[2]->>'campaign_name'                     AS incentive_rpc_2_campaign_name,
+  j.campaigns[2]->>'siret'                             AS incentive_rpc_2_siret,
+  j.campaigns[2]->>'name'                              AS incentive_rpc_2_name,
+  j.campaigns[2]->>'amount'                            AS incentive_rpc_2_amount,
 
   -- offer (placeholders)
   TRUE                                                           AS offer_public,

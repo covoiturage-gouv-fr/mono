@@ -3,7 +3,7 @@
 -- Returns a row when counts differ (causing the audit to fail).
 
 -- Direction: PG → Raw
--- Attach to: raw_zone.journeys_* models
+-- Attach to: raw_zone.journeys
 AUDIT (
   name assert_journeys_row_count_pg_to_raw,
   blocking true

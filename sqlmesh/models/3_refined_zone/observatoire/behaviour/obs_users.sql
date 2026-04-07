@@ -4,6 +4,7 @@ MODEL (
     unique_key (user_id)
   ),
   start '2020-01-01 00:00:00+0100',
+  cron '@daily',
   grain 'user_id',
   tags ['refined', 'observatoire', 'users'],
 );
@@ -78,4 +79,6 @@ SELECT
 FROM agg a
 LEFT JOIN refined_zone.obs_users t ON t.user_id = a.user_id;
 
-@create_unique_index(@this_model, user_id, 'name=obs_users_pk');
+@create_indexes(
+  'UNIQUE obs_users_pk ON refined_zone.obs_users (user_id)',
+);

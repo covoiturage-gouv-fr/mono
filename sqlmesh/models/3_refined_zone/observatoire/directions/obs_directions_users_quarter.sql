@@ -11,52 +11,28 @@ MODEL (
   tags ['refined', 'observatoire', 'directions_users_quarter'],
 );
 
-WITH journey_years AS (
-  SELECT EXTRACT(YEAR FROM @start_ts::date)::int AS year
-  UNION
-  SELECT EXTRACT(YEAR FROM @end_ts::date)::int
-),
-perimeters_resolved AS (
-  SELECT DISTINCT ON (p.arr, y.year)
-    p.arr,
-    p.epci,
-    p.aom,
-    p.dep,
-    p.reg,
-    p.country,
-    y.year AS journey_year
-  FROM trusted_zone.perimeters p
-  CROSS JOIN journey_years y
-  WHERE p.year <= y.year
-  ORDER BY p.arr, y.year, p.year DESC
-),
-journeys_enriched AS (
+WITH journeys_enriched AS (
   SELECT
     j._id,
     j.driver_id,
     j.passenger_id,
-    DATE_TRUNC('quarter', j.start_datetime)::date AS quarter_date,
-    ps.epci    AS start_epci,
-    pe.epci    AS end_epci,
-    ps.aom     AS start_aom,
-    pe.aom     AS end_aom,
-    ps.dep     AS start_dep,
-    pe.dep     AS end_dep,
-    ps.reg     AS start_reg,
-    pe.reg     AS end_reg,
-    ps.country AS start_country,
-    pe.country AS end_country,
+    DATE_TRUNC('quarter', j.start_datetime_tz)::date AS quarter_date,
+    g.start_epci,
+    g.end_epci,
+    g.start_aom,
+    g.end_aom,
+    g.start_dep,
+    g.end_dep,
+    g.start_reg,
+    g.end_reg,
+    g.start_country,
+    g.end_country,
     j.start_geo_code AS start_com,
     j.end_geo_code   AS end_com,
-    CASE WHEN u_driver.first_date_driver       = j.start_datetime::date THEN TRUE ELSE FALSE END AS is_new_driver,
-    CASE WHEN u_passenger.first_date_passenger = j.start_datetime::date THEN TRUE ELSE FALSE END AS is_new_passenger
+    CASE WHEN u_driver.first_date_driver       = j.start_datetime_tz::date THEN TRUE ELSE FALSE END AS is_new_driver,
+    CASE WHEN u_passenger.first_date_passenger = j.start_datetime_tz::date THEN TRUE ELSE FALSE END AS is_new_passenger
   FROM trusted_zone.journeys j
-  LEFT JOIN perimeters_resolved ps
-         ON ps.arr = j.start_geo_code
-        AND ps.journey_year = EXTRACT(YEAR FROM j.start_datetime)::int
-  LEFT JOIN perimeters_resolved pe
-         ON pe.arr = j.end_geo_code
-        AND pe.journey_year = EXTRACT(YEAR FROM j.start_datetime)::int
+  LEFT JOIN refined_zone.obs_journeys_geo g ON g._id = j._id
   LEFT JOIN refined_zone.obs_users u_driver    ON u_driver.user_id    = j.driver_id
   LEFT JOIN refined_zone.obs_users u_passenger ON u_passenger.user_id = j.passenger_id
   WHERE j.valid_acquisition_status = true
@@ -170,4 +146,6 @@ FROM all_directions
 WHERE code IS NOT NULL
 GROUP BY 1,2,3;
 
-@create_unique_index(@this_model, quarter_date, code, type, direction);
+@create_indexes(
+  'UNIQUE uq_quarter_date_code_type_direction ON refined_zone.obs_directions_users_quarter (quarter_date, code, type, direction)',
+);

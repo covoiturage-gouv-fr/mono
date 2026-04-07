@@ -16,7 +16,7 @@ WITH sum_directions AS (
     type,   
     direction,
     extract('year' FROM journey_date)::int  AS year,
-    ceil(extract('semester' FROM journey_date)::int / 6.0)::int AS semester,
+    ceil(extract('month' FROM journey_date)::int / 6.0)::int AS semester,
     sum(journeys)                         AS journeys,
     (sum(distance) / sum(journeys)) * sum(passenger_seats) AS passengers_distance,
     (sum(distance) / sum(journeys)) * sum(drivers) AS drivers_distance,
@@ -40,7 +40,7 @@ hours_detail AS (
     type, 
     direction, 
     extract('year' FROM journey_date)::int  AS year,
-    ceil(extract('semester' FROM journey_date)::int / 6.0)::int AS semester,
+    ceil(extract('month' FROM journey_date)::int / 6.0)::int AS semester,
     h.idx - 1                      AS hour,
     SUM(hours_distribution[h.idx]) AS journeys
   FROM refined_zone.obs_directions_day
@@ -56,7 +56,7 @@ dist_detail AS (
     type, 
     direction, 
     extract('year' FROM journey_date)::int  AS year,
-    ceil(extract('semester' FROM journey_date)::int / 6.0)::int AS semester,
+    ceil(extract('month' FROM journey_date)::int / 6.0)::int AS semester,
     dc.idx,
     dc.label,
     SUM(dist_distribution[dc.idx]) AS journeys
@@ -97,7 +97,7 @@ users as (
     type,
     direction,
     extract('year'  FROM semester_date)::int AS year,
-    extract('semester' FROM semester_date)::int AS semester,
+    ceil(extract('month' FROM semester_date)::int / 6.0)::int AS semester,
     unique_drivers,
     unique_passengers,
     new_drivers,
@@ -162,4 +162,6 @@ WHERE
   AND a.passengers_distance > 0
 ORDER BY 1, 2, 3, 4, 5, 6, 7;
 
-@create_unique_index(@this_model, semester_date, code, type, direction);
+@create_indexes(
+  'UNIQUE uq_semester_date_code_type_direction ON refined_zone.obs_directions_semester (semester_date, code, type, direction)',
+);

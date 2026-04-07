@@ -132,12 +132,14 @@ SELECT
 FROM all_perimeters
 ORDER BY year, arr;
 
-@create_index(@this_model, id, 'name=perimeters_id_index');
-@create_index(@this_model, centroid, 'type=GIST', 'name=perimeters_centroid_index');
-@create_index(@this_model, geom, 'type=GIST', 'name=perimeters_geom_index');
-@create_index(@this_model, geom_simple, 'type=GIST', 'name=perimeters_geom_simple_index');
-@create_index(@this_model, year, 'name=perimeters_year_index');
-@create_index(@this_model, surface, 'name=perimeters_surface_index');
-@create_index(@this_model, arr, 'name=perimeters_arr_index');
-@create_index(@this_model, aom, 'name=perimeters_aom_index');
-@create_index(@this_model, epci, 'name=perimeters_epci_index');
+@create_indexes(
+  'perimeters_id_index ON trusted_zone.perimeters (id)',
+  'perimeters_centroid_index ON trusted_zone.perimeters USING GIST (centroid)',
+  'perimeters_geom_index ON trusted_zone.perimeters USING GIST (geom)',
+  'perimeters_geom_simple_index ON trusted_zone.perimeters USING GIST (geom_simple)',
+  'perimeters_year_index ON trusted_zone.perimeters (year)',
+  'perimeters_surface_index ON trusted_zone.perimeters (surface)',
+  'perimeters_arr_index ON trusted_zone.perimeters (arr)',
+  'perimeters_aom_index ON trusted_zone.perimeters (aom)',
+  'perimeters_epci_index ON trusted_zone.perimeters (epci)',
+);
