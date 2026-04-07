@@ -37,3 +37,6 @@ LEFT JOIN carpool_v2.carpools cv2_journey
   AND cv2_journey.operator_journey_id = cee.operator_journey_id
 WHERE cee.datetime >= @start_ts::timestamp - INTERVAL '1 day'
   AND cee.datetime < @end_ts::timestamp + INTERVAL '1 day';
+
+CREATE INDEX CONCURRENTLY IF NOT EXISTS cee_applications_v2_id
+  ON raw_zone.cee_applications USING btree (carpool_v2_id);
