@@ -146,7 +146,5 @@ WHERE c.start_datetime >= @start_ts
   AND c.start_datetime < @end_ts
 ;
 
-@create_indexes(
-  'journeys_id_index ON raw_zone.journeys (_id)',
-  'journeys_start_datetime_index ON raw_zone.journeys (start_datetime)',
-);
+@IF(@runtime_stage = 'creating', CREATE INDEX IF NOT EXISTS journeys_id_index ON raw_zone.journeys (_id));
+@IF(@runtime_stage = 'creating', CREATE INDEX IF NOT EXISTS journeys_start_datetime_index ON raw_zone.journeys (start_datetime));

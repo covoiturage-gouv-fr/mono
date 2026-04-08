@@ -47,7 +47,5 @@ SELECT
 FROM unnested
 GROUP BY _id, start_datetime;
 
-@create_indexes(
-  'obs_journeys_incentives_id_idx ON refined_zone.obs_journeys_incentives (_id)',
-  'obs_journeys_incentives_datetime_idx ON refined_zone.obs_journeys_incentives (start_datetime)',
-);
+@IF(@runtime_stage = 'creating', CREATE INDEX IF NOT EXISTS obs_journeys_incentives_id_idx ON refined_zone.obs_journeys_incentives (_id));
+@IF(@runtime_stage = 'creating', CREATE INDEX IF NOT EXISTS obs_journeys_incentives_datetime_idx ON refined_zone.obs_journeys_incentives (start_datetime));
