@@ -36,7 +36,7 @@ export class AuthRouter {
     this.app.get(
       "/auth/login/callback",
       asyncHandler(async (req: Request, res: Response) => {
-        const url = new URL(`${req.protocol}://${req.get("host")}${req.originalUrl}`);
+        const url = new URL(req.originalUrl, this.config.get("proxy.apiUrl"));
         const { state, nonce } = req.session?.auth || {};
 
         // Fetch tokens and user info from ProConnect OIDC Provider
