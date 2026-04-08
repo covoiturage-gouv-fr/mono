@@ -72,6 +72,4 @@ WHERE pi.datetime >= @start_ts
   AND pi.datetime < @end_ts
 ;
 
-@create_indexes(
-  'incentives_carpool_v2_id_index ON raw_zone.incentives (carpool_v2_id)',
-);
+@IF(@runtime_stage = 'creating', CREATE INDEX IF NOT EXISTS incentives_carpool_v2_id_index ON raw_zone.incentives (carpool_v2_id));

@@ -152,6 +152,4 @@ WHERE
   AND a.passengers_distance > 0
 ORDER BY 1, 2, 3, 4, 5, 6;
 
-@create_indexes(
-  'UNIQUE uq_year_date_code_type_direction ON refined_zone.obs_directions_year (year_date, code, type, direction)',
-);
+@IF(@runtime_stage = 'creating', CREATE UNIQUE INDEX IF NOT EXISTS uq_year_date_code_type_direction ON refined_zone.obs_directions_year (year_date, code, type, direction));

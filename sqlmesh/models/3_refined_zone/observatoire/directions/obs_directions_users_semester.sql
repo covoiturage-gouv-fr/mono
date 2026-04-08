@@ -148,6 +148,4 @@ FROM all_directions
 WHERE code IS NOT NULL
 GROUP BY 1,2,3;
 
-@create_indexes(
-  'UNIQUE uq_semester_date_code_type_direction ON refined_zone.obs_directions_users_semester (semester_date, code, type, direction)',
-);
+@IF(@runtime_stage = 'creating', CREATE UNIQUE INDEX IF NOT EXISTS uq_semester_date_code_type_direction ON refined_zone.obs_directions_users_semester (semester_date, code, type, direction));

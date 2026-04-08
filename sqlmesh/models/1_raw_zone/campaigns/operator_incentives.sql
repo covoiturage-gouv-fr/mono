@@ -25,7 +25,5 @@ WHERE t.amount > 0
   AND c.start_datetime < @end_ts
 ;
 
-@create_indexes(
-  'operator_incentives_carpool_id_index ON raw_zone.operator_incentives (carpool_id)',
-  'operator_incentives_start_datetime_index ON raw_zone.operator_incentives (start_datetime)',
-);
+@IF(@runtime_stage = 'creating', CREATE INDEX IF NOT EXISTS operator_incentives_carpool_id_index ON raw_zone.operator_incentives (carpool_id));
+@IF(@runtime_stage = 'creating', CREATE INDEX IF NOT EXISTS operator_incentives_start_datetime_index ON raw_zone.operator_incentives (start_datetime));
