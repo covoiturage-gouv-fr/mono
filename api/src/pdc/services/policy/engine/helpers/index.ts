@@ -25,4 +25,3 @@ export { onWeekday } from "./onWeekday.ts";
 export { perKm, perSeat } from "./per.ts";
 export { endsAt, startsAndEndsAt, startsAt } from "./position.ts";
 export { startsOrEndsAtOrThrow } from "./startsOrEndsAtOrThrow.ts";
-export { toZonedTime } from "./toZonedTime.ts";
