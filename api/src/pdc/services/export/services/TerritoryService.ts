@@ -140,12 +140,10 @@ export class TerritoryService {
 
     for (const type of types) {
       const codes = geoSelector[type];
-      if (!codes) continue;
+      if (!codes || !codes.length) continue;
 
-      for (const code of codes) {
-        const name = await this.territoryRepository.getTerritoryName(type as string, code);
-        if (name) names.push(name);
-      }
+      const batchNames = await this.territoryRepository.getTerritoryNamesBatch(type as string, codes);
+      names.push(...batchNames);
     }
 
     return names;
