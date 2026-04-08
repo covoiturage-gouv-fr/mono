@@ -4,56 +4,6 @@ import { DenoPostgresConnection } from "@/ilos/connection-postgres/index.ts";
 import { TerritoryRepository } from "@/pdc/services/export/repositories/TerritoryRepository.ts";
 import { TerritoryCodeEnum } from "@/pdc/services/policy/interfaces/index.ts";
 import { TerritoryService } from "./TerritoryService.ts";
-// import { DbContext, KernelContext, makeLegacyDbBeforeAfter, makeKernelBeforeAfter } from "@/pdc/providers/test/index.ts";
-// import { ExportServiceProvider as ExportSP } from "@/pdc/services/export/ExportServiceProvider.ts";
-// import { UserServiceProvider as UserSP } from "@/pdc/services/user/UserServiceProvider.ts";
-
-// const { before: kernelBefore, after: kernelAfter } = makeKernelBeforeAfter(
-//   UserSP,
-//   ExportSP,
-// );
-// const { before: dbBefore, after: dbAfter } = makeLegacyDbBeforeAfter();
-
-// describe("TerritoryService", () => {
-//   // ---------------------------------------------------------------------------
-//   // SETUP
-//   // ---------------------------------------------------------------------------
-
-//   let db: DbContext;
-//   let kc: KernelContext;
-//   let repository: TerritoryRepository;
-//   let service: TerritoryService;
-
-//   /**
-//    * - boot up postgresql connection
-//    * - create the kernel
-//    * - stop the existing kernel connection to replace it with the test one
-//    * - setup the db macro with the connection
-//    */
-//   beforeAll(async () => {
-//     db = await dbBefore();
-//     kc = await kernelBefore();
-//     await kc.kernel.getContainer().get(DenoPostgresConnection).down();
-//     kc.kernel
-//       .getContainer()
-//       .rebind(DenoPostgresConnection)
-//       .toConstantValue(db.connection);
-
-//     repository = new TerritoryRepository(db.connection);
-//     service = new TerritoryService(repository);
-//   });
-
-//   afterAll(async () => {
-//     await kernelAfter(kc);
-//     await dbAfter(db);
-//   });
-
-//   // ---------------------------------------------------------------------------
-//   // TESTS : resolve
-//   // ---------------------------------------------------------------------------
-
-//   // TODO
-// });
 
 describe("TerritoryService: geoStringToObject", () => {
   const connection = new DenoPostgresConnection();
