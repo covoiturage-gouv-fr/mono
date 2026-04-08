@@ -63,9 +63,6 @@ export function accessTokenMiddleware(kernel: KernelInterface) {
         return next();
       }
 
-      // @ts-ignore for rpcError property
-      console.error(err.rpcError?.data);
-
       if (Error.isError(err)) return next(err);
       if (typeof err === "string") {
         return next(new Error(err));

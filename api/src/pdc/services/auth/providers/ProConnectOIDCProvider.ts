@@ -146,7 +146,7 @@ export class ProConnectOIDCProvider implements InitHookInterface {
     const fails = siren !== userSiren;
 
     if (fails) {
-      console.warn(`[ProConnectOIDCProvider] SIRET mismatch ${user.email}: expected ${siret}, got ${user.siret}`);
+      console.warn(`[ProConnectOIDCProvider] SIRET mismatch for user: expected SIREN ${siren}, got ${userSiren}`);
     }
 
     return fails;
