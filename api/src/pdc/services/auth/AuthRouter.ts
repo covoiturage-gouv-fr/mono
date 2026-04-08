@@ -1,4 +1,5 @@
 import { ConfigInterfaceResolver, inject, injectable, KernelInterfaceResolver, proxy } from "@/ilos/common/index.ts";
+import { logger } from "@/lib/logger/index.ts";
 import { asyncHandler } from "@/pdc/proxy/helpers/asyncHandler.ts";
 import { ProConnectOIDCProvider } from "@/pdc/services/auth/providers/ProConnectOIDCProvider.ts";
 import express, { NextFunction, Request, Response } from "dep:express";
@@ -74,14 +75,16 @@ export class AuthRouter {
       asyncHandler(async (req: Request, res: Response) => {
         const { state: expectedState } = req.session?.auth || {};
         const state = req.query?.state;
-        if (state === expectedState) {
-          req.session.destroy((err: Error) => {
-            if (err) {
-              throw err;
-            }
-          });
+        if (state !== expectedState) {
+          logger.warn("[auth] logout callback state mismatch");
         }
-        return res.redirect(this.config.get("app_url"));
+        req.session.destroy((err: Error) => {
+          if (err) {
+            logger.error(`[auth] failed to destroy session on logout callback: ${err.message}`);
+          }
+          res.clearCookie(session.name);
+          res.redirect(this.config.get("app_url"));
+        });
       }),
     );
 
