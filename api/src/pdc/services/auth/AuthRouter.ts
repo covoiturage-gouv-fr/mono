@@ -64,9 +64,8 @@ export class AuthRouter {
             console.error("Failed to destroy session during logout:", err);
           }
           res.clearCookie(session.name);
-          return res.redirect(redirectUrl);
+          res.redirect(redirectUrl);
         });
-        return res.redirect(redirectUrl);
       }),
     );
 
