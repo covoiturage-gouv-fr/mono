@@ -115,10 +115,18 @@ export class UsersRepository implements UsersRepositoryInterface {
     };
   }
 
-  async deleteUser(params: DeleteUserParamsInterface): Promise<DeleteUserResultInterface> {
+  async deleteUser(params: DeleteUserParamsInterface & { operator_id?: number; territory_id?: number }): Promise<DeleteUserResultInterface> {
+    const filters = [sql`_id = ${params.id}`];
+    if (params.operator_id) {
+      filters.push(sql`operator_id = ${params.operator_id}`);
+    }
+    if (params.territory_id) {
+      filters.push(sql`territory_id = ${params.territory_id}`);
+    }
+
     const query = sql`
       DELETE FROM ${raw(this.table)}
-      WHERE _id = ${params.id}
+      WHERE ${join(filters, " AND ")}
       RETURNING _id
     `;
     const rows = await this.pgConnection.query(query);

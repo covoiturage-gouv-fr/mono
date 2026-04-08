@@ -57,15 +57,22 @@ export function errorHandlerMiddleware(
     const { id, method } = Array.isArray(_req.body) ? _req.body.pop() : _req.body;
 
     logger.error(
-      `[errorHandler] ${err.name} ${code} ${err.message}\n${err.stack}`,
+      `[errorHandler] ${err.name} ${code} ${err.message}`,
       { id, method },
     );
   } catch (e) {}
 
   if (res.headersSent) return;
+
+  // Hide internal error details from clients on 500 responses
+  const isInternal = code === 500;
   res.status(code).json({
     id: 1,
     jsonrpc: "2.0",
-    error: { code, data: err.name, message: err.message },
+    error: {
+      code,
+      data: isInternal ? "Error" : err.name,
+      message: isInternal ? "Internal Server Error" : err.message,
+    },
   });
 }

@@ -36,7 +36,7 @@ export class AuthRouter {
     this.app.get(
       "/auth/login/callback",
       asyncHandler(async (req: Request, res: Response) => {
-        const url = new URL(`${req.protocol}://${req.get("host")}${req.originalUrl}`);
+        const url = new URL(req.originalUrl, this.config.get("proxy.apiUrl"));
         const { state, nonce } = req.session?.auth || {};
 
         // Fetch tokens and user info from ProConnect OIDC Provider
@@ -65,9 +65,8 @@ export class AuthRouter {
             logger.error("Failed to destroy session during logout:", err);
           }
           res.clearCookie(session.name);
-          return res.redirect(redirectUrl);
+          res.redirect(redirectUrl);
         });
-        return res.redirect(redirectUrl);
       }),
     );
 
@@ -76,14 +75,16 @@ export class AuthRouter {
       asyncHandler(async (req: Request, res: Response) => {
         const { state: expectedState } = req.session?.auth || {};
         const state = req.query?.state;
-        if (state === expectedState) {
-          req.session.destroy((err: Error) => {
-            if (err) {
-              throw err;
-            }
-          });
+        if (state !== expectedState) {
+          logger.warn("[auth] logout callback state mismatch");
         }
-        return res.redirect(this.config.get("app_url"));
+        req.session.destroy((err: Error) => {
+          if (err) {
+            logger.error(`[auth] failed to destroy session on logout callback: ${err.message}`);
+          }
+          res.clearCookie(session.name);
+          res.redirect(this.config.get("app_url"));
+        });
       }),
     );
 

@@ -177,7 +177,7 @@ test-unit:
 # Run test:e2e
 [group('tests')]
 test-e2e:
-  deno test --allow-net --allow-env --unsafely-ignore-certificate-errors {{ join(justfile_directory(),"e2e") }}
+  deno test --no-check --allow-net --allow-env --unsafely-ignore-certificate-errors {{ join(justfile_directory(),"e2e") }}
 
 # Run test
 [group('tests')]

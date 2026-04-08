@@ -214,8 +214,17 @@ export class ExportRepository {
     return rows.length ? Export.fromJSON(rows[0]) : null;
   }
 
+  private static readonly UPDATABLE_COLUMNS: ReadonlySet<string> = new Set([
+    "status", "progress", "download_url", "filename", "file_size", "error", "stats",
+  ]);
+
   public async update(id: number, data: ExportUpdateData): Promise<void> {
-    const props = Object.keys(data).map((key) => sql`${raw(key)} = ${data[key as keyof ExportUpdateData]}`);
+    const props = Object.keys(data)
+      .filter((key) => ExportRepository.UPDATABLE_COLUMNS.has(key))
+      .map((key) => sql`${raw(key)} = ${data[key as keyof ExportUpdateData]}`);
+
+    if (!props.length) return;
+
     const query = sql`
       UPDATE ${raw(this.exportsTable)}
       SET ${join(props)}
