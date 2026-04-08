@@ -30,5 +30,7 @@ dbt/target
 dbt/edr_target
 .aider*
 .claude/settings.local.json
+.claude/settings.json
 .mcp.json
+.worktrees
 
