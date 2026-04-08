@@ -231,7 +231,5 @@ SELECT
 FROM agg_detail as d
 GROUP BY 1, 2, 3, 4;
 
-@create_indexes(
-  'UNIQUE uq_code_type_journey_date_direction ON refined_zone.obs_directions_day (code, type, journey_date, direction)',
-  'obs_directions_day_date_index ON refined_zone.obs_directions_day (journey_date)',
-);
+@IF(@runtime_stage = 'creating', CREATE UNIQUE INDEX IF NOT EXISTS uq_code_type_journey_date_direction ON refined_zone.obs_directions_day (code, type, journey_date, direction));
+@IF(@runtime_stage = 'creating', CREATE INDEX IF NOT EXISTS obs_directions_day_date_index ON refined_zone.obs_directions_day (journey_date));

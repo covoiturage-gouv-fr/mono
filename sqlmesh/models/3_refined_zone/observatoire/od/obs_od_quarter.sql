@@ -194,6 +194,4 @@ LEFT JOIN perimeters_cache c
   AND c.type   = a.type
   AND c.j_year = a.year;
 
-@create_indexes(
-  'UNIQUE uq_quarter_date_type_territory_1_territory_2 ON refined_zone.obs_od_quarter (quarter_date, type, territory_1, territory_2)',
-);
+@IF(@runtime_stage = 'creating', CREATE UNIQUE INDEX IF NOT EXISTS uq_quarter_date_type_territory_1_territory_2 ON refined_zone.obs_od_quarter (quarter_date, type, territory_1, territory_2));

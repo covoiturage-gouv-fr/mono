@@ -71,6 +71,4 @@ FROM trusted_zone.perimeters
 WHERE country IS NOT NULL
 GROUP BY year, country, l_country;
 
-@create_indexes(
-  'perimeters_agg_index ON trusted_zone.perimeters_agg (code, type, year)',
-);
+@IF(@runtime_stage = 'creating', CREATE INDEX IF NOT EXISTS perimeters_agg_index ON trusted_zone.perimeters_agg (code, type, year));

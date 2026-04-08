@@ -2,8 +2,10 @@ import { assertEquals } from "dep:assert";
 import { it } from "dep:testing-bdd";
 import {
   addDaysTz,
+  addMinutes,
   addMonthsTz,
   castUserStringToUTC,
+  differenceInHours,
   startOfMonthTz,
   subDaysTz,
   toISOString,
@@ -135,6 +137,22 @@ it("short form Europe/Paris - startOfMonth 05/01", () => {
     toTzStringParis(startOfMonthTz(start)),
     "2023-01-01T00:00:00+0100",
   );
+});
+
+it("differenceInHours returns fractional hours", () => {
+  const created_at = new Date("2024-10-24 06:37:09");
+  const start_datetime = new Date("2024-10-23 05:00:47");
+  assertEquals(differenceInHours(created_at, start_datetime), 25.60611111111111);
+});
+
+it("addMinutes adds positive minutes", () => {
+  const d = new Date("2024-01-01T12:00:00Z");
+  assertEquals(addMinutes(d, 30).toISOString(), "2024-01-01T12:30:00.000Z");
+});
+
+it("addMinutes subtracts with negative minutes", () => {
+  const d = new Date("2024-01-01T12:00:00Z");
+  assertEquals(addMinutes(d, -30).toISOString(), "2024-01-01T11:30:00.000Z");
 });
 
 it("short form Europe/Paris - next startOfMonth 05/01", () => {

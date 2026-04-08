@@ -132,14 +132,12 @@ SELECT
 FROM all_perimeters
 ORDER BY year, arr;
 
-@create_indexes(
-  'perimeters_id_index ON trusted_zone.perimeters (id)',
-  'perimeters_centroid_index ON trusted_zone.perimeters USING GIST (centroid)',
-  'perimeters_geom_index ON trusted_zone.perimeters USING GIST (geom)',
-  'perimeters_geom_simple_index ON trusted_zone.perimeters USING GIST (geom_simple)',
-  'perimeters_year_index ON trusted_zone.perimeters (year)',
-  'perimeters_surface_index ON trusted_zone.perimeters (surface)',
-  'perimeters_arr_index ON trusted_zone.perimeters (arr)',
-  'perimeters_aom_index ON trusted_zone.perimeters (aom)',
-  'perimeters_epci_index ON trusted_zone.perimeters (epci)',
-);
+@IF(@runtime_stage = 'creating', CREATE INDEX IF NOT EXISTS perimeters_id_index ON trusted_zone.perimeters (id));
+@IF(@runtime_stage = 'creating', CREATE INDEX IF NOT EXISTS perimeters_centroid_index ON trusted_zone.perimeters USING GIST (centroid));
+@IF(@runtime_stage = 'creating', CREATE INDEX IF NOT EXISTS perimeters_geom_index ON trusted_zone.perimeters USING GIST (geom));
+@IF(@runtime_stage = 'creating', CREATE INDEX IF NOT EXISTS perimeters_geom_simple_index ON trusted_zone.perimeters USING GIST (geom_simple));
+@IF(@runtime_stage = 'creating', CREATE INDEX IF NOT EXISTS perimeters_year_index ON trusted_zone.perimeters (year));
+@IF(@runtime_stage = 'creating', CREATE INDEX IF NOT EXISTS perimeters_surface_index ON trusted_zone.perimeters (surface));
+@IF(@runtime_stage = 'creating', CREATE INDEX IF NOT EXISTS perimeters_arr_index ON trusted_zone.perimeters (arr));
+@IF(@runtime_stage = 'creating', CREATE INDEX IF NOT EXISTS perimeters_aom_index ON trusted_zone.perimeters (aom));
+@IF(@runtime_stage = 'creating', CREATE INDEX IF NOT EXISTS perimeters_epci_index ON trusted_zone.perimeters (epci));

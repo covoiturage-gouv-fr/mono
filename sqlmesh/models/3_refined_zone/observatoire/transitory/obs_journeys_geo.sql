@@ -54,7 +54,5 @@ WHERE j.valid_acquisition_status = true
   AND j.start_datetime >= @start_ts
   AND j.start_datetime < @end_ts;
 
-@create_indexes(
-  'obs_journeys_geo_id_idx ON refined_zone.obs_journeys_geo (_id)',
-  'obs_journeys_geo_datetime_idx ON refined_zone.obs_journeys_geo (start_datetime)',
-);
+@IF(@runtime_stage = 'creating', CREATE INDEX IF NOT EXISTS obs_journeys_geo_id_idx ON refined_zone.obs_journeys_geo (_id));
+@IF(@runtime_stage = 'creating', CREATE INDEX IF NOT EXISTS obs_journeys_geo_datetime_idx ON refined_zone.obs_journeys_geo (start_datetime));

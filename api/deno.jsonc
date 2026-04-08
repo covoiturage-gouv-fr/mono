@@ -60,7 +60,6 @@
     "dep:crypto": "jsr:@std/crypto@^1",
     "dep:encoding": "jsr:@std/encoding@^1",
     "dep:openid-client": "jsr:@panva/openid-client@6.3.4",
-    "dep:datetime": "jsr:@std/datetime@^0",
     "dep:log": "jsr:@std/log@^0", // will be removed in favour of OpenTelemetry
     "dep:s3-lite-client": "jsr:@bradenmacdonald/s3-lite-client@^0.8.0",
     "dep:postgres": "jsr:@db/postgres@0.19.5",

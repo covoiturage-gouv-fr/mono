@@ -40,6 +40,4 @@ LEFT JOIN carpool_v2.carpools cv2_journey
 WHERE cee.datetime >= @start_ts
   AND cee.datetime < @end_ts;
 
-@create_indexes(
-  'cee_applications_v2_id ON raw_zone.cee_applications (carpool_v2_id)',
-);
+@IF(@runtime_stage = 'creating', CREATE INDEX IF NOT EXISTS cee_applications_v2_id ON raw_zone.cee_applications (carpool_v2_id));

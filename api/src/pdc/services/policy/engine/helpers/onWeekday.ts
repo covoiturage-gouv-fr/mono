@@ -2,7 +2,7 @@ import {
   StatelessContextInterface,
   StatelessRuleHelper,
 } from "../../interfaces/index.ts";
-import { toZonedTime } from "./toZonedTime.ts";
+import { toZonedTime } from "@/pdc/helpers/dates.helper.ts";
 
 interface OnWeekdayParams {
   days: number[];

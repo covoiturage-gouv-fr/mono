@@ -143,3 +143,23 @@ export function endOfDay(d: Date, tz = defaultTimezone): Date {
     tz,
   );
 }
+
+/**
+ * Fractional difference in hours between two dates.
+ *
+ * @example differenceInHours(new Date('2024-10-24T06:37:09'), new Date('2024-10-23T05:00:47'))
+ * // => 25.606...
+ */
+export function differenceInHours(d1: Date, d2: Date): number {
+  return (d1.getTime() - d2.getTime()) / 3_600_000;
+}
+
+/**
+ * Add (or subtract with negative values) minutes to a date.
+ */
+export function addMinutes(d: Date, minutes: number): Date {
+  return new Date(d.getTime() + minutes * 60_000);
+}
+
+// Re-export for policy engine consumers (previously in a deprecated wrapper)
+export { toZonedTime };
