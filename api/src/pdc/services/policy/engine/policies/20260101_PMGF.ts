@@ -27,7 +27,7 @@ import { AbstractPolicyHandler } from "./AbstractPolicyHandler.ts";
 // VALUES (
 //   36102,
 //   '2026-01-01T00:00:00+0100',
-//   '2026-06-30T00:00:00+0200',
+//   '2026-07-01T00:00:00+0200',
 //   'PMGF 2026',
 //   'euro',
 //   'draft',
@@ -35,35 +35,35 @@ import { AbstractPolicyHandler } from "./AbstractPolicyHandler.ts";
 //   7030000
 // );
 
-// Eligibilite
+// Éligibilité
 //
-//   - Operateur : Blablacar Daily
+//   - Opérateur : Blablacar Daily
 //   - Classe de preuve : B, C
-//   - Distance minimum : 5 km (les "trajets passager" < 2 km ne sont pas eligibles)
-//   - Distance maximum : 80 km (les "trajets passager" > 80 km ne sont pas eligibles)
+//   - Distance minimum : 5 km (les "trajets passager" < 2 km ne sont pas éligibles)
+//   - Distance maximum : 80 km (les "trajets passager" > 80 km ne sont pas éligibles)
 //   - Zone d'intervention : origine et/ou destination sur le territoire du Genevois
-//     francais (EPCI membres du PMGF) + SM4CC
+//     français (EPCI membres du PMGF) + SM4CC
 //   - Exclusion des trajets :
-//     - au dela de 6 "trajets passager" pour le conducteur maximum par jour
-//     - au dela de 50 euros de gain pour le conducteur par mois
+//     - au-delà de 6 "trajets passager" pour le conducteur maximum par jour
+//     - au-delà de 50 euros de gain pour le conducteur par mois
 //
-// Modalite de calcul de l'incitation
+// Modalité de calcul de l'incitation
 //
-//   Trajets internes au territoire de la Collectivite :
-//     - De 5 a 20 km (inclus) : 1,50 EUR par passager transporte
-//     - De 21 a 30 km (inclus) : 1,50 EUR + 0,05 EUR par km supplementaire par passager
-//     - De 30 a 40 km (inclus) : 2,00 EUR par passager
-//     - De 41 a 50 km (inclus) : 2,00 EUR - 0,10 EUR par km supplementaire par passager
-//     - Au-dela de 50 km : plafonne a 1,00 EUR par passager transporte
+//   Trajets internes au territoire de la Collectivité :
+//     - De 5 à 20 km (inclus) : 1,50 EUR par passager transporté
+//     - De 21 à 30 km (inclus) : 1,50 EUR + 0,05 EUR par km supplémentaire par passager
+//     - De 30 à 40 km (inclus) : 2,00 EUR par passager
+//     - De 41 à 50 km (inclus) : 2,00 EUR - 0,10 EUR par km supplémentaire par passager
+//     - Au-delà de 50 km : plafonné à 1,00 EUR par passager transporté
 //
-//   Trajets avec uniquement un point de depart OU d'arrivee sur le territoire
-//   ET un point de depart OU d'arrivee en France :
-//     - De 5 a 20 km (inclus) : 0,50 EUR par passager transporte
-//     - Au-dela de 20 km : plafonne a 1,00 EUR par passager transporte
+//   Trajets avec uniquement un point de départ OU d'arrivée sur le territoire
+//   ET un point de départ OU d'arrivée en France :
+//     - De 5 à 20 km (inclus) : 0,50 EUR par passager transporté
+//     - Au-delà de 20 km : plafonné à 1,00 EUR par passager transporté
 //
-//   Trajets avec uniquement un point de depart OU d'arrivee sur le territoire
-//   ET un point de depart OU d'arrivee en Suisse :
-//     - De 5 a 80 km (inclus) : 0,50 EUR par passager transporte
+//   Trajets avec uniquement un point de départ OU d'arrivée sur le territoire
+//   ET un point de départ OU d'arrivée en Suisse :
+//     - De 5 à 80 km (inclus) : 0,50 EUR par passager transporté
 
 export const PMGF2026: PolicyHandlerStaticInterface = class extends AbstractPolicyHandler
   implements PolicyHandlerInterface {
@@ -81,14 +81,14 @@ export const PMGF2026: PolicyHandlerStaticInterface = class extends AbstractPoli
   constructor(public max_amount: bigint) {
     super();
     this.limits = [
-      // Au dela de 6 "trajets passager" pour le conducteur maximum par jour
+      // Au-delà de 6 "trajets passager" pour le conducteur maximum par jour
       [
         "5d65be20-2e40-4e83-9cf0-3a5cf06cf738",
         6n,
         watchForPersonMaxTripByDay,
         LimitTargetEnum.Driver,
       ],
-      // Au dela de 50 euros de gain pour le conducteur par mois
+      // Au-delà de 50 euros de gain pour le conducteur par mois
       [
         "0401e10c-5800-457e-955d-00a5ee3cf551",
         50_00n,
@@ -106,11 +106,11 @@ export const PMGF2026: PolicyHandlerStaticInterface = class extends AbstractPoli
 
   /**
    * Trajets internes (origine ET destination sur le territoire)
-   * - 1,50 EUR par passager de 5 a 20 km
-   * - 1,50 EUR + 0,05 EUR/km de 20 a 30 km
-   * - 2,00 EUR par passager de 30 a 40 km
-   * - 2,00 EUR - 0,10 EUR/km de 40 a 50 km
-   * - 1,00 EUR par passager au-dela de 50 km
+   * - 1,50 EUR par passager de 5 à 20 km
+   * - 1,50 EUR + 0,05 EUR/km de 20 à 30 km
+   * - 2,00 EUR par passager de 30 à 40 km
+   * - 2,00 EUR - 0,10 EUR/km de 40 à 50 km
+   * - 1,00 EUR par passager au-delà de 50 km
    */
   protected intraAOMSlices: RunnableSlices = [
     {
@@ -142,9 +142,9 @@ export const PMGF2026: PolicyHandlerStaticInterface = class extends AbstractPoli
 
   /**
    * Trajets externes France (origine OU destination sur le territoire,
-   * l'autre extremite en France)
-   * - 0,50 EUR par passager de 5 a 20 km
-   * - 1,00 EUR par passager au-dela de 20 km
+   * l'autre extrémité en France)
+   * - 0,50 EUR par passager de 5 à 20 km
+   * - 1,00 EUR par passager au-delà de 20 km
    */
   protected extraAOMSlices: RunnableSlices = [
     {
@@ -161,8 +161,8 @@ export const PMGF2026: PolicyHandlerStaticInterface = class extends AbstractPoli
 
   /**
    * Trajets transfrontaliers Suisse (origine OU destination sur le territoire,
-   * l'autre extremite en Suisse)
-   * - 0,50 EUR par passager de 5 a 80 km
+   * l'autre extrémité en Suisse)
+   * - 0,50 EUR par passager de 5 à 80 km
    */
   protected switzerlandSlices: RunnableSlices = [
     {
@@ -177,15 +177,15 @@ export const PMGF2026: PolicyHandlerStaticInterface = class extends AbstractPoli
     [TerritoryCodeEnum.Mobility]: [
       "240100750", // CA du Pays de GEX
       "247400690", // CC du Genevois
-      "200011773", // CC Annemasse-Les Voirons-Agglomeration
-      "200067551", // CA Thonon Agglomeration
+      "200011773", // CC Annemasse-Les Voirons-Agglomération
+      "200067551", // CA Thonon Agglomération
     ],
     [TerritoryCodeEnum.CityGroup]: [
       "240100891", // CA du Pays Bellegardien
       "247400724", // CC du Pays Rochois
-      "200000172", // CC Faucigny-Glieres
-      "247400583", // CC Arve et Saleve
-      "200069730", // CC des 4 Rivieres (SM4CC)
+      "200000172", // CC Faucigny-Glières
+      "247400583", // CC Arve et Salève
+      "200069730", // CC des 4 Rivières (SM4CC)
     ],
   };
 
