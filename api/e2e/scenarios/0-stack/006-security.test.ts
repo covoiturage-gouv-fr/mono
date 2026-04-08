@@ -133,8 +133,11 @@ describe("Access control: role isolation", () => {
     const http = new API();
     await http.callback(OPERATOR_EMAIL, OPERATOR_PASSWORD);
 
-    // Operator should not be able to list all operators (admin-only)
-    const response = await http.get("/v3/dashboard/operators");
+    // Operator should not be able to create operators (registry admin only)
+    const response = await http.post("/v3/dashboard/operator", {
+      name: "Test",
+      siret: "00000000000000",
+    });
     expect([401, 403]).toContain(response.status);
   });
 
