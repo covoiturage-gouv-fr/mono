@@ -7,7 +7,7 @@ import {
   ResultType,
 } from "@/ilos/common/index.ts";
 import { get, set } from "@/lib/object/index.ts";
-import { endOfDay, startOfDay } from "@/pdc/helpers/dates.helper.ts";
+import { endOfDay, startOfDay } from "dep:date-fns";
 import { NextFunction } from "dep:express";
 import { ConfiguredMiddleware } from "../interfaces.ts";
 
