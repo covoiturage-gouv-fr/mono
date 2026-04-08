@@ -63,6 +63,4 @@ LEFT JOIN incentives_agg i ON j.start_geo_code = i.start_geo_code
   AND j.end_geo_code  = i.end_geo_code
   AND j.journey_date = i.journey_date;
 
-@create_indexes(
-  'UNIQUE uq_start_geo_code_end_geo_code_journey_date ON refined_zone.obs_od_day (start_geo_code, end_geo_code, journey_date)',
-);
+@IF(@runtime_stage = 'creating', CREATE UNIQUE INDEX IF NOT EXISTS uq_start_geo_code_end_geo_code_journey_date ON refined_zone.obs_od_day (start_geo_code, end_geo_code, journey_date));

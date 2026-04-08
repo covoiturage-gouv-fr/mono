@@ -44,8 +44,8 @@ export class ValidateDateMiddleware
       ? endOfDay(maxEndFn(params, context))
       : undefined;
     const applyDefault = applyDefaultOpt ?? false;
-    const startDate: Date | undefined = get(params, startPath, undefined);
-    const endDate: Date | undefined = get(params, endPath, undefined);
+    const startDate = get<ParamsType, Date>(params, startPath, undefined) ?? undefined;
+    const endDate = get<ParamsType, Date>(params, endPath, undefined) ?? undefined;
 
     if (startDate && endDate && startDate > endDate) {
       throw new InvalidParamsException("Start should be before end");

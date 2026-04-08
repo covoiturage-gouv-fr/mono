@@ -79,6 +79,4 @@ SELECT
 FROM agg a
 LEFT JOIN refined_zone.obs_users t ON t.user_id = a.user_id;
 
-@create_indexes(
-  'UNIQUE obs_users_pk ON refined_zone.obs_users (user_id)',
-);
+@IF(@runtime_stage = 'creating', CREATE UNIQUE INDEX IF NOT EXISTS obs_users_pk ON refined_zone.obs_users (user_id));
