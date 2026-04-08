@@ -62,7 +62,7 @@ export class AuthRouter {
         const { redirectUrl } = await this.proConnectOIDCProvider.getLogoutUrl(id_token);
         req.session.destroy((err: Error) => {
           if (err) {
-            console.error("Failed to destroy session during logout:", err);
+            logger.error("Failed to destroy session during logout:", err);
           }
           res.clearCookie(session.name);
           res.redirect(redirectUrl);

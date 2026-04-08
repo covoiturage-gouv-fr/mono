@@ -22,8 +22,6 @@ const permissions = {
   "honor.save": ["common"],
   "honor.stats": ["common"],
 
-  // @deprecated stats
-  "monitoring.journeysstats": ["registry.admin"],
   "observatory.stats": ["common"],
 
   // Operators CRUD
@@ -47,8 +45,6 @@ const permissions = {
   // Campaigns
   "policy.create": ["territory.admin", "registry.admin"],
 
-  // @deprecated
-  "policy.delete": ["territory.admin", "registry.admin"],
   "policy.find": [
     "territory.user",
     "territory.admin",
@@ -57,9 +53,6 @@ const permissions = {
     "operator.admin",
     "operator.user",
   ],
-
-  // @deprecated
-  "policy.launch": ["territory.admin"],
 
   "policy.list": [
     "common",
@@ -98,31 +91,7 @@ const permissions = {
   ],
 
   // @deprecated
-  "territory.patchOperator": ["operator.admin"],
-
-  // @deprecated
   "territory.patchContacts": ["territory.admin", "registry.admin"],
-
-  // @deprecated
-  "trip.stats": [
-    "common",
-    "operator.user",
-    "operator.admin",
-    "territory.user",
-    "territory.admin",
-    "registry.user",
-    "registry.admin",
-  ],
-
-  // @deprecated
-  "trip.export": [
-    "operator.user",
-    "operator.admin",
-    "territory.user",
-    "territory.admin",
-    "registry.user",
-    "registry.admin",
-  ],
 
   // APDF
   "apdf.list": [
@@ -133,16 +102,6 @@ const permissions = {
   ],
   "apdf.listCurrentMonth": ["registry.admin"],
   "apdf.export": ["registry.admin"],
-
-  // @deprecated
-  "trip.list": [
-    "operator.user",
-    "operator.admin",
-    "territory.user",
-    "territory.admin",
-    "registry.user",
-    "registry.admin",
-  ],
 
   // TODO Check if still in use
   // Users

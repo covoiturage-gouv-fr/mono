@@ -494,7 +494,7 @@ export class HttpTransport implements TransportInterface {
         );
 
         dt.com = authorizedCodes.com || [];
-      } catch (e) {}
+      } catch (e) { logger.warn("[proxy] failed to fetch authorized zone codes", { error: e }); }
 
       user.authorizedZoneCodes = { ...dt };
 
