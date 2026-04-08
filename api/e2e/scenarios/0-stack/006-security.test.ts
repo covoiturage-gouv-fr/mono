@@ -1,8 +1,6 @@
 import { expect } from "dep:expect";
 import { beforeEach, describe, it } from "dep:testing-bdd";
 import {
-  ADMIN_EMAIL,
-  ADMIN_PASSWORD,
   OPERATOR_EMAIL,
   OPERATOR_PASSWORD,
   TERRITORY_EMAIL,
@@ -88,7 +86,7 @@ describe("H1/H2: Logout properly destroys session", () => {
 
     // Simulate the logout callback (without valid OIDC state).
     // After H2 fix, session must be destroyed regardless of state mismatch.
-    const logoutCb = await http.get("/auth/logout/callback?state=invalid");
+    await http.get("/auth/logout/callback?state=invalid");
 
     // Session should be destroyed -- /auth/me must return 401
     // Note: the redirect may clear cookies; re-check auth status
