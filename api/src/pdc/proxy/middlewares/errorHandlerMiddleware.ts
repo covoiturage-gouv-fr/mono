@@ -57,7 +57,7 @@ export function errorHandlerMiddleware(
     const { id, method } = Array.isArray(_req.body) ? _req.body.pop() : _req.body;
 
     logger.error(
-      `[errorHandler] ${err.name} ${code} ${err.message}\n${err.stack}`,
+      `[errorHandler] ${err.name} ${code} ${err.message}`,
       { id, method },
     );
   } catch (e) {}
