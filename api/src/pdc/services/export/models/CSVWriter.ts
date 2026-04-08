@@ -138,7 +138,7 @@ export class CSVWriter<T extends { [k: string]: unknown }> {
       }
     });
     this.stringifier.on("error", (err) => {
-      console.error(err.message);
+      logger.error(err.message);
     });
     this.stringifier.on("finish", () => {
       this.fileStream?.close();

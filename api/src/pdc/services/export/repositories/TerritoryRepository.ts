@@ -1,6 +1,6 @@
 import { provider } from "@/ilos/common/Decorators.ts";
 import { DenoPostgresConnection } from "@/ilos/connection-postgres/index.ts";
-import sql, { raw } from "@/lib/pg/sql.ts";
+import sql, { join, raw } from "@/lib/pg/sql.ts";
 import {
   TerritoryCodeEnum,
   TerritorySelectorsInterface,
@@ -17,6 +17,9 @@ export abstract class TerritoryRepositoryInterfaceResolver {
     throw new Error("Not implemented");
   }
   public async getTerritoryName(_type: string, _code: string): Promise<string | null> {
+    throw new Error("Not implemented");
+  }
+  public async getTerritoryNamesBatch(_type: string, _codes: string[]): Promise<string[]> {
     throw new Error("Not implemented");
   }
 }
@@ -83,5 +86,25 @@ export class TerritoryRepository {
 
     const rows = await this.connection.query<{ name: string }>(q);
     return rows.length > 0 ? rows[0].name : null;
+  }
+
+  public async getTerritoryNamesBatch(type: string, codes: string[]): Promise<string[]> {
+    if (!codes.length) return [];
+
+    const validTypes = Object.values(TerritoryCodeEnum) as string[];
+    if (!validTypes.includes(type)) return [];
+
+    const codeColumn = type;
+    const labelColumn = `l_${type}`;
+
+    const q = sql`
+      SELECT DISTINCT ${raw(labelColumn)} as name
+      FROM ${raw(this.geoTable)}
+      WHERE ${raw(codeColumn)} IN (${join(codes.map((c) => sql`${c}`))})
+      AND year = geo.get_latest_millesime()
+    `;
+
+    const rows = await this.connection.query<{ name: string }>(q);
+    return rows.map((r) => r.name);
   }
 }

@@ -55,7 +55,7 @@ export class NotificationMailTransporter
         debug,
       };
     } catch (e) {
-      console.log(e.stack);
+      logger.error(e.stack);
     }
   }
 

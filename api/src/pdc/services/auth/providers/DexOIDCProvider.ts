@@ -1,4 +1,5 @@
 import { ConfigInterfaceResolver, InitHookInterface, provider, UnauthorizedException } from "@/ilos/common/index.ts";
+import { logger } from "@/lib/logger/index.ts";
 import { encodeBase64 } from "dep:encoding";
 import { createRemoteJWKSet, jwtVerify } from "dep:jose";
 import { JWTExpired } from "https://deno.land/x/jose@v5.6.3/util/errors.ts";
@@ -71,7 +72,7 @@ export class DexOIDCProvider implements InitHookInterface {
     });
 
     if (!response.ok) {
-      console.error(`[OIDCProvider:getToken] ${response.status} ${response.statusText}`);
+      logger.error(`[OIDCProvider:getToken] ${response.status} ${response.statusText}`);
       throw new Error(response.statusText);
     }
 
