@@ -13,10 +13,22 @@ concurrency:
 
 on:
   workflow_dispatch:
-  release:
-    types: [published]
+  push:
+    branches:
+      - main
+    paths:
+      - "dbt/**"
 
 jobs:
+  tag:
+    name: Set deployment tag
+    runs-on: ubuntu-latest
+    outputs:
+      value: ${{ steps.set_tag.outputs.value }}
+    steps:
+      - id: set_tag
+        shell: bash
+        run: echo "value=$(date +'%F.%H%M')" >> $GITHUB_OUTPUT
   build:
     name: Build and Push DATA Docker Image
     runs-on: ubuntu-latest
@@ -30,6 +42,6 @@ jobs:
         with:
           name: data
           context: .
-          tag: ${{ github.ref_type == 'tag' && github.ref_name || github.sha }}
+          tag: ${{ needs.tag.outputs.value }}
           dockerfile: ./docker/data/Dockerfile
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
