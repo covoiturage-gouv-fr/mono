@@ -1,40 +1,48 @@
 import { assertEquals } from "dep:assert";
 import { afterEach, describe, it } from "dep:testing-bdd";
-import { getPeriodEnd, isPublished } from "./publishedDate.ts";
+import { getPeriodStart, isPublished } from "./publishedDate.ts";
 
-describe("getPeriodEnd", () => {
-  it("month: returns first day of next month", () => {
-    assertEquals(getPeriodEnd({ year: 2026, month: 2 }), new Date(2026, 2, 1));
+describe("getPeriodStart", () => {
+  it("month=2: returns Feb 1st", () => {
+    assertEquals(getPeriodStart({ year: 2026, month: 2 }), new Date(2026, 1, 1));
   });
 
-  it("month=12: rolls over to next year", () => {
-    assertEquals(getPeriodEnd({ year: 2026, month: 12 }), new Date(2027, 0, 1));
+  it("month=1: returns Jan 1st", () => {
+    assertEquals(getPeriodStart({ year: 2026, month: 1 }), new Date(2026, 0, 1));
   });
 
-  it("trimester=1: Q1 ends at April", () => {
-    assertEquals(getPeriodEnd({ year: 2026, trimester: 1 }), new Date(2026, 3, 1));
+  it("month=12: returns Dec 1st", () => {
+    assertEquals(getPeriodStart({ year: 2026, month: 12 }), new Date(2026, 11, 1));
   });
 
-  it("trimester=4: Q4 rolls to next year", () => {
-    assertEquals(getPeriodEnd({ year: 2026, trimester: 4 }), new Date(2027, 0, 1));
+  it("trimester=1: returns Jan 1st", () => {
+    assertEquals(getPeriodStart({ year: 2026, trimester: 1 }), new Date(2026, 0, 1));
   });
 
-  it("semester=1: H1 ends at July", () => {
-    assertEquals(getPeriodEnd({ year: 2026, semester: 1 }), new Date(2026, 6, 1));
+  it("trimester=2: returns Apr 1st", () => {
+    assertEquals(getPeriodStart({ year: 2026, trimester: 2 }), new Date(2026, 3, 1));
   });
 
-  it("semester=2: H2 rolls to next year", () => {
-    assertEquals(getPeriodEnd({ year: 2026, semester: 2 }), new Date(2027, 0, 1));
+  it("trimester=4: returns Oct 1st", () => {
+    assertEquals(getPeriodStart({ year: 2026, trimester: 4 }), new Date(2026, 9, 1));
   });
 
-  it("year only: returns Jan 1 of next year", () => {
-    assertEquals(getPeriodEnd({ year: 2026 }), new Date(2027, 0, 1));
+  it("semester=1: returns Jan 1st", () => {
+    assertEquals(getPeriodStart({ year: 2026, semester: 1 }), new Date(2026, 0, 1));
+  });
+
+  it("semester=2: returns Jul 1st", () => {
+    assertEquals(getPeriodStart({ year: 2026, semester: 2 }), new Date(2026, 6, 1));
+  });
+
+  it("year only: returns Jan 1st", () => {
+    assertEquals(getPeriodStart({ year: 2026 }), new Date(2026, 0, 1));
   });
 
   it("month takes priority over trimester", () => {
     assertEquals(
-      getPeriodEnd({ year: 2026, month: 3, trimester: 1 }),
-      new Date(2026, 3, 1),
+      getPeriodStart({ year: 2026, month: 3, trimester: 1 }),
+      new Date(2026, 2, 1),
     );
   });
 });
@@ -49,42 +57,63 @@ describe("isPublished", () => {
     assertEquals(isPublished({ year: 2099, month: 12 }), true);
   });
 
-  it("returns true when period is before cutoff", () => {
+  it("returns true when month starts before cutoff", () => {
     Deno.env.set("APP_OBSERVATORY_PUBLISHED_UNTIL", "2026-03-01");
     assertEquals(isPublished({ year: 2026, month: 2 }), true);
   });
 
-  it("returns false when period equals cutoff", () => {
+  it("returns false when month starts at cutoff (exclusive)", () => {
     Deno.env.set("APP_OBSERVATORY_PUBLISHED_UNTIL", "2026-03-01");
     assertEquals(isPublished({ year: 2026, month: 3 }), false);
   });
 
-  it("returns false when period is after cutoff", () => {
+  it("returns false when month starts after cutoff", () => {
     Deno.env.set("APP_OBSERVATORY_PUBLISHED_UNTIL", "2026-03-01");
     assertEquals(isPublished({ year: 2026, month: 6 }), false);
   });
 
-  it("works with trimester", () => {
-    Deno.env.set("APP_OBSERVATORY_PUBLISHED_UNTIL", "2026-04-01");
+  // Rolling: trimester is included if it starts before cutoff
+  it("trimester: Q1 included with cutoff 2026-03-01 (rolling)", () => {
+    Deno.env.set("APP_OBSERVATORY_PUBLISHED_UNTIL", "2026-03-01");
     assertEquals(isPublished({ year: 2026, trimester: 1 }), true);
+  });
+
+  it("trimester: Q2 excluded with cutoff 2026-03-01", () => {
+    Deno.env.set("APP_OBSERVATORY_PUBLISHED_UNTIL", "2026-03-01");
     assertEquals(isPublished({ year: 2026, trimester: 2 }), false);
   });
 
-  it("works with semester", () => {
-    Deno.env.set("APP_OBSERVATORY_PUBLISHED_UNTIL", "2026-07-01");
+  // Rolling: semester is included if it starts before cutoff
+  it("semester: H1 included with cutoff 2026-03-01 (rolling)", () => {
+    Deno.env.set("APP_OBSERVATORY_PUBLISHED_UNTIL", "2026-03-01");
     assertEquals(isPublished({ year: 2026, semester: 1 }), true);
+  });
+
+  it("semester: H2 excluded with cutoff 2026-03-01", () => {
+    Deno.env.set("APP_OBSERVATORY_PUBLISHED_UNTIL", "2026-03-01");
     assertEquals(isPublished({ year: 2026, semester: 2 }), false);
   });
 
-  it("works with year only", () => {
-    Deno.env.set("APP_OBSERVATORY_PUBLISHED_UNTIL", "2027-01-01");
+  // Rolling: year is included if it starts before cutoff
+  it("year: 2026 included with cutoff 2026-03-01 (rolling)", () => {
+    Deno.env.set("APP_OBSERVATORY_PUBLISHED_UNTIL", "2026-03-01");
     assertEquals(isPublished({ year: 2026 }), true);
+  });
+
+  it("year: 2027 excluded with cutoff 2026-03-01", () => {
+    Deno.env.set("APP_OBSERVATORY_PUBLISHED_UNTIL", "2026-03-01");
     assertEquals(isPublished({ year: 2027 }), false);
   });
 
-  it("boundary: cutoff exactly at period end is published", () => {
-    Deno.env.set("APP_OBSERVATORY_PUBLISHED_UNTIL", "2026-04-01");
-    assertEquals(isPublished({ year: 2026, trimester: 1 }), true);
+  // Boundary: cutoff at Jan 1 means nothing in that year is visible
+  it("boundary: cutoff 2026-01-01, month=1 excluded (starts at cutoff)", () => {
+    Deno.env.set("APP_OBSERVATORY_PUBLISHED_UNTIL", "2026-01-01");
+    assertEquals(isPublished({ year: 2026, month: 1 }), false);
+  });
+
+  it("boundary: cutoff 2026-01-01, year=2025 included", () => {
+    Deno.env.set("APP_OBSERVATORY_PUBLISHED_UNTIL", "2026-01-01");
+    assertEquals(isPublished({ year: 2025 }), true);
   });
 
   it("rejects invalid date format gracefully", () => {
