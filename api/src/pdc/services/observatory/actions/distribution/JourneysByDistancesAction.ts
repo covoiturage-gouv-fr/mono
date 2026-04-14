@@ -4,6 +4,7 @@ import { Infer } from "@/lib/superstruct/index.ts";
 import { Direction } from "@/pdc/providers/superstruct/shared/index.ts";
 import { JourneysByDistances } from "@/pdc/services/observatory/dto/distribution/JourneysByDistances.ts";
 import { DistributionRepositoryInterfaceResolver } from "@/pdc/services/observatory/interfaces/DistributionRepositoryProviderInterface.ts";
+import { isPublished } from "../../helpers/publishedDate.ts";
 export type ResultInterface = {
   code: string;
   libelle: string;
@@ -33,6 +34,7 @@ export class JourneysByDistancesAction extends AbstractAction {
   }
 
   public async handle(params: JourneysByDistances): Promise<ResultInterface> {
+    if (!isPublished(params)) return [];
     return this.repository.getJourneysByDistances(params);
   }
 }

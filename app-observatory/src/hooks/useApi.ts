@@ -7,14 +7,26 @@ export const useApi = <T>(input: RequestInfo | URL, init?: RequestInit) => {
     const fetchData = async () => {
       setError(null);
       setLoading(true);
-      const response = await fetch(input, init);
-      const res = await response.json();
-      if (response.ok) {
-        setData(res);
-        setLoading(false);
-      } else {
-        setError(res);
+      try {
+        const response = await fetch(input, init);
+        if (response.ok) {
+          const res = await response.json();
+          setData(res);
+        } else {
+          const text = await response.text();
+          let errorMessage: any;
+          try {
+            errorMessage = JSON.parse(text);
+          } catch {
+            errorMessage = text;
+          }
+          setError(errorMessage);
+          setData(undefined);
+        }
+      } catch (e: any) {
+        setError(e.message ?? "Network error");
         setData(undefined);
+      } finally {
         setLoading(false);
       }
     };

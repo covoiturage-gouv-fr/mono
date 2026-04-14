@@ -2,6 +2,7 @@ import { handler } from "@/ilos/common/index.ts";
 import { Action as AbstractAction } from "@/ilos/core/index.ts";
 import { BestFlux } from "@/pdc/services/observatory/dto/flux/BestFlux.ts";
 import { FluxRepositoryInterfaceResolver } from "@/pdc/services/observatory/interfaces/FluxRepositoryProviderInterface.ts";
+import { isPublished } from "../../helpers/publishedDate.ts";
 export type ResultInterface = {
   territory_1: BestFlux["code"];
   l_territory_1: string;
@@ -29,6 +30,7 @@ export class BestFluxAction extends AbstractAction {
   }
 
   public async handle(params: BestFlux): Promise<ResultInterface> {
+    if (!isPublished(params)) return [];
     return this.repository.getBestFlux(params);
   }
 }

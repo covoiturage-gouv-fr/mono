@@ -93,6 +93,9 @@ services:
       APP_ROUTECACHE_GZIP_ENABLED: ${APP_ROUTECACHE_GZIP_ENABLED:-true}
       APP_ROUTECACHE_AUTHTOKEN: ${APP_ROUTECACHE_AUTHTOKEN:-}
 
+      # Observatory publication gate (exclusive upper bound, YYYY-MM-DD)
+      APP_OBSERVATORY_PUBLISHED_UNTIL: ${APP_OBSERVATORY_PUBLISHED_UNTIL:-}
+
       # Object storage (S3)
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-minioadmin}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-minioadmin}
