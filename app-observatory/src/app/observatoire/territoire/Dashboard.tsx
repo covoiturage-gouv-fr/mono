@@ -8,10 +8,9 @@ import SelectSemester from '@/components/observatoire/SelectSemester';
 import SelectTerritory from '@/components/observatoire/SelectTerritory';
 import SelectTrimester from '@/components/observatoire/SelectTrimester';
 import SelectYear from '@/components/observatoire/SelectYear';
-import { Config } from '@/config';
 import { useDashboardContext } from '@/context/DashboardProvider';
+import { GetPeriod } from '@/helpers/dashboard';
 import { graphList, mapList } from '@/helpers/lists';
-import { useApi } from '@/hooks/useApi';
 import { PerimeterType } from '@/interfaces/observatoire/Perimeter';
 import { fr } from '@codegouvfr/react-dsfr';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -34,9 +33,7 @@ import BestTerritoriesTable from './tables/BestTerritoriesTable';
 export default function Dashboard() {
   const searchParams = useSearchParams();
   const {dashboard} =useDashboardContext();
-  const apiUrl = Config.get<string>('next.public_api_url', '');
-  const lastRecordUrl = `${apiUrl}/last-record?type=${dashboard.params.type}&code=${dashboard.params.code}`;
-  const { data: lastRecord } = useApi<{ year: number; month: number }>(lastRecordUrl);
+  const period = GetPeriod();
   const observeLabel = dashboard.params.map == 1 ? 'Flux entre:' : 'Territoires observés';
   useEffect(() => {
     const params = {
@@ -75,11 +72,9 @@ export default function Dashboard() {
       : (
         <>
           <SectionTitle
-            title={`${dashboard.params.name} - Donn\u00e9es jusqu'\u00e0 ${
-              lastRecord
-                ? new Date(lastRecord.year, lastRecord.month - 1, 1).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
-                : '...'
-            }`}
+            title={`${dashboard.params.name} du ${new Date(period.start_date).toLocaleDateString()} au ${new Date(
+              period.end_date,
+            ).toLocaleDateString()}`}
           />
           <KeyFigures />
           <div className={fr.cx('fr-grid-row', 'fr-grid-row--gutters')}>

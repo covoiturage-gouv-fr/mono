@@ -2,7 +2,6 @@ import { handler } from "@/ilos/common/index.ts";
 import { Action as AbstractAction } from "@/ilos/core/index.ts";
 import { EvolFlux } from "@/pdc/services/observatory/dto/flux/EvolFlux.ts";
 import { FluxRepositoryInterfaceResolver } from "@/pdc/services/observatory/interfaces/FluxRepositoryProviderInterface.ts";
-import { isPublished } from "../../helpers/publishedDate.ts";
 export type ResultInterface = {
   territory: EvolFlux["code"];
   l_territory: string;
@@ -32,7 +31,6 @@ export class EvolFluxAction extends AbstractAction {
   }
 
   public async handle(params: EvolFlux): Promise<ResultInterface> {
-    if (!isPublished(params)) return [];
     return this.repository.getEvolFlux(params);
   }
 }

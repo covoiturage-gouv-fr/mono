@@ -2,7 +2,6 @@ import { handler } from "@/ilos/common/index.ts";
 import { Action as AbstractAction } from "@/ilos/core/index.ts";
 import { Occupation } from "@/pdc/services/observatory/dto/occupation/Occupation.ts";
 import { OccupationRepositoryInterfaceResolver } from "@/pdc/services/observatory/interfaces/OccupationRepositoryProviderInterface.ts";
-import { isPublished } from "../../helpers/publishedDate.ts";
 import type { Feature } from "dep:turf-helpers";
 export type ResultInterface = {
   territory: Occupation["code"];
@@ -32,7 +31,6 @@ export class OccupationAction extends AbstractAction {
   }
 
   public async handle(params: Occupation): Promise<ResultInterface> {
-    if (!isPublished(params)) return [];
     return this.repository.getOccupation(params);
   }
 }

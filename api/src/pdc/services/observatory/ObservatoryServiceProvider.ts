@@ -14,7 +14,6 @@ import { KeyfiguresAction } from "./actions/keyfigures/KeyfiguresAction.ts";
 import { LocationAction } from "./actions/location/LocationAction.ts";
 import { BestTerritoriesAction } from "./actions/occupation/BestTerritoriesAction.ts";
 import { EvolOccupationAction } from "./actions/occupation/EvolOccupationAction.ts";
-import { LastRecordAction } from "./actions/LastRecordAction.ts";
 import { OccupationAction } from "./actions/occupation/OccupationAction.ts";
 import { DistributionRepositoryProvider } from "./providers/DistributionRepositoryProvider.ts";
 import { FluxRepositoryProvider } from "./providers/FluxRepositoryProvider.ts";
@@ -23,7 +22,6 @@ import { IncentiveRepositoryProvider } from "./providers/IncentiveRepositoryProv
 import { InfraRepositoryProvider } from "./providers/InfraRepositoryProvider.ts";
 import { KeyfiguresRepositoryProvider } from "./providers/KeyfiguresRepositoryProvider.ts";
 import { LocationRepositoryProvider } from "./providers/LocationRepositoryProvider.ts";
-import { LastRecordRepositoryProvider } from "./providers/LastRecordRepositoryProvider.ts";
 import { OccupationRepositoryProvider } from "./providers/OccupationRepositoryProvider.ts";
 
 @serviceProvider({
@@ -37,7 +35,6 @@ import { OccupationRepositoryProvider } from "./providers/OccupationRepositoryPr
     OccupationRepositoryProvider,
     IncentiveRepositoryProvider,
     IncentiveCampaignsRepositoryProvider,
-    LastRecordRepositoryProvider,
   ],
   handlers: [
     AiresCovoiturageAction,
@@ -53,7 +50,6 @@ import { OccupationRepositoryProvider } from "./providers/OccupationRepositoryPr
     KeyfiguresAction,
     OccupationAction,
     CampaignsAction,
-    LastRecordAction,
   ],
   middlewares: [...defaultMiddlewareBindings, [
     "validate",
