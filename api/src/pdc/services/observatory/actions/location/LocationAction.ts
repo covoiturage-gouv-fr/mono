@@ -2,6 +2,7 @@ import { handler } from "@/ilos/common/index.ts";
 import { Action as AbstractAction } from "@/ilos/core/index.ts";
 import { Location } from "@/pdc/services/observatory/dto/Location.ts";
 import { LocationRepositoryInterfaceResolver } from "../../interfaces/LocationRepositoryProviderInterface.ts";
+import { isPublished } from "../../helpers/publishedDate.ts";
 export type ResultInterface = {
   hex: string;
   count: number;
@@ -26,6 +27,7 @@ export class LocationAction extends AbstractAction {
   }
 
   public async handle(params: Location): Promise<ResultInterface> {
+    if (!isPublished(params)) return [];
     return this.repository.getLocation(params);
   }
 }
