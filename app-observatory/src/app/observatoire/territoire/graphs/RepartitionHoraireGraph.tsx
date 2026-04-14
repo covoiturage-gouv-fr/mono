@@ -54,32 +54,35 @@ export default function RepartitionHoraireGraph({ title }: { title: string }) {
         },
       }
     ];
-    dashboard.params.type !== 'country' ? datasets.splice(0,1) && datasets.push(
-      {
-        label: 'Origine',
-        data: data ? dataWithNull(data.find((d) => d.direction === 'from')?.hours || []).map((d) => d.journeys) : [],
-        borderColor:'#000091',
-        backgroundColor:'rgba(106, 106, 244, 0.8)',
-        tension: 0.1,
-        datalabels: {
-          labels: {
-            title: null
+    if (dashboard.params.type !== 'country') {
+      datasets.splice(0,1);
+      datasets.push(
+        {
+          label: 'Origine',
+          data: data ? dataWithNull(data.find((d) => d.direction === 'from')?.hours || []).map((d) => d.journeys) : [],
+          borderColor:'#000091',
+          backgroundColor:'rgba(106, 106, 244, 0.8)',
+          tension: 0.1,
+          datalabels: {
+            labels: {
+              title: null
+            },
           },
         },
-      },
-      {
-        label: 'Destination',
-        data: data ? dataWithNull(data.find((d) => d.direction === 'to')?.hours || []).map((d) => d.journeys) : [],
-        borderColor:'#000091',
-        backgroundColor:'rgba(183, 167, 63, 0.8)',
-        tension: 0.1,
-        datalabels: {
-          labels: {
-            title: null
+        {
+          label: 'Destination',
+          data: data ? dataWithNull(data.find((d) => d.direction === 'to')?.hours || []).map((d) => d.journeys) : [],
+          borderColor:'#000091',
+          backgroundColor:'rgba(183, 167, 63, 0.8)',
+          tension: 0.1,
+          datalabels: {
+            labels: {
+              title: null
+            },
           },
-        },
-      }
-    ) : '';
+        }
+      );
+    }
     return { labels: labels, datasets: datasets };
   };
 

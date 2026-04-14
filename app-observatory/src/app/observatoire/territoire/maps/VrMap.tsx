@@ -21,9 +21,11 @@ export default function VrMap({ title}: { title: string }) {
     return data ? data : ''
   }, [data]);
   const selectList = [{id:0, name:'Sélectionner une voie'}]
-  geojson ? geojson.features?.map((f,i) => {
-    selectList.push({id:i+1, name:f.properties!.name})
-  }): '';
+  if (geojson) {
+    geojson.features?.map((f,i) => {
+      selectList.push({id:i+1, name:f.properties!.name})
+    });
+  }
   const [selected, setSelected] = useState(0);
   const [selectedData, setSelectedData] = useState<Feature>();
   const onChangeSelect = useCallback((value: number) => {

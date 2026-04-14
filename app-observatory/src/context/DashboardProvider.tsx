@@ -2,7 +2,6 @@ import { useDashboard } from '@/hooks/useDashboard';
 import { DashboardContextType } from '@/interfaces/common/contextInterface';
 import { createContext, useContext } from 'react';
  
-
 const DashboardContext = createContext<DashboardContextType | undefined>(undefined);
 
 export default function DashboardContextProvider({children}: { children: React.ReactNode}) {
