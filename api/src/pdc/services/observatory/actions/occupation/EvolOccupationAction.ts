@@ -2,7 +2,6 @@ import { handler } from "@/ilos/common/index.ts";
 import { Action as AbstractAction } from "@/ilos/core/index.ts";
 import { EvolOccupation } from "@/pdc/services/observatory/dto/occupation/EvolOccupation.ts";
 import { OccupationRepositoryInterfaceResolver } from "@/pdc/services/observatory/interfaces/OccupationRepositoryProviderInterface.ts";
-import { isPublished } from "../../helpers/publishedDate.ts";
 export type ResultInterface = {
   territory: EvolOccupation["code"];
   l_territory: string;
@@ -30,8 +29,7 @@ export class EvolOccupationAction extends AbstractAction {
     super();
   }
 
-  public async handle(params: EvolOccupation): Promise<ResultInterface> {
-    if (!isPublished(params)) return [];
+  public override async handle(params: EvolOccupation): Promise<ResultInterface> {
     return this.repository.getEvolOccupation(params);
   }
 }

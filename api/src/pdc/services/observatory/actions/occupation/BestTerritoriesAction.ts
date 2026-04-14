@@ -2,7 +2,6 @@ import { handler } from "@/ilos/common/index.ts";
 import { Action as AbstractAction } from "@/ilos/core/index.ts";
 import { BestTerritories } from "@/pdc/services/observatory/dto/occupation/BestTerritories.ts";
 import { OccupationRepositoryInterfaceResolver } from "@/pdc/services/observatory/interfaces/OccupationRepositoryProviderInterface.ts";
-import { isPublished } from "../../helpers/publishedDate.ts";
 export type ResultInterface = {
   territory: BestTerritories["code"];
   l_territory: string;
@@ -27,8 +26,7 @@ export class BestTerritoriesAction extends AbstractAction {
     super();
   }
 
-  public async handle(params: BestTerritories): Promise<ResultInterface> {
-    if (!isPublished(params)) return [];
+  public override async handle(params: BestTerritories): Promise<ResultInterface> {
     return this.repository.getBestTerritories(params);
   }
 }

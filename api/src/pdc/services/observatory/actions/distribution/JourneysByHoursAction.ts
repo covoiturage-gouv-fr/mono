@@ -4,7 +4,6 @@ import { Infer } from "@/lib/superstruct/index.ts";
 import { Direction } from "@/pdc/providers/superstruct/shared/index.ts";
 import { JourneysByHours } from "@/pdc/services/observatory/dto/distribution/JourneysByHours.ts";
 import { DistributionRepositoryInterfaceResolver } from "../../interfaces/DistributionRepositoryProviderInterface.ts";
-import { isPublished } from "../../helpers/publishedDate.ts";
 export type ResultInterface = {
   code: string;
   libelle: string;
@@ -35,8 +34,7 @@ export class JourneysByHoursAction extends AbstractAction {
     super();
   }
 
-  public async handle(params: JourneysByHours): Promise<ResultInterface> {
-    if (!isPublished(params)) return [];
+  public override async handle(params: JourneysByHours): Promise<ResultInterface> {
     return this.repository.getJourneysByHours(params);
   }
 }

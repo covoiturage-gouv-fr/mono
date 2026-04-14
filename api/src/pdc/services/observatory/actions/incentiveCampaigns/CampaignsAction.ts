@@ -53,7 +53,7 @@ export class CampaignsAction extends AbstractAction {
     super();
   }
 
-  public async handle(params: IncentiveCampaigns): Promise<ResultInterface> {
+  public override async handle(params: IncentiveCampaigns): Promise<ResultInterface> {
     return this.repository.getCampaigns(params);
   }
 }

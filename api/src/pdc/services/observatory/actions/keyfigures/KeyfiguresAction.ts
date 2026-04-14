@@ -4,7 +4,6 @@ import { Infer } from "@/lib/superstruct/index.ts";
 import { Direction } from "@/pdc/providers/superstruct/shared/index.ts";
 import { KeyFigures } from "@/pdc/services/observatory/dto/KeyFigures.ts";
 import { KeyfiguresRepositoryInterfaceResolver } from "../../interfaces/KeyfiguresRepositoryProviderInterface.ts";
-import { isPublished } from "../../helpers/publishedDate.ts";
 export type ResultInterface = {
   territory: KeyFigures["code"];
   l_territory: string;
@@ -38,8 +37,7 @@ export class KeyfiguresAction extends AbstractAction {
     super();
   }
 
-  public async handle(params: KeyFigures): Promise<ResultInterface> {
-    if (!isPublished(params)) return [];
+  public override async handle(params: KeyFigures): Promise<ResultInterface> {
     return this.repository.getKeyfigures(params);
   }
 }

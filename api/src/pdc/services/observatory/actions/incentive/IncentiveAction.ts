@@ -4,7 +4,6 @@ import { Infer } from "@/lib/superstruct/index.ts";
 import { Direction } from "@/pdc/providers/superstruct/shared/index.ts";
 import { Incentive } from "@/pdc/services/observatory/dto/Incentive.ts";
 import { IncentiveRepositoryInterfaceResolver } from "../../interfaces/IncentiveRepositoryProviderInterface.ts";
-import { isPublished } from "../../helpers/publishedDate.ts";
 
 export type ResultInterface = {
   code: Incentive["code"];
@@ -33,8 +32,7 @@ export class IncentiveAction extends AbstractAction {
     super();
   }
 
-  public async handle(params: Incentive): Promise<ResultInterface> {
-    if (!isPublished(params)) return [];
+  public override async handle(params: Incentive): Promise<ResultInterface> {
     return this.repository.getIncentive(params);
   }
 }
