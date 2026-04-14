@@ -24,7 +24,6 @@ export class LastRecordRepositoryProvider implements LastRecordRepositoryInterfa
     const filters = [
       sql`type = ${typeParam}`,
       sql`(territory_1 = ${params.code} OR territory_2 = ${params.code})`,
-      sql`direction = 'both'`,
     ];
 
     if (maxYear !== undefined && maxMonth !== undefined) {
