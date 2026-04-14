@@ -2,6 +2,7 @@ import { handler } from "@/ilos/common/index.ts";
 import { Action as AbstractAction } from "@/ilos/core/index.ts";
 import { Flux } from "@/pdc/services/observatory/dto/flux/Flux.ts";
 import { FluxRepositoryInterfaceResolver } from "../../interfaces/FluxRepositoryProviderInterface.ts";
+import { isPublished } from "../../helpers/publishedDate.ts";
 export type ResultInterface = {
   ter_1: Flux["code"];
   lng_1: number;
@@ -33,6 +34,7 @@ export class FluxAction extends AbstractAction {
   }
 
   public async handle(params: Flux): Promise<ResultInterface> {
+    if (!isPublished(params)) return [];
     return this.repository.getFlux(params);
   }
 }
