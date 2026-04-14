@@ -47,7 +47,6 @@ export default function Dashboard() {
 
   function sectionTitle(dashboard) {
     const { name } = dashboard.params;
-    console.log(period);
     const start = new Date(period.start_date);
     const end = new Date(Math.min(new Date(period.end_date).getTime(), new Date().getTime()));
     return `${name} du ${start.toLocaleDateString()} au ${end.toLocaleDateString()}`;
