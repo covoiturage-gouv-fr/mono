@@ -24,7 +24,7 @@ export class LastRecordAction extends AbstractAction {
     super();
   }
 
-  public async handle(params: LastRecord): Promise<ResultInterface> {
+  public override async handle(params: LastRecord): Promise<ResultInterface> {
     const cutoff = config.observatory.publishedUntil;
     let maxYear: number | undefined;
     let maxMonth: number | undefined;
