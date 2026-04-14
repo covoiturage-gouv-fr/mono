@@ -8,10 +8,8 @@ import SelectSemester from '@/components/observatoire/SelectSemester';
 import SelectTerritory from '@/components/observatoire/SelectTerritory';
 import SelectTrimester from '@/components/observatoire/SelectTrimester';
 import SelectYear from '@/components/observatoire/SelectYear';
-import { Config } from '@/config';
 import { useDashboardContext } from '@/context/DashboardProvider';
 import { graphList, mapList } from '@/helpers/lists';
-import { useApi } from '@/hooks/useApi';
 import { PerimeterType } from '@/interfaces/observatoire/Perimeter';
 import { fr } from '@codegouvfr/react-dsfr';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -30,14 +28,14 @@ import FluxMap from './maps/FluxMap';
 import OccupationMap from './maps/OccupationMap';
 import BestFluxTable from './tables/BestFluxTable';
 import BestTerritoriesTable from './tables/BestTerritoriesTable';
+import { GetPeriod } from '@/helpers/dashboard';
 
 export default function Dashboard() {
   const searchParams = useSearchParams();
   const {dashboard} =useDashboardContext();
-  const apiUrl = Config.get<string>('next.public_api_url', '');
-  const lastRecordUrl = `${apiUrl}/last-record?type=${dashboard.params.type}&code=${dashboard.params.code}`;
-  const { data: lastRecord } = useApi<{ year: number; month: number }>(lastRecordUrl);
+  const period = GetPeriod();
   const observeLabel = dashboard.params.map == 1 ? 'Flux entre:' : 'Territoires observés';
+
   useEffect(() => {
     const params = {
       code: searchParams.get('code') ? searchParams.get('code')! : 'XXXXX',
@@ -47,6 +45,14 @@ export default function Dashboard() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams.get('code'), searchParams.get('type')]);
 
+  function sectionTitle(dashboard) {
+    const { name } = dashboard.params;
+    console.log(period);
+    const start = new Date(period.start_date);
+    const end = new Date(Math.min(new Date(period.end_date).getTime(), new Date().getTime()));
+    return `${name} du ${start.toLocaleDateString()} au ${end.toLocaleDateString()}`;
+  }
+
   return(
     <>
       <div className={fr.cx('fr-grid-row','fr-grid-row--gutters','fr-mt-5v')}>
@@ -55,15 +61,9 @@ export default function Dashboard() {
         </div>
         <div className={fr.cx('fr-col-12','fr-col-md-6')}>
           <SelectPeriod id='period' label='Type de période' />
-          {dashboard.params.period === 'month' && 
-            <SelectMonth />
-          }
-          {dashboard.params.period === 'trimester' && 
-            <SelectTrimester />
-          }
-          {dashboard.params.period === 'semester' && 
-            <SelectSemester />
-          }
+          {dashboard.params.period === 'month' && <SelectMonth /> }
+          {dashboard.params.period === 'trimester' && <SelectTrimester /> }
+          {dashboard.params.period === 'semester' && <SelectSemester /> }
           <SelectYear />
         </div>
       </div>
@@ -74,13 +74,7 @@ export default function Dashboard() {
       ) 
       : (
         <>
-          <SectionTitle
-            title={`${dashboard.params.name} - Donn\u00e9es jusqu'\u00e0 ${
-              lastRecord
-                ? new Date(lastRecord.year, lastRecord.month - 1, 1).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
-                : '...'
-            }`}
-          />
+          <SectionTitle title={sectionTitle(dashboard)} />
           <KeyFigures />
           <div className={fr.cx('fr-grid-row', 'fr-grid-row--gutters')}>
             <div className={fr.cx('fr-col-12','fr-col-md-6')}>

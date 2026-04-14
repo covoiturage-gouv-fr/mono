@@ -3,11 +3,10 @@ import { useDashboardContext } from "../context/DashboardProvider";
 export function GetPeriod() {
   const { dashboard } = useDashboardContext();
   const period = {
-    start_date: new Date(dashboard.params.year, dashboard.params.month - 1, 2)
-      .toISOString().slice(0, 10),
-    end_date: new Date(dashboard.params.year, dashboard.params.month)
-      .toISOString().slice(0, 10),
+    start_date: new Date(dashboard.params.year, dashboard.params.month - 1, 2).toISOString().slice(0, 10),
+    end_date: new Date(dashboard.params.year, dashboard.params.month).toISOString().slice(0, 10),
   };
+
   switch (dashboard.params.period) {
     case "trimester":
       const startTrimesterMonths = [0, 3, 6, 9]; // Mois de début des trimestres (janvier, avril, juillet, octobre)
