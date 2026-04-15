@@ -1,0 +1,13 @@
+set dotenv-load
+set shell := ["bash", "-uc"] 
+
+default:
+  @just --list
+
+# charge local .env
+dbt-env:
+  set -o allexport; source .env; set +o allexport
+
+# Run dbt
+dbt cmd:
+    dbt {{cmd}} --profiles-dir profiles 
