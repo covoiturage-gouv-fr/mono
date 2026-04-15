@@ -11,3 +11,8 @@ dbt-env:
 # Run dbt
 dbt cmd:
     dbt {{cmd}} --profiles-dir profiles 
+
+# Run pipeline import external data
+pipeline-external-data:
+  python -m pipelines.runners.import_external_data
+
