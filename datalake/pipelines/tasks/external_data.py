@@ -1,89 +1,92 @@
-import os
-from helpers.s3 import s3_client, s3_exists, s3_path
-from helpers.duckdb import duckdb_client, create_schema
 from typing import Optional
+from pipelines.helpers.duckdb import duckdb_client, create_schema
 
 def import_table(
     table: str,
-    schema: Optional[str] = None,
-    bucket: Optional[str] = None,
-    folder: Optional[str] = None,
-    ext: str = 'parquet',
+    schema: str,
+    path: str,
+    ext: str = "parquet",
     geo_layer: Optional[str] = None,
-    overwrite: bool = False,
+    conn=None,
+    select: Optional[list[str] | list[tuple[str, str]]] = None,
 ):
-    conn = duckdb_client()
-    schema = schema or 'archive_zone'
-    bucket = bucket or os.getenv("S3_BUCKET")
-    folder = folder or 'exports'
+    """Importe un fichier S3 dans Postgres. Aucune vérification ici — à faire en amont."""
+    _conn = conn or duckdb_client()
+    create_schema(_conn, schema)
 
-    if not table:
-        print("⚠️ Aucune table fournie")
-        return
-    # Client S3
-    s3 = s3_client()
-    key, path = s3_path(bucket, folder, table, ext)
-    # Vérifier existence S3
-    if not s3_exists(bucket, key, s3):
-      print(f"⚠️ Fichier {path} inexistant sur {bucket}")
-      return
-    
-    if overwrite:
-      print(f"ℹ️ Table {schema}.{table} existante, suppression pour overwrite.")
-      conn.execute(f"DROP TABLE IF EXISTS pg.{schema}.{table};")
-    
-    # Créer le schema si nécessaire
-    create_schema(conn, schema)
-        
-    print(f"▶️ Import de {path} → {schema}.{table}")
-
+    print(f"▶️ Import {path} → {schema}.{table}")
+    select_clause = build_select(select)
     if ext in ("gpkg", "geojson", "shp"):
-      if geo_layer:
-        sql = f"""
-        CREATE TABLE pg.{schema}.{table} AS
-        SELECT * FROM st_read('{path}', layer='{geo_layer}');
-        """
-      else:
-        sql = f"""
-        CREATE TABLE pg.{schema}.{table} AS
-        SELECT * FROM st_read('{path}');
-        """
+        layer_clause = f", layer='{geo_layer}'" if geo_layer else ""
+        sql = f"CREATE TABLE pg.{schema}.{table} AS SELECT {select_clause} FROM st_read('{path}'{layer_clause});"
+    elif ext == "csv":
+        sql = f"CREATE TABLE pg.{schema}.{table} AS SELECT {select_clause} FROM read_csv_auto('{path}');"
+    elif ext in ("xlsx", "xls"):
+        sql = f"CREATE TABLE pg.{schema}.{table} AS SELECT {select_clause} FROM read_excel('{path}');"
+    elif ext == "parquet":
+        sql = f"CREATE TABLE pg.{schema}.{table} AS SELECT {select_clause} FROM read_parquet('{path}');"
     else:
-      sql = f"""
-      CREATE TABLE pg.{schema}.{table} AS
-      SELECT * FROM read_parquet('{path}');
-      """
-    conn.execute(sql)
+        raise ValueError(f"Extension non supportée : {ext}")
+
+    _conn.execute(sql)
     print(f"✅ Import terminé : {schema}.{table}")
 
+    if not conn:
+        _conn.close()
+
+
 def export_table(
-  table: str,
-  schema: Optional[str] = None,
-  bucket: Optional[str] = None,
-  folder: Optional[str] = None,
-  overwrite: bool = False,
+    table: str,
+    schema: str,
+    path: str,
+    conn=None,
+    partition_by: Optional[list[str]] = None,
 ):
-  conn = duckdb_client()
-  schema = schema or 'raw_zone'
-  bucket = bucket or os.getenv("S3_BUCKET")
-  folder = folder or 'exports'
+    """Exporte une table Postgres vers S3. Aucune vérification ici — à faire en amont."""
+    _conn = conn or duckdb_client()
 
-  if not table:
-    print("⚠️ Aucune table fourni")
-    return
-  # Client S3
-  s3 = s3_client()
-  key, path = s3_path(bucket, folder, table, 'parquet')
-  # Vérifier si le fichier existe déjà et gérer l'overwrite
-  if not overwrite and s3_exists(bucket, key, s3):
-    print(f"ℹ️ Fichier {path} existe déjà sur {bucket}, skipping.")
-    return     
-  print(f"▶️ Export de {schema}.{table} → {path}")
-  conn.execute(f"COPY (SELECT * FROM pg.{schema}.{table}) TO '{path}' (FORMAT PARQUET);")
-  print(f"✅ Export terminé : {path}")
+    print(f"▶️ Export {schema}.{table} → {path}")
+    partition_clause = ""
+    if partition_by:
+        cols = ", ".join(partition_by)
+        partition_clause = f", PARTITION_BY ({cols})"
 
+    sql = f"""
+    COPY (
+        SELECT * FROM pg.{schema}.{table}
+    )
+    TO '{path}'
+    (FORMAT PARQUET{partition_clause});
+    """
+    
+    _conn.execute(sql)
+    print(f"✅ Export terminé : {path}")
 
+    if not conn:
+        _conn.close()
 
+def normalize_select(select):
+    if not select:
+      return None, {}
+    cols = []
+    casts = {}
+    for item in select:
+      if isinstance(item, tuple):
+        col, dtype = item
+        cols.append(col.strip().lower())
+        casts[col] = dtype.strip().upper()
+      else:
+        cols.append(item.strip().lower())
+    return cols, casts
 
-
-
+def build_select(select):
+    cols, casts = normalize_select(select)
+    if not cols:
+      return "*"
+    sql_cols = []
+    for col in cols:
+      if col in casts:
+        sql_cols.append(f"CAST({col} AS {casts[col]}) AS {col}")
+      else:
+        sql_cols.append(col)
+    return ", ".join(sql_cols)
