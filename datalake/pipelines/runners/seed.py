@@ -1,21 +1,29 @@
 import os
-from pipelines.config.external_data_config import TABLES
+import typer
+import json
 from pipelines.tasks.external_data import import_table
 from pipelines.helpers.duckdb import get_existing_tables, duckdb_client
 from pipelines.helpers.s3 import s3_client, s3_exists, s3_path
-from typing import Optional, Any
+from typing import Optional, List
 from dotenv import load_dotenv
 
 load_dotenv()
+app = typer.Typer()
 
-def import_external_data(
-  tables: list[dict[str, Any]] = None,
+def load_config(path: str):
+    with open(path) as f:
+        config = json.load(f)
+    return config
+
+@app.command()
+def seed_external_data(
+  config: Optional[str] = 'pipelines/config/external_data_config.json',
   schema: Optional[str] = None,
   bucket: Optional[str] = None,
   folder: Optional[str] = None,
   overwrite: bool = False,
 ):
-  tables = tables or TABLES 
+  tables = load_config(config) 
   schema = schema or 'dbt_raw'
   bucket = bucket or os.getenv("S3_BUCKET")
   conn = duckdb_client()
@@ -45,4 +53,5 @@ def import_external_data(
     import_table(table=name, schema=schema, path=path, ext=ext, geo_layer=geo_layer, conn=conn, select=select)
   conn.close()
 
-import_external_data()
+if __name__ == "__main__":
+  app()

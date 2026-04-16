@@ -68,27 +68,29 @@ def export_table(
         _conn.close()
 
 def normalize_select(select):
-    if not select:
-      return None, {}
-    cols = []
-    casts = {}
-    for item in select:
-      if isinstance(item, tuple):
-        col, dtype = item
-        cols.append(col.strip().lower())
-        casts[col] = dtype.strip().upper()
-      else:
-        cols.append(item.strip().lower())
-    return cols, casts
+  if not select:
+    return None, {}
+  cols = []
+  casts = {}
+  for item in select:
+    if isinstance(item, list):
+      col, dtype = item
+      col = col.lower()
+      cols.append(col)
+      casts[col] = dtype.upper()
+    else:
+      col = item.lower()
+      cols.append(col)
+  return cols, casts
 
 def build_select(select):
-    cols, casts = normalize_select(select)
-    if not cols:
-      return "*"
-    sql_cols = []
-    for col in cols:
-      if col in casts:
-        sql_cols.append(f"CAST({col} AS {casts[col]}) AS {col}")
-      else:
-        sql_cols.append(col)
-    return ", ".join(sql_cols)
+  cols, casts = normalize_select(select)
+  if not cols:
+    return "*"
+  sql = []
+  for col in cols:
+    if col in casts:
+      sql.append(f"CAST({col} AS {casts[col]}) AS {col}")
+    else:
+      sql.append(col)
+  return ", ".join(sql)

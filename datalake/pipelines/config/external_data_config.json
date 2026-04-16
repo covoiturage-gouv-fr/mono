@@ -1,23 +1,20 @@
-TABLES = [
+[
   {
     "name": "cerema_aom_2025",
     "ext": "csv",
-    "geo_layer": None,
-    #"select": [
-    #  ("code_insee", "VARCHAR"),
-    #  "l_aom"
-    #]
+    "geo_layer": null,
+    "select": [["code_insee", "VARCHAR"], "l_aom"]
   },
   {
     "name": "old_perimeters_simple",
     "filename": "old_perimeters",
     "ext": "gpkg",
-    "geo_layer": "centroid",
+    "geo_layer": "centroid"
   },
   {
     "name": "cee_applications",
     "filename": "exports/cee_applications",
     "ext": "parquet",
-    "geo_layer": None,
-  },
+    "geo_layer": null
+  }
 ]
