@@ -1,8 +1,9 @@
 [
   {
-    "name": "old_perimeters_centroid",
+    "name": "old_perimeters_full",
     "filename": "old_perimeters",
     "ext": "gpkg",
-    "geo_layer": "centroid"
+    "geo_layer": "full",
+    "select": ["year", "arr", "l_arr", ["geom", "geometry", " geometry"]]
   }
 ]

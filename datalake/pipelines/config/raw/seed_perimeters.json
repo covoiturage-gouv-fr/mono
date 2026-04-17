@@ -3,7 +3,8 @@
     "name": "old_perimeters_full",
     "filename": "old_perimeters",
     "ext": "gpkg",
-    "geo_layer": "full"
+    "geo_layer": "full",
+    "select": ["year", "arr", "l_arr", ["geom", "geometry", " geometry"]]
   },
   {
     "name": "old_perimeters_simple",
@@ -15,7 +16,8 @@
     "name": "old_perimeters_centroid",
     "filename": "old_perimeters",
     "ext": "gpkg",
-    "geo_layer": "centroid"
+    "geo_layer": "centroid",
+    "select": ["year", "arr", "l_arr", ["geom", "geometry", " geometry"]]
   },
   {
     "name": "cerema_aom_2025",
