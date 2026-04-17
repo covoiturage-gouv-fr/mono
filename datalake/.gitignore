@@ -3,6 +3,7 @@ dbt_packages/
 logs/*
 .pgcli*
 .venv/*
+db/*
 
 .env.local
 .env.prod

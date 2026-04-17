@@ -1,35 +1,29 @@
 import os
 import typer
-import json
-from pipelines.tasks.external_data import import_table
-from pipelines.helpers.duckdb import get_existing_tables, duckdb_client
+from pipelines.tasks.db_sync import import_table
+from pipelines.helpers.duckdb import duckdb_client
+from pipelines.helpers.sql import drop_table, get_existing_tables
 from pipelines.helpers.s3 import s3_client, s3_exists, s3_path
-from typing import Optional, List
+from pipelines.helpers.config import load_config
+from typing import Optional
 from dotenv import load_dotenv
 
 load_dotenv()
 app = typer.Typer()
 
-def load_config(path: str):
-    with open(path) as f:
-        config = json.load(f)
-    return config
-
 @app.command()
-def seed_external_data(
-  config: Optional[str] = 'pipelines/config/external_data_config.json',
-  schema: Optional[str] = None,
-  bucket: Optional[str] = None,
+def seed(
+  config: str,
+  schema: str,
+  bucket: Optional[str] = typer.Option(default=None, envvar="S3_BUCKET"),
   folder: Optional[str] = None,
   overwrite: bool = False,
 ):
   tables = load_config(config) 
-  schema = schema or 'dbt_raw'
-  bucket = bucket or os.getenv("S3_BUCKET")
   conn = duckdb_client()
   s3 = s3_client()
+  existing_tables = get_existing_tables(conn, schema)
 
-  existing_tables = get_existing_tables(schema, conn)
   for t in tables:
     name = t["name"]
     filename = t.get("filename", name)
@@ -48,7 +42,7 @@ def seed_external_data(
     # Suppression table existante si overwrite
     if name in existing_tables and overwrite:
       print(f"ℹ️  [{name}] Suppression pour overwrite.")
-      conn.execute(f"DROP TABLE IF EXISTS pg.{schema}.{name};")
+      drop_table(conn, schema, name)
     
     import_table(table=name, schema=schema, path=path, ext=ext, geo_layer=geo_layer, conn=conn, select=select)
   conn.close()

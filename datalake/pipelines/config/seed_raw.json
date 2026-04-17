@@ -2,8 +2,7 @@
   {
     "name": "cerema_aom_2025",
     "ext": "csv",
-    "geo_layer": null,
-    "select": [["code_insee", "VARCHAR"], "l_aom"]
+    "geo_layer": null
   },
   {
     "name": "old_perimeters_simple",

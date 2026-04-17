@@ -1,0 +1,10 @@
+[
+  {
+    "name": "cee_applications",
+    "filename": "test/cee_applications"
+  },
+  {
+    "name": "old_perimeters_simple",
+    "filename": "test/old_perimeters"
+  }
+]

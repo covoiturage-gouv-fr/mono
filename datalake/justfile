@@ -4,15 +4,19 @@ set shell := ["bash", "-uc"]
 default:
   @just --list
 
-# charge local .env
-dbt-env:
-  set -o allexport; source .env; set +o allexport
 
-# Run dbt
-dbt cmd:
-    dbt {{cmd}} --profiles-dir profiles 
+# Run dbt command
+dbt cmd *args:
+  dbt {{cmd}} --profiles-dir profiles {{args}}
 
-# Run pipeline import external data
-pipeline-external-data:
-  python -m pipelines.runners.import_external_data
+# Seed data from S3 to Postgres
+seed config schema *args:
+  python -m pipelines.cmd.seed  pipelines/config/{{config}} {{schema}} {{args}}
 
+# Export data from Postgres to S3
+export config schema *args:
+  python -m pipelines.cmd.export pipelines/config/{{config}} {{schema}} {{args}}
+
+# Pipeline 1: Seed raw data from S3 to raw_zone
+pipeline-raw *args:
+  just seed seed_raw.json dbt_raw {{args}}
