@@ -4,6 +4,9 @@ set shell := ["bash", "-uc"]
 default:
   @just --list
 
+# charge local .env
+dbt-env:
+  set -o allexport; source .env; set +o allexport
 
 # Run dbt command
 dbt cmd *args:
@@ -19,4 +22,5 @@ export config schema *args:
 
 # Pipeline 1: Seed raw data from S3 to raw_zone
 pipeline-raw *args:
-  just seed seed_raw.json dbt_raw {{args}}
+  just seed raw/seed_perimeters.json dbt_raw {{args}}
+  just seed raw/seed_datagouv.json dbt_raw {{args}}

@@ -1,6 +1,6 @@
 import typing as t
-
 import requests
+
 def find_in_json(data: t.Any, path: list[str]) -> t.Any:
   """
   Parcourt récursivement un objet JSON (dict/list) selon une liste de clés et/ou d’index.

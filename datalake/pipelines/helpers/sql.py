@@ -24,8 +24,8 @@ def build_select(select: Optional[list[str | list[str]]]) -> str:
     sql = []
     for item in select:
         if isinstance(item, list):
-            col, dtype = item
-            sql.append(f"CAST({col} AS {dtype.upper()}) AS {col}")
+            col, dtype, alias = item
+            sql.append(f"CAST({col} AS {dtype.upper()}) AS {alias if alias else col}")
         else:
             sql.append(item)
     return ", ".join(sql)

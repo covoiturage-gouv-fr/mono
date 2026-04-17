@@ -1,0 +1,8 @@
+[
+  {
+    "name": "old_perimeters_centroid",
+    "filename": "old_perimeters",
+    "ext": "gpkg",
+    "geo_layer": "centroid"
+  }
+]

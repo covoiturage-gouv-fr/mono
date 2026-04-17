@@ -1,9 +1,10 @@
 target/
 dbt_packages/
+db/
 logs/*
 .pgcli*
 .venv/*
-db/*
+
 
 .env.local
 .env.prod
