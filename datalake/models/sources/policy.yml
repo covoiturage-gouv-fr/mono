@@ -1,5 +1,4 @@
 version: 2
-
 sources:
   - name: policy
     schema: policy
@@ -55,8 +54,38 @@ sources:
           - name: handler
             data_type: character varying
           - name: incentive_sum
-            data_type: integer
+            data_type: bigint
           - name: max_amount
             data_type: bigint
           - name: tz
             data_type: character varying
+          - name: descriptive_sheet_url
+            data_type: character varying
+      - name: lock
+        description: ''
+        columns:
+          - name: _id
+            data_type: integer
+          - name: started_at
+            data_type: timestamp with time zone
+          - name: stopped_at
+            data_type: timestamp with time zone
+          - name: success
+            data_type: boolean
+          - name: data
+            data_type: json
+      - name: policy_metas
+        description: ''
+        columns:
+          - name: _id
+            data_type: integer
+          - name: policy_id
+            data_type: integer
+          - name: key
+            data_type: character varying
+          - name: value
+            data_type: bigint
+          - name: updated_at
+            data_type: timestamp with time zone
+          - name: datetime
+            data_type: timestamp without time zone

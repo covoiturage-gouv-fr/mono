@@ -20,7 +20,12 @@ seed config schema *args:
 export config schema *args:
   python -m pipelines.cmd.export pipelines/config/{{config}} {{schema}} {{args}}
 
-# Pipeline 1: Seed raw data from S3 to raw_zone
+# Pipeline 1: Seed raw data from S3 to raw_zone (yearly)
 pipeline-raw *args:
-  just seed raw/seed_perimeters.json dbt_raw {{args}}
-  just seed raw/seed_datagouv.json dbt_raw {{args}}
+  just seed raw/seed_perimeters.json dbt_raw {{ if args =~ "--full-refresh" { "--overwrite" } else { "" } }}
+  just seed raw/seed_datagouv.json dbt_raw {{ if args =~ "--full-refresh" { "--overwrite" } else { "" } }}
+  just dbt build --select tag:raw {{args}}
+
+# Pipeline 2: trusted geo (yearly)
+pipeline-trusted-geo *args:
+  just dbt build --select "tag:trusted,tag:geo" {{args}}

@@ -1,5 +1,4 @@
 version: 2
-
 sources:
   - name: cee
     schema: cee
@@ -48,4 +47,75 @@ sources:
             data_type: character varying
           - name: operator_journey_id
             description: Unique identifier for the journey assigned by the operator.
+            data_type: character varying
+      - name: cee_application_errors
+        description: ''
+        columns:
+          - name: _id
+            data_type: uuid
+          - name: created_at
+            data_type: timestamp with time zone
+          - name: operator_id
+            data_type: integer
+          - name: journey_type
+            data_type: USER-DEFINED
+          - name: error_type
+            data_type: USER-DEFINED
+          - name: last_name_trunc
+            data_type: character varying
+          - name: phone_trunc
+            data_type: character varying
+          - name: driving_license
+            data_type: character varying
+          - name: datetime
+            data_type: character varying
+          - name: operator_journey_id
+            data_type: character varying
+          - name: application_id
+            data_type: uuid
+          - name: identity_key
+            data_type: character varying
+      - name: cee_deleted_applications
+        description: ''
+        columns:
+          - name: _id
+            data_type: uuid
+          - name: created_at
+            data_type: timestamp with time zone
+          - name: updated_at
+            data_type: timestamp with time zone
+          - name: operator_id
+            data_type: integer
+          - name: journey_type
+            data_type: USER-DEFINED
+          - name: is_specific
+            data_type: boolean
+          - name: last_name_trunc
+            data_type: character varying
+          - name: phone_trunc
+            data_type: character varying
+          - name: datetime
+            data_type: timestamp without time zone
+          - name: carpool_id
+            data_type: integer
+          - name: driving_license
+            data_type: character varying
+          - name: application_timestamp
+            data_type: timestamp without time zone
+          - name: identity_key
+            data_type: character varying
+          - name: operator_journey_id
+            data_type: character varying
+          - name: deleted_at
+            data_type: timestamp with time zone
+      - name: labels
+        description: ''
+        columns:
+          - name: _id
+            data_type: integer
+          - name: created_at
+            data_type: timestamp with time zone
+          - name: cee_application_id
+            data_type: uuid
+          - name: label
             data_type: character varying

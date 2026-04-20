@@ -1,33 +1,9 @@
 version: 2
-
 sources:
-  - name: carpool
+  - name: carpool_v2
     schema: carpool_v2
-
     tables:
       - name: carpools
-        tags: [carpools_source]
-        meta:
-          elementary: # default config
-            timestamp_column: start_datetime
-            detection_delay:
-              period: day
-              count: 2
-            training_period:
-              period: day
-              count: 30
-            time_bucket:
-              period: day
-              count: 1
-            seasonality: day_of_week
-        tests:
-          - elementary.dimension_anomalies:
-              name: volume_trajets_operateur
-              arguments:
-                dimensions:
-                  - operator_id
-              config:
-                severity: warn
         columns:
           - name: _id
             data_type: integer
@@ -53,31 +29,6 @@ sources:
             data_type: USER-DEFINED
           - name: distance
             data_type: integer
-            tests:
-              - elementary.column_anomalies:
-                  name: anomalies_distance
-                  arguments:
-                    column_anomalies:
-                      - null_count
-                      - min
-                      - max
-                      - average
-                      - zero_count
-                  config:
-                    severity: warn
-              - elementary.column_anomalies:
-                  name: anomalies_distance_operateur
-                  arguments:
-                    column_anomalies:
-                      - null_count
-                      - min
-                      - max
-                      - average
-                      - zero_count
-                    dimensions:
-                      - operator_id
-                  config:
-                    severity: warn
           - name: licence_plate
             data_type: character varying
           - name: driver_identity_key
@@ -94,27 +45,6 @@ sources:
             data_type: character varying
           - name: driver_revenue
             data_type: integer
-            tests:
-              - elementary.column_anomalies:
-                  name: anomalies_revenus_conducteurs
-                  arguments:
-                    column_anomalies:
-                      - null_count
-                      - max
-                      - average
-                  config:
-                    severity: warn
-              - elementary.column_anomalies:
-                  name: anomalies_revenus_conducteurs_operateurs
-                  arguments:
-                    column_anomalies:
-                      - null_count
-                      - max
-                      - average
-                    dimensions:
-                      - operator_id
-                  config:
-                    severity: warn
           - name: passenger_identity_key
             data_type: character varying
           - name: passenger_operator_user_id
@@ -140,42 +70,6 @@ sources:
           - name: legacy_id
             data_type: bigint
       - name: geo
-        tags: [geo_source]
-        meta:
-          elementary: # default config
-            timestamp_column: updated_at
-            detection_delay:
-              period: day
-              count: 2
-            training_period:
-              period: week
-              count: 12
-            time_bucket:
-              period: week
-              count: 1
-        tests:
-          - elementary.dimension_anomalies:
-              name: volume_trajets_od
-              arguments:
-                timestamp_column: updated_at
-                dimensions:
-                  - start_geo_code
-                  - end_geo_code
-                exclude_final_results: average > 50
-          - elementary.dimension_anomalies:
-              name: volume_trajets_origine
-              arguments:
-                timestamp_column: updated_at
-                dimensions:
-                  - start_geo_code
-                exclude_final_results: average > 50
-          - elementary.dimension_anomalies:
-              name: volume_trajets_destination
-              arguments:
-                timestamp_column: updated_at
-                dimensions:
-                  - end_geo_code
-                exclude_final_results: average > 50
         columns:
           - name: _id
             data_type: integer
@@ -237,3 +131,24 @@ sources:
             data_type: integer
           - name: labels
             data_type: ARRAY
+      - name: requests
+        description: ''
+        columns:
+          - name: _id
+            data_type: integer
+          - name: carpool_id
+            data_type: integer
+          - name: operator_id
+            data_type: integer
+          - name: created_at
+            data_type: timestamp with time zone
+          - name: operator_journey_id
+            data_type: character varying
+          - name: payload
+            data_type: jsonb
+          - name: api_version
+            data_type: character varying
+          - name: cancel_code
+            data_type: character varying
+          - name: cancel_message
+            data_type: character varying

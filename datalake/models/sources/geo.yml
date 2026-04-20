@@ -1,20 +1,7 @@
 version: 2
-
 sources:
   - name: geo
     tables:
-      - name: com_evolution
-        columns:
-          - name: year
-            data_type: smallint
-          - name: mod
-            data_type: smallint
-          - name: old_com
-            data_type: character varying
-          - name: new_com
-            data_type: character varying
-          - name: l_mod
-            data_type: character varying
       - name: perimeters
         columns:
           - name: id
@@ -63,7 +50,30 @@ sources:
             data_type: integer
           - name: surface
             data_type: real
+      - name: com_evolution
+        description: ''
+        columns:
+          - name: year
+            data_type: smallint
+          - name: mod
+            data_type: smallint
+          - name: old_com
+            data_type: character varying
+          - name: new_com
+            data_type: character varying
+          - name: l_mod
+            data_type: character varying
+      - name: dataset_migration
+        description: ''
+        columns:
+          - name: key
+            data_type: character varying
+          - name: datetime
+            data_type: timestamp without time zone
+          - name: millesime
+            data_type: smallint
       - name: perimeters_centroid
+        description: ''
         columns:
           - name: id
             data_type: integer

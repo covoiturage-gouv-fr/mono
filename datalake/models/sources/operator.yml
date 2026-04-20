@@ -1,5 +1,4 @@
 version: 2
-
 sources:
   - name: operator
     tables:
@@ -35,3 +34,14 @@ sources:
             data_type: uuid
           - name: support
             data_type: character varying
+      - name: thumbnails
+        description: ''
+        columns:
+          - name: _id
+            data_type: integer
+          - name: operator_id
+            data_type: integer
+          - name: created_at
+            data_type: timestamp with time zone
+          - name: data
+            data_type: bytea

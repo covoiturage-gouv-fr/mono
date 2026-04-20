@@ -4,7 +4,7 @@
     "filename": "old_perimeters",
     "ext": "gpkg",
     "geo_layer": "full",
-    "select": ["year", "arr", "l_arr", ["geom", "geometry", "geometry"]],
+    "select": ["year", "arr", "l_arr", ["geom", "geometry", "geom"]],
     "chunk_size": 10000
   },
   {
@@ -19,7 +19,7 @@
     "filename": "old_perimeters",
     "ext": "gpkg",
     "geo_layer": "centroid",
-    "select": ["year", "arr", "l_arr", ["geom", "geometry", "geometry"]],
+    "select": ["year", "arr", "l_arr", ["geom", "geometry", "geom"]],
     "chunk_size": 10000
   },
   {
@@ -36,7 +36,7 @@
       ["code_insee", "varchar", "arr"],
       ["code_insee_de_la_commune_de_rattach", "varchar", "com"],
       "population",
-      ["geometrie", "geometry", " geometry"]
+      ["geometrie", "geometry", " geom"]
     ],
     "chunk_size": 10000
   },
@@ -52,7 +52,7 @@
       ["code_insee_du_departement", "varchar", "dep"],
       ["code_insee_de_la_region", "varchar", "reg"],
       "population",
-      ["geometrie", "geometry", "geometry"]
+      ["geometrie", "geometry", "geom"]
     ],
     "chunk_size": 10000
   },
@@ -64,7 +64,7 @@
     "select": [
       ["nom_officiel", "varchar", "l_dep"],
       ["code_insee", "varchar", "dep"],
-      ["geometrie", "geometry", "geometry"]
+      ["geometrie", "geometry", "geom"]
     ],
     "chunk_size": 10000
   },
@@ -76,7 +76,7 @@
     "select": [
       ["nom_officiel", "varchar", "l_epci"],
       ["code_siren", "varchar", "epci"],
-      ["geometrie", "geometry", "geometry"]
+      ["geometrie", "geometry", "geom"]
     ],
     "chunk_size": 10000
   },
@@ -88,7 +88,7 @@
     "select": [
       ["nom_officiel", "varchar", "l_reg"],
       ["code_insee", "varchar", "reg"],
-      ["geometrie", "geometry", "geometry"]
+      ["geometrie", "geometry", "geom"]
     ],
     "chunk_size": 10000
   },
@@ -102,7 +102,7 @@
       ["code_insee", "varchar", "arr"],
       ["code_insee_de_la_commune_de_rattach", "varchar", "com"],
       "population",
-      ["geometrie", "geometry", "geometry"]
+      ["geometrie", "geometry", "geom"]
     ],
     "chunk_size": 10000
   },
@@ -118,7 +118,7 @@
       ["code_insee_du_departement", "varchar", "dep"],
       ["code_insee_de_la_region", "varchar", "reg"],
       "population",
-      ["geometrie", "geometry", "geometry"]
+      ["geometrie", "geometry", "geom"]
     ],
     "chunk_size": 10000
   },
@@ -130,7 +130,7 @@
     "select": [
       ["nom_officiel", "varchar", "l_dep"],
       ["code_insee", "varchar", "dep"],
-      ["geometrie", "geometry", "geometry"]
+      ["geometrie", "geometry", "geom"]
     ],
     "chunk_size": 10000
   },
@@ -142,7 +142,7 @@
     "select": [
       ["nom_officiel", "varchar", "l_epci"],
       ["code_siren", "varchar", "epci"],
-      ["geometrie", "geometry", "geometry"]
+      ["geometrie", "geometry", "geom"]
     ],
     "chunk_size": 10000
   },
@@ -154,7 +154,7 @@
     "select": [
       ["nom_officiel", "varchar", "l_reg"],
       ["code_insee", "varchar", "reg"],
-      ["geometrie", "geometry", "geometry"]
+      ["geometrie", "geometry", "geom"]
     ],
     "chunk_size": 10000
   },
@@ -167,7 +167,7 @@
       ["nom_officiel", "varchar", "l_arr"],
       ["code_insee", "varchar", "arr"],
       ["code_insee_de_la_commune_de_rattach", "varchar", "com"],
-      ["geometrie", "geometry", "geometry"]
+      ["geometrie", "geometry", "geom"]
     ],
     "chunk_size": 10000
   },
@@ -179,8 +179,20 @@
     "select": [
       ["nom_officiel", "varchar", "l_com"],
       ["code_insee", "varchar", "com"],
-      ["geometrie", "geometry", "geometry"]
+      ["geometrie", "geometry", "geom"]
     ],
     "chunk_size": 10000
+  },
+  {
+    "name": "insee_mvt_com_2025",
+    "ext": "csv",
+    "select": [
+      ["MOD", "integer", "mod"],
+      ["DATE_EFF", "date", "date_eff"],
+      ["TYPECOM_AV", "varchar", "typecom_av"],
+      ["TYPECOM_AP", "varchar", "typecom_ap"],
+      ["COM_AV", "varchar", "old_com"],
+      ["COM_AP", "varchar", "new_com"]
+    ]
   }
 ]

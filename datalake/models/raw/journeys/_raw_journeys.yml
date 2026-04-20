@@ -1,0 +1,108 @@
+version: 2
+models:
+  - name: raw_journeys
+    columns:
+      - name: _id
+        data_type: integer
+      - name: uuid
+        data_type: character varying
+      - name: legacy_id
+        data_type: bigint
+      - name: created_at
+        data_type: timestamp with time zone
+      - name: updated_at
+        data_type: timestamp with time zone
+      - name: operator_id
+        data_type: integer
+      - name: operator_name
+        data_type: character varying
+      - name: operator_siret
+        data_type: character varying
+      - name: operator_journey_id
+        data_type: character varying
+      - name: operator_trip_id
+        data_type: character varying
+      - name: operator_class
+        data_type: character
+      - name: start_datetime
+        data_type: timestamp with time zone
+      - name: start_position_x
+        data_type: real
+      - name: start_position_y
+        data_type: real
+      - name: start_geo_code
+        data_type: character varying
+      - name: end_datetime
+        data_type: timestamp with time zone
+      - name: end_position_x
+        data_type: real
+      - name: end_position_y
+        data_type: real
+      - name: end_h3_index
+        data_type: USER-DEFINED
+      - name: end_geo_code
+        data_type: character varying
+      - name: geo_errors
+        data_type: jsonb
+      - name: geo_updated_at
+        data_type: timestamp with time zone
+      - name: distance
+        data_type: integer
+      - name: duration
+        data_type: integer
+      - name: licence_plate
+        data_type: character varying
+      - name: driver_identity_key
+        data_type: character varying
+      - name: driver_operator_user_id
+        data_type: character varying
+      - name: driver_phone
+        data_type: character varying
+      - name: driver_phone_trunc
+        data_type: character varying
+      - name: driver_id
+        data_type: character varying
+      - name: driver_travelpass_name
+        data_type: character varying
+      - name: driver_travelpass_user_id
+        data_type: character varying
+      - name: driver_revenue
+        data_type: integer
+      - name: passenger_identity_key
+        data_type: character varying
+      - name: passenger_operator_user_id
+        data_type: character varying
+      - name: passenger_phone
+        data_type: character varying
+      - name: passenger_phone_trunc
+        data_type: character varying
+      - name: passenger_id
+        data_type: character varying
+      - name: passenger_travelpass_name
+        data_type: character varying
+      - name: passenger_travelpass_user_id
+        data_type: character varying
+      - name: passenger_over_18
+        data_type: boolean
+      - name: passenger_seats
+        data_type: smallint
+      - name: passenger_contribution
+        data_type: integer
+      - name: passenger_payments
+        data_type: jsonb
+      - name: fraud_status
+        data_type: character varying
+      - name: fraud_labels
+        data_type: ARRAY
+      - name: anomaly_status
+        data_type: character varying
+      - name: anomaly_labels
+        data_type: ARRAY
+      - name: acquisition_status
+        data_type: character varying
+      - name: status_updated_at
+        data_type: timestamp with time zone
+      - name: final_acquisition_status
+        data_type: boolean
+      - name: valid_acquisition_status
+        data_type: boolean

@@ -46,3 +46,43 @@ models:
   ## see docs: https://docs.elementary-data.com/
   elementary:
     +schema: "elementary"
+seeds:
+  covoiturage:
+    trusted:
+      aom_region:
+        +schema: "dbt_trusted"
+        +tags: ["trusted", "geo", "aom_region"]
+        +column_types:
+          aom: varchar
+          l_aom: varchar
+          reg: varchar
+vars:
+  dbt-osmosis:
+    sources:
+      carpool_v1:
+        path: "sources/carpool_v1.yml"
+        schema: "carpool_v1"
+      carpool_v2:
+        path: "sources/carpool_v2.yml"
+        schema: "carpool_v2"
+      cee:
+        path: "sources/cee.yml"
+        schema: "cee"
+      company:
+        path: "sources/company.yml"
+        schema: "company"
+      fraudcheck:
+        path: "sources/fraudcheck.yml"
+        schema: "fraudcheck"
+      geo:
+        path: "sources/geo.yml"
+        schema: "geo"
+      operator:
+        path: "sources/operator.yml"
+        schema: "operator"
+      policy:
+        path: "sources/policy.yml"
+        schema: "policy"
+      territory:
+        path: "sources/territory.yml"
+        schema: "territory"

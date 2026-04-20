@@ -11,7 +11,7 @@
 
 WITH filtered_carpools AS (
     SELECT *
-    FROM {{ source('carpool', 'carpools') }} c
+    FROM {{ source('carpool_v2', 'carpools') }} c
     WHERE {{ time_filter('c.start_datetime', 'start_datetime') }}
 
 ),
@@ -34,7 +34,7 @@ carpools_status AS (
             AND s.fraud_status = 'passed',
             FALSE
         ) AS valid_acquisition_status
-    FROM {{ source('carpool', 'status') }} s
+    FROM {{ source('carpool_v2', 'status') }} s
     INNER JOIN filtered_carpools c ON s.carpool_id = c._id
 ),
 
@@ -134,7 +134,7 @@ SELECT
 
 FROM filtered_carpools c
 LEFT JOIN carpools_status cs ON c._id = cs.carpool_id
-LEFT JOIN {{ source('carpool', 'geo') }} g ON g.carpool_id = c._id
+LEFT JOIN {{ source('carpool_v2', 'geo') }} g ON g.carpool_id = c._id
 LEFT JOIN fraud_labels fl ON c._id = fl.carpool_id
 LEFT JOIN anomaly_labels al ON c._id = al.carpool_id
 LEFT JOIN {{ source('operator', 'operators') }} o ON c.operator_id = o._id
