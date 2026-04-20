@@ -10,6 +10,7 @@ def import_table(
   ext: str = "parquet",
   geo_layer: Optional[str] = None,
   select: Optional[list[str | list[str]]] = None,
+  chunk_size: Optional[int] = None,
   conn=None,
 ):
   _conn = conn or duckdb_client()
@@ -17,24 +18,46 @@ def import_table(
 
   print(f"▶️ Import {path} → {schema}.{table}")
   select_clause = build_select(select)
-  sql = f"CREATE TABLE pg.{schema}.{table} AS SELECT {select_clause} FROM "
   if ext in ("gpkg", "geojson", "shp"):
     layer_clause = f", layer='{geo_layer}'" if geo_layer else ""
-    sql += f"st_read('{path}'{layer_clause});"
+    source_sql = f"st_read('{path}'{layer_clause})"
   elif ext == "csv":
-    sql += f"read_csv_auto('{path}');"
+    source_sql = f"read_csv_auto('{path}')"
   elif ext in ("xlsx", "xls"):
-    sql += f"read_excel('{path}');"
+    source_sql = f"read_excel('{path}')"
   elif ext == "parquet":
-    sql += f"read_parquet('{path}');"
+    source_sql = f"read_parquet('{path}')"
   else:
     raise ValueError(f"Extension non supportée : {ext}")
-
-  _conn.execute(sql)
+ 
+  if chunk_size:
+    print(f"  ↳ chunks de {chunk_size}")
+    offset = 0
+    chunk_n = 0
+    while True:
+      chunk_sql = f"SELECT {select_clause} FROM {source_sql} LIMIT {chunk_size} OFFSET {offset}"
+      rows = _conn.execute(chunk_sql).fetchall()
+      if not rows:
+        break
+      if chunk_n == 0:
+        _conn.execute(f"CREATE TABLE pg.{schema}.{table} AS {chunk_sql};")
+      else:
+        _conn.execute(f"INSERT INTO pg.{schema}.{table} {chunk_sql};")
+      offset += chunk_size
+      chunk_n += 1
+      print(f"  ↳ chunk {chunk_n} — {offset} features insérées")
+      if len(rows) < chunk_size:
+        break
+  else:
+    _conn.execute(f"""
+      CREATE TABLE pg.{schema}.{table} AS
+      SELECT {select_clause} FROM {source_sql};
+    """)
+ 
   print(f"✅ Import terminé : {schema}.{table}")
-
+ 
   if not conn:
-      _conn.close()
+    _conn.close()
 
 
 def export_table(

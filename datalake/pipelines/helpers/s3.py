@@ -1,5 +1,6 @@
 import os
 import boto3
+import tempfile
 from typing import Optional
 
 
@@ -50,3 +51,13 @@ def s3_path(table: str, ext: str, bucket: str, folder: Optional[str] = None) -> 
     key = f"{folder}/{table}.{ext}" if folder else f"{table}.{ext}"
     path = f"s3://{bucket}/{key}"
     return key, path
+
+def s3_download(bucket: str, key: str, ext: str, client=None) -> str:
+  client = client or s3_client()
+  tmp = tempfile.NamedTemporaryFile(suffix=f".{ext}", delete=False)
+  tmp.close()
+  size = client.head_object(Bucket=bucket, Key=key)["ContentLength"]
+  print(f"  ↳ Téléchargement {key} ({size / 1e6:.0f} Mo)...")
+  client.download_file(bucket, key, tmp.name)
+  print(f"  ↳ Téléchargement terminé")
+  return tmp.name

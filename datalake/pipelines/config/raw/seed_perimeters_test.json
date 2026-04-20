@@ -4,6 +4,7 @@
     "filename": "old_perimeters",
     "ext": "gpkg",
     "geo_layer": "full",
-    "select": ["year", "arr", "l_arr", ["geom", "geometry", " geometry"]]
+    "select": ["year", "arr", "l_arr", ["geom", "geometry", "geometry"]],
+    "chunk_size": 10000
   }
 ]
