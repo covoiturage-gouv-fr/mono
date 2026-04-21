@@ -12,7 +12,7 @@
 WITH filtered_carpools AS (
     SELECT *
     FROM {{ source('carpool_v2', 'carpools') }} c
-    WHERE {{ time_filter('c.start_datetime', 'start_datetime') }}
+    WHERE {{ time_filter('c.start_datetime', 'start_datetime', lookback_days=3) }}
 
 ),
 carpools_status AS (
@@ -94,12 +94,12 @@ SELECT
     c.driver_operator_user_id,
     c.driver_phone,
     c.driver_phone_trunc,
-    COALESCE(
+    md5(COALESCE(
         c.driver_identity_key,
         c.driver_operator_user_id,
         c.driver_phone,
         c.driver_phone_trunc
-    ) AS driver_id,
+    )) AS driver_key,
 
     c.driver_travelpass_name,
     c.driver_travelpass_user_id,
@@ -109,12 +109,12 @@ SELECT
     c.passenger_operator_user_id,
     c.passenger_phone,
     c.passenger_phone_trunc,
-    COALESCE(
+    md5(COALESCE(
         c.passenger_identity_key,
         c.passenger_operator_user_id,
         c.passenger_phone,
         c.passenger_phone_trunc
-    ) AS passenger_id,
+    )) AS passenger_key,
 
     c.passenger_travelpass_name,
     c.passenger_travelpass_user_id,

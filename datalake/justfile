@@ -6,7 +6,7 @@ default:
 
 # charge local .env
 dbt-env:
-  set -o allexport; source .env; set +o allexport
+  set -a; source .env; set +a
 
 # Run dbt command
 dbt cmd *args:

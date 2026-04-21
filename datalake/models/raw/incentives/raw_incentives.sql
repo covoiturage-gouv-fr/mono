@@ -5,13 +5,13 @@
     indexes = [
       { 'columns':['carpool_v2_id'] },
     ],
-    tags=['raw', 'campaigns', 'incentives'],
+    tags=['raw', 'incentives'],
 ) }}
 
 WITH incentives AS (
   SELECT *
   FROM {{ source('policy', 'incentives') }}
-  WHERE {{ time_filter('datetime', 'datetime') }}
+  WHERE {{ time_filter('datetime', lookback_days=3) }}
 ),
 
 ni AS (

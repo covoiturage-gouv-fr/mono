@@ -1,6 +1,6 @@
 {{ config(
   materialized='view',
-  tags=['trusted', 'campaigns', 'incentives'],
+  tags=['trusted', 'incentives'],
 ) }}
 
 SELECT

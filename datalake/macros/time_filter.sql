@@ -3,7 +3,7 @@
   {% set cast = '::' ~ type %}
   {% set model_col = model_column if model_column else column %}
   (
-    {{ column }} >= (
+    {{ column }}{{ cast }} >= (
       {% if var('start', none) %}
         '{{ var("start") }}'{{ cast }}
       {% elif is_incremental() %}
@@ -19,7 +19,7 @@
       {% endif %}
     )
     {% if var('end', none) %}
-      AND {{ column }} < '{{ var("end") }}'{{ cast }}
+      AND {{ column }}{{ cast }} < '{{ var("end") }}'{{ cast }}
     {% endif %}
   )
 {% endmacro %}

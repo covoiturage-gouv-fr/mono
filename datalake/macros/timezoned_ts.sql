@@ -1,4 +1,4 @@
-{% macro timezoned_ts(geo_code, datetime_col) %}
+{% macro timezoned_ts(geo_code_col, datetime_col) %}
   CASE
     WHEN {{ geo_code_col }}::varchar ~ '^97[1-2]'
       THEN {{ datetime_col }} AT TIME ZONE 'America/Guadeloupe'
