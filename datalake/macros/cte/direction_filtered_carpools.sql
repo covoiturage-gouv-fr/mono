@@ -3,7 +3,7 @@
   model_column='carpool_date', 
   type='timestamp', 
   default_start="'2020-01-01 00:00:00'",  
-  lookback_nb=3,
+  lookback_nb=0,
   lookback_unit='day'
 ) %}
 SELECT

@@ -1,9 +1,10 @@
 {{ config(
   materialized='view',
-  tags=['refined', 'direction', 'quarter_com_both']
+  tags=['refined', 'direction', 'year_com_from']
 ) }}
 
-SELECT code,
+SELECT 
+  code,
   'com' as type,
   carpool_date,
   carpools,
@@ -23,6 +24,6 @@ SELECT code,
   no_incentive,
   hours_distribution,
   dist_distribution 
-FROM {{ ref('direction_quarter_arr_both') }}
+FROM {{ ref('direction_year_arr_from') }}
 UNION ALL
-SELECT * FROM {{ ref('direction_quarter_plm_both') }}
+SELECT * FROM {{ ref('direction_year_plm_from') }}

@@ -1,21 +1,32 @@
 {{ config(
     materialized='incremental',
     incremental_strategy='delete+insert',
-    unique_key=['code', 'type','carpool_date'],
+    unique_key=['code', 'type', 'year_date'],
     indexes = [
-      { 'columns':['code', 'type','carpool_date'], 'unique': true },
+      { 'columns':['code', 'type', 'year_date'], 'unique': true },
     ],
-    tags=['refined', 'direction', 'day_plm_to']
+    tags=['refined', 'direction', 'year_arr_both']
 ) }}
-
 WITH filtered_carpools AS (
-  {{direction_filtered_carpools_plm(model_column='carpool_date',lookback_nb=3, lookback_unit='day')}}
+  {{direction_filtered_carpools(model_column='year_date',lookback_nb=0, lookback_unit='year')}}
+),
+
+exploded AS (
+  SELECT *, start_arr AS code
+  FROM filtered_carpools
+  WHERE start_arr IS NOT NULL
+  UNION ALL
+  SELECT *, end_arr AS code
+  FROM filtered_carpools
+  WHERE end_arr IS NOT NULL
+    AND NOT is_intra
 )
 
 SELECT
-  end_com AS code,
-  'com' AS type,
-  carpool_datetime::date AS carpool_date,
+  code,
+  'arr' AS type,
+  make_date(EXTRACT('year' FROM carpool_datetime)::int, 1, 1) AS year_date,
+  EXTRACT('year' FROM carpool_datetime)::int AS year,
   COUNT(*) AS carpools,
   COUNT(*) FILTER (WHERE is_intra) AS intra_carpools,
   COUNT(*) FILTER (WHERE is_new_driver) AS carpools_new_drivers,
@@ -65,9 +76,5 @@ SELECT
     COUNT(*) FILTER (WHERE dist_class = '40-50'),
     COUNT(*) FILTER (WHERE dist_class = '>50')
   ] AS dist_distribution
-FROM filtered_carpools
-WHERE end_com IN ('75056', '69123', '13055')
-GROUP BY 1, 2, 3
-
-
-
+FROM exploded
+GROUP BY 1, 2, 3, 4

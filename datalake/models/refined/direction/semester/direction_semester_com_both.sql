@@ -1,6 +1,6 @@
 {{ config(
   materialized='view',
-  tags=['refined', 'direction', 'quarter_com_both']
+  tags=['refined', 'direction', 'semester_com_both']
 ) }}
 
 SELECT code,
@@ -23,6 +23,6 @@ SELECT code,
   no_incentive,
   hours_distribution,
   dist_distribution 
-FROM {{ ref('direction_quarter_arr_both') }}
+FROM {{ ref('direction_year_arr_both') }}
 UNION ALL
-SELECT * FROM {{ ref('direction_quarter_plm_both') }}
+SELECT * FROM {{ ref('direction_year_plm_both') }}
