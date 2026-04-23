@@ -11,7 +11,7 @@
 WITH incentives AS (
   SELECT *
   FROM {{ source('policy', 'incentives') }}
-  WHERE {{ time_filter('datetime', lookback_days=3) }}
+  WHERE {{ time_filter('datetime', lookback_nb=3) }}
 ),
 
 ni AS (

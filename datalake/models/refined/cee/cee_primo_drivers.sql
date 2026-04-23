@@ -14,7 +14,7 @@ WITH cee_journeys AS (
     j._id AS carpool_v2_id,
     j.driver_key,
     j.start_datetime_tz::date AS start_date
-  FROM {{ ref('trusted_journeys') }} j
+  FROM {{ ref('trusted_carpools') }} j
   INNER JOIN {{ ref('trusted_cee') }} c ON c.carpool_v2_id = j._id
   WHERE j.valid_acquisition_status = true
     AND j.driver_key IS NOT NULL

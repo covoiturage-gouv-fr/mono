@@ -6,13 +6,13 @@
       { 'columns':['_id'] },
       { 'columns':['start_datetime'] },
     ],
-    tags=['raw', 'journeys']
+    tags=['raw', 'carpools']
 ) }}
 
 WITH filtered_carpools AS (
     SELECT *
     FROM {{ source('carpool_v2', 'carpools') }} c
-    WHERE {{ time_filter('c.start_datetime', 'start_datetime', lookback_days=3) }}
+    WHERE {{ time_filter('c.start_datetime', 'start_datetime', lookback_nb=3) }}
 
 ),
 carpools_status AS (

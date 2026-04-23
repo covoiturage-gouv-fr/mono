@@ -16,5 +16,5 @@ SELECT
   t.amount
 FROM {{ source('carpool_v2', 'operator_incentives') }} t
 INNER JOIN {{ source('carpool_v2', 'carpools') }} c ON c._id = t.carpool_id
- WHERE {{ time_filter('c.start_datetime', 'start_datetime', lookback_days=3) }}
+ WHERE {{ time_filter('c.start_datetime', 'start_datetime', lookback_nb=3) }}
   AND t.amount > 0

@@ -7,19 +7,22 @@
       { 'columns':['start_datetime_tz'] },
       { 'columns':['start_h3_index'] },
       { 'columns':['end_h3_index'] },
+      { 'columns': ['driver_key'] },
+      { 'columns': ['passenger_key'] },
+      { 'columns': ['valid_acquisition_status'] }
     ],
-    tags=['trusted', 'journeys']
+    tags=['trusted', 'carpools']
 ) }}
 
-WITH filtered_journeys AS (
+WITH filtered_carpools AS (
   SELECT
     _id,
     start_position_x,
     start_position_y,
     end_position_x,
     end_position_y
-  FROM {{ ref('raw_journeys') }}
-  WHERE {{ time_filter('start_datetime', lookback_days=3) }}
+  FROM {{ ref('raw_carpools') }}
+  WHERE {{ time_filter('start_datetime', lookback_nb=3) }}
 ),
 
 perimeters_retablissement AS (
@@ -36,25 +39,25 @@ perimeters_retablissement AS (
 geocoding AS (
   -- Cas 1: Communes non fusionnees (mod = 32)
   SELECT
-    g.carpool_id,
+    g._id as carpool_id,
     COALESCE(cs.new_com, g.start_geo_code) AS start_geo_code,
     COALESCE(ce.new_com, g.end_geo_code) AS end_geo_code,
-    g.updated_at AS geo_updated_at,
-    g.errors AS geo_errors
-  FROM {{ source('carpool_v2', 'geo') }} AS g
-  INNER JOIN filtered_journeys AS j ON g.carpool_id = j._id
+    g.geo_updated_at,
+    g.geo_errors
+  FROM {{ ref('raw_carpools') }} AS g
+  INNER JOIN filtered_carpools AS j ON g._id = j._id
   LEFT JOIN {{ ref('com_evolution') }} cs
     ON g.start_geo_code = cs.old_com
     AND cs.mod = 32
-    AND cs.year = EXTRACT(YEAR FROM g.updated_at)::int
+    AND cs.year = EXTRACT(YEAR FROM g.geo_updated_at)::int
   LEFT JOIN {{ ref('com_evolution') }} ce
     ON g.end_geo_code = ce.old_com
     AND ce.mod = 32
-    AND ce.year = EXTRACT(YEAR FROM g.updated_at)::int
+    AND ce.year = EXTRACT(YEAR FROM g.geo_updated_at)::int
   WHERE NOT EXISTS (
       SELECT 1 FROM {{ ref('com_evolution') }} ce_s
       WHERE ce_s.old_com = g.start_geo_code
-        AND ce_s.year = EXTRACT(YEAR FROM g.updated_at)::int
+        AND ce_s.year = EXTRACT(YEAR FROM g.geo_updated_at)::int
         AND ce_s.mod = 21
     )
     OR NOT EXISTS (
@@ -68,13 +71,13 @@ geocoding AS (
 
   -- Cas 2: Communes fusionnees (mod = 21) - utiliser perimetres
   SELECT
-    g.carpool_id,
+    g._id as carpool_id,
     COALESCE(ps.com, g.start_geo_code) AS start_geo_code,
     COALESCE(pe.com, g.end_geo_code) AS end_geo_code,
-    g.updated_at AS geo_updated_at,
-    g.errors AS geo_errors
-  FROM {{ source('carpool_v2', 'geo') }} AS g
-  INNER JOIN filtered_journeys AS j ON g.carpool_id = j._id
+    g.geo_updated_at,
+    g.geo_errors
+  FROM {{ ref('raw_carpools') }} AS g
+  INNER JOIN filtered_carpools AS j ON g._id = j._id
   LEFT JOIN perimeters_retablissement ps
     ON ST_Intersects(
       ST_SetSRID(ST_Point(j.start_position_x, j.start_position_y), 4326),
@@ -86,17 +89,17 @@ geocoding AS (
       ST_SetSRID(ST_Point(j.end_position_x, j.end_position_y), 4326),
       pe.geom
     )
-    AND pe.year = EXTRACT(YEAR FROM g.updated_at)::int
+    AND pe.year = EXTRACT(YEAR FROM g.geo_updated_at)::int
   WHERE EXISTS (
       SELECT 1 FROM {{ ref('com_evolution') }} ce_s
       WHERE ce_s.old_com = g.start_geo_code
-        AND ce_s.year = EXTRACT(YEAR FROM g.updated_at)::int
+        AND ce_s.year = EXTRACT(YEAR FROM g.geo_updated_at)::int
         AND ce_s.mod = 21
     )
     OR EXISTS (
       SELECT 1 FROM {{ ref('com_evolution') }} ce_e
       WHERE ce_e.old_com = g.end_geo_code
-        AND ce_e.year = EXTRACT(YEAR FROM g.updated_at)::int
+        AND ce_e.year = EXTRACT(YEAR FROM g.geo_updated_at)::int
         AND ce_e.mod = 21
     )
 ),
@@ -132,7 +135,7 @@ operator_incentives_agg AS (
   FROM {{ ref('raw_operator_incentives') }} oi
   LEFT JOIN operators op ON op.code = left(oi.siret, 9)
   LEFT JOIN collectivites c ON c.code = left(oi.siret, 9)
-  WHERE {{ time_filter('oi.start_datetime', 'start_datetime', lookback_days=3) }}
+  WHERE {{ time_filter('oi.start_datetime', 'start_datetime', lookback_nb=3) }}
     AND oi.amount > 0
   GROUP BY 1
 ),
@@ -153,11 +156,11 @@ campaigns_agg AS (
     SUM(amount) AS campaigns_amount_total,
     SUM(result) AS campaigns_result_total
   FROM {{ ref('raw_incentives') }}
-  WHERE {{ time_filter('datetime', model_column='start_datetime', lookback_days=3) }}
+  WHERE {{ time_filter('datetime', model_column='start_datetime', lookback_nb=3) }}
   GROUP BY 1
 ),
 
-journeys AS (
+carpools AS (
   SELECT
     j._id,
     j.uuid,
@@ -198,14 +201,14 @@ journeys AS (
     j.passenger_contribution,
     j.passenger_payments::jsonb AS passenger_payments,
 
-    oi.oi_details,
-    oi.oi_amount_collectivite,
-    oi.oi_amount_operator,
-    oi.oi_amount_other,
-    oi.oi_amount_total,
-    oi.oi_collectivite,
-    oi.oi_operator,
-    oi.oi_other,
+    COALESCE(oi.oi_amount_collectivite, 0) AS oi_amount_collectivite,
+    COALESCE(oi.oi_amount_operator, 0) AS oi_amount_operator,
+    COALESCE(oi.oi_amount_other, 0) AS oi_amount_other,
+    COALESCE(oi.oi_amount_total, 0) AS oi_amount_total,
+    COALESCE(oi.oi_collectivite, 0) AS oi_collectivite,
+    COALESCE(oi.oi_operator, 0) AS oi_operator,
+    COALESCE(oi.oi_other, 0) AS oi_other,
+    (COALESCE(oi.oi_amount_total, 0) > 0) as with_incentive,
 
     rpc.campaigns,
     rpc.campaigns_amount_total,
@@ -220,12 +223,23 @@ journeys AS (
     j.final_acquisition_status,
     j.valid_acquisition_status
 
-  FROM {{ ref('raw_journeys') }} AS j
+  FROM {{ ref('raw_carpools') }} AS j
   LEFT JOIN geocoding AS geo ON geo.carpool_id = j._id
   LEFT JOIN operator_incentives_agg AS oi ON oi.carpool_id = j._id
   LEFT JOIN campaigns_agg AS rpc ON rpc.carpool_v2_id = j._id
 
-  WHERE {{ time_filter('j.start_datetime', 'start_datetime', lookback_days=3) }}
+  WHERE {{ time_filter('j.start_datetime', 'start_datetime', lookback_nb=3) }}
 )
 
-SELECT * FROM journeys
+SELECT *,
+EXTRACT('hour' FROM start_datetime_tz)::int AS hour,
+CASE
+  WHEN distance < 10000 THEN '0-10'
+  WHEN distance < 20000 THEN '10-20'
+  WHEN distance < 30000 THEN '20-30'
+  WHEN distance < 40000 THEN '30-40'
+  WHEN distance < 50000 THEN '40-50'
+  ELSE '>50'
+END AS dist_class,
+(start_geo_code = end_geo_code) AS is_intra
+FROM carpools 

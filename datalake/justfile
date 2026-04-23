@@ -20,6 +20,20 @@ seed config schema *args:
 export config schema *args:
   python -m pipelines.cmd.export pipelines/config/{{config}} {{schema}} {{args}}
 
+# Backfill par mois pour éviter les timeouts
+
+backfill-batch model period start end *args:
+  #!/usr/bin/env bash
+  current="{{ start }}"
+  period="{{ period }}"
+  while [[ "$current" < "{{ end }}" ]]; do
+    next=$(date -d "$current +1 $period" +%Y-%m-%d)
+    echo "▶️  Processing $current → $next"
+    vars="{start: $current, end: $next}"
+    just dbt run --select {{model}} --vars "'{start: $current, end: $next}'" {{ args }}
+    current=$next
+  done
+
 # Pipeline 1: Seed raw data from S3 to raw_zone (yearly)
 pipeline-raw *args:
   just seed raw/seed_perimeters.json dbt_raw {{ if args =~ "--full-refresh" { "--overwrite" } else { "" } }}

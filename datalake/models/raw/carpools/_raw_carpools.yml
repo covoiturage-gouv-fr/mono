@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: raw_journeys
+  - name: raw_carpools
     columns:
       - name: _id
         data_type: integer

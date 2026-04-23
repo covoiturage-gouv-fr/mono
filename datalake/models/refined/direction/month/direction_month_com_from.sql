@@ -1,0 +1,8 @@
+{{ config(
+  materialized='view',
+  tags=['refined', 'directions', 'month_com_from']
+) }}
+
+SELECT * FROM {{ ref('direction_month_arr_from') }}
+UNION ALL
+SELECT * FROM {{ ref('direction_month_plm_from') }}
