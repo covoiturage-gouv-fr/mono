@@ -9,7 +9,7 @@
 ) }}
 
 WITH filtered_carpools AS (
-  {{direction_filtered_carpools(model_column='carpool_date',lookback_nb=3, lookback_unit='day')}}
+  {{filtered_carpools_arr(model_column='carpool_date',lookback_nb=3, lookback_unit='day')}}
 )
 
 SELECT

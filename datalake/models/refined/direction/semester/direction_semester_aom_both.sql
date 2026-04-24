@@ -8,7 +8,7 @@
     tags=['refined', 'direction', 'semester_aom_both']
 ) }}
 WITH filtered_carpools AS (
-  {{direction_filtered_carpools_aom(model_column='incremental_date',lookback_nb=0, lookback_unit='semester')}}
+  {{filtered_carpools_aom(model_column='incremental_date',lookback_nb=0, lookback_unit='semester')}}
 ),
 
 exploded AS (

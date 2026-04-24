@@ -1,4 +1,4 @@
-{% macro direction_filtered_carpools_aom(
+{% macro filtered_carpools_reg(
   column='j.start_datetime_tz', 
   model_column='carpool_date', 
   type='timestamp', 
@@ -17,8 +17,8 @@ SELECT
     j.passenger_seats,
     j.distance,
     j.dist_class,   
-    ps.aom AS start_aom,
-    pe.aom AS end_aom,
+    ps.reg AS start_reg,
+    pe.reg AS end_reg,
     -- Nouveaux utilisateurs
     (d.first_date_driver = j.start_datetime_tz::date) AS is_new_driver,
     (p.first_date_passenger = j.start_datetime_tz::date) AS is_new_passenger,
@@ -31,7 +31,7 @@ SELECT
     j.oi_operator,
     j.oi_other,
     j.with_incentive,
-    (ps.aom IS NOT NULL AND pe.aom IS NOT NULL AND ps.aom = pe.aom) AS is_intra
+    (ps.reg IS NOT NULL AND pe.reg IS NOT NULL AND ps.reg = pe.reg) AS is_intra
   FROM {{ ref('trusted_carpools') }} j
   LEFT JOIN {{ ref('trusted_users') }} d ON d.user_id = j.driver_key
   LEFT JOIN {{ ref('trusted_users') }} p ON p.user_id = j.passenger_key
@@ -40,8 +40,8 @@ SELECT
   WHERE {{ time_filter(column, model_column, type, default_start, lookback_nb, lookback_unit) }}
     AND j.valid_acquisition_status = true
     AND ( 
-      (ps.aom IS NOT NULL OR ps.aom NOT IN (select aom from {{ ref('aom_region') }})) OR
-      (pe.aom IS NOT NULL OR pe.aom NOT IN (select aom from {{ ref('aom_region') }}))
+      ps.reg IS NOT NULL OR 
+      pe.reg IS NOT NULL
     )
 
 {% endmacro %}

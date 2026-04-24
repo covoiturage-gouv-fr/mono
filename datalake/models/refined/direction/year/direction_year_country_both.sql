@@ -8,7 +8,7 @@
     tags=['refined', 'direction', 'year_country_both']
 ) }}
 WITH filtered_carpools AS (
-  {{direction_filtered_carpools_country(model_column='incremental_date',lookback_nb=0, lookback_unit='year')}}
+  {{filtered_carpools_country(model_column='incremental_date',lookback_nb=0, lookback_unit='year')}}
 ),
 
 exploded AS (

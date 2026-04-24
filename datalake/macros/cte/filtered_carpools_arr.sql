@@ -1,4 +1,4 @@
-{% macro direction_filtered_carpools_epci(
+{% macro filtered_carpools_arr(
   column='j.start_datetime_tz', 
   model_column='carpool_date', 
   type='timestamp', 
@@ -6,7 +6,6 @@
   lookback_nb=0,
   lookback_unit='day'
 ) %}
-
 SELECT
     j._id,
     j.operator_trip_id,
@@ -17,8 +16,8 @@ SELECT
     j.passenger_seats,
     j.distance,
     j.dist_class,   
-    ps.epci AS start_epci,
-    pe.epci AS end_epci,
+    j.start_geo_code AS start_arr,
+    j.end_geo_code AS end_arr,  
     -- Nouveaux utilisateurs
     (d.first_date_driver = j.start_datetime_tz::date) AS is_new_driver,
     (p.first_date_passenger = j.start_datetime_tz::date) AS is_new_passenger,
@@ -31,17 +30,14 @@ SELECT
     j.oi_operator,
     j.oi_other,
     j.with_incentive,
-    (ps.epci IS NOT NULL AND pe.epci IS NOT NULL AND ps.epci = pe.epci) AS is_intra
+    j.is_intra
   FROM {{ ref('trusted_carpools') }} j
   LEFT JOIN {{ ref('trusted_users') }} d ON d.user_id = j.driver_key
   LEFT JOIN {{ ref('trusted_users') }} p ON p.user_id = j.passenger_key
-  LEFT JOIN {{ref('perimeters')}} ps ON ps.arr = j.start_geo_code AND ps.year = EXTRACT('year' FROM j.start_datetime_tz)::int
-  LEFT JOIN {{ref('perimeters')}} pe ON pe.arr = j.end_geo_code AND pe.year = EXTRACT('year' FROM j.start_datetime_tz)::int
   WHERE {{ time_filter(column, model_column, type, default_start, lookback_nb, lookback_unit) }}
     AND j.valid_acquisition_status = true
-    AND ( 
-      ps.epci IS NOT NULL OR 
-      pe.epci IS NOT NULL
+    AND ( -- Exclure Paris, Marseille et Lyon par sécurité
+      j.start_geo_code NOT IN ('75056', '13055', '69001') OR 
+      j.end_geo_code NOT IN ('75056', '13055', '69001') 
     )
-
 {% endmacro %}

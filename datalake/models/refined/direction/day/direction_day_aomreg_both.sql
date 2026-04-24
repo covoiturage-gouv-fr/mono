@@ -8,7 +8,7 @@
     tags=['refined', 'direction', 'day_aomreg_both']
 ) }}
 WITH filtered_carpools AS (
-  {{direction_filtered_carpools_aomreg(model_column='carpool_date',lookback_nb=3, lookback_unit='day')}}
+  {{filtered_carpools_aomreg(model_column='carpool_date',lookback_nb=3, lookback_unit='day')}}
 ),
 
 exploded AS (
