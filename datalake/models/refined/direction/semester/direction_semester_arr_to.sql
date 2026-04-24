@@ -1,21 +1,21 @@
 {{ config(
     materialized='incremental',
     incremental_strategy='delete+insert',
-    unique_key=['code', 'type', 'semester_date'],
+    unique_key=['code', 'type', 'incremental_date'],
     indexes = [
-      { 'columns':['code', 'type', 'semester_date'], 'unique': true },
+      { 'columns':['code', 'type', 'incremental_date'], 'unique': true },
     ],
     tags=['refined', 'direction', 'semester_arr_to']
 ) }}
 
 WITH filtered_carpools AS (
-  {{direction_filtered_carpools(model_column='semester_date',lookback_nb=0, lookback_unit='semester')}}
+  {{direction_filtered_carpools(model_column='incremental_date',lookback_nb=0, lookback_unit='semester')}}
 )
 
 SELECT 
   end_arr AS code, 
   'arr' AS type,
-  make_date(EXTRACT('year' FROM carpool_datetime)::int, (ceil(extract('month' FROM carpool_datetime)::int / 6.0)::int-1)*6+1, 1) AS semester_date,
+  make_date(EXTRACT('year' FROM carpool_datetime)::int, (ceil(extract('month' FROM carpool_datetime)::int / 6.0)::int-1)*6+1, 1) AS incremental_date,
   EXTRACT('year' FROM carpool_datetime)::int AS year,
   ceil(extract('month' FROM carpool_datetime)::int / 6.0)::int AS semester,
   COUNT(*) AS carpools,

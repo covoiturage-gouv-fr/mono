@@ -1,14 +1,14 @@
 {{ config(
     materialized='incremental',
     incremental_strategy='delete+insert',
-    unique_key=['code', 'type', 'month_date'],
+    unique_key=['code', 'type', 'incremental_date'],
     indexes = [
-      { 'columns':['code', 'type', 'month_date'], 'unique': true },
+      { 'columns':['code', 'type', 'incremental_date'], 'unique': true },
     ],
     tags=['refined', 'direction', 'month_arr_both']
 ) }}
 WITH filtered_carpools AS (
-  {{direction_filtered_carpools(model_column='month_date',lookback_nb=2, lookback_unit='month')}}
+  {{direction_filtered_carpools(model_column='incremental_date',lookback_nb=2, lookback_unit='month')}}
 ),
 
 exploded AS (
@@ -25,7 +25,7 @@ exploded AS (
 SELECT
   code,
   'arr' AS type,
-  make_date(EXTRACT('year' FROM carpool_datetime)::int, EXTRACT('month' FROM carpool_datetime)::int, 1) AS month_date,
+  make_date(EXTRACT('year' FROM carpool_datetime)::int, EXTRACT('month' FROM carpool_datetime)::int, 1) AS incremental_date,
   EXTRACT('year' FROM carpool_datetime)::int AS year,
   EXTRACT('month' FROM carpool_datetime)::int AS month,
   COUNT(*) AS carpools,

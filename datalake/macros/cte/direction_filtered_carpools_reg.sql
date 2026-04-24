@@ -31,12 +31,12 @@ SELECT
     j.oi_operator,
     j.oi_other,
     j.with_incentive,
-    (ps.epci = pe.epci) AS is_intra
+    (ps.reg IS NOT NULL AND pe.reg IS NOT NULL AND ps.reg = pe.reg) AS is_intra
   FROM {{ ref('trusted_carpools') }} j
   LEFT JOIN {{ ref('trusted_users') }} d ON d.user_id = j.driver_key
   LEFT JOIN {{ ref('trusted_users') }} p ON p.user_id = j.passenger_key
-  LEFT JOIN {{ref('perimeters')}} ps ON ps.arr = j.start_geo_code AND ps.year = EXTRACT('year' FROM j.start_datetime_tz)
-  LEFT JOIN {{ref('perimeters')}} pe ON pe.arr = j.end_geo_code AND pe.year = EXTRACT('year' FROM j.end_datetime_tz)
+  LEFT JOIN {{ref('perimeters')}} ps ON ps.arr = j.start_geo_code AND ps.year = EXTRACT('year' FROM j.start_datetime_tz)::int
+  LEFT JOIN {{ref('perimeters')}} pe ON pe.arr = j.end_geo_code AND pe.year = EXTRACT('year' FROM j.start_datetime_tz)::int
   WHERE {{ time_filter(column, model_column, type, default_start, lookback_nb, lookback_unit) }}
     AND j.valid_acquisition_status = true
     AND ( 

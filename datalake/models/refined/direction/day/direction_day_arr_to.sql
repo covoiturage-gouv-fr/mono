@@ -66,4 +66,5 @@ SELECT
     COUNT(*) FILTER (WHERE dist_class = '>50')
   ] AS dist_distribution
 FROM filtered_carpools
+WHERE end_arr IS NOT NULL
 GROUP BY 1, 2, 3

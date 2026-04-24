@@ -1,21 +1,21 @@
 {{ config(
     materialized='incremental',
     incremental_strategy='delete+insert',
-    unique_key=['code', 'type', 'quarter_date'],
+    unique_key=['code', 'type', 'incremental_date'],
     indexes = [
-      { 'columns':['code', 'type', 'quarter_date'], 'unique': true },
+      { 'columns':['code', 'type', 'incremental_date'], 'unique': true },
     ],
     tags=['refined', 'direction', 'quarter_arr_from']
 ) }}
 
 WITH filtered_carpools AS (
-  {{direction_filtered_carpools(model_column='quarter_date',lookback_nb=1, lookback_unit='quarter')}}
+  {{direction_filtered_carpools(model_column='incremental_date',lookback_nb=1, lookback_unit='quarter')}}
 )
 
 SELECT
   start_arr AS code,
   'arr' AS type,
-  make_date(EXTRACT('year' FROM carpool_datetime)::int, (EXTRACT('quarter' FROM carpool_datetime)::int-1)*3+1, 1) AS quarter_date,
+  make_date(EXTRACT('year' FROM carpool_datetime)::int, (EXTRACT('quarter' FROM carpool_datetime)::int-1)*3+1, 1) AS incremental_date,
   EXTRACT('year' FROM carpool_datetime)::int AS year,
   EXTRACT('quarter' FROM carpool_datetime)::int AS quarter,
   COUNT(*) AS carpools,

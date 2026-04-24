@@ -5,7 +5,8 @@
 
 SELECT code,
   'com' as type,
-  carpool_date,
+  incremental_date,
+  year,
   carpools,
   intra_carpools,
   carpools_new_drivers,

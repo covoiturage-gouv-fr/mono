@@ -1,21 +1,21 @@
 {{ config(
     materialized='incremental',
     incremental_strategy='delete+insert',
-    unique_key=['code', 'type', 'year_date'],
+    unique_key=['code', 'type', 'incremental_date'],
     indexes = [
-      { 'columns':['code', 'type', 'year_date'], 'unique': true },
+      { 'columns':['code', 'type', 'incremental_date'], 'unique': true },
     ],
     tags=['refined', 'direction', 'year_plm_from']
 ) }}
 
 WITH filtered_carpools AS (
-  {{direction_filtered_carpools_plm(model_column='year_date',lookback_nb=0, lookback_unit='year')}}
+  {{direction_filtered_carpools_plm(model_column='incremental_date',lookback_nb=0, lookback_unit='year')}}
 )
 
 SELECT
   start_com AS code,
   'com' AS type,
-  make_date(EXTRACT('year' FROM carpool_datetime)::int, 1, 1) AS year_date,
+  make_date(EXTRACT('year' FROM carpool_datetime)::int, 1, 1) AS incremental_date,
   EXTRACT('year' FROM carpool_datetime)::int AS year,
   COUNT(*) AS carpools,
   COUNT(*) FILTER (WHERE is_intra) AS intra_carpools,
