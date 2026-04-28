@@ -1,4 +1,4 @@
-{% macro filtered_carpools_arr(
+{% macro filtered_carpools_h3(
   column='j.start_datetime_tz', 
   model_column='carpool_date', 
   type='timestamp', 
@@ -8,14 +8,19 @@
 ) %}
 SELECT
     j._id,
+    j.operator_id,
     j.operator_trip_id,
+    j.operator_class,
     j.driver_key,
     j.passenger_key,
     j.start_datetime_tz AS carpool_datetime,
     j.hour,
+    j.driver_revenue,
     j.passenger_seats,
+    j.passenger_over_18,
+    j.passenger_contribution,
     j.distance,
-    j.dist_class,   
+    j.dist_class,    
     j.start_h3_index AS start_h3,
     j.end_h3_index AS end_h3,
     -- Nouveaux utilisateurs
@@ -30,6 +35,9 @@ SELECT
     j.oi_operator,
     j.oi_other,
     j.with_incentive,
+    j.campaigns,
+    j.campaigns_amount_total,
+    j.campaigns_result_total,
     j.is_intra
   FROM {{ ref('trusted_carpools') }} j
   LEFT JOIN {{ ref('trusted_users') }} d ON d.user_id = j.driver_key

@@ -92,7 +92,7 @@ directions_exploded AS (
     j.is_new_driver, j.is_new_passenger,
     j.incentive_collectivite, j.incentive_operator,
     j.incentive_others, j.no_incentive,
-    d.direction, 'aom' AS type, d.code,
+    d.direction,  d.code,
     (d.code IS NOT NULL AND d.code = d.end_code) AS is_intra
   FROM journeys_enriched j
   CROSS JOIN LATERAL (
@@ -113,7 +113,7 @@ directions_exploded AS (
     j.is_new_driver, j.is_new_passenger,
     j.incentive_collectivite, j.incentive_operator,
     j.incentive_others, j.no_incentive,
-    'from' AS direction, 'aom' AS type, ar.aom AS code,
+    'from' AS direction,  ar.aom AS code,
     (j.start_reg = j.end_reg AND j.start_aom <> j.end_aom) AS is_intra
   FROM journeys_enriched j
   INNER JOIN trusted_zone.aom_region ar ON ar.reg = j.start_reg
@@ -129,7 +129,7 @@ directions_exploded AS (
     j.is_new_driver, j.is_new_passenger,
     j.incentive_collectivite, j.incentive_operator,
     j.incentive_others, j.no_incentive,
-    'to' AS direction, 'aom' AS type, ar.aom AS code,
+    'to' AS direction,  ar.aom AS code,
     (j.start_reg = j.end_reg AND j.start_aom <> j.end_aom) AS is_intra
   FROM journeys_enriched j
   INNER JOIN trusted_zone.aom_region ar ON ar.reg = j.end_reg

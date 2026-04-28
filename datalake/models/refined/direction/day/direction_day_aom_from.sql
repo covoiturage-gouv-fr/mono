@@ -1,11 +1,11 @@
 {{ config(
     materialized='incremental',
     incremental_strategy='delete+insert',
-    unique_key=['code', 'type','incremental_date'],
+    unique_key=['code','incremental_date'],
     indexes = [
-      { 'columns':['code', 'type','incremental_date'], 'unique': true },
+      { 'columns':['code','incremental_date'], 'unique': true },
     ],
-    tags=['refined', 'direction', 'day_aom_from']
+    tags=['refined', 'direction', 'daily', 'day_aom_from']
 ) }}
 
 WITH filtered_carpools AS (
@@ -14,12 +14,11 @@ WITH filtered_carpools AS (
 
 SELECT
   start_aom AS code,
-  'aom' AS type,
   {{incremental_columns('carpool_datetime', 'day')}},
   {{direction_agg_columns()}}
 FROM filtered_carpools
 WHERE start_aom IS NOT NULL
-GROUP BY 1, 2,{{group_by_grain('day', 3)}}
+GROUP BY 1, {{group_by_grain('day', 2)}}
 
 
 

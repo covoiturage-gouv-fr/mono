@@ -1,11 +1,11 @@
 {{ config(
     materialized='incremental',
     incremental_strategy='delete+insert',
-    unique_key=['code', 'type','incremental_date'],
+    unique_key=['code','incremental_date'],
     indexes = [
-      { 'columns':['code', 'type','incremental_date'], 'unique': true },
+      { 'columns':['code','incremental_date'], 'unique': true },
     ],
-    tags=['refined', 'direction', 'day_plm_both']
+    tags=['refined', 'direction', 'daily', 'day_plm_both']
 ) }}
 
 WITH filtered_carpools AS (
@@ -25,9 +25,8 @@ exploded AS (
 
 SELECT
   code,
-  'com' AS type,
   {{incremental_columns('carpool_datetime', 'day')}},
   {{direction_agg_columns()}}
 FROM exploded
 WHERE code IN ('75056', '69123', '13055')
-GROUP BY 1, 2, {{group_by_grain('day', 3)}}
+GROUP BY 1, {{group_by_grain('day', 2)}}

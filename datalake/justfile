@@ -43,3 +43,5 @@ pipeline-raw *args:
 # Pipeline 2: trusted geo (yearly)
 pipeline-trusted-geo *args:
   just dbt build --select "tag:trusted,tag:geo" {{args}}
+
+# Pipeline 3 : 

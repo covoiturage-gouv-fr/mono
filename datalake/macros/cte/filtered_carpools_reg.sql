@@ -9,14 +9,19 @@
 
 SELECT
     j._id,
+    j.operator_id,
     j.operator_trip_id,
+    j.operator_class,
     j.driver_key,
     j.passenger_key,
     j.start_datetime_tz AS carpool_datetime,
     j.hour,
+    j.driver_revenue,
     j.passenger_seats,
+    j.passenger_over_18,
+    j.passenger_contribution,
     j.distance,
-    j.dist_class,   
+    j.dist_class,    
     ps.reg AS start_reg,
     pe.reg AS end_reg,
     -- Nouveaux utilisateurs
@@ -31,6 +36,9 @@ SELECT
     j.oi_operator,
     j.oi_other,
     j.with_incentive,
+    j.campaigns,
+    j.campaigns_amount_total,
+    j.campaigns_result_total,
     (ps.reg IS NOT NULL AND pe.reg IS NOT NULL AND ps.reg = pe.reg) AS is_intra
   FROM {{ ref('trusted_carpools') }} j
   LEFT JOIN {{ ref('trusted_users') }} d ON d.user_id = j.driver_key

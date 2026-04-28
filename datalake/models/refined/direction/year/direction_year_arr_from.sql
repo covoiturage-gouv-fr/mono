@@ -1,11 +1,11 @@
 {{ config(
     materialized='incremental',
     incremental_strategy='delete+insert',
-    unique_key=['code', 'type', 'incremental_date'],
+    unique_key=['code', 'incremental_date'],
     indexes = [
-      { 'columns':['code', 'type', 'incremental_date'], 'unique': true },
+      { 'columns':['code', 'incremental_date'], 'unique': true },
     ],
-    tags=['refined', 'direction', 'year_arr_from']
+    tags=['refined', 'direction', 'daily', 'year_arr_from']
 ) }}
 
 WITH filtered_carpools AS (
@@ -14,11 +14,10 @@ WITH filtered_carpools AS (
 
 SELECT
   start_arr AS code,
-  'arr' AS type,
   {{incremental_columns('carpool_datetime', 'year')}},
   {{direction_agg_columns()}}
 FROM filtered_carpools
-GROUP BY 1, 2, {{group_by_grain('year', 3)}}
+GROUP BY 1, {{group_by_grain('year', 2)}}
 
 
 

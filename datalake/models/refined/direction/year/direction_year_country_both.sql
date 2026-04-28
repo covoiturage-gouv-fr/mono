@@ -1,11 +1,11 @@
 {{ config(
     materialized='incremental',
     incremental_strategy='delete+insert',
-    unique_key=['code', 'type', 'incremental_date'],
+    unique_key=['code', 'incremental_date'],
     indexes = [
-      { 'columns':['code', 'type', 'incremental_date'], 'unique': true },
+      { 'columns':['code', 'incremental_date'], 'unique': true },
     ],
-    tags=['refined', 'direction', 'year_country_both']
+    tags=['refined', 'direction', 'daily', 'year_country_both']
 ) }}
 WITH filtered_carpools AS (
   {{filtered_carpools_country(model_column='incremental_date',lookback_nb=0, lookback_unit='year')}}
@@ -24,9 +24,8 @@ exploded AS (
 
 SELECT
   code,
-  'country' AS type,
   {{incremental_columns('carpool_datetime', 'year')}},
   {{direction_agg_columns()}}
 FROM exploded
 WHERE code IS NOT NULL
-GROUP BY 1, 2, {{group_by_grain('year', 3)}}
+GROUP BY 1, {{group_by_grain('year', 2)}}

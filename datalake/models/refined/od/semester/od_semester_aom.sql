@@ -1,11 +1,11 @@
 {{ config(
     materialized='incremental',
     incremental_strategy='delete+insert',
-    unique_key=['territory_1', 'territory_2', 'type', 'incremental_date'],
+    unique_key=['territory_1', 'territory_2',  'incremental_date'],
     indexes = [
-      { 'columns':['territory_1', 'territory_2', 'type', 'incremental_date'], 'unique': true },
+      { 'columns':['territory_1', 'territory_2', 'incremental_date'], 'unique': true },
     ],
-    tags=['refined', 'od', 'semester_aom']
+    tags=['refined', 'od', 'daily', 'semester_aom']
 ) }}
 
 WITH filtered_carpools AS (
@@ -15,8 +15,7 @@ WITH filtered_carpools AS (
 SELECT
   least(start_aom, end_aom) AS territory_1,
   greatest(start_aom, end_aom) AS territory_2,
-  'aom' AS type,
   {{incremental_columns('carpool_datetime', 'semester')}},
   {{od_agg_columns()}}
 FROM filtered_carpools
-GROUP BY 1, 2, 3, {{group_by_grain('semester', 4)}}
+GROUP BY 1, 2, {{group_by_grain('semester', 3)}}

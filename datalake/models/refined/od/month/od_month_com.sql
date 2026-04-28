@@ -1,31 +1,8 @@
 {{ config(
   materialized='view',
-  tags=['refined', 'od', 'month_com']
+  tags=['refined', 'od', 'daily', 'month_com']
 ) }}
 
-SELECT 
-  territory_1,
-  territory_2,
-  'com' as type,
-  incremental_date,
-  year,
-  month,
-  carpools,
-  intra_carpools,
-  carpools_new_drivers,
-  carpools_new_passengers,
-  trips,
-  unique_drivers,
-  unique_passengers,
-  new_drivers,
-  new_passengers,
-  passenger_seats,
-  distance,
-  incentive_collectivite,
-  incentive_operator,
-  incentive_other,
-  no_incentive,
-  hours_distribution 
-FROM {{ref('od_month_arr')}}
+SELECT * FROM {{ref('od_month_arr')}}
 UNION ALL
 SELECT * FROM {{ref('od_month_plm')}}
