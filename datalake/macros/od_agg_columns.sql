@@ -9,7 +9,7 @@
   COUNT(DISTINCT passenger_key) AS unique_passengers,
   COUNT(DISTINCT passenger_key) FILTER (WHERE is_new_passenger) AS new_passengers,
   SUM(passenger_seats) AS passenger_seats,
-  COUNT(*) FILTER (passenger_over_18) AS passenger_over_18,
+  COUNT(*) FILTER (WHERE passenger_over_18) AS passenger_over_18,
   SUM(passenger_contribution) AS passenger_contribution,
   SUM(distance) AS distance,
   SUM(oi_collectivite) AS oi_collectivite,
@@ -20,7 +20,7 @@
   SUM(oi_amount_operator) AS oi_amount_operator,
   SUM(oi_amount_other) AS oi_amount_other,
   SUM(oi_amount_total) AS oi_amount_total,
-  SELECT SUM(
+  SUM(
     jsonb_array_length(
       COALESCE(campaigns, '[]'::jsonb)
     )
