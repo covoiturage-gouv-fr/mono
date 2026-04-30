@@ -8,7 +8,7 @@
     tags=['refined', 'direction', 'daily', 'month_aom_both']
 ) }}
 WITH filtered_carpools AS (
-  {{filtered_carpools_aom(model_column='incremental_date',lookback_nb=2, lookback_unit='month')}}
+  {{filtered_carpools_aom(model_column='incremental_date',lookback_nb=1, lookback_unit='month')}}
 ),
 
 exploded AS (

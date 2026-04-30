@@ -1,6 +1,6 @@
 {% macro filtered_carpools_arr(
   column='j.start_datetime_tz', 
-  model_column='carpool_date', 
+  model_column='incremental_date', 
   type='timestamp', 
   default_start="'2020-01-01 00:00:00'",  
   lookback_nb=0,

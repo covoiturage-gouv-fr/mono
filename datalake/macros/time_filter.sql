@@ -24,7 +24,11 @@
       {% elif is_incremental() %}
         (
           SELECT COALESCE(
+            {% if type == 'date' %}
+            MAX({{ model_col }}::{{ type }}),
+            {% else %}
             MAX({{ model_col }}::{{ type }}) - INTERVAL '{{ interval_expr }}',
+            {% endif %}
             {{ default_start }}
           )
           FROM {{ this }}

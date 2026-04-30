@@ -18,7 +18,7 @@ default:
       port: "{{ env_var('DBT_PORT', 5432) | int }}"
       dbname: "{{ env_var('DBT_DBNAME', 'covoiturage_production') }}" # or database instead of dbname
       schema: "{{ env_var('DBT_SCHEMA', '') }}"
-      threads: "{{ env_var('DBT_THREADS', 4) | int }}"
+      threads: "{{ env_var('DBT_THREADS', 2) | int }}"
 elementary:
   outputs:
     default:

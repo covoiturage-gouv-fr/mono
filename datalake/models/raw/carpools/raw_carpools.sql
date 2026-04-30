@@ -6,7 +6,7 @@
       { 'columns':['_id'] },
       { 'columns':['start_datetime'] },
     ],
-    tags=['raw', 'carpools']
+    tags=['raw', 'carpools', 'daily']
 ) }}
 
 WITH filtered_carpools AS (

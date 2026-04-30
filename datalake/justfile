@@ -44,4 +44,6 @@ pipeline-raw *args:
 pipeline-trusted-geo *args:
   just dbt build --select "tag:trusted,tag:geo" {{args}}
 
-# Pipeline 3 : 
+# Pipeline 3 : daily update:
+pipeline-daily *args:
+  just dbt build --select "tag:daily" {{args}}

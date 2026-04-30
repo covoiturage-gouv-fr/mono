@@ -11,7 +11,7 @@
       { 'columns': ['passenger_key'] },
       { 'columns': ['valid_acquisition_status'] }
     ],
-    tags=['trusted', 'carpools']
+    tags=['trusted', 'carpools', 'daily']
 ) }}
 
 WITH filtered_carpools AS (
