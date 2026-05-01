@@ -9,7 +9,7 @@
 ) }}
 
 WITH filtered_carpools AS (
-  {{filtered_carpools_arr(model_column='incremental_date',lookback_nb=0, lookback_unit='quarter')}}
+  {{filtered_carpools_epci(model_column='incremental_date',lookback_nb=0, lookback_unit='quarter')}}
 )
 
 SELECT

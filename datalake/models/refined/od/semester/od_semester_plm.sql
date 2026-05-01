@@ -9,7 +9,7 @@
 ) }}
 
 WITH filtered_carpools AS (
-  {{filtered_carpools_arr(model_column='incremental_date',lookback_nb=0, lookback_unit='semester')}}
+  {{filtered_carpools_plm(model_column='incremental_date',lookback_nb=0, lookback_unit='semester')}}
 )
 
 SELECT
