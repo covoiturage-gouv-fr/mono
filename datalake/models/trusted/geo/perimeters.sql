@@ -8,9 +8,12 @@
     { 'columns': ['aom'] },
     { 'columns': ['epci'] },
     { 'columns': ['surface'] },
+    { 'columns': ['valid_from'] },
+    { 'columns': ['valid_until'] },
     { 'columns': ['centroid'], 'type': 'gist' },
     { 'columns': ['geom'], 'type': 'gist' },
     { 'columns': ['geom_simple'], 'type': 'gist' },
+
   ]
 ) }}
 
@@ -35,7 +38,9 @@ WITH old_perimeters AS (
     a.surface,
     ST_SetSRID(b.geom, 4326) AS geom,
     ST_SetSRID(a.geom, 4326) AS geom_simple,
-    ST_SetSRID(c.geom, 4326) AS centroid
+    ST_SetSRID(c.geom, 4326) AS centroid,
+    make_date(a.year,1,1), as valid_from,
+    make_date(a.year,12,31), as valid_until
   FROM {{ source('raw', 'old_perimeters_simple') }} a
   LEFT JOIN {{ source('raw', 'old_perimeters_full') }} b
     ON a.year = b.year AND a.arr = b.arr
@@ -64,7 +69,9 @@ new_com AS (
     ST_Area(f.geom::geography) / 1000000 AS surface,
     ST_SetSRID(f.geom, 4326) AS geom,
     ST_SetSRID(a.geom, 4326) AS geom_simple,
-    ST_SetSRID(g.geom, 4326) AS centroid
+    ST_SetSRID(g.geom, 4326) AS centroid,
+    make_date(2025,1,1), as valid_from,
+    make_date(2026,12,31), as valid_until
   FROM {{ source('raw', 'ign_aecarto_com_2025') }} a
   LEFT JOIN {{ source('raw', 'ign_aecarto_epci_2025') }} b ON a.epci = b.epci
   LEFT JOIN {{ source('raw', 'ign_aecarto_dep_2025') }} c ON a.dep = c.dep
@@ -95,7 +102,9 @@ new_arr AS (
     ST_Area(c.geom::geography) / 1000000 AS surface,
     ST_SetSRID(c.geom, 4326) AS geom,
     ST_SetSRID(a.geom, 4326) AS geom_simple,
-    ST_SetSRID(d.geom, 4326) AS centroid
+    ST_SetSRID(d.geom, 4326) AS centroid,
+    make_date(2025,1,1), as valid_from,
+    make_date(2026,12,31), as valid_until
   FROM {{ source('raw', 'ign_aecarto_arr_2025') }} a
   LEFT JOIN new_com b ON a.com = b.arr
   LEFT JOIN {{ source('raw', 'ign_ae_arr_2025') }} c ON a.arr = c.arr
@@ -103,7 +112,29 @@ new_arr AS (
 ),
 
 new_country AS (
-  SELECT *
+  SELECT 
+  year,
+  arr,
+  l_arr,
+  com,
+  l_com,
+  epci,
+  l_epci,
+  aom,
+  l_aom,
+  dep,
+  l_dep,
+  reg,
+  l_reg,
+  country,
+  l_country,
+  pop,
+  surface,
+  geom,
+  geom_simple,
+  centroid,
+  make_date(2025,1,1), as valid_from,
+  make_date(2026,12,31), as valid_until
   FROM old_perimeters
   WHERE year = 2024
     AND country <> 'XXXXX'

@@ -43,8 +43,8 @@ SELECT
   FROM {{ ref('trusted_carpools') }} j
   LEFT JOIN {{ ref('trusted_users') }} d ON d.user_id = j.driver_key
   LEFT JOIN {{ ref('trusted_users') }} p ON p.user_id = j.passenger_key
-  LEFT JOIN {{ref('perimeters')}} ps ON ps.arr = j.start_geo_code AND ps.year = EXTRACT('year' FROM j.start_datetime_tz)::int
-  LEFT JOIN {{ref('perimeters')}} pe ON pe.arr = j.end_geo_code AND pe.year = EXTRACT('year' FROM j.start_datetime_tz)::int
+  LEFT JOIN {{ref('perimeters')}} ps ON ps.arr = j.start_geo_code AND j.start_datetime_tz >= ps.valid_from AND j.start_datetime_tz < ps.valid_until
+  LEFT JOIN {{ref('perimeters')}} pe ON pe.arr = j.end_geo_code AND j.start_datetime_tz >= pe.valid_from AND j.start_datetime_tz < pe.valid_until
   WHERE {{ time_filter(column, model_column, type, default_start, lookback_nb, lookback_unit) }}
     AND j.valid_acquisition_status = true
     AND ( 
