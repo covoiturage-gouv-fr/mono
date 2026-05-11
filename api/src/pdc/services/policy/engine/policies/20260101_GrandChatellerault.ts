@@ -106,9 +106,7 @@ export const GrandChatellerault2026: PolicyHandlerStaticInterface = class extend
       "200069854", // CU du Grand Poitiers (200069854)
     ];
 
-    if (
-      startsAt(ctx, { aom: aomToExclude }) || endsAt(ctx, { aom: aomToExclude })
-    ) {
+    if (startsAt(ctx, { aom: aomToExclude })) {
       throw new NotEligibleTargetException();
     }
   }
