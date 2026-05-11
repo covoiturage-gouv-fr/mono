@@ -5,8 +5,8 @@ RUN apk add --no-cache \
     build-base \
     cmake \
     postgresql16-dev \
-    llvm15-dev \
-    clang15
+    llvm21-dev \
+    clang21
 
 # Récupération et compilation de h3-pg
 # v4.2.3 release commit a26630b8353d441e6bc8065c0a8dcaa3d89ef87b
@@ -24,5 +24,5 @@ RUN apk del \
     build-base \
     cmake \
     postgresql16-dev \
-    llvm15-dev \
-    clang15
+    llvm21-dev \
+    clang21
