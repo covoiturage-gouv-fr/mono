@@ -1,8 +1,1 @@
-{{ config(
-  materialized='view',
-  tags=['refined', 'direction', 'daily', 'day_com_from']
-) }}
-
-SELECT * FROM {{ ref('direction_day_arr_from') }}
-UNION ALL
-SELECT * FROM {{ ref('direction_day_plm_from') }}
+{{direction_model('com', 'day', 'from')}}
