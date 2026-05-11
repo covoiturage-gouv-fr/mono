@@ -87,20 +87,20 @@ describe("Grand Châtellerault 2026 - Exclusions", () => {
       ],
     }, { incentive: [0] }));
 
-  it("OD in excluded AOM (Grand Poitiers)", async () =>
+  it("Origine from excluded AOM (Grand Poitiers)", async () =>
     await process({
       policy: { handler: Handler.id },
       carpool: [
         {
-          start: { ...defaultPosition, aom: "200069854" },
-          end: { ...defaultPosition, aom: "247200132" },
+          start: { ...defaultPosition, aom: "200069854" }, // start is excluded
+          end: { ...defaultPosition },
         },
         {
-          start: { ...defaultPosition, aom: "200071678" },
-          end: { ...defaultPosition, aom: "200069854" },
+          start: { ...defaultPosition },
+          end: { ...defaultPosition, aom: "200069854" }, // end is fine
         },
       ],
-    }, { incentive: [0, 0] }));
+    }, { incentive: [0, 150] }));
 });
 
 describe("Grand Châtellerault 2026 - Incentives", () => {
