@@ -6,7 +6,7 @@
       { 'columns':['carpool_id'] },
       { 'columns':['start_datetime'] },
     ],
-    tags=['raw', 'incentives', 'operator', 'daily'],
+    tags=['trusted', 'incentives', 'operator', 'daily'],
 ) }}
 
 SELECT

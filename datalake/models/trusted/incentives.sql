@@ -5,7 +5,7 @@
     indexes = [
       { 'columns':['carpool_v2_id'] },
     ],
-    tags=['raw', 'incentives', 'daily'],
+    tags=['trusted', 'incentives', 'daily'],
 ) }}
 
 WITH incentives AS (

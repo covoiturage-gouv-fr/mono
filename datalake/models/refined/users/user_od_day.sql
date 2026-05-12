@@ -19,7 +19,7 @@ WITH carpools AS (
     'driver' AS role,
     start_geo_code,
     end_geo_code
-  FROM {{ ref('trusted_carpools') }}
+  FROM {{ ref('carpools') }}
   WHERE {{ time_filter('start_datetime_tz', 'incremental_date', type='timestamp', default_start="'2020-01-01 00:00:00'", lookback_nb=3) }}
     AND driver_key IS NOT NULL
     AND valid_acquisition_status = true
@@ -30,7 +30,7 @@ WITH carpools AS (
     'passenger' AS role,
     start_geo_code,
     end_geo_code
-  FROM {{ ref('trusted_carpools') }}
+  FROM {{ ref('carpools') }}
   WHERE {{ time_filter('start_datetime_tz', 'incremental_date', type='timestamp', default_start="'2020-01-01 00:00:00'", lookback_nb=3) }}
     AND passenger_key IS NOT NULL
     AND valid_acquisition_status = true

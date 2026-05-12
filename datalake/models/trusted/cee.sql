@@ -5,7 +5,7 @@
     indexes = [
       { 'columns':['carpool_v2_id'] },
     ],
-    tags=['raw', 'cee']
+    tags=['trusted', 'cee']
 ) }}
 
 SELECT
@@ -19,7 +19,7 @@ SELECT
   cee.application_timestamp,
   cee.created_at,
   cee.updated_at
-FROM cee.cee_applications cee
+FROM {{ source('cee', 'cee_applications') }} cee
 LEFT JOIN {{ source('carpool_v1', 'carpools') }} cv1
   ON cee.carpool_id IS NOT NULL AND cv1._id = cee.carpool_id
 LEFT JOIN {{ source('carpool_v2', 'carpools') }} cv2_id

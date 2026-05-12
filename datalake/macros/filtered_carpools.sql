@@ -127,9 +127,9 @@ SELECT
   c.campaigns_amount_total,
   c.campaigns_result_total,
   {{ cfg.is_intra }} AS is_intra
-FROM {{ ref('trusted_carpools') }} c
-LEFT JOIN {{ ref('trusted_users') }} d ON d.user_id = c.driver_key
-LEFT JOIN {{ ref('trusted_users') }} pu ON pu.user_id = c.passenger_key
+FROM {{ ref('carpools') }} c
+LEFT JOIN {{ ref('users') }} d ON d.user_id = c.driver_key
+LEFT JOIN {{ ref('users') }} pu ON pu.user_id = c.passenger_key
 {{ cfg.joins }}
 WHERE {{ time_filter(column, model_column, type, default_start, lookback_nb, lookback_unit) }}
   AND c.valid_acquisition_status = true
