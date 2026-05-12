@@ -34,7 +34,7 @@ export class JourneysByHoursAction extends AbstractAction {
     super();
   }
 
-  public async handle(params: JourneysByHours): Promise<ResultInterface> {
+  public override async handle(params: JourneysByHours): Promise<ResultInterface> {
     return this.repository.getJourneysByHours(params);
   }
 }

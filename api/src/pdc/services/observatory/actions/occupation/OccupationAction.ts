@@ -30,7 +30,7 @@ export class OccupationAction extends AbstractAction {
     super();
   }
 
-  public async handle(params: Occupation): Promise<ResultInterface> {
+  public override async handle(params: Occupation): Promise<ResultInterface> {
     return this.repository.getOccupation(params);
   }
 }

@@ -28,7 +28,7 @@ export class BestFluxAction extends AbstractAction {
     super();
   }
 
-  public async handle(params: BestFlux): Promise<ResultInterface> {
+  public override async handle(params: BestFlux): Promise<ResultInterface> {
     return this.repository.getBestFlux(params);
   }
 }

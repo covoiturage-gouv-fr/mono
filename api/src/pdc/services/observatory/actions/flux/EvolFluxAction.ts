@@ -30,7 +30,7 @@ export class EvolFluxAction extends AbstractAction {
     super();
   }
 
-  public async handle(params: EvolFlux): Promise<ResultInterface> {
+  public override async handle(params: EvolFlux): Promise<ResultInterface> {
     return this.repository.getEvolFlux(params);
   }
 }

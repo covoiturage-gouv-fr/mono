@@ -26,7 +26,7 @@ export class BestTerritoriesAction extends AbstractAction {
     super();
   }
 
-  public async handle(params: BestTerritories): Promise<ResultInterface> {
+  public override async handle(params: BestTerritories): Promise<ResultInterface> {
     return this.repository.getBestTerritories(params);
   }
 }

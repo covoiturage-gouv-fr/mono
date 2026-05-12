@@ -32,7 +32,7 @@ export class IncentiveAction extends AbstractAction {
     super();
   }
 
-  public async handle(params: Incentive): Promise<ResultInterface> {
+  public override async handle(params: Incentive): Promise<ResultInterface> {
     return this.repository.getIncentive(params);
   }
 }

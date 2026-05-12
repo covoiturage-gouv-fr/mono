@@ -37,7 +37,7 @@ export class KeyfiguresAction extends AbstractAction {
     super();
   }
 
-  public async handle(params: KeyFigures): Promise<ResultInterface> {
+  public override async handle(params: KeyFigures): Promise<ResultInterface> {
     return this.repository.getKeyfigures(params);
   }
 }

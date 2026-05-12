@@ -25,7 +25,7 @@ export class LocationAction extends AbstractAction {
     super();
   }
 
-  public async handle(params: Location): Promise<ResultInterface> {
+  public override async handle(params: Location): Promise<ResultInterface> {
     return this.repository.getLocation(params);
   }
 }

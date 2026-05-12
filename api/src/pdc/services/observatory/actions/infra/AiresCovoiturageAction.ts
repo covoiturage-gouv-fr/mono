@@ -36,7 +36,7 @@ export class AiresCovoiturageAction extends AbstractAction {
     super();
   }
 
-  public async handle(params: AiresCovoiturage): Promise<ResultInterface> {
+  public override async handle(params: AiresCovoiturage): Promise<ResultInterface> {
     return this.repository.getAiresCovoiturage(params);
   }
 }

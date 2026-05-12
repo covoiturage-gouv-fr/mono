@@ -9,10 +9,11 @@ import SelectTerritory from '@/components/observatoire/SelectTerritory';
 import SelectTrimester from '@/components/observatoire/SelectTrimester';
 import SelectYear from '@/components/observatoire/SelectYear';
 import { useDashboardContext } from '@/context/DashboardProvider';
-import { GetPeriod } from '@/helpers/dashboard';
 import { graphList, mapList } from '@/helpers/lists';
 import { PerimeterType } from '@/interfaces/observatoire/Perimeter';
 import { fr } from '@codegouvfr/react-dsfr';
+import { GetPeriod } from '@/helpers/dashboard';
+import { DashboardContextType } from '@/interfaces/common/contextInterface';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
@@ -32,9 +33,10 @@ import BestTerritoriesTable from './tables/BestTerritoriesTable';
 
 export default function Dashboard() {
   const searchParams = useSearchParams();
-  const {dashboard} =useDashboardContext();
+  const { dashboard } = useDashboardContext();
   const period = GetPeriod();
   const observeLabel = dashboard.params.map == 1 ? 'Flux entre:' : 'Territoires observés';
+
   useEffect(() => {
     const params = {
       code: searchParams.get('code') ? searchParams.get('code')! : 'XXXXX',
@@ -44,6 +46,13 @@ export default function Dashboard() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams.get('code'), searchParams.get('type')]);
 
+  function sectionTitle(dashboard: DashboardContextType["dashboard"] | undefined) {
+    const name = dashboard && `${dashboard.params.name} du `;
+    const start = new Date(period.start_date);
+    const end = new Date(Math.min(new Date(period.end_date).getTime(), new Date().getTime()));
+    return `${name}${start.toLocaleDateString()} au ${end.toLocaleDateString()}`;
+  }
+
   return(
     <>
       <div className={fr.cx('fr-grid-row','fr-grid-row--gutters','fr-mt-5v')}>
@@ -52,15 +61,9 @@ export default function Dashboard() {
         </div>
         <div className={fr.cx('fr-col-12','fr-col-md-6')}>
           <SelectPeriod id='period' label='Type de période' />
-          {dashboard.params.period === 'month' && 
-            <SelectMonth />
-          }
-          {dashboard.params.period === 'trimester' && 
-            <SelectTrimester />
-          }
-          {dashboard.params.period === 'semester' && 
-            <SelectSemester />
-          }
+          {dashboard.params.period === 'month' && <SelectMonth /> }
+          {dashboard.params.period === 'trimester' && <SelectTrimester /> }
+          {dashboard.params.period === 'semester' && <SelectSemester /> }
           <SelectYear />
         </div>
       </div>
@@ -71,11 +74,7 @@ export default function Dashboard() {
       ) 
       : (
         <>
-          <SectionTitle
-            title={`${dashboard.params.name} du ${new Date(period.start_date).toLocaleDateString()} au ${new Date(
-              period.end_date,
-            ).toLocaleDateString()}`}
-          />
+          <SectionTitle title={sectionTitle(dashboard)} />
           <KeyFigures />
           <div className={fr.cx('fr-grid-row', 'fr-grid-row--gutters')}>
             <div className={fr.cx('fr-col-12','fr-col-md-6')}>

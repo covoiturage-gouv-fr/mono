@@ -29,7 +29,7 @@ export class EvolOccupationAction extends AbstractAction {
     super();
   }
 
-  public async handle(params: EvolOccupation): Promise<ResultInterface> {
+  public override async handle(params: EvolOccupation): Promise<ResultInterface> {
     return this.repository.getEvolOccupation(params);
   }
 }

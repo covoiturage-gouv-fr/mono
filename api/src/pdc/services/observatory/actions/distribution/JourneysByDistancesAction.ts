@@ -32,7 +32,7 @@ export class JourneysByDistancesAction extends AbstractAction {
     super();
   }
 
-  public async handle(params: JourneysByDistances): Promise<ResultInterface> {
+  public override async handle(params: JourneysByDistances): Promise<ResultInterface> {
     return this.repository.getJourneysByDistances(params);
   }
 }

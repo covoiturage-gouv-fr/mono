@@ -32,7 +32,7 @@ export class FluxAction extends AbstractAction {
     super();
   }
 
-  public async handle(params: Flux): Promise<ResultInterface> {
+  public override async handle(params: Flux): Promise<ResultInterface> {
     return this.repository.getFlux(params);
   }
 }

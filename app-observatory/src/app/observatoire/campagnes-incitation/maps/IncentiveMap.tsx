@@ -107,25 +107,25 @@ export default function IncentiveMap({
     setHoverInfo(undefined);
   }, []);
   const onMouseMove = useCallback((e: MapLayerMouseEvent) => {
-    e.features && e.features.length > 0
-      ? setHoverInfo({
-          longitude: e.lngLat.lng,
-          latitude: e.lngLat.lat,
-          properties: e.features[0].properties,
-        })
-      : undefined;
+    if (e.features && e.features.length > 0) {
+      setHoverInfo({
+        longitude: e.lngLat.lng,
+        latitude: e.lngLat.lat,
+        properties: e.features[0].properties,
+      });
+    }
   }, []);
   const onClick = useCallback((e: MapLayerMouseEvent) => {
-    e.features && e.features.length > 0
-      ? router.push(
-          getUrl("campagnes-incitation", {
-            territory: e.features[0].properties.code,
-            l_territory: e.features[0].properties.name,
-            type: e.features[0].properties.type,
-          })
-        )
-      : undefined;
-  }, []);
+    if (e.features && e.features.length > 0) {
+      router.push(
+        getUrl("campagnes-incitation", {
+          territory: e.features[0].properties.code,
+          l_territory: e.features[0].properties.name,
+          type: e.features[0].properties.type,
+        })
+      );
+    }
+  }, [router]);
 
   return (
     <>
