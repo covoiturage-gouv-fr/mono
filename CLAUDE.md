@@ -18,8 +18,9 @@ Monorepo with these main components:
 | `app-attestation/` | Certificate generator | Angular 16 (frozen) |
 | `cms/` | Content management | Strapi 4 |
 | `shared/` | Shared TypeScript types | TypeScript (deprecated) |
-| `dbt/` | Analytics transformations | DBT, Python (deprecated) |
-| `sqlmesh/` | SQL transformations | SQLMesh, Python |
+| `datalake/` | Analytics transformations (active dbt project) | DBT, Python |
+| `dbt/` | Analytics transformations (legacy, frozen) | DBT, Python |
+| `sqlmesh/` | SQL transformations (phased out, do not extend) | SQLMesh, Python |
 | `docker/` | Container configurations | Docker |
 
 Each directory has its own `README.md`. Claude skills in `.claude/skills/` provide coding patterns for each domain.
@@ -49,7 +50,7 @@ Use sub-agents to perform :
 Technical internal documentation is available on Notion.
 `api/specs` are published on <https://tech.covoiturage.beta.gouv.fr> using bump.sh in a Github Action.
 Local README.md files are used as entrypoints to the different applications and must be updated alongside code.
-`sqlmesh/README.md` is the primary reference for the data warehouse architecture and conventions — keep it in sync when modifying SQLMesh models.
+`datalake/README.md` is the primary reference for the active dbt project. `sqlmesh/README.md` covers the legacy SQLMesh models that are being phased out — do not extend them; port to `datalake/` instead.
 
 ### Skills
 
