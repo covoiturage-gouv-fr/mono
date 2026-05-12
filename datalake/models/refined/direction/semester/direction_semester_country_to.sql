@@ -1,0 +1,1 @@
+{{direction_model('country', 'semester', 'to')}}

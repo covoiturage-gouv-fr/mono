@@ -1,0 +1,1 @@
+{{direction_model('epci', 'month', 'both')}}

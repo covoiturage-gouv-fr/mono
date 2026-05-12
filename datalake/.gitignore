@@ -1,0 +1,12 @@
+target/
+dbt_packages/
+db/
+logs/*
+.pgcli*
+.venv/*
+
+
+.env.local
+.env.prod
+.env.demo
+dbt_internal_packages/

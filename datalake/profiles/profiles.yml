@@ -1,0 +1,32 @@
+default:
+  target: dev
+  outputs:
+    prod:
+      type: postgres
+      host: "{{ env_var('DBT_HOST') }}"
+      user: "{{ env_var('DBT_USER') }}"
+      password: "{{ env_var('DBT_PASSWORD') }}"
+      port: "{{ env_var('DBT_PORT') | int }}"
+      dbname: "{{ env_var('DBT_DBNAME') }}" # or database instead of dbname
+      schema: ""
+      threads: 4
+    dev:
+      type: postgres
+      host: "{{ env_var('DBT_HOST', 'localhost') }}"
+      user: "{{ env_var('DBT_USER', 'postgres') }}"
+      password: "{{ env_var('DBT_PASSWORD', 'password') }}"
+      port: "{{ env_var('DBT_PORT', 5432) | int }}"
+      dbname: "{{ env_var('DBT_DBNAME', 'covoiturage_production') }}" # or database instead of dbname
+      schema: "{{ env_var('DBT_SCHEMA', '') }}"
+      threads: "{{ env_var('DBT_THREADS', 2) | int }}"
+elementary:
+  outputs:
+    default:
+      type: postgres
+      host: "{{ env_var('DBT_HOST', 'localhost') }}"
+      user: "{{ env_var('DBT_USER', 'postgres') }}"
+      password: "{{ env_var('DBT_PASSWORD', 'password') }}"
+      port: "{{ env_var('DBT_PORT', 5432) | int }}"
+      dbname: "{{ env_var('DBT_DBNAME', 'covoiturage_production') }}" # or database instead of dbname
+      schema: "{{ env_var('DBT_SCHEMA_ELEMENTARY', 'elementary') }}"
+      threads: 6

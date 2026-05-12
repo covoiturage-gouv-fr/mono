@@ -1,0 +1,1 @@
+{{direction_model('aomreg', 'year', 'both')}}
