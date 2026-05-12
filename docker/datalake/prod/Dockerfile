@@ -3,6 +3,11 @@
 # Stage 1 -- builder: compile native wheels into /data/.venv
 FROM ghcr.io/astral-sh/uv:python3.13-bookworm-slim AS builder
 
+# Build deps (stripped in runtime stage):
+#   build-essential   gcc/make to compile native Python wheels
+#   libpq-dev         libpq headers for psycopg2 build
+#   libgdal-dev       GDAL headers for any geo binding build
+#   python3-dev       CPython headers for C extensions
 RUN apt-get update && apt-get install -y --no-install-recommends \
       build-essential \
       libpq-dev \
@@ -38,11 +43,18 @@ RUN /data/.venv/bin/dbt deps --project-dir /data
 # Stage 2 -- runtime: minimal image, no compilers or dev headers
 FROM python:3.13-slim-bookworm AS runtime
 
+# Runtime libs:
+#   libpq5            libpq shared lib for psycopg2 / dbt-postgres
+#   libgdal32         GDAL shared lib for geo bindings + gdal-bin
+#   gdal-bin          ogr2ogr / gdalwarp invoked by dbt macros and pipelines
+#   ca-certificates   HTTPS trust store (slim image omits it) for S3 + Postgres TLS
+#   git               dbt reads project version from git metadata at startup
 RUN apt-get update && apt-get install -y --no-install-recommends \
       libpq5 \
       libgdal32 \
       gdal-bin \
       ca-certificates \
+      git \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
