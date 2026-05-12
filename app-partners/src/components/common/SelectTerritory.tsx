@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 
 export default function SelectTerritory(props: { defaultValue: number | null; onChange: (id: number | null) => void }) {
   const [value, setValue] = useState<number | null>(props.defaultValue);
-  const { data } = useTerritoriesList({ limit: 200, policy: true });
+  const { data } = useTerritoriesList({ limit: 200, policy: false });
   useEffect(() => {
     setValue(props.defaultValue);
   }, [props.defaultValue]);
