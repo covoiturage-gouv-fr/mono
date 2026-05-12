@@ -1,1 +1,0 @@
-{{direction_model('aomreg', 'month', 'from')}}

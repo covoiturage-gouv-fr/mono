@@ -1,0 +1,1 @@
+{{territory_model('arr', 'day', 'both')}}

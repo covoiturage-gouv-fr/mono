@@ -1,0 +1,1 @@
+{{territory_model('arr', 'semester', 'both')}}
