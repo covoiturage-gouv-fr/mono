@@ -1,0 +1,50 @@
+name: "Deploy Datalake"
+
+permissions:
+  contents: read
+  packages: write # zizmor: ignore[excessive-permissions]
+  id-token: write # zizmor: ignore[excessive-permissions]
+  attestations: write # zizmor: ignore[excessive-permissions]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - datalake
+    paths:
+      - "datalake/**"
+      - "docker/datalake/**"
+
+jobs:
+  tag:
+    name: Set deployment tag
+    runs-on: ubuntu-latest
+    outputs:
+      value: ${{ steps.set_tag.outputs.value }}
+    steps:
+      - id: set_tag
+        shell: bash
+        run: echo "value=$(date +'%F.%H%M')" >> $GITHUB_OUTPUT
+
+  build:
+    name: Build and Push Datalake Docker Image
+    needs: tag
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
+        with:
+          persist-credentials: false
+      - name: Build and Push Datalake Docker Image
+        uses: ./.github/actions/build-image
+        with:
+          name: datalake
+          context: ./datalake
+          tag: ${{ needs.tag.outputs.value }}
+          dockerfile: ./docker/datalake/prod/Dockerfile
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
