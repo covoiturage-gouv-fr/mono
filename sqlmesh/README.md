@@ -8,14 +8,15 @@ Le Data Warehouse de Preuve de Covoiturage (RPC) est une solution de gestion et 
 
 SQLMesh est une librairie Python. Elle nécessite un environnement virtuel (venv) et l'installation de quelques dépendances.
 
-Le shell Nix à la racine du monorepo configure et active l'environnement virtuel automatiquement. Les dépendances sont installées automatiquement avec `uv`.
+Le shell Nix à la racine du monorepo fournit les outils partagés (`python`, `uv`, `direnv`...). L'environnement virtuel propre au dossier `sqlmesh/` est créé et activé automatiquement par `direnv` à l'entrée du dossier (`.envrc` -> `uv sync` -> `source .venv/bin/activate`).
 
 ```shell
-nix develop
-(nix-shell) cd ./sqlmesh
+nix develop                # outils partagés + direnv
+direnv allow .             # une fois à la racine
+cd ./sqlmesh && direnv allow .   # une fois ici, puis automatique
 ```
 
-**Installation manuelle**
+**Installation manuelle (sans direnv)**
 
 Prérequis : installer [Python](https://www.python.org/downloads/) et [uv](https://docs.astral.sh/uv/).
 
@@ -23,6 +24,7 @@ Prérequis : installer [Python](https://www.python.org/downloads/) et [uv](https
 cd ./sqlmesh
 uv venv
 uv sync
+source .venv/bin/activate
 ```
 
 ## Configuration
