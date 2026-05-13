@@ -34,12 +34,23 @@
     {% endfor %}
   ] AS hours_distribution,
   ARRAY[
-    COUNT(*) FILTER (WHERE dist_class = '0-10'),
-    COUNT(*) FILTER (WHERE dist_class = '10-20'),
-    COUNT(*) FILTER (WHERE dist_class = '20-30'),
-    COUNT(*) FILTER (WHERE dist_class = '30-40'),
-    COUNT(*) FILTER (WHERE dist_class = '40-50'),
-    COUNT(*) FILTER (WHERE dist_class = '>50')
+    COUNT(*) FILTER (WHERE dist_class = '00-05'),
+    COUNT(*) FILTER (WHERE dist_class = '05-10'),
+    COUNT(*) FILTER (WHERE dist_class = '10-15'),
+    COUNT(*) FILTER (WHERE dist_class = '15-20'),
+    COUNT(*) FILTER (WHERE dist_class = '20-25'),
+    COUNT(*) FILTER (WHERE dist_class = '25-30'),
+    COUNT(*) FILTER (WHERE dist_class = '30-35'),
+    COUNT(*) FILTER (WHERE dist_class = '35-40'),
+    COUNT(*) FILTER (WHERE dist_class = '40-45'),
+    COUNT(*) FILTER (WHERE dist_class = '45-50'),
+    COUNT(*) FILTER (WHERE dist_class = '50-55'),
+    COUNT(*) FILTER (WHERE dist_class = '55-60'),
+    COUNT(*) FILTER (WHERE dist_class = '60-65'),
+    COUNT(*) FILTER (WHERE dist_class = '65-70'),
+    COUNT(*) FILTER (WHERE dist_class = '70-75'),
+    COUNT(*) FILTER (WHERE dist_class = '75-80'),
+    COUNT(*) FILTER (WHERE dist_class = '80+')
   ] AS dist_distribution,
   ARRAY[
     COUNT(*) FILTER (WHERE operator_class = 'A'),

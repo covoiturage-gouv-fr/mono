@@ -28,7 +28,7 @@
 
 {{ config(
   materialized='view',
-  tags=['refined', 'territory', grain, grain ~ '_com_' ~ direction]
+  tags=['aggregated', 'territory', grain, grain ~ '_com_' ~ direction]
 ) }}
 
 SELECT * FROM {{ ref('territory_' ~ grain ~ '_arr_' ~ direction) }}

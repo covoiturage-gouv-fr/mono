@@ -271,12 +271,14 @@ carpools AS (
 
     j.start_datetime,
     {{ timezoned_ts('COALESCE(geo.start_geo_code, j.start_geo_code)', 'j.start_datetime') }} AS start_datetime_tz,
-    h3_lat_lng_to_cell(j.start_position::point, 9) AS start_h3_index,
+    h3_lat_lng_to_cell(j.start_position::point, 9) AS start_h3index_z9,
+    h3_lat_lng_to_cell(j.start_position::point, 8) AS start_h3index_z8,
     COALESCE(geo.start_geo_code, j.start_geo_code) AS start_geo_code,
 
     j.end_datetime,
     {{ timezoned_ts('COALESCE(geo.end_geo_code, j.end_geo_code)', 'j.end_datetime') }} AS end_datetime_tz,
-    h3_lat_lng_to_cell(j.end_position::point, 9) AS end_h3_index,
+    h3_lat_lng_to_cell(j.end_position::point, 9) AS end_h3index_z9,
+    h3_lat_lng_to_cell(j.end_position::point, 8) AS end_h3index_z8,
     COALESCE(geo.end_geo_code, j.end_geo_code) AS end_geo_code,
 
     COALESCE(to_jsonb(geo.geo_errors), to_jsonb(j.geo_errors)) AS geo_errors,
