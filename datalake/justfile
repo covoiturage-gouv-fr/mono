@@ -38,7 +38,6 @@ backfill-batch model period start end *args:
 pipeline-raw *args:
   just seed raw/seed_perimeters.json dbt_raw {{ if args =~ "--full-refresh" { "--overwrite" } else { "" } }}
   just seed raw/seed_datagouv.json dbt_raw {{ if args =~ "--full-refresh" { "--overwrite" } else { "" } }}
-  just dbt build --select tag:raw {{args}}
 
 # Pipeline 2: trusted geo (yearly)
 pipeline-trusted-geo *args:

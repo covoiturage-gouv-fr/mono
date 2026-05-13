@@ -1,0 +1,1 @@
+{{operators_model('arr', 'quarter', 'both')}}

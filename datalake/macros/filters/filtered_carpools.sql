@@ -19,12 +19,19 @@
       'is_intra':   'c.is_intra',
       'where_geo':  "(c.start_geo_code NOT IN ('75056', '13055', '69123') OR c.end_geo_code NOT IN ('75056', '13055', '69123'))"
     },
-    'h3': {
-      'start_col':  'c.start_h3_index',
-      'end_col':    'c.end_h3_index',
+    'h3z9': {
+      'start_col':  'c.start_h3index_z9',
+      'end_col':    'c.end_h3index_z9',
       'joins':      '',
       'is_intra':   'c.is_intra',
-      'where_geo':  '(c.start_h3_index IS NOT NULL OR c.end_h3_index IS NOT NULL)'
+      'where_geo':  '(c.start_h3index_z9 IS NOT NULL OR c.end_h3index_z9 IS NOT NULL)'
+    },
+    'h3z8': {
+      'start_col':  'c.start_h3index_z8',
+      'end_col':    'c.end_h3index_z8',
+      'joins':      '',
+      'is_intra':   'c.is_intra',
+      'where_geo':  '(c.start_h3index_z8 IS NOT NULL OR c.end_h3index_z8 IS NOT NULL)'
     },
     'dep': {
       'start_col':  'ps.dep',
@@ -78,7 +85,7 @@
   } %}
  
   {% if perim not in perimeters %}
-    {{ exceptions.raise_compiler_error("Invalid perimeter: " ~ perim ~ ". Expected: arr, h3, dep, reg, epci, country, aom, plm, aomreg") }}
+    {{ exceptions.raise_compiler_error("Invalid perimeter: " ~ perim ~ ". Expected: arr, h3z9, h3z8, dep, reg, epci, country, aom, plm, aomreg") }}
   {% endif %}
  
   {%- set cfg = perimeters[perim] -%}

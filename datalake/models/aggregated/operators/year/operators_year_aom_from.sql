@@ -1,0 +1,1 @@
+{{operators_model('aom', 'year', 'from')}}

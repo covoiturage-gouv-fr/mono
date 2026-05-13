@@ -40,8 +40,8 @@ models:
       +schema: "dbt_raw"
     trusted:
       +schema: "dbt_trusted"
-    refined:
-      +schema: "dbt_refined"
+    aggregated:
+      +schema: "dbt_aggregated"
 
   ## see docs: https://docs.elementary-data.com/
   elementary:
