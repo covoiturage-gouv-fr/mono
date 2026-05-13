@@ -1,1 +1,0 @@
-{{direction_model('plm', 'quarter', 'both')}}

@@ -1,1 +1,0 @@
-{{direction_model('country', 'day', 'to')}}

@@ -1,1 +1,0 @@
-{{direction_model('dep', 'year', 'both')}}
