@@ -1,0 +1,49 @@
+set dotenv-load
+set shell := ["bash", "-uc"] 
+
+default:
+  @just --list
+
+# charge local .env
+dbt-env:
+  set -a; source .env; set +a
+
+# Run dbt command
+dbt cmd *args:
+  dbt {{cmd}} --profiles-dir profiles {{args}}
+
+# Seed data from S3 to Postgres
+seed config schema *args:
+  python -m pipelines.cmd.seed  pipelines/config/{{config}} {{schema}} {{args}}
+
+# Export data from Postgres to S3
+export config schema *args:
+  python -m pipelines.cmd.export pipelines/config/{{config}} {{schema}} {{args}}
+
+# Backfill par mois pour éviter les timeouts
+
+backfill-batch model period start end *args:
+  #!/usr/bin/env bash
+  current="{{ start }}"
+  period="{{ period }}"
+  while [[ "$current" < "{{ end }}" ]]; do
+    next=$(date -d "$current +1 $period" +%Y-%m-%d)
+    echo "▶️  Processing $current → $next"
+    vars="{start: $current, end: $next}"
+    just dbt run --select {{model}} --vars "'{start: $current, end: $next}'" {{ args }}
+    current=$next
+  done
+
+# Pipeline 1: Seed raw data from S3 to raw_zone (yearly)
+pipeline-raw *args:
+  just seed raw/seed_perimeters.json dbt_raw {{ if args =~ "--full-refresh" { "--overwrite" } else { "" } }}
+  just seed raw/seed_datagouv.json dbt_raw {{ if args =~ "--full-refresh" { "--overwrite" } else { "" } }}
+  just dbt build --select tag:raw {{args}}
+
+# Pipeline 2: trusted geo (yearly)
+pipeline-trusted-geo *args:
+  just dbt build --select "tag:trusted,tag:geo" {{args}}
+
+# Pipeline 3 : daily update:
+pipeline-daily *args:
+  just dbt build --select "tag:daily" {{args}}

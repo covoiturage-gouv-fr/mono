@@ -1,0 +1,460 @@
+version: 2
+sources:
+  - name: fraudcheck
+    tables:
+      - name: labels
+        columns:
+          - name: _id
+            data_type: integer
+          - name: created_at
+            data_type: timestamp with time zone
+          - name: carpool_id
+            data_type: integer
+          - name: label
+            data_type: character varying
+      - name: phone_insights
+        description: ''
+        columns:
+          - name: id
+            data_type: integer
+          - name: created_at
+            data_type: timestamp with time zone
+          - name: phone_trunc
+            data_type: character varying
+          - name: departure_date
+            data_type: timestamp with time zone
+          - name: end_date
+            data_type: timestamp with time zone
+          - name: num_days
+            data_type: integer
+          - name: average_duration
+            data_type: double precision
+          - name: average_distance
+            data_type: double precision
+          - name: total_incentives
+            data_type: double precision
+          - name: average_trip_count
+            data_type: double precision
+          - name: num_operators
+            data_type: integer
+          - name: driver_trip_percentage
+            data_type: double precision
+          - name: role_change
+            data_type: boolean
+          - name: intraday_change_count
+            data_type: integer
+          - name: total_change_count
+            data_type: integer
+          - name: intraday_change_percentage
+            data_type: double precision
+          - name: total_change_percentage
+            data_type: double precision
+          - name: carpool_days
+            data_type: integer
+          - name: carpool_day_list
+            data_type: ARRAY
+          - name: trip_id_list
+            data_type: ARRAY
+          - name: operator_list
+            data_type: ARRAY
+      - name: phone_insights_detailed
+        description: ''
+        columns:
+          - name: id
+            data_type: integer
+          - name: created_at
+            data_type: timestamp with time zone
+          - name: phone_trunc
+            data_type: character varying
+          - name: operator_user_id
+            data_type: character varying
+          - name: departure_date
+            data_type: timestamp with time zone
+          - name: end_date
+            data_type: timestamp with time zone
+          - name: num_days
+            data_type: integer
+          - name: average_duration
+            data_type: double precision
+          - name: average_distance
+            data_type: double precision
+          - name: total_incentives
+            data_type: double precision
+          - name: average_trip_count
+            data_type: double precision
+          - name: num_operators
+            data_type: integer
+          - name: driver_trip_percentage
+            data_type: double precision
+          - name: role_change
+            data_type: boolean
+          - name: intraday_change_count
+            data_type: integer
+          - name: total_change_count
+            data_type: integer
+          - name: intraday_change_percentage
+            data_type: double precision
+          - name: total_change_percentage
+            data_type: double precision
+          - name: carpool_days
+            data_type: integer
+          - name: carpool_day_list
+            data_type: text
+          - name: trip_id_list
+            data_type: text
+          - name: operator_list
+            data_type: text
+          - name: average_seats
+            data_type: double precision
+          - name: night_time_count_21_6
+            data_type: integer
+          - name: has_night_time_21_6
+            data_type: boolean
+          - name: night_time_percentage_21_6
+            data_type: double precision
+          - name: night_time_count_21_5
+            data_type: integer
+          - name: has_night_time_21_5
+            data_type: boolean
+          - name: night_time_percentage_21_5
+            data_type: double precision
+          - name: night_time_count_22_5
+            data_type: integer
+          - name: has_night_time_22_5
+            data_type: boolean
+          - name: night_time_percentage_22_5
+            data_type: double precision
+          - name: occupancy_rate_exceeded
+            data_type: boolean
+          - name: triangular_level_1
+            data_type: boolean
+          - name: triangular_level_2
+            data_type: boolean
+          - name: traveled_with_level_1
+            data_type: boolean
+          - name: traveled_with_level_2
+            data_type: boolean
+          - name: phone_trunc_changed
+            data_type: double precision
+      - name: phone_insights_detailed_old
+        description: ''
+        columns:
+          - name: id
+            data_type: integer
+          - name: created_at
+            data_type: timestamp with time zone
+          - name: phone_trunc
+            data_type: character varying
+          - name: operator_user_id
+            data_type: character varying
+          - name: departure_date
+            data_type: timestamp with time zone
+          - name: end_date
+            data_type: timestamp with time zone
+          - name: num_days
+            data_type: integer
+          - name: average_duration
+            data_type: double precision
+          - name: average_distance
+            data_type: double precision
+          - name: total_incentives
+            data_type: double precision
+          - name: average_trip_count
+            data_type: double precision
+          - name: num_operators
+            data_type: integer
+          - name: driver_trip_percentage
+            data_type: double precision
+          - name: role_change
+            data_type: boolean
+          - name: intraday_change_count
+            data_type: integer
+          - name: total_change_count
+            data_type: integer
+          - name: intraday_change_percentage
+            data_type: double precision
+          - name: total_change_percentage
+            data_type: double precision
+          - name: carpool_days
+            data_type: integer
+          - name: carpool_day_list
+            data_type: text
+          - name: trip_id_list
+            data_type: text
+          - name: operator_list
+            data_type: text
+          - name: average_seats
+            data_type: double precision
+          - name: night_time_count_21_6
+            data_type: integer
+          - name: has_night_time_21_6
+            data_type: boolean
+          - name: night_time_percentage_21_6
+            data_type: double precision
+          - name: night_time_count_21_5
+            data_type: integer
+          - name: has_night_time_21_5
+            data_type: boolean
+          - name: night_time_percentage_21_5
+            data_type: double precision
+          - name: night_time_count_22_5
+            data_type: integer
+          - name: has_night_time_22_5
+            data_type: boolean
+          - name: night_time_percentage_22_5
+            data_type: double precision
+          - name: occupancy_rate_exceeded
+            data_type: boolean
+          - name: triangular_level_1
+            data_type: boolean
+          - name: triangular_level_2
+            data_type: boolean
+          - name: traveled_with_level_1
+            data_type: boolean
+          - name: traveled_with_level_2
+            data_type: boolean
+          - name: phone_trunc_changed
+            data_type: double precision
+      - name: potential_triangular_patterns
+        description: ''
+        columns:
+          - name: id
+            data_type: integer
+          - name: created_at
+            data_type: timestamp with time zone
+          - name: groupe
+            data_type: integer
+          - name: num_participants
+            data_type: integer
+          - name: num_trips
+            data_type: integer
+          - name: operator_list
+            data_type: ARRAY
+          - name: num_operators
+            data_type: integer
+          - name: average_duration
+            data_type: double precision
+          - name: departure_date
+            data_type: timestamp without time zone
+          - name: end_date
+            data_type: timestamp without time zone
+          - name: average_daily_trips
+            data_type: double precision
+          - name: total_change_percentage
+            data_type: ARRAY
+          - name: total_incentives
+            data_type: double precision
+          - name: central_participants
+            data_type: jsonb
+          - name: intermediate_participants
+            data_type: jsonb
+          - name: journey_id_list
+            data_type: ARRAY
+          - name: phone_trunc
+            data_type: ARRAY
+      - name: triangular_patterns
+        description: ''
+        columns:
+          - name: id
+            data_type: integer
+          - name: created_at
+            data_type: timestamp with time zone
+          - name: phone_trunc
+            data_type: text
+          - name: num_participants
+            data_type: integer
+          - name: num_trips
+            data_type: integer
+          - name: num_operators
+            data_type: integer
+          - name: average_duration
+            data_type: double precision
+          - name: departure_date
+            data_type: timestamp with time zone
+          - name: end_date
+            data_type: timestamp with time zone
+          - name: average_daily_trips
+            data_type: double precision
+          - name: level
+            data_type: integer
+          - name: operator_user_id
+            data_type: character varying
+          - name: num_days
+            data_type: double precision
+          - name: average_distance
+            data_type: double precision
+          - name: total_incentives
+            data_type: double precision
+          - name: average_trip_count
+            data_type: double precision
+          - name: driver_trip_percentage
+            data_type: double precision
+          - name: role_change
+            data_type: boolean
+          - name: intraday_change_count
+            data_type: integer
+          - name: total_change_count
+            data_type: integer
+          - name: intraday_change_percentage
+            data_type: double precision
+          - name: total_change_percentage
+            data_type: double precision
+          - name: carpool_days
+            data_type: integer
+          - name: carpool_day_list
+            data_type: ARRAY
+          - name: trip_id_list
+            data_type: ARRAY
+          - name: average_seats
+            data_type: double precision
+          - name: night_time_count_21_6
+            data_type: integer
+          - name: has_night_time_21_6
+            data_type: boolean
+          - name: night_time_percentage_21_6
+            data_type: double precision
+          - name: night_time_count_21_5
+            data_type: integer
+          - name: has_night_time_21_5
+            data_type: boolean
+          - name: night_time_percentage_21_5
+            data_type: double precision
+          - name: night_time_count_22_5
+            data_type: integer
+          - name: has_night_time_22_5
+            data_type: boolean
+          - name: night_time_percentage_22_5
+            data_type: double precision
+          - name: occupancy_rate_exceeded
+            data_type: boolean
+          - name: triangular_level_1
+            data_type: boolean
+          - name: triangular_level_2
+            data_type: boolean
+          - name: traveled_with_level_1
+            data_type: boolean
+          - name: traveled_with_level_2
+            data_type: boolean
+          - name: phone_trunc_changed
+            data_type: double precision
+          - name: operator_list
+            data_type: ARRAY
+      - name: triangular_patterns_old
+        description: ''
+        columns:
+          - name: id
+            data_type: integer
+          - name: created_at
+            data_type: timestamp with time zone
+          - name: phone_trunc
+            data_type: text
+          - name: num_participants
+            data_type: integer
+          - name: num_trips
+            data_type: double precision
+          - name: num_operators
+            data_type: integer
+          - name: average_duration
+            data_type: double precision
+          - name: departure_date
+            data_type: timestamp with time zone
+          - name: end_date
+            data_type: timestamp with time zone
+          - name: average_daily_trips
+            data_type: double precision
+          - name: level
+            data_type: integer
+          - name: operator_user_id
+            data_type: character varying
+          - name: num_days
+            data_type: double precision
+          - name: average_distance
+            data_type: double precision
+          - name: total_incentives
+            data_type: double precision
+          - name: average_trip_count
+            data_type: double precision
+          - name: driver_trip_percentage
+            data_type: double precision
+          - name: role_change
+            data_type: boolean
+          - name: intraday_change_count
+            data_type: integer
+          - name: total_change_count
+            data_type: integer
+          - name: intraday_change_percentage
+            data_type: double precision
+          - name: total_change_percentage
+            data_type: double precision
+          - name: carpool_days
+            data_type: integer
+          - name: carpool_day_list
+            data_type: ARRAY
+          - name: trip_id_list
+            data_type: ARRAY
+          - name: average_seats
+            data_type: double precision
+          - name: night_time_count_21_6
+            data_type: integer
+          - name: has_night_time_21_6
+            data_type: boolean
+          - name: night_time_percentage_21_6
+            data_type: double precision
+          - name: night_time_count_21_5
+            data_type: integer
+          - name: has_night_time_21_5
+            data_type: boolean
+          - name: night_time_percentage_21_5
+            data_type: double precision
+          - name: night_time_count_22_5
+            data_type: integer
+          - name: has_night_time_22_5
+            data_type: boolean
+          - name: night_time_percentage_22_5
+            data_type: double precision
+          - name: occupancy_rate_exceeded
+            data_type: boolean
+          - name: triangular_level_1
+            data_type: boolean
+          - name: triangular_level_2
+            data_type: boolean
+          - name: traveled_with_level_1
+            data_type: boolean
+          - name: traveled_with_level_2
+            data_type: boolean
+          - name: phone_trunc_changed
+            data_type: double precision
+          - name: operator_list
+            data_type: ARRAY
+      - name: user_phone_change_history
+        description: ''
+        columns:
+          - name: id
+            data_type: integer
+          - name: created_at
+            data_type: timestamp with time zone
+          - name: total_changes
+            data_type: integer
+          - name: year_month
+            data_type: date
+      - name: users_3_months_patterns
+        description: ''
+        columns:
+          - name: id
+            data_type: integer
+          - name: created_at
+            data_type: timestamp with time zone
+          - name: phone_trunc
+            data_type: character varying
+          - name: total_incentives
+            data_type: double precision
+          - name: triangular
+            data_type: boolean
+          - name: has_night_time
+            data_type: boolean
+          - name: night_time_percentage
+            data_type: double precision
+          - name: occupancy_rate_exceeded
+            data_type: boolean
+          - name: average_seats
+            data_type: double precision

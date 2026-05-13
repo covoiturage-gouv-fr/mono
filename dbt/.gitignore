@@ -7,3 +7,4 @@ logs/*
 .env.local
 .env.prod
 .env.demo
+dbt_internal_packages/

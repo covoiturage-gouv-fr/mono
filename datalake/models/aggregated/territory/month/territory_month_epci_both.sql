@@ -1,0 +1,1 @@
+{{territory_model('epci', 'month', 'both')}}
