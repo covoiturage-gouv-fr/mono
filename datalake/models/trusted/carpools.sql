@@ -5,8 +5,10 @@
     indexes = [
       { 'columns':['_id'] },
       { 'columns':['start_datetime_tz'] },
-      { 'columns':['start_h3_index'] },
-      { 'columns':['end_h3_index'] },
+      { 'columns':['start_h3index_z9'] },
+      { 'columns':['end_h3index_z9'] },
+      { 'columns':['start_h3index_z8'] },
+      { 'columns':['end_h3index_z8'] },
       { 'columns': ['driver_key'] },
       { 'columns': ['passenger_key'] },
       { 'columns': ['valid_acquisition_status'] }
