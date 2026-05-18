@@ -103,6 +103,7 @@ SELECT
 {% endif %}
   c._id,
   c.operator_id,
+  c.operator_name,
   c.operator_trip_id,
   c.operator_class,
   c.driver_key,
