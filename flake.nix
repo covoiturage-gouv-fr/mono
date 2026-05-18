@@ -48,7 +48,7 @@
       {
         devShells.default = pkgs.mkShell {
           # expose pg_config for building psycopg2
-          nativeBuildInputs = [ pkgs.postgresql_16.pg_config ];
+          nativeBuildInputs = [ pkgs.postgresql_17.pg_config ];
 
           buildInputs = with pkgs; [
             # system packages
@@ -61,7 +61,7 @@
 
             # rpc infra
             nodejs_24
-            postgresql_16
+            postgresql_17
             deno
 
             # data stack
@@ -87,7 +87,7 @@
             export DENO_DIR="$PWD/api/.cache"
             export SEVEN_ZIP_BIN_PATH=$(which 7z)
             export LESS="-SRXF"
-            if [ -L /run/current-system ]; then export LD_LIBRARY_PATH="${pkgs.lib.getLib pkgs.postgresql_16}/lib:${pkgs.stdenv.cc.cc.lib.outPath}/lib:${pkgs.pythonManylinuxPackages.manylinux2014Package}/lib:$LD_LIBRARY_PATH"; fi;
+            if [ -L /run/current-system ]; then export LD_LIBRARY_PATH="${pkgs.lib.getLib pkgs.postgresql_17}/lib:${pkgs.stdenv.cc.cc.lib.outPath}/lib:${pkgs.pythonManylinuxPackages.manylinux2014Package}/lib:$LD_LIBRARY_PATH"; fi;
             test -d .nix-venv || uv venv .nix-venv --no-project --no-managed-python --no-python-downloads
             source .nix-venv/bin/activate
             $(cd sqlmesh && UV_PROJECT_ENVIRONMENT=../.nix-venv uv sync)

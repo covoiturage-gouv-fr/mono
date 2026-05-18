@@ -1,10 +1,10 @@
-FROM postgis/postgis:16-3.5-alpine
+FROM postgis/postgis:17-3.5-alpine
 # Dépendances de build
 RUN apk add --no-cache \
     git \
     build-base \
     cmake \
-    postgresql16-dev \
+    postgresql17-dev \
     llvm21-dev \
     clang21
 
@@ -23,6 +23,6 @@ RUN apk del \
     git \
     build-base \
     cmake \
-    postgresql16-dev \
+    postgresql17-dev \
     llvm21-dev \
     clang21
