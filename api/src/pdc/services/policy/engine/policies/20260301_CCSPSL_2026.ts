@@ -24,7 +24,7 @@ import { AbstractPolicyHandler } from "./AbstractPolicyHandler.ts";
 // INSERT INTO policy.policies ( territory_id, start_date, end_date, name, unit, status, handler, max_amount )
 // VALUES ( ???, '2026-03-01T00:00:00+0100', '2027-01-01T00:00:00+0100', 'CC Saint-Pourcain Sioule Limagne 2026', 'euro', 'draft', 'ccspsl_2026', 213500 );
 
-// Campagne CC Saint-Pourcain Sioule Limagne 2026 - epci:200049646
+// Campagne CC Saint-Pourcain Sioule Limagne 2026 - epci:200071389
 export const CCSPSL2026: PolicyHandlerStaticInterface = class extends AbstractPolicyHandler
   implements PolicyHandlerInterface {
   static readonly id = "ccspsl_2026";
@@ -98,7 +98,7 @@ export const CCSPSL2026: PolicyHandlerStaticInterface = class extends AbstractPo
 
     onDistanceRangeOrThrow(ctx, { min: 2_000, max: 80_001 });
 
-    if (!startsAt(ctx, { epci: ["200049646"] }) && !endsAt(ctx, { epci: ["200049646"] })) {
+    if (!startsAt(ctx, { epci: ["200071389"] }) && !endsAt(ctx, { epci: ["200071389"] })) {
       throw new NotEligibleTargetException();
     }
 
