@@ -62,6 +62,7 @@ anomaly_labels AS (
     INNER JOIN source_carpools c ON al.carpool_id = c._id
     GROUP BY 1
 ),
+
 terms_violation_error_labels AS (
     SELECT tv.carpool_id, tv.labels AS terms_violation_error_labels
     FROM {{ source('carpool_v2', 'terms_violation_error_labels') }} tv
