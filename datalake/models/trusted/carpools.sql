@@ -58,9 +58,15 @@ anomaly_labels AS (
     SELECT
         al.carpool_id,
         ARRAY_AGG(al.label) AS anomaly_labels
-    FROM {{ source('fraudcheck', 'labels') }} al
+    FROM {{ source('anomaly', 'labels') }} al
     INNER JOIN source_carpools c ON al.carpool_id = c._id
     GROUP BY 1
+),
+
+terms_violation_error_labels AS (
+    SELECT tv.carpool_id, tv.labels AS terms_violation_error_labels
+    FROM {{ source('carpool_v2', 'terms_violation_error_labels') }} tv
+    INNER JOIN source_carpools c ON tv.carpool_id = c._id
 ),
 
 base_carpools AS (
@@ -119,13 +125,15 @@ base_carpools AS (
         cs.acquisition_status::VARCHAR AS acquisition_status,
         cs.status_updated_at,
         cs.final_acquisition_status,
-        cs.valid_acquisition_status
+        cs.valid_acquisition_status,
+        tv.terms_violation_error_labels
 
     FROM source_carpools c
     LEFT JOIN carpools_status cs ON c._id = cs.carpool_id
     LEFT JOIN {{ source('carpool_v2', 'geo') }} g ON g.carpool_id = c._id
     LEFT JOIN fraud_labels fl ON c._id = fl.carpool_id
     LEFT JOIN anomaly_labels al ON c._id = al.carpool_id
+    LEFT JOIN terms_violation_error_labels tv ON c._id = tv.carpool_id
     LEFT JOIN {{ source('operator', 'operators') }} o ON c.operator_id = o._id
 ),
 
@@ -316,7 +324,8 @@ carpools AS (
     j.acquisition_status,
     j.status_updated_at,
     j.final_acquisition_status,
-    j.valid_acquisition_status
+    j.valid_acquisition_status,
+    j.terms_violation_error_labels
 
   FROM base_carpools AS j
   LEFT JOIN geocoding AS geo ON geo.carpool_id = j._id

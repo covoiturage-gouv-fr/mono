@@ -6,7 +6,8 @@
   default_start="'2020-01-01 00:00:00'",
   lookback_nb=0,
   lookback_unit='day',
-  with_new_users=true
+  with_new_users=true,
+  with_valid=true
 ) %}
   
   {%- set perim_join = carpools_perim_join() -%}
@@ -141,6 +142,18 @@ SELECT
   c.campaigns_amount_total,
   c.campaigns_result_total,
   {{ cfg.is_intra }} AS is_intra
+  {% if not with_valid %}
+  ,
+  -- status
+  c.acquisition_status,
+  c.final_acquisition_status,
+  c.valid_acquisition_status,
+  c.fraud_status,
+  c.fraud_labels,
+  c.anomaly_status,
+  c.anomaly_labels,
+  c.terms_violation_error_labels
+  {% endif %}
 FROM {{ ref('carpools') }} c
 {% if with_new_users %}
 LEFT JOIN {{ ref('users') }} d ON d.user_id = c.driver_key
@@ -148,7 +161,8 @@ LEFT JOIN {{ ref('users') }} pu ON pu.user_id = c.passenger_key
 {% endif %}
 {{ cfg.joins }}
 WHERE {{ time_filter(column, model_column, type, default_start, lookback_nb, lookback_unit) }}
+  {% if with_valid %}
   AND c.valid_acquisition_status = true
+  {% endif %}
   AND {{ cfg.where_geo }}
- 
 {% endmacro %}

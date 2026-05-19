@@ -1,0 +1,1 @@
+{{('arr', 'quarter', 'from')}}
