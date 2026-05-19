@@ -4,8 +4,15 @@ services:
       - 5432:5432
     environment:
       PGDATA: '/var/lib/postgresql/data/pgdata'
+    command:
+      - postgres
+      - -c
+      - listen_addresses=*
+      - -c
+      - hba_file=/etc/postgresql/pg_hba.conf
     volumes:
       - ./db/postgres:/var/lib/postgresql/data/pgdata
+      - ./docker/postgres/pg_hba.conf:/etc/postgresql/pg_hba.conf:ro
     shm_size: 8g
 
   redis:
