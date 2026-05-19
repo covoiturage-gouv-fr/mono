@@ -55,23 +55,25 @@ WITH filtered_carpools AS (
 
   SELECT
     operator_id,
+    operator_name,
     start_code AS code,
     {{ incremental_columns('carpool_datetime', grain) }},
     {{ territory_agg_columns() }}
   FROM filtered_carpools
   WHERE start_code IS NOT NULL
-  GROUP BY 1, 2 {{ group_by_grain(grain, 3) }}
+  GROUP BY 1, 2, 3 {{ group_by_grain(grain, 4) }}
 
 {% elif direction == 'to' %}
 
   SELECT
     operator_id,
+    operator_name,
     end_code AS code,
     {{ incremental_columns('carpool_datetime', grain) }},
     {{ territory_agg_columns() }}
   FROM filtered_carpools
   WHERE end_code IS NOT NULL
-  GROUP BY 1, 2 {{ group_by_grain(grain, 3) }}
+  GROUP BY 1, 2, 3 {{ group_by_grain(grain, 4) }}
 
 {% elif direction == 'both' %}
   , exploded AS (
@@ -86,12 +88,13 @@ WITH filtered_carpools AS (
   )
   SELECT
     operator_id,
+    operator_name,
     code,
     {{ incremental_columns('carpool_datetime', grain) }},
     {{ territory_agg_columns() }}
   FROM exploded
   WHERE code IS NOT NULL
-  GROUP BY 1, 2 {{ group_by_grain(grain, 3) }}
+  GROUP BY 1, 2, 3 {{ group_by_grain(grain, 4) }}
 {% endif %}
 {% endif %}
 {% endmacro %}

@@ -11,7 +11,7 @@
     indexes=[
       { 'columns': ['user_id'], 'unique': true }
     ],
-    tags=['trusted', 'users', 'daily']
+    tags=['aggregated', 'users', 'daily']
   )
 }}
 

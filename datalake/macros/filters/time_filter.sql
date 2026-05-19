@@ -32,11 +32,13 @@
             {{ default_start }}
           )
           FROM {{ this }}
+          WHERE {{ model_col }}::{{ type }} <= CURRENT_TIMESTAMP{{ cast }}
         )
       {% else %}
         {{ default_start }}
       {% endif %}
     )
+    AND {{ column }}{{ cast }} <= CURRENT_TIMESTAMP{{ cast }}
     {% if var('end', none) %}
       AND {{ column }}{{ cast }} < '{{ var("end") }}'{{ cast }}
     {% endif %}

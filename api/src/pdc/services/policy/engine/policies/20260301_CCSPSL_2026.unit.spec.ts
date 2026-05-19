@@ -4,12 +4,12 @@ import { OperatorsEnum } from "../../interfaces/index.ts";
 import { makeProcessHelper } from "../tests/macro.ts";
 import { CCSPSL2026 as Handler } from "./20260301_CCSPSL_2026.ts";
 
-// Saint-Pourcain-sur-Sioule (03254), EPCI 200049646
+// Saint-Pourcain-sur-Sioule (03254), EPCI 200071389
 const defaultPosition = {
   arr: "03254",
   com: "03254",
-  aom: "200049646",
-  epci: "200049646",
+  aom: "200071389",
+  epci: "200071389",
   dep: "03",
   reg: "84",
   country: "XXXXX",
