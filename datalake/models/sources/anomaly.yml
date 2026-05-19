@@ -1,0 +1,5 @@
+version: 2
+sources:
+  - name: anomaly
+    tables:
+      - name: labels
