@@ -40,9 +40,9 @@ SELECT * FROM {{ ref('operators_' ~ grain ~ '_plm_' ~ direction) }}
 {{ config(
   materialized='incremental',
   incremental_strategy='delete+insert',
-  unique_key=['code', 'incremental_date'],
+  unique_key=['operator_id', 'code', 'incremental_date'],
   indexes=[
-    {'columns': ['code', 'incremental_date'], 'unique': true}
+    {'columns': ['operator_id', 'code', 'incremental_date'], 'unique': true}
   ],
   tags=['aggregated', 'operators', grain, grain ~ '_' ~ perim ~ '_' ~ direction]
 ) }}
@@ -61,7 +61,7 @@ WITH filtered_carpools AS (
     {{ territory_agg_columns() }}
   FROM filtered_carpools
   WHERE start_code IS NOT NULL
-  GROUP BY 1, 2, 3 {{ group_by_grain(grain, 4) }}
+  GROUP BY 1, 2, 3, {{ group_by_grain(grain, 4) }}
 
 {% elif direction == 'to' %}
 
@@ -73,7 +73,7 @@ WITH filtered_carpools AS (
     {{ territory_agg_columns() }}
   FROM filtered_carpools
   WHERE end_code IS NOT NULL
-  GROUP BY 1, 2, 3 {{ group_by_grain(grain, 4) }}
+  GROUP BY 1, 2, 3, {{ group_by_grain(grain, 4) }}
 
 {% elif direction == 'both' %}
   , exploded AS (
@@ -94,7 +94,7 @@ WITH filtered_carpools AS (
     {{ territory_agg_columns() }}
   FROM exploded
   WHERE code IS NOT NULL
-  GROUP BY 1, 2, 3 {{ group_by_grain(grain, 4) }}
+  GROUP BY 1, 2, 3, {{ group_by_grain(grain, 4) }}
 {% endif %}
 {% endif %}
 {% endmacro %}

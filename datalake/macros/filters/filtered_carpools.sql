@@ -5,7 +5,8 @@
   type='timestamp',
   default_start="'2020-01-01 00:00:00'",
   lookback_nb=0,
-  lookback_unit='day'
+  lookback_unit='day',
+  with_new_users=true
 ) %}
   
   {%- set perim_join = carpools_perim_join() -%}
@@ -119,8 +120,13 @@ SELECT
   {{ cfg.start_col }} AS start_code,
   {{ cfg.end_col }} AS end_code,
   -- Nouveaux utilisateurs
+  {% if with_new_users %}
   (d.first_date_driver = c.start_datetime_tz::date) AS is_new_driver,
   (pu.first_date_passenger = c.start_datetime_tz::date) AS is_new_passenger,
+  {% else %}
+  false AS is_new_driver,
+  false AS is_new_passenger,
+  {% endif %}
   -- incitations operateurs
   c.oi_amount_collectivite,
   c.oi_amount_operator,
@@ -136,8 +142,10 @@ SELECT
   c.campaigns_result_total,
   {{ cfg.is_intra }} AS is_intra
 FROM {{ ref('carpools') }} c
+{% if with_new_users %}
 LEFT JOIN {{ ref('users') }} d ON d.user_id = c.driver_key
 LEFT JOIN {{ ref('users') }} pu ON pu.user_id = c.passenger_key
+{% endif %}
 {{ cfg.joins }}
 WHERE {{ time_filter(column, model_column, type, default_start, lookback_nb, lookback_unit) }}
   AND c.valid_acquisition_status = true
