@@ -48,7 +48,7 @@ SELECT * FROM {{ ref('fraud_' ~ grain ~ '_plm_' ~ direction) }}
 ) }}
 
 WITH filtered_carpools AS (
-  {{ filtered_carpools(perim, lookback_nb=lb.nb, lookback_unit=lb.unit) with_valid=false }}
+  {{ filtered_carpools(perim, lookback_nb=lb.nb, lookback_unit=lb.unit, with_valid=false) }}
 )
 
 {% if direction == 'from' %}

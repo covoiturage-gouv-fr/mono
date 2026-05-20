@@ -17,11 +17,15 @@ WITH filtered_carpools AS (
 ),
 
 carpools_by_role AS (
-  SELECT driver_key AS user_id, 'driver'::text AS role, fc.*
+  SELECT driver_key AS user_id, 
+  'driver'::text AS role, 
+  fc.*
   FROM filtered_carpools fc
   WHERE driver_key IS NOT NULL
   UNION ALL
-  SELECT passenger_key AS user_id, 'passenger'::text AS role, fc.*
+  SELECT passenger_key AS user_id, 
+  'passenger'::text AS role,
+  fc.*
   FROM filtered_carpools fc
   WHERE passenger_key IS NOT NULL
 )

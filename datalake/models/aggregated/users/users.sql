@@ -19,10 +19,10 @@ WITH first_geo AS (
 
 SELECT
   agg.user_id,
-  MIN(incremental_date) FILTER (WHERE role = 'driver')::date  AS first_date_driver,
-  MIN(incremental_date) FILTER (WHERE role = 'passenger')::date AS first_date_passenger,
-  MAX(incremental_date) FILTER (WHERE role = 'driver')::date  AS last_date_driver,
-  MAX(incremental_date) FILTER (WHERE role = 'passenger')::date AS last_date_passenger,
+  MIN(incremental_date) FILTER (WHERE agg.role = 'driver')::date  AS first_date_driver,
+  MIN(incremental_date) FILTER (WHERE agg.role = 'passenger')::date AS first_date_passenger,
+  MAX(incremental_date) FILTER (WHERE agg.role = 'driver')::date  AS last_date_driver,
+  MAX(incremental_date) FILTER (WHERE agg.role = 'passenger')::date AS last_date_passenger,
   d_geo.geo_code AS first_geo_code_driver,
   p_geo.geo_code AS first_geo_code_passenger,
   MAX(incremental_date) AS updated_at
