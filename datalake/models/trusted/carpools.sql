@@ -69,7 +69,7 @@ terms_violation_error_labels AS (
     INNER JOIN source_carpools c ON tv.carpool_id = c._id
 ),
 
-base_carpools AS (
+base_carpools AS MATERIALIZED (
     SELECT
         c._id,
         c.uuid::VARCHAR AS uuid,
