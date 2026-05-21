@@ -15,7 +15,13 @@
 WITH daily AS (
   SELECT *
   FROM {{ ref('user_od_day') }}
-  WHERE         {{ time_filter('incremental_date', type='timestamp', default_start="'2020-01-01 00:00:00'", lookback_nb=1, lookback_unit='month') }}
+  WHERE {{ time_filter(
+    'incremental_date',
+    type='timestamp',
+    default_start="'2020-01-01 00:00:00'",
+    lookback_nb=1,
+    lookback_unit='month'
+  ) }}
 )
 
 SELECT
