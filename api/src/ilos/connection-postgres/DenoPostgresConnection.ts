@@ -97,6 +97,18 @@ export class DenoPostgresConnection
           // surfaced by the company.companies geo round-trip).
           700: (value: string): number => Number(value),
           701: (value: string): number => Number(value),
+          // Postgres numeric / decimal (OID 1700). Arbitrary-precision in
+          // Postgres; deno-postgres preserves that by returning a string.
+          // RPC uses numeric for cent-denominated amounts and aggregated
+          // counts (policy.incentives sums, dashboard_stats journeys /
+          // incentive_amount, ST_X/ST_Y casts in carpool/policy geo queries).
+          // Every plausible value stays well below Number.MAX_SAFE_INTEGER
+          // (2^53 - 1 ≈ 9e15), so JS Number is lossless in practice and
+          // restores parity with node-pg (which decoded numeric to number).
+          // Note: this trades arbitrary precision for ergonomics. If a future
+          // ledger or balance column needs > 15 significant digits, fetch it
+          // with an explicit ::text cast at the call site.
+          1700: (value: string): number => Number(value),
         },
       },
       ...config,
