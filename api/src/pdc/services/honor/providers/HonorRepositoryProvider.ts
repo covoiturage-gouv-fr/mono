@@ -9,8 +9,8 @@ import {
 } from "../contracts/stats.contract.ts";
 
 type StatsResponseRow = {
-  day: string | null;
-  type: "public" | "limited" | null;
+  day: string;
+  type: "public" | "limited";
   total: number;
 };
 
@@ -38,12 +38,10 @@ export class HonorRepositoryProvider implements HonorRepositoryInterface {
   constructor(protected pgConnection: DenoPostgresConnection) {}
 
   async stats(_params: StatsParamsInterface): Promise<StatsResultInterface> {
-    // substring from 11 for days
-    // substring from 8 for months
     // TODO switch from days to months when we have enough data (starts 10/2020)
     const rows = await this.pgConnection.query<StatsResponseRow>(sql`
       SELECT
-        to_char(journey_start_datetime::date, 'yyyy-mm-dd') as day,
+        to_char(created_at::date, 'yyyy-mm-dd') as day,
         type,
         SUM(1)::int as total
       FROM ${raw(this.table)}
