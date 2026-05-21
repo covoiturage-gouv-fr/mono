@@ -171,19 +171,19 @@ describe("Grand Châtellerault 2026 - Driver monthly limits", () => {
       ],
       meta: [{
         key: "max_amount_restriction.0-one.month.1-2026",
-        value: 118_50n,
+        value: 118_50,
       }, {
         key: "max_amount_restriction.global.campaign.global",
-        value: 0n,
+        value: 0,
       }],
     }, {
       incentive: [150, 0],
       meta: [{
         key: "max_amount_restriction.0-one.month.1-2026",
-        value: 120_00n,
+        value: 120_00,
       }, {
         key: "max_amount_restriction.global.campaign.global",
-        value: 150n,
+        value: 150,
       }],
     });
   });
@@ -192,11 +192,11 @@ describe("Grand Châtellerault 2026 - Driver monthly limits", () => {
 describe("Grand Châtellerault 2026 - Campaign global limit", () => {
   it("should limit campaign total amount to 15 000 €", async () => {
     await process({
-      policy: { handler: Handler.id, max_amount: 15_000_00n },
+      policy: { handler: Handler.id, max_amount: 15_000_00 },
       carpool: [{}, {}, {}],
       meta: [{
         key: "max_amount_restriction.global.campaign.global",
-        value: 14_999_00n,
+        value: 14_999_00,
       }],
     }, {
       incentive: [100, 0, 0],

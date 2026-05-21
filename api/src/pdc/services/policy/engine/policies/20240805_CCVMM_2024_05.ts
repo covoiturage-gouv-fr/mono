@@ -57,7 +57,7 @@ export const CCVMM202405: PolicyHandlerStaticInterface = class extends AbstractP
     },
   ];
 
-  constructor(public policy_max_amount: bigint) {
+  constructor(public policy_max_amount: number) {
     super();
     this.limits = [
       [

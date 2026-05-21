@@ -106,7 +106,7 @@ describe("FindAction", () => {
       tz: "Europe/Paris",
       handler: "pdll_2024",
       status: PolicyStatusEnum.ACTIVE,
-      incentive_sum: 100n,
+      incentive_sum: 100,
     };
     const operator: OperatorResultInterface = {
       name: "Klaxit",
@@ -140,7 +140,7 @@ describe("FindAction", () => {
       tz: "Europe/Paris",
       handler: "pmgf_late_2023",
       status: PolicyStatusEnum.FINISHED,
-      incentive_sum: 100n,
+      incentive_sum: 100,
     };
 
     const operator: OperatorResultInterface = {

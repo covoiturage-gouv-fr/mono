@@ -186,7 +186,7 @@ it("should work with driver month limits", async () =>
       meta: [
         {
           key: "max_amount_restriction.0-one.month.3-2025",
-          value: 149_50n,
+          value: 149_50,
         },
       ],
     },
@@ -195,11 +195,11 @@ it("should work with driver month limits", async () =>
       meta: [
         {
           key: "max_amount_restriction.0-one.month.3-2025",
-          value: 150_00n,
+          value: 150_00,
         },
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 50n,
+          value: 50,
         },
       ],
     },

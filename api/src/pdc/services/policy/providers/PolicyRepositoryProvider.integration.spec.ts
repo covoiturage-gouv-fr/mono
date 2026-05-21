@@ -29,8 +29,8 @@ describe("PolicyRepositoryProvider", () => {
       tz: "Europe/Paris",
       status: PolicyStatusEnum.DRAFT,
       handler: "Idfm",
-      incentive_sum: 5000n,
-      max_amount: 10_000_000_00n,
+      incentive_sum: 5000,
+      max_amount: 10_000_000_00,
       ...data,
     };
   }

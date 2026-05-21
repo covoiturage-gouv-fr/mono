@@ -40,7 +40,7 @@ export const Montpellier: PolicyHandlerStaticInterface = class extends AbstractP
       fn: (ctx: StatelessContextInterface) => perSeat(ctx, perKm(ctx, { amount: 10, offset: 10_000, limit: 20_000 })),
     },
   ];
-  constructor(public max_amount: bigint) {
+  constructor(public max_amount: number) {
     super();
     this.limits = [
       [

@@ -92,15 +92,15 @@ it("should work basic", async () =>
       meta: [
         {
           key: "max_amount_restriction.0-one.month.0-2025",
-          value: 450n,
+          value: 450,
         },
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 600n,
+          value: 600,
         },
         {
           key: "max_amount_restriction.0-two.month.0-2025",
-          value: 150n,
+          value: 150,
         },
       ],
     },
@@ -117,11 +117,11 @@ it("should work with driver month limits", async () =>
       meta: [
         {
           key: "max_amount_restriction.0-one.month.0-2025",
-          value: 119_00n,
+          value: 119_00,
         },
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 119_00n,
+          value: 119_00,
         },
       ],
     },
@@ -130,11 +130,11 @@ it("should work with driver month limits", async () =>
       meta: [
         {
           key: "max_amount_restriction.0-one.month.0-2025",
-          value: 120_00n,
+          value: 120_00,
         },
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 120_00n,
+          value: 120_00,
         },
       ],
     },
@@ -195,11 +195,11 @@ it("should work with driver day limits", async () =>
       meta: [
         {
           key: "max_amount_restriction.0-11.month.0-2025",
-          value: 900n,
+          value: 900,
         },
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 900n,
+          value: 900,
         },
       ],
     },
@@ -236,11 +236,11 @@ it("should work with passenger day limits", async () =>
       meta: [
         {
           key: "max_amount_restriction.0-11.month.0-2025",
-          value: 300n,
+          value: 300,
         },
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 300n,
+          value: 300,
         },
       ],
     },
@@ -258,11 +258,11 @@ it("should work with driver amount month limits", async () =>
       meta: [
         {
           key: "max_amount_restriction.0-three.month.0-2025",
-          value: 120_00n,
+          value: 120_00,
         },
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 120_00n,
+          value: 120_00,
         },
       ],
     },

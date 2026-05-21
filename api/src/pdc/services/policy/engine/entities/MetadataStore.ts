@@ -18,7 +18,7 @@ function getCacheKey(policy_id: number, key: string): string {
 function getDefaultVariableDefinition(
   definition: SerializedMetadataVariableDefinitionInterface,
 ): SerializedMetadataVariableDefinitionInterface {
-  return { initialValue: 0n, lifetime: MetadataLifetime.Always, ...definition };
+  return { initialValue: 0, lifetime: MetadataLifetime.Always, ...definition };
 }
 
 export class MetadataStore implements MetadataStoreInterface {
@@ -45,12 +45,12 @@ export class MetadataStore implements MetadataStoreInterface {
 
     for (const key of keysToQuery) {
       const variableDefinition = getDefaultVariableDefinition(variables.find((v) => v.key === key)!);
-      const value = missingData.find((k) => k.key === key)?.value || variableDefinition.initialValue || 0n;
+      const value = missingData.find((k) => k.key === key)?.value || variableDefinition.initialValue || 0;
       this.cache.set(getCacheKey(registry.policy_id, key), {
         ...variableDefinition,
         policy_id: registry.policy_id,
         datetime: registry.datetime,
-        value: BigInt(value),
+        value: Number(value),
       });
     }
 

@@ -19,7 +19,7 @@ describe("seed", () => {
   });
 
   it("should seed territories", async () => {
-    const rows = await mig.testConn.query<{ count: bigint }>(sql`SELECT count(*) FROM geo.perimeters`);
-    assertEquals(rows[0].count, 17n);
+    const rows = await mig.testConn.query<{ count: number }>(sql`SELECT count(*) FROM geo.perimeters`);
+    assertEquals(rows[0].count, 17);
   });
 });

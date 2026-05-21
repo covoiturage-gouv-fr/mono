@@ -75,7 +75,7 @@ export const Vitre2023: PolicyHandlerStaticInterface = class extends AbstractPol
     },
   ];
 
-  constructor(public max_amount: bigint) {
+  constructor(public max_amount: number) {
     super();
     this.limits = [
       [

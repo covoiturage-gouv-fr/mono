@@ -48,8 +48,8 @@ export interface SerializedPolicyInterface {
   tz: Timezone;
   handler: string;
   status: PolicyStatusEnum;
-  incentive_sum: bigint;
-  max_amount: bigint;
+  incentive_sum: number;
+  max_amount: number;
 }
 
 export interface PolicyHandlerStaticInterface {
@@ -60,7 +60,7 @@ export interface PolicyHandlerStaticInterface {
   /**
    * Optional max amount to spend for the policy
    */
-  new (max_amount: bigint): PolicyHandlerInterface;
+  new (max_amount: number): PolicyHandlerInterface;
 }
 
 export interface PolicyHandlerParamsInterface {
@@ -68,13 +68,13 @@ export interface PolicyHandlerParamsInterface {
   slices?: RunnableSlices | BoundedSlices;
   operators?: Array<OperatorsEnum>;
   allTimeOperators?: Array<OperatorsEnum>;
-  limits?: { glob?: bigint };
+  limits?: { glob?: number };
   booster_dates?: Array<string>;
   extras?: unknown;
 }
 
 export interface PolicyHandlerInterface {
-  max_amount?: bigint;
+  max_amount?: number;
   load(): Promise<void>;
   processStateless(context: StatelessContextInterface): void;
   processStateful(context: StatefulContextInterface): void;
@@ -97,7 +97,7 @@ export interface StatelessContextInterface {
   meta: MetadataRegistryInterface;
   carpool: CarpoolInterface;
   policy_territory_selector?: TerritorySelectorsInterface;
-  policy_max_amount?: bigint;
+  policy_max_amount?: number;
   // deno-lint-ignore no-explicit-any
   data?: Record<string, any>;
 }

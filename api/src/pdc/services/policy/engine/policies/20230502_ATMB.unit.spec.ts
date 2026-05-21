@@ -141,11 +141,11 @@ it(
         meta: [
           {
             key: "max_amount_restriction.0-one.month.4-2023",
-            value: 2450n,
+            value: 2450,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 2450n,
+            value: 2450,
           },
         ],
       },
@@ -165,7 +165,7 @@ it(
         meta: [
           {
             key: "max_amount_restriction.0-one.month.4-2023",
-            value: 48_00n,
+            value: 48_00,
           },
         ],
       },
@@ -174,11 +174,11 @@ it(
         meta: [
           {
             key: "max_amount_restriction.0-one.month.4-2023",
-            value: 50_00n,
+            value: 50_00,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 200n,
+            value: 200,
           },
         ],
       },

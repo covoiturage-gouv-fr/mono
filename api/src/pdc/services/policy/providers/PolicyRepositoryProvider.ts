@@ -314,7 +314,7 @@ export class PolicyRepositoryProvider implements PolicyRepositoryProviderInterfa
     const { _id: key_id, datetime } = res.rows[0];
 
     // compute incentive_sum
-    const resSum = await this.connection.getClient().query<{ incentive_sum: bigint }>({
+    const resSum = await this.connection.getClient().query<{ incentive_sum: number }>({
       text: `
           WITH latest_incentive AS (
             SELECT MAX(datetime)

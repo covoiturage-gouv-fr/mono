@@ -58,24 +58,24 @@ export const GrandChatellerault2026: PolicyHandlerStaticInterface = class extend
     },
   ];
 
-  constructor(public max_amount: bigint) {
+  constructor(public max_amount: number) {
     super();
     this.limits = [
       [
         "25021180-e8d6-4bae-9864-f2ad12a076c4",
-        6n,
+        6,
         watchForPersonMaxTripByDay,
         LimitTargetEnum.Driver,
       ],
       [
         "eb4f1108-010d-473e-aaca-93caf6f8d3f0",
-        2n,
+        2,
         watchForPersonMaxTripByDay,
         LimitTargetEnum.Passenger,
       ],
       [
         "bd2c3b5e-5916-4b35-911c-34c6258096a0",
-        120_00n,
+        120_00,
         watchForPersonMaxAmountByMonth,
         LimitTargetEnum.Driver,
       ],

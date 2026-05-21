@@ -109,15 +109,15 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 600n,
+            value: 600,
           },
           {
             key: "max_amount_restriction.0-tom.month.3-2024",
-            value: 450n,
+            value: 450,
           },
           {
             key: "max_amount_restriction.0-nina.month.3-2024",
-            value: 150n,
+            value: 150,
           },
         ],
       },
@@ -129,12 +129,12 @@ it(
   async () =>
     await process(
       {
-        policy: { handler: Handler.id, max_amount: 2_200_000_00n },
+        policy: { handler: Handler.id, max_amount: 2_200_000_00 },
         carpool: [{ distance: 5_000, driver_identity_key: "one" }],
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 2_199_998_50n,
+            value: 2_199_998_50,
           },
         ],
       },
@@ -143,11 +143,11 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 2_200_000_00n,
+            value: 2_200_000_00,
           },
           {
             key: "max_amount_restriction.0-one.month.3-2024",
-            value: 150n,
+            value: 150,
           },
         ],
       },
@@ -204,11 +204,11 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 900n,
+            value: 900,
           },
           {
             key: "max_amount_restriction.0-one.month.3-2024",
-            value: 900n,
+            value: 900,
           },
         ],
       },
@@ -228,11 +228,11 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 0n,
+            value: 0,
           },
           {
             key: "max_amount_restriction.0-one.month.3-2024",
-            value: 118_50n,
+            value: 118_50,
           },
         ],
       },
@@ -241,11 +241,11 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 150n,
+            value: 150,
           },
           {
             key: "max_amount_restriction.0-one.month.3-2024",
-            value: 120_00n,
+            value: 120_00,
           },
         ],
       },

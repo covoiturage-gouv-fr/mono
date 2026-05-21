@@ -49,18 +49,18 @@ export const LannionTregor2026 = class extends AbstractPolicyHandler implements 
     [TerritoryCodeEnum.Mobility]: ["200065928"], // CA Lannion-Trégor Communauté
   };
 
-  constructor(public max_amount: bigint) {
+  constructor(public max_amount: number) {
     super();
     this.limits = [
       [
         "001BB5F8-207D-48A8-966E-29B6CDDAE6D7A",
-        6n,
+        6,
         watchForPersonMaxTripByDay,
         LimitTargetEnum.Driver,
       ],
       [
         "2EE2AD47-CF32-459F-84B4-58712739ADD9",
-        150_00n,
+        150_00,
         watchForPersonMaxAmountByMonth,
         LimitTargetEnum.Driver,
       ],

@@ -19,7 +19,7 @@ export const LavalAgglo2022: PolicyHandlerStaticInterface = class extends Abstra
   implements PolicyHandlerInterface {
   static readonly id = "695";
 
-  constructor(public max_amount: bigint) {
+  constructor(public max_amount: number) {
     super();
     this.limits = [
       [

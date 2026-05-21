@@ -69,15 +69,15 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 1970n,
+            value: 1970,
           },
           {
             key: "max_amount_restriction.0-driver_id_one.month.0-2023",
-            value: 1500n,
+            value: 1500,
           },
           {
             key: "max_amount_restriction.0-driver_id_one.month.5-2023",
-            value: 470n,
+            value: 470,
           },
         ],
       },
@@ -97,11 +97,11 @@ it(
         meta: [
           {
             key: "max_amount_restriction.0-driver_id_one.month.5-2023",
-            value: 79_00n,
+            value: 79_00,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 79_00n,
+            value: 79_00,
           },
         ],
       },
@@ -110,11 +110,11 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 80_00n,
+            value: 80_00,
           },
           {
             key: "max_amount_restriction.0-driver_id_one.month.5-2023",
-            value: 80_00n,
+            value: 80_00,
           },
         ],
       },

@@ -28,14 +28,14 @@ export const ATMBx2CCAM2026: PolicyHandlerStaticInterface = class extends Abstra
 
   // Configure the number of passenger trips before the incentive price is halved
   private readonly COUNTER_UUID = "c04ddaf2-0d3e-448f-a25f-13327f99199a";
-  private readonly COUNTER_LIMIT = 50n;
+  private readonly COUNTER_LIMIT = 50;
 
-  constructor(public max_amount: bigint) {
+  constructor(public max_amount: number) {
     super();
     this.limits = [
       [
         this.COUNTER_UUID,
-        10000n, // No limit, we just wanna count the total number of trips
+        10000, // No limit, we just wanna count the total number of trips
         watchPersonTripCount,
         LimitTargetEnum.Passenger,
       ],

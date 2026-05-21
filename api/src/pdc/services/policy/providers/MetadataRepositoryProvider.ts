@@ -41,7 +41,7 @@ export class MetadataRepositoryProvider implements MetadataRepositoryProviderInt
   }
 
   async set(data: SerializedStoredMetadataInterface[]): Promise<void> {
-    const args: [number[], string[], bigint[], Date[]] = data.reduce(
+    const args: [number[], string[], number[], Date[]] = data.reduce(
       ([policyIds, keys, vals, dates], i) => {
         policyIds.push(i.policy_id);
         keys.push(i.key);
@@ -49,7 +49,7 @@ export class MetadataRepositoryProvider implements MetadataRepositoryProviderInt
         dates.push(i.datetime);
         return [policyIds, keys, vals, dates];
       },
-      [[], [], [], []] as [number[], string[], bigint[], Date[]],
+      [[], [], [], []] as [number[], string[], number[], Date[]],
     );
 
     const [ids, keys, vals, dates] = args;

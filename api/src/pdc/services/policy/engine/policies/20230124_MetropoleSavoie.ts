@@ -39,7 +39,7 @@ export const MetropoleSavoie: PolicyHandlerStaticInterface = class extends Abstr
     },
   ];
 
-  constructor(public max_amount: bigint) {
+  constructor(public max_amount: number) {
     super();
     this.limits = [[
       "99911EAF-89AB-C346-DDD5-BD2C7704F935",

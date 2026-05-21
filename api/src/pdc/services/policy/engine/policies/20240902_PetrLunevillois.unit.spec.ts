@@ -76,7 +76,7 @@ it("should work basic with start/end inside aom", async () =>
       meta: [
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 546n,
+          value: 546,
         },
       ],
     },
@@ -125,7 +125,7 @@ it("should work for normal trips (start)", async () =>
     meta: [
       {
         key: "max_amount_restriction.global.campaign.global",
-        value: 546n,
+        value: 546,
       },
     ],
   }));
@@ -173,7 +173,7 @@ it("should work for normal trips (end)", async () =>
     meta: [
       {
         key: "max_amount_restriction.global.campaign.global",
-        value: 546n,
+        value: 546,
       },
     ],
   }));
@@ -181,12 +181,12 @@ it("should work for normal trips (end)", async () =>
 it("should work with global limits", async () =>
   await process(
     {
-      policy: { handler: Handler.id, max_amount: 10_000_00n },
+      policy: { handler: Handler.id, max_amount: 10_000_00 },
       carpool: [{ distance: 59_000, driver_identity_key: "one" }],
       meta: [
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 9_999_99n,
+          value: 9_999_99,
         },
       ],
     },
@@ -195,7 +195,7 @@ it("should work with global limits", async () =>
       meta: [
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 10_000_00n,
+          value: 10_000_00,
         },
       ],
     },
@@ -218,7 +218,7 @@ it("should work with 2 trips per day limit", async () =>
       meta: [
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 42n,
+          value: 42,
         },
       ],
     },

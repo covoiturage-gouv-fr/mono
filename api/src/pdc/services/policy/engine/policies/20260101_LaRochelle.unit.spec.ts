@@ -161,19 +161,19 @@ describe("La Rochelle 2026 - Driver monthly limits", () => {
       carpool: [{ driver_identity_key: "driver_1" }],
       meta: [{
         key: "max_amount_restriction.0-driver_1.month.1-2026",
-        value: 79_00n,
+        value: 79_00,
       }, {
         key: "max_amount_restriction.global.campaign.global",
-        value: 79_00n,
+        value: 79_00,
       }],
     }, {
       incentive: [1_00], // only 1€ left to reach the limit
       meta: [{
         key: "max_amount_restriction.0-driver_1.month.1-2026",
-        value: 80_00n,
+        value: 80_00,
       }, {
         key: "max_amount_restriction.global.campaign.global",
-        value: 80_00n,
+        value: 80_00,
       }],
     });
   });
@@ -187,10 +187,10 @@ describe("La Rochelle 2026 - Driver monthly limits", () => {
       ],
       meta: [{
         key: "max_amount_restriction.0-driver_1.month.1-2026",
-        value: 79_99n,
+        value: 79_99,
       }, {
         key: "max_amount_restriction.global.campaign.global",
-        value: 79_99n,
+        value: 79_99,
       }],
     }, {
       incentive: [
@@ -199,13 +199,13 @@ describe("La Rochelle 2026 - Driver monthly limits", () => {
       ],
       meta: [{
         key: "max_amount_restriction.0-driver_1.month.1-2026", // february
-        value: 80_00n,
+        value: 80_00,
       }, {
         key: "max_amount_restriction.global.campaign.global",
-        value: 81_00n,
+        value: 81_00,
       }, {
         key: "max_amount_restriction.0-driver_1.month.2-2026", // march
-        value: 1_00n,
+        value: 1_00,
       }],
     });
   });
@@ -214,11 +214,11 @@ describe("La Rochelle 2026 - Driver monthly limits", () => {
 describe("La Rochelle 2026 - Campaign global limit", () => {
   it("should limit campaign total amount to 210 000 €", async () => {
     await process({
-      policy: { handler: Handler.id, max_amount: 210_000_00n },
+      policy: { handler: Handler.id, max_amount: 210_000_00 },
       carpool: [{}, {}, {}],
       meta: [{
         key: "max_amount_restriction.global.campaign.global",
-        value: 209_999_00n,
+        value: 209_999_00,
       }],
     }, {
       incentive: [100, 0, 0], // only 1.00€ left to reach the limit

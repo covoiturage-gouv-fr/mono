@@ -168,23 +168,23 @@ describe("PaysDeLaLoire2024", () => {
       meta: [
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 685n,
+          value: 685,
         },
         {
           key: "max_amount_restriction.0-one.month.3-2024",
-          value: 225n,
+          value: 225,
         },
         {
           key: "max_amount_restriction.0-one.year.2024",
-          value: 225n,
+          value: 225,
         },
         {
           key: "max_amount_restriction.0-two.month.3-2024",
-          value: 460n,
+          value: 460,
         },
         {
           key: "max_amount_restriction.0-two.year.2024",
-          value: 460n,
+          value: 460,
         },
       ],
     }));
@@ -208,12 +208,12 @@ describe("PaysDeLaLoire2024", () => {
 
   it("should work with global limits", async () =>
     await process({
-      policy: { handler: Handler.id, max_amount: 2_200_000_00n },
+      policy: { handler: Handler.id, max_amount: 2_200_000_00 },
       carpool: [{ distance: 5_000, driver_identity_key: "one" }],
       meta: [
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 2_199_999_25n,
+          value: 2_199_999_25,
         },
       ],
     }, {
@@ -221,15 +221,15 @@ describe("PaysDeLaLoire2024", () => {
       meta: [
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 2_200_000_00n,
+          value: 2_200_000_00,
         },
         {
           key: "max_amount_restriction.0-one.month.3-2024",
-          value: 75n,
+          value: 75,
         },
         {
           key: "max_amount_restriction.0-one.year.2024",
-          value: 75n,
+          value: 75,
         },
       ],
     }));
@@ -252,15 +252,15 @@ describe("PaysDeLaLoire2024", () => {
       meta: [
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 450n,
+          value: 450,
         },
         {
           key: "max_amount_restriction.0-one.month.3-2024",
-          value: 450n,
+          value: 450,
         },
         {
           key: "max_amount_restriction.0-one.year.2024",
-          value: 450n,
+          value: 450,
         },
       ],
     }));
@@ -275,11 +275,11 @@ describe("PaysDeLaLoire2024", () => {
       meta: [
         {
           key: "max_amount_restriction.0-one.month.3-2024",
-          value: 83_25n,
+          value: 83_25,
         },
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 83_25n,
+          value: 83_25,
         },
       ],
     }, {
@@ -287,15 +287,15 @@ describe("PaysDeLaLoire2024", () => {
       meta: [
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 84_00n,
+          value: 84_00,
         },
         {
           key: "max_amount_restriction.0-one.month.3-2024",
-          value: 84_00n,
+          value: 84_00,
         },
         {
           key: "max_amount_restriction.0-one.year.2024",
-          value: 150n,
+          value: 150,
         },
       ],
     }));
@@ -311,15 +311,15 @@ describe("PaysDeLaLoire2024", () => {
       meta: [
         {
           key: "max_amount_restriction.0-one.month.3-2024",
-          value: 83_25n,
+          value: 83_25,
         },
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 83_25n,
+          value: 83_25,
         },
         {
           key: "max_amount_restriction.0-one.year.2024",
-          value: 1007_99n,
+          value: 1007_99,
         },
       ],
     }, {
@@ -327,15 +327,15 @@ describe("PaysDeLaLoire2024", () => {
       meta: [
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 83_26n,
+          value: 83_26,
         },
         {
           key: "max_amount_restriction.0-one.month.3-2024",
-          value: 83_26n,
+          value: 83_26,
         },
         {
           key: "max_amount_restriction.0-one.year.2024",
-          value: 1008_00n,
+          value: 1008_00,
         },
       ],
     }));

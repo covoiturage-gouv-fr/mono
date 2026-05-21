@@ -116,13 +116,13 @@ it("should drop incentive if max is reached", async () => {
       },
     ],
   });
-  ctx.meta.set("uuid", 10n);
-  applyLimitOnStatefulStage(ctx, "uuid", 10n, watchForGlobalMaxAmount);
+  ctx.meta.set("uuid", 10);
+  applyLimitOnStatefulStage(ctx, "uuid", 10, watchForGlobalMaxAmount);
   assertEquals(ctx.incentive.get(), 0);
   assertEquals(ctx.meta.export(), [{
     policy_id: 1,
     key: "max_amount_restriction.global.campaign.global",
-    value: 10n,
+    value: 10,
   }]);
 });
 
@@ -135,13 +135,13 @@ it("should partially drop incentive if max will be reached", async () => {
       },
     ],
   });
-  ctx.meta.set("uuid", 30n);
-  applyLimitOnStatefulStage(ctx, "uuid", 100n, watchForGlobalMaxAmount);
+  ctx.meta.set("uuid", 30);
+  applyLimitOnStatefulStage(ctx, "uuid", 100, watchForGlobalMaxAmount);
   assertEquals(ctx.incentive.get(), 70);
   assertEquals(ctx.meta.export(), [{
     policy_id: 1,
     key: "max_amount_restriction.global.campaign.global",
-    value: 100n,
+    value: 100,
   }]);
 });
 
@@ -154,13 +154,13 @@ it("should increase meta if incentive is not null", async () => {
       },
     ],
   });
-  ctx.meta.set("uuid", 30n);
-  applyLimitOnStatefulStage(ctx, "uuid", 200n, watchForGlobalMaxAmount);
+  ctx.meta.set("uuid", 30);
+  applyLimitOnStatefulStage(ctx, "uuid", 200, watchForGlobalMaxAmount);
   assertEquals(ctx.incentive.get(), 100);
   assertEquals(ctx.meta.export(), [{
     policy_id: 1,
     key: "max_amount_restriction.global.campaign.global",
-    value: 130n,
+    value: 130,
   }]);
 });
 
@@ -202,7 +202,7 @@ it("should watch and apply", async () => {
     {
       policy_id: 1,
       key: "max_amount_restriction.global.campaign.global",
-      value: 0n,
+      value: 0,
     },
   ]);
   applyLimitsOnStatefulStage([limit], ctxStateful);
@@ -211,7 +211,7 @@ it("should watch and apply", async () => {
     {
       policy_id: 1,
       key: "max_amount_restriction.global.campaign.global",
-      value: 100n,
+      value: 100,
     },
   ]);
   await store.save(ctxStateful.meta);
@@ -220,7 +220,7 @@ it("should watch and apply", async () => {
       key: "max_amount_restriction.global.campaign.global",
       datetime: carpool.datetime,
       policy_id: 1,
-      value: 100n,
+      value: 100,
     },
   ]);
   applyLimitsOnStatefulStage([limit], ctxStateful);
@@ -229,7 +229,7 @@ it("should watch and apply", async () => {
     {
       policy_id: 1,
       key: "max_amount_restriction.global.campaign.global",
-      value: 150n,
+      value: 150,
     },
   ]);
   await store.save(ctxStateful.meta);
@@ -238,7 +238,7 @@ it("should watch and apply", async () => {
       key: "max_amount_restriction.global.campaign.global",
       datetime: carpool.datetime,
       policy_id: 1,
-      value: 150n,
+      value: 150,
     },
   ]);
 });
@@ -282,7 +282,7 @@ it("should watch and apply for custom data", async () => {
     {
       policy_id: 1,
       key: `max_passenger_restriction.${carpool.operator_id}.${carpool.operator_trip_id}.day.15-0-2019`,
-      value: 0n,
+      value: 0,
       carpoolValue: 1,
     },
   ]);
@@ -293,7 +293,7 @@ it("should watch and apply for custom data", async () => {
     {
       policy_id: 1,
       key: `max_passenger_restriction.${carpool.operator_id}.${carpool.operator_trip_id}.day.15-0-2019`,
-      value: 1n,
+      value: 1,
       carpoolValue: 1,
     },
   ]);
@@ -306,7 +306,7 @@ it("should watch and apply for custom data", async () => {
     {
       policy_id: 1,
       key: `max_passenger_restriction.${carpool.operator_id}.${carpool.operator_trip_id}.day.15-0-2019`,
-      value: 2n,
+      value: 2,
       carpoolValue: 1,
     },
   ]);

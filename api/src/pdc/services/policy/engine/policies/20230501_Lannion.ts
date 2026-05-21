@@ -20,7 +20,7 @@ export const Lannion202305: PolicyHandlerStaticInterface = class extends Abstrac
   implements PolicyHandlerInterface {
   static readonly id = "lannion_2022";
 
-  constructor(public max_amount: bigint) {
+  constructor(public max_amount: number) {
     super();
     this.limits = [
       [

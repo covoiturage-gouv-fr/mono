@@ -80,7 +80,7 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 450n,
+            value: 450,
           },
         ],
       },

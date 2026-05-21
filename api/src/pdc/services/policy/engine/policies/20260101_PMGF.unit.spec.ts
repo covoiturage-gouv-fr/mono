@@ -268,7 +268,7 @@ it("should enforce driver monthly amount limit (50 EUR)", async () =>
       meta: [
         {
           key: "max_amount_restriction.0-one.month.2-2026",
-          value: 48_50n,
+          value: 48_50,
         },
       ],
     },
@@ -277,11 +277,11 @@ it("should enforce driver monthly amount limit (50 EUR)", async () =>
       meta: [
         {
           key: "max_amount_restriction.0-one.month.2-2026",
-          value: 50_00n,
+          value: 50_00,
         },
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 150n,
+          value: 150,
         },
       ],
     },

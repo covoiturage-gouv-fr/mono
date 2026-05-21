@@ -153,7 +153,7 @@ export const NantesMetropole2024: PolicyHandlerStaticInterface = class extends A
     },
   ];
 
-  constructor(public max_amount: bigint) {
+  constructor(public max_amount: number) {
     super();
     this.limits = [
       [

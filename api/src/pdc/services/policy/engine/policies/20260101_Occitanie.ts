@@ -112,18 +112,18 @@ export const Occitanie20262027 = class extends AbstractPolicyHandler implements 
     },
   ];
 
-  constructor(public max_amount: bigint) {
+  constructor(public max_amount: number) {
     super();
     this.limits = [
       [
         "9f66ccb6-6464-4a7f-a5dc-8e90fe7b1a8b",
-        6n,
+        6,
         watchForPersonMaxTripByDay,
         LimitTargetEnum.Driver,
       ],
       [
         "3e8aeda5-793a-4bd7-b11f-66bd14dc0b08",
-        2n,
+        2,
         watchForPersonMaxTripByDay,
         LimitTargetEnum.Passenger,
       ],

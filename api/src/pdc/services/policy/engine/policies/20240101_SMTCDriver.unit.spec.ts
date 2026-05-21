@@ -80,15 +80,15 @@ it(
         meta: [
           {
             key: "max_amount_restriction.0-one.month.4-2024",
-            value: 600n,
+            value: 600,
           },
           {
             key: "max_amount_restriction.0-one.year.2024",
-            value: 600n,
+            value: 600,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 600n,
+            value: 600,
           },
         ],
       },
@@ -108,11 +108,11 @@ it(
         meta: [
           {
             key: "max_amount_restriction.0-one.month.4-2024",
-            value: 88_50n,
+            value: 88_50,
           },
           {
             key: "max_amount_restriction.0-one.year.2024",
-            value: 88_50n,
+            value: 88_50,
           },
         ],
       },
@@ -121,17 +121,17 @@ it(
         meta: [
           {
             key: "max_amount_restriction.0-one.month.4-2024",
-            value: 90_00n,
+            value: 90_00,
           },
           // La limite à l'année est incrémentée de 1,50 €
           // mais la limite au mois prévaut, la 2ème incitation de 1,5€ ne sera pas attribuée
           {
             key: "max_amount_restriction.0-one.year.2024",
-            value: 91_50n,
+            value: 91_50,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 150n,
+            value: 150,
           },
         ],
       },
@@ -151,7 +151,7 @@ it(
         meta: [
           {
             key: "max_amount_restriction.0-one.year.2024",
-            value: 538_50n,
+            value: 538_50,
           },
         ],
       },
@@ -160,15 +160,15 @@ it(
         meta: [
           {
             key: "max_amount_restriction.0-one.month.4-2024",
-            value: 150n,
+            value: 150,
           },
           {
             key: "max_amount_restriction.0-one.year.2024",
-            value: 540_00n,
+            value: 540_00,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 150n,
+            value: 150,
           },
         ],
       },

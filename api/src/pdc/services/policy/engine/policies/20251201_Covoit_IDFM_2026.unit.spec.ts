@@ -198,19 +198,19 @@ describe("Covoit IDFM 2026 - Driver monthly limits", () => {
       carpool: [{ driver_identity_key: "driver_1" }],
       meta: [{
         key: "max_amount_restriction.0-driver_1.month.1-2026",
-        value: 199_00n,
+        value: 199_00,
       }, {
         key: "max_amount_restriction.global.campaign.global",
-        value: 199_00n,
+        value: 199_00,
       }],
     }, {
       incentive: [1_00], // only 1€ left to reach the limit
       meta: [{
         key: "max_amount_restriction.0-driver_1.month.1-2026",
-        value: 200_00n,
+        value: 200_00,
       }, {
         key: "max_amount_restriction.global.campaign.global",
-        value: 200_00n,
+        value: 200_00,
       }],
     });
   });
@@ -224,10 +224,10 @@ describe("Covoit IDFM 2026 - Driver monthly limits", () => {
       ],
       meta: [{
         key: "max_amount_restriction.0-driver_1.month.1-2026",
-        value: 199_00n,
+        value: 199_00,
       }, {
         key: "max_amount_restriction.global.campaign.global",
-        value: 199_00n,
+        value: 199_00,
       }],
     }, {
       incentive: [
@@ -236,13 +236,13 @@ describe("Covoit IDFM 2026 - Driver monthly limits", () => {
       ],
       meta: [{
         key: "max_amount_restriction.0-driver_1.month.1-2026", // february
-        value: 200_00n,
+        value: 200_00,
       }, {
         key: "max_amount_restriction.global.campaign.global",
-        value: 202_00n,
+        value: 202_00,
       }, {
         key: "max_amount_restriction.0-driver_1.month.2-2026", // march
-        value: 2_00n,
+        value: 2_00,
       }],
     });
   });
@@ -251,11 +251,11 @@ describe("Covoit IDFM 2026 - Driver monthly limits", () => {
 describe("Covoit IDFM 2026 - Campaign global limit", () => {
   it("should limit campaign total amount to 16M €", async () => {
     await process({
-      policy: { handler: Handler.id, max_amount: 16_000_00_000n },
+      policy: { handler: Handler.id, max_amount: 16_000_00_000 },
       carpool: [{}, {}, {}],
       meta: [{
         key: "max_amount_restriction.global.campaign.global",
-        value: 15_999_99_900n,
+        value: 15_999_99_900,
       }],
     }, {
       incentive: [100, 0, 0], // only 0.10€ left to reach the limit

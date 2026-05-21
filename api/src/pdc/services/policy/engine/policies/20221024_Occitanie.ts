@@ -45,7 +45,7 @@ export const Occitanie20232024: PolicyHandlerStaticInterface = class extends Abs
     { start: 20_000, end: 30_000 },
   ];
 
-  constructor(public max_amount: bigint) {
+  constructor(public max_amount: number) {
     super();
     this.limits = [
       [

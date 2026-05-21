@@ -123,7 +123,7 @@ describe("ATMBx2CCAM 2026 - Incentives", () => {
       ],
       meta: [{
         key: "person_trip_counter.1-p0.campaign.global",
-        value: 50n,
+        value: 50,
       }],
     }, { incentive: [0, 25, 50, 200, 200] }));
 
@@ -138,7 +138,7 @@ describe("ATMBx2CCAM 2026 - Incentives", () => {
       ],
       meta: [{
         key: "person_trip_counter.1-p0.campaign.global",
-        value: 48n,
+        value: 48,
       }],
     }, { incentive: [100, 100, 50, 50] }));
 });
@@ -146,11 +146,11 @@ describe("ATMBx2CCAM 2026 - Incentives", () => {
 describe("ATMBx2CCAM 2026 - Campaign global limit", () => {
   it("should limit campaign total amount to 42 000 €", async () => {
     await process({
-      policy: { handler: Handler.id, max_amount: 42_000_00n },
+      policy: { handler: Handler.id, max_amount: 42_000_00 },
       carpool: [{}, {}, {}],
       meta: [{
         key: "max_amount_restriction.global.campaign.global",
-        value: 41_999_99n,
+        value: 41_999_99,
       }],
     }, {
       incentive: [1, 0, 0], // only 0.01 € left to reach the limit

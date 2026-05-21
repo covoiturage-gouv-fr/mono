@@ -32,7 +32,7 @@ export class Policy implements PolicyInterface {
     public tz: Timezone,
     public handler: PolicyHandlerInterface,
     public status: PolicyStatusEnum,
-    public incentive_sum: bigint,
+    public incentive_sum: number,
     public descriptive_sheet_url?: string,
   ) {}
 

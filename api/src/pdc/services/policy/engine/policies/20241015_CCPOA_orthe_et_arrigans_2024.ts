@@ -51,7 +51,7 @@ export const CCPOA202410: PolicyHandlerStaticInterface = class extends AbstractP
     },
   ];
 
-  constructor(public max_amount: bigint) {
+  constructor(public max_amount: number) {
     super();
     this.limits = [
       [

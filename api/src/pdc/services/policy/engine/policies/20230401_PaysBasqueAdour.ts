@@ -58,7 +58,7 @@ export const PaysBasque20232024: PolicyHandlerStaticInterface = class extends Ab
     },
   ];
 
-  constructor(public max_amount: bigint) {
+  constructor(public max_amount: number) {
     super();
     this.limits = [
       [

@@ -29,13 +29,13 @@ export const CCSPSL2026: PolicyHandlerStaticInterface = class extends AbstractPo
   implements PolicyHandlerInterface {
   static readonly id = "ccspsl_2026";
 
-  constructor(public max_amount: bigint) {
+  constructor(public max_amount: number) {
     super();
     this.limits = [
       // 150 EUR max par conducteur et par mois
       [
         "a1b2c3d4-1111-4aaa-bbbb-ccccddddeeee",
-        150_00n,
+        150_00,
         watchForPersonMaxAmountByMonth,
         LimitTargetEnum.Driver,
       ],
@@ -43,7 +43,7 @@ export const CCSPSL2026: PolicyHandlerStaticInterface = class extends AbstractPo
       // 6 trajets passager par conducteur et par jour
       [
         "a1b2c3d4-2222-4aaa-bbbb-ccccddddeeee",
-        6n,
+        6,
         watchForPersonMaxTripByDay,
         LimitTargetEnum.Driver,
       ],

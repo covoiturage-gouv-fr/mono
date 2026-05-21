@@ -106,23 +106,23 @@ it("should work basic", async () =>
       meta: [
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 1085n,
+          value: 1085,
         },
         {
           key: "max_amount_restriction.0-one.month.3-2024",
-          value: 225n,
+          value: 225,
         },
         {
           key: "max_amount_restriction.0-one.year.2024",
-          value: 225n,
+          value: 225,
         },
         {
           key: "max_amount_restriction.0-two.month.3-2024",
-          value: 860n,
+          value: 860,
         },
         {
           key: "max_amount_restriction.0-two.year.2024",
-          value: 860n,
+          value: 860,
         },
       ],
     },
@@ -131,12 +131,12 @@ it("should work basic", async () =>
 it("should work with global limits", async () =>
   await process(
     {
-      policy: { handler: Handler.id, max_amount: 2_200_000_00n },
+      policy: { handler: Handler.id, max_amount: 2_200_000_00 },
       carpool: [{ distance: 5_000, driver_identity_key: "one" }],
       meta: [
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 2_199_999_25n,
+          value: 2_199_999_25,
         },
       ],
     },
@@ -145,15 +145,15 @@ it("should work with global limits", async () =>
       meta: [
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 2_200_000_00n,
+          value: 2_200_000_00,
         },
         {
           key: "max_amount_restriction.0-one.month.3-2024",
-          value: 75n,
+          value: 75,
         },
         {
           key: "max_amount_restriction.0-one.year.2024",
-          value: 75n,
+          value: 75,
         },
       ],
     },
@@ -179,15 +179,15 @@ it("should work with day limits", async () =>
       meta: [
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 450n,
+          value: 450,
         },
         {
           key: "max_amount_restriction.0-one.month.3-2024",
-          value: 450n,
+          value: 450,
         },
         {
           key: "max_amount_restriction.0-one.year.2024",
-          value: 450n,
+          value: 450,
         },
       ],
     },
@@ -204,15 +204,15 @@ it("should work with driver month limits of 84 €", async () =>
       meta: [
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 100_00n,
+          value: 100_00,
         },
         {
           key: "max_amount_restriction.0-one.month.3-2024",
-          value: 83_25n,
+          value: 83_25,
         },
         {
           key: "max_amount_restriction.0-one.year.2024",
-          value: 83_25n,
+          value: 83_25,
         },
       ],
     },
@@ -221,15 +221,15 @@ it("should work with driver month limits of 84 €", async () =>
       meta: [
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 100_75n,
+          value: 100_75,
         },
         {
           key: "max_amount_restriction.0-one.month.3-2024",
-          value: 84_00n,
+          value: 84_00,
         },
         {
           key: "max_amount_restriction.0-one.year.2024",
-          value: 84_75n,
+          value: 84_75,
         },
       ],
     },
@@ -246,15 +246,15 @@ it("should work with driver year limits of 1008.00 €", async () =>
       meta: [
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 100_00n,
+          value: 100_00,
         },
         {
           key: "max_amount_restriction.0-one.month.3-2024",
-          value: 0n,
+          value: 0,
         },
         {
           key: "max_amount_restriction.0-one.year.2024",
-          value: 1007_25n,
+          value: 1007_25,
         },
       ],
     },
@@ -263,15 +263,15 @@ it("should work with driver year limits of 1008.00 €", async () =>
       meta: [
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 100_75n,
+          value: 100_75,
         },
         {
           key: "max_amount_restriction.0-one.month.3-2024",
-          value: 75n,
+          value: 75,
         },
         {
           key: "max_amount_restriction.0-one.year.2024",
-          value: 1008_00n,
+          value: 1008_00,
         },
       ],
     },

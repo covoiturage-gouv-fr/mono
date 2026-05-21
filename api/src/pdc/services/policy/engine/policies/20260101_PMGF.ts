@@ -78,20 +78,20 @@ export const PMGF2026: PolicyHandlerStaticInterface = class extends AbstractPoli
     },
   ];
 
-  constructor(public max_amount: bigint) {
+  constructor(public max_amount: number) {
     super();
     this.limits = [
       // Au-delà de 6 "trajets passager" pour le conducteur maximum par jour
       [
         "5d65be20-2e40-4e83-9cf0-3a5cf06cf738",
-        6n,
+        6,
         watchForPersonMaxTripByDay,
         LimitTargetEnum.Driver,
       ],
       // Au-delà de 50 euros de gain pour le conducteur par mois
       [
         "0401e10c-5800-457e-955d-00a5ee3cf551",
-        50_00n,
+        50_00,
         watchForPersonMaxAmountByMonth,
         LimitTargetEnum.Driver,
       ],

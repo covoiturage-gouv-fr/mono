@@ -45,7 +45,7 @@ export const NantesMetropoleXPCovoitan2021: PolicyHandlerStaticInterface = class
     },
   ];
 
-  constructor(public max_amount: bigint) {
+  constructor(public max_amount: number) {
     super();
     this.limits = [
       [
