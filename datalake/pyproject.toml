@@ -16,3 +16,9 @@ dependencies = [
     "typer>=0.24.1",
     "rust-just>=1.51.0",
 ]
+
+[dependency-groups]
+dev = [
+    "sqlfluff>=4.2.1",
+    "sqlfluff-templater-dbt>=4.2.1",
+]

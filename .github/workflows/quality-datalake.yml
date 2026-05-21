@@ -138,7 +138,7 @@ jobs:
           python-version: "3.13"
       - name: Install dependencies
         working-directory: datalake
-        run: uv sync --locked --no-dev
+        run: uv sync --locked
       - name: Install dbt packages
         working-directory: datalake
         run: uv run dbt deps --profiles-dir profiles
