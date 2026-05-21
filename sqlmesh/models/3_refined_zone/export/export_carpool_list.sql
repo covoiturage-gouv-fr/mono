@@ -24,7 +24,7 @@ WITH latest_perimeters AS (
       ELSE 2
     END AS precision
   FROM trusted_zone.perimeters
-  ORDER BY arr, year DESC
+  ORDER BY arr, (aom IS NULL) ASC, year DESC
 )
 
 SELECT
