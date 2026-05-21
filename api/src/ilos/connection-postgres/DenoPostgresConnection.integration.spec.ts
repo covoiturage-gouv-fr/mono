@@ -299,3 +299,40 @@ describe("DenoPostgresConnection - cursor", () => {
     }
   });
 });
+
+describe("DenoPostgresConnection - int8 decoder", () => {
+  // Postgres int8 / bigint (OID 20) values come from COUNT/SUM and must be
+  // JSON-serialisable. Without a custom decoder, deno-postgres returns
+  // native BigInt and Express res.json() throws
+  // "Do not know how to serialize a BigInt" (see issue #3176).
+  Deno.env.set("APP_POSTGRES_INSECURE", "true");
+  const connection = new DenoPostgresConnection();
+
+  beforeAll(async () => {
+    await connection.up();
+  });
+
+  afterAll(async () => {
+    await connection.down();
+  });
+
+  it("should decode bigint columns to number", async () => {
+    const rows = await connection.query<{ c: unknown; s: unknown; n: unknown }>(
+      sql`SELECT COUNT(*)::bigint AS c, 5::bigint AS s, 9007199254740991::bigint AS n FROM generate_series(1, 3)`,
+    );
+    assert(rows.length === 1);
+    assert(typeof rows[0].c === "number", `expected number, got ${typeof rows[0].c}`);
+    assert(typeof rows[0].s === "number", `expected number, got ${typeof rows[0].s}`);
+    assert(typeof rows[0].n === "number", `expected number, got ${typeof rows[0].n}`);
+    assert(rows[0].c === 3);
+    assert(rows[0].s === 5);
+  });
+
+  it("should be JSON-serialisable", async () => {
+    const rows = await connection.query<{ journeys: unknown }>(
+      sql`SELECT COUNT(*)::bigint AS journeys FROM generate_series(1, 10)`,
+    );
+    const json = JSON.stringify(rows);
+    assert(json.includes('"journeys":10'));
+  });
+});
