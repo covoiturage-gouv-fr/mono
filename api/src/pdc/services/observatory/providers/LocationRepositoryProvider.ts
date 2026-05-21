@@ -1,5 +1,5 @@
 import { provider } from "@/ilos/common/index.ts";
-import { LegacyPostgresConnection } from "@/ilos/connection-postgres/index.ts";
+import { DenoPostgresConnection } from "@/ilos/connection-postgres/index.ts";
 import sql, { join, raw } from "@/lib/pg/sql.ts";
 import { latLngToCell } from "dep:h3-js";
 import { checkTerritoryParam } from "../helpers/checkParams.ts";
@@ -17,7 +17,7 @@ export class LocationRepositoryProvider implements LocationRepositoryInterface {
   private readonly table = "observatoire_stats.view_location";
   private readonly perim_table = "geo.perimeters";
 
-  constructor(private pg: LegacyPostgresConnection) {}
+  constructor(private pgConnection: DenoPostgresConnection) {}
 
   async getLocation(
     params: LocationParamsInterface,
@@ -64,8 +64,8 @@ export class LocationRepositoryProvider implements LocationRepositoryInterface {
       FROM ${raw(this.table)} 
       WHERE ${join(filters, " AND ")}
     `;
-    const response = await this.pg.getClient().query(query);
-    const geomToHex = response.rows
+    const rows = await this.pgConnection.query<{ lat: number; lon: number }>(query);
+    const geomToHex = rows
       .map((r) => latLngToCell(r.lat, r.lon, params.zoom))
       .reduce<Record<string, number>>(
         (acc, curr) => ((acc[curr] = (acc[curr] || 0) + 1), acc),
