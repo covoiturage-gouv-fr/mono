@@ -75,12 +75,13 @@ export class CampaignsRepository implements CampaignsRepositoryInterface {
       ${params.operator_id ? sql`LEFT JOIN ${raw(this.tableIncentives)} c on a._id = c.policy_id` : sql``}
       ${filters.length > 0 ? sql`WHERE ${join(filters, ` AND `)}` : sql``}
     `;
-    const countResponse = await this.pgConnection.query<{ total: string }>(countQuery);
+    const countResponse = await this.pgConnection.query<{ total: number }>(countQuery);
+    const total = countResponse[0].total;
     return {
       meta: {
-        total: parseInt(countResponse[0].total, 10),
+        total,
         page: page,
-        totalPages: Math.ceil(parseInt(countResponse[0].total, 10) / limit),
+        totalPages: Math.ceil(total / limit),
       },
       data: rows,
     };

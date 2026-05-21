@@ -53,12 +53,13 @@ export class OperatorsRepository implements OperatorsRepositoryInterface {
       FROM ${raw(this.table)}
       WHERE ${join(filters, " AND ")}
     `;
-    const countResponse = await this.pgConnection.query<{ total: string }>(countQuery);
+    const countResponse = await this.pgConnection.query<{ total: number }>(countQuery);
+    const total = countResponse[0].total;
     return {
       meta: {
-        total: parseInt(countResponse[0].total, 10),
+        total,
         page: page,
-        totalPages: Math.ceil(parseInt(countResponse[0].total, 10) / limit),
+        totalPages: Math.ceil(total / limit),
       },
       data: rows,
     };
