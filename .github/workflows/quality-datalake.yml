@@ -27,6 +27,8 @@ jobs:
           persist-credentials: false
       - name: Install uv
         uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
+        with:
+          python-version: "3.13"
       - name: Check uv lockfile
         working-directory: datalake
         run: uv lock --check
@@ -86,6 +88,8 @@ jobs:
           persist-credentials: false
       - name: Install uv
         uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
+        with:
+          python-version: "3.13"
       - name: Install dependencies
         working-directory: datalake
         run: uv sync --locked --no-dev
@@ -130,6 +134,8 @@ jobs:
           persist-credentials: false
       - name: Install uv
         uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
+        with:
+          python-version: "3.13"
       - name: Install dependencies
         working-directory: datalake
         run: uv sync --locked --no-dev
