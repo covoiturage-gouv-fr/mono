@@ -1,5 +1,5 @@
 import { provider } from "@/ilos/common/index.ts";
-import { NativeCursor } from "@/ilos/connection-postgres/LegacyPostgresConnection.ts";
+import { Cursor } from "@/ilos/connection-postgres/index.ts";
 import { logger } from "@/lib/logger/index.ts";
 import { ExcelCampaignConfig } from "@/pdc/services/apdf/interfaces/ExcelTypes.ts";
 import excel from "dep:excel";
@@ -35,7 +35,7 @@ export class TripsWorksheetWriter extends AbstractWorksheetWriter {
   ].map((header) => ({ header, key: header }));
 
   async call(
-    cursor: NativeCursor<APDFTripInterface>,
+    cursor: Cursor<APDFTripInterface>,
     config: ExcelCampaignConfig,
     workbookWriter: excel.stream.xlsx.WorkbookWriter,
   ): Promise<void> {
@@ -85,10 +85,8 @@ export class TripsWorksheetWriter extends AbstractWorksheetWriter {
 
     const b1 = new Date();
 
-    let rows: APDFTripInterface[] = await cursor.read(this.CURSOR_BATCH_SIZE);
-    while (rows.length > 0) {
+    for await (const rows of cursor.read(this.CURSOR_BATCH_SIZE)) {
       rows.forEach((t) => t && worksheet.addRow(normalize(t, config)).commit());
-      rows = await cursor.read(this.CURSOR_BATCH_SIZE);
     }
 
     const b2 = new Date();

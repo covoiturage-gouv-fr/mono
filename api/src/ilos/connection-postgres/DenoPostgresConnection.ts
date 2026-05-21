@@ -5,6 +5,11 @@ import { logger } from "../../lib/logger/index.ts";
 import sql, { Sql } from "../../lib/pg/sql.ts";
 import { ConnectionInterface, DestroyHookInterface, InitHookInterface } from "../common/index.ts";
 
+export type Cursor<TResult> = {
+  read: (rowCount?: number) => AsyncGenerator<TResult[]>;
+  [Symbol.asyncDispose]: () => Promise<void>;
+};
+
 export class DenoPostgresConnection
   implements ConnectionInterface<Pool>, InitHookInterface, DestroyHookInterface, AsyncDisposable {
   #id = DenoPostgresConnection.id("pool");
@@ -229,10 +234,7 @@ export class DenoPostgresConnection
     return this.#wrap<TResult>(sql, "object", false);
   }
 
-  async cursor<TResult>(sql: Sql): Promise<{
-    read: (rowCount?: number) => AsyncGenerator<TResult[]>;
-    [Symbol.asyncDispose]: () => Promise<void>;
-  }> {
+  async cursor<TResult>(sql: Sql): Promise<Cursor<TResult>> {
     // keep client alive for the lifetime of the cursor object
     let disposed = false;
     const client = await this.#pool!.connect();

@@ -1,4 +1,4 @@
-import { NativeCursor } from "@/ilos/connection-postgres/LegacyPostgresConnection.ts";
+import { Cursor } from "@/ilos/connection-postgres/index.ts";
 import { UnboundedSlices } from "../../policy/contracts/common/interfaces/Slices.ts";
 import { PolicyStatsInterface } from "../contracts/interfaces/PolicySliceStatInterface.ts";
 import { APDFTripInterface } from "./APDFTripInterface.ts";
@@ -27,7 +27,7 @@ export interface DataRepositoryInterface {
   ): Promise<PolicyStatsInterface>;
   getPolicyCursor(
     params: CampaignSearchParamsInterface,
-  ): Promise<NativeCursor<APDFTripInterface>>;
+  ): Promise<Cursor<APDFTripInterface>>;
 }
 
 export abstract class DataRepositoryProviderInterfaceResolver implements DataRepositoryInterface {
@@ -48,7 +48,7 @@ export abstract class DataRepositoryProviderInterfaceResolver implements DataRep
 
   public async getPolicyCursor(
     params: CampaignSearchParamsInterface,
-  ): Promise<NativeCursor<APDFTripInterface>> {
+  ): Promise<Cursor<APDFTripInterface>> {
     throw new Error("Not implemented");
   }
 }
