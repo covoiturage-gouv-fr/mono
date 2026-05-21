@@ -18,7 +18,7 @@ export class SaveAction extends AbstractAction {
     super();
   }
 
-  public async handle(params: ParamsInterface): Promise<ResultInterface> {
-    await this.pg.save(params.type, params.employer);
+  public override async handle(params: ParamsInterface): Promise<ResultInterface> {
+    await this.pg.save(params.type, params.employer ?? "");
   }
 }
