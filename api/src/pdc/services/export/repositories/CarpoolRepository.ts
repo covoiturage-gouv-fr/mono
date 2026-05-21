@@ -89,8 +89,8 @@ export class CarpoolRepository {
    * Count the number of carpools for the general exports
    */
   public async listCount(params: ExportParams): Promise<number> {
-    const rows = await this.pgConnection.query<{ count: string }>(carpoolCountQuery(params));
-    return Number(rows[0].count);
+    const rows = await this.pgConnection.query<{ count: number }>(carpoolCountQuery(params));
+    return rows[0].count;
   }
 
   /**
