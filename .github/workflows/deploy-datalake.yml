@@ -15,6 +15,7 @@ on:
   push:
     branches:
       - main
+      # staging: the `datalake` branch must be created on origin to activate this trigger
       - datalake
     paths:
       - "datalake/**"
