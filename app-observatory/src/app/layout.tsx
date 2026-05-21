@@ -1,3 +1,4 @@
+import JDMA from "@/components/common/JDMA";
 import { MatomoAnalytics } from "@/components/layout/MatomoAnalytics";
 import { Skiplinks } from "@/components/layout/Skiplinks";
 import { StartDsfr } from "@/components/layout/StartDsfr";
@@ -54,6 +55,7 @@ export default function RootLayout({
             <Skiplinks />
             {children}
           </MuiDsfrThemeProvider>
+          <JDMA />
         </DsfrProvider>
       </body>
     </html>

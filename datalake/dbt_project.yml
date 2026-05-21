@@ -74,9 +74,9 @@ vars:
       fraudcheck:
         path: "sources/fraudcheck.yml"
         schema: "fraudcheck"
-      geo:
-        path: "sources/geo.yml"
-        schema: "geo"
+      anomaly:
+        path: "sources/anomaly.yml"
+        schema: "anomaly"
       operator:
         path: "sources/operator.yml"
         schema: "operator"

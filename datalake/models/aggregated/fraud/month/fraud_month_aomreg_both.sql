@@ -1,0 +1,1 @@
+{{('aomreg', 'month', 'both')}}
