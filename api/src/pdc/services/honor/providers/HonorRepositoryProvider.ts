@@ -1,5 +1,6 @@
 import { provider } from "@/ilos/common/index.ts";
-import { LegacyPostgresConnection } from "@/ilos/connection-postgres/index.ts";
+import { DenoPostgresConnection } from "@/ilos/connection-postgres/index.ts";
+import sql, { raw } from "@/lib/pg/sql.ts";
 
 import {
   DataSetInterface,
@@ -34,34 +35,29 @@ export abstract class HonorRepositoryInterfaceResolver implements HonorRepositor
 export class HonorRepositoryProvider implements HonorRepositoryInterface {
   private readonly table = "honor.tracking";
 
-  constructor(private pg: LegacyPostgresConnection) {}
+  constructor(protected pgConnection: DenoPostgresConnection) {}
 
-  async stats(params: StatsParamsInterface): Promise<StatsResultInterface> {
+  async stats(_params: StatsParamsInterface): Promise<StatsResultInterface> {
     // substring from 11 for days
     // substring from 8 for months
     // TODO switch from days to months when we have enough data (starts 10/2020)
-    const response: { rowCount: number; rows: StatsResponseRow[] } = await this
-      .pg.getClient().query({
-        text: `
-        SELECT
-          to_char(journey_start_datetime::date, 'yyyy-mm-dd') as day,
-          type,
-          SUM(1)::int as total
-        FROM ${this.table}
-        GROUP BY day, type
-        ORDER BY day, type
-      `,
-        values: [params.tz || "Europe/Paris"],
-      });
+    const rows = await this.pgConnection.query<StatsResponseRow>(sql`
+      SELECT
+        to_char(journey_start_datetime::date, 'yyyy-mm-dd') as day,
+        type,
+        SUM(1)::int as total
+      FROM ${raw(this.table)}
+      GROUP BY day, type
+      ORDER BY day, type
+    `);
 
-    return this.statsConvert(response.rowCount ? response.rows : []);
+    return this.statsConvert(rows);
   }
 
   async save(type: string, employer: string): Promise<void> {
-    await this.pg.getClient().query({
-      text: "INSERT INTO honor.tracking (type, employer) VALUES ($1, $2);",
-      values: [type, employer],
-    });
+    await this.pgConnection.query(sql`
+      INSERT INTO ${raw(this.table)} (type, employer) VALUES (${type}, ${employer})
+    `);
   }
 
   /**
