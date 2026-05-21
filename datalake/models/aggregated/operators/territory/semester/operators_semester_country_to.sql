@@ -1,1 +1,1 @@
-{{operators_model('country', 'semester', 'to')}}
+{{ operators_model('country', 'semester', 'to') }}

@@ -1,1 +1,1 @@
-{{territory_model('epci', 'year', 'to')}}
+{{ territory_model('epci', 'year', 'to') }}

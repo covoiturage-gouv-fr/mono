@@ -1,9 +1,11 @@
 ---
 name: sqlmesh
-description: Use when working with SQLMesh models -- creating, modifying, debugging, running plans, or understanding the production workflow. Covers model patterns, index creation, production operations (plan/run), cron configuration, and debugging failures.
+description: Use ONLY for maintenance of existing SQLMesh models in sqlmesh/. New analytics work goes in datalake/ (dbt). Covers model patterns, index creation, production operations (plan/run), cron configuration, and debugging failures.
 ---
 
-# SQLMesh Skill
+# SQLMesh Skill (maintenance only)
+
+> **Migration notice:** SQLMesh is being phased out -- the active analytics project is `datalake/` (dbt). Use this skill for bug fixes and operational support of existing models only. Do not propose new SQLMesh models.
 
 > **Read `sqlmesh/README.md` first.** It is the single source of truth for architecture, conventions, and patterns.
 

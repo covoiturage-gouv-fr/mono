@@ -1,1 +1,1 @@
-{{operators_model('epci', 'quarter', 'to')}}
+{{ operators_model('epci', 'quarter', 'to') }}

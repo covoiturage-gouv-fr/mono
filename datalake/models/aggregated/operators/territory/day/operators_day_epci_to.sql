@@ -1,1 +1,1 @@
-{{operators_model('epci', 'day', 'to')}}
+{{ operators_model('epci', 'day', 'to') }}

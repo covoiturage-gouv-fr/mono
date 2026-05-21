@@ -1,1 +1,1 @@
-{{territory_model('country', 'day', 'from')}}
+{{ territory_model('country', 'day', 'from') }}

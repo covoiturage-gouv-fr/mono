@@ -1,1 +1,1 @@
-{{operators_model('com', 'semester', 'both')}}
+{{ operators_model('com', 'semester', 'both') }}

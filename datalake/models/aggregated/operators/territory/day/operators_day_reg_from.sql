@@ -1,1 +1,1 @@
-{{operators_model('reg', 'day', 'from')}}
+{{ operators_model('reg', 'day', 'from') }}

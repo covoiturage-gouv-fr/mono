@@ -14,7 +14,8 @@ SELECT
   c.start_datetime,
   t.siret,
   t.amount
-FROM {{ source('carpool_v2', 'operator_incentives') }} t
-INNER JOIN {{ source('carpool_v2', 'carpools') }} c ON c._id = t.carpool_id
- WHERE {{ time_filter('c.start_datetime', 'start_datetime', lookback_nb=3) }}
+FROM {{ source('carpool_v2', 'operator_incentives') }} AS t
+INNER JOIN {{ source('carpool_v2', 'carpools') }} AS c ON t.carpool_id = c._id
+WHERE
+  {{ time_filter('c.start_datetime', 'start_datetime', lookback_nb=3) }}
   AND t.amount > 0

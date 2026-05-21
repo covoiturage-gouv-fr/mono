@@ -1,1 +1,1 @@
-{{operators_model('arr', 'quarter', 'both')}}
+{{ operators_model('arr', 'quarter', 'both') }}

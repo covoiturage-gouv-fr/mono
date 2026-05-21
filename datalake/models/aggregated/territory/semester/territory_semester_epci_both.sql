@@ -1,1 +1,1 @@
-{{territory_model('epci', 'semester', 'both')}}
+{{ territory_model('epci', 'semester', 'both') }}

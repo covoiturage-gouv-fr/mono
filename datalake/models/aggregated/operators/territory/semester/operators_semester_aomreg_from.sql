@@ -1,1 +1,1 @@
-{{operators_model('aomreg', 'semester', 'from')}}
+{{ operators_model('aomreg', 'semester', 'from') }}

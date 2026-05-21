@@ -1,1 +1,1 @@
-{{operators_model('plm', 'semester', 'both')}}
+{{ operators_model('plm', 'semester', 'both') }}

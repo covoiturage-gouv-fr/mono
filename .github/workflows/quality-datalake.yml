@@ -1,0 +1,147 @@
+name: "Quality Datalake"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+on:
+  pull_request:
+    branches:
+      - main
+      - datalake
+    paths:
+      - "datalake/**"
+      - "docker/datalake/**"
+
+jobs:
+  uv-lock-check:
+    name: "(datalake) uv lock check"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
+        with:
+          persist-credentials: false
+      - name: Install uv
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
+        with:
+          python-version: "3.13"
+      - name: Check uv lockfile
+        working-directory: datalake
+        run: uv lock --check
+
+  dockerfile-smoke:
+    name: "(datalake) dockerfile build"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
+        with:
+          persist-credentials: false
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435
+      - name: Build Docker image (no push)
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83
+        with:
+          context: ./datalake
+          file: ./docker/datalake/prod/Dockerfile
+          push: false
+          load: true
+          tags: ghcr.io/betagouv/preuve-covoiturage/datalake:ci-test
+          cache-from: type=gha,scope=datalake
+          cache-to: type=gha,mode=max,scope=datalake
+
+  dbt-parse:
+    name: "(datalake) dbt parse"
+    runs-on: ubuntu-latest
+    env:
+      DBT_HOST: localhost
+      DBT_PORT: "5432"
+      DBT_USER: postgres
+      DBT_PASSWORD: postgres
+      DBT_DBNAME: covoiturage_ci
+      DBT_SCHEMA: public
+      DBT_THREADS: "2"
+      DBT_TARGET: dev
+      DBT_SEND_ANONYMOUS_USAGE_STATS: "false"
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: covoiturage_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
+        with:
+          persist-credentials: false
+      - name: Install uv
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
+        with:
+          python-version: "3.13"
+      - name: Install dependencies
+        working-directory: datalake
+        run: uv sync --locked --no-dev
+      - name: Install dbt packages
+        working-directory: datalake
+        run: uv run dbt deps --profiles-dir profiles
+      - name: Parse dbt project
+        working-directory: datalake
+        run: uv run dbt parse --profiles-dir profiles --target dev
+
+  sqlfluff-lint:
+    name: "(datalake) sqlfluff lint"
+    runs-on: ubuntu-latest
+    env:
+      DBT_HOST: localhost
+      DBT_PORT: "5432"
+      DBT_USER: postgres
+      DBT_PASSWORD: postgres
+      DBT_DBNAME: covoiturage_ci
+      DBT_SCHEMA: public
+      DBT_THREADS: "2"
+      DBT_TARGET: dev
+      DBT_SEND_ANONYMOUS_USAGE_STATS: "false"
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: covoiturage_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
+        with:
+          persist-credentials: false
+      - name: Install uv
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
+        with:
+          python-version: "3.13"
+      - name: Install dependencies
+        working-directory: datalake
+        run: uv sync --locked
+      - name: Install dbt packages
+        working-directory: datalake
+        run: uv run dbt deps --profiles-dir profiles
+      - name: Run sqlfluff lint
+        working-directory: datalake
+        run: uv run sqlfluff lint models/ analyses/

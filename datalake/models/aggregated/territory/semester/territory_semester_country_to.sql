@@ -1,1 +1,1 @@
-{{territory_model('country', 'semester', 'to')}}
+{{ territory_model('country', 'semester', 'to') }}

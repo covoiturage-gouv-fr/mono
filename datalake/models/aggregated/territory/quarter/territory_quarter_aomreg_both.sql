@@ -1,1 +1,1 @@
-{{territory_model('aomreg', 'quarter', 'both')}}
+{{ territory_model('aomreg', 'quarter', 'both') }}

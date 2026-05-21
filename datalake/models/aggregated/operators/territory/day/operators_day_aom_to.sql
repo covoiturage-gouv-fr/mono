@@ -1,1 +1,1 @@
-{{operators_model('aom', 'day', 'to')}}
+{{ operators_model('aom', 'day', 'to') }}
