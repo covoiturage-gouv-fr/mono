@@ -1,1 +1,1 @@
-{{territory_model('country', 'month', 'to')}}
+{{ territory_model('country', 'month', 'to') }}

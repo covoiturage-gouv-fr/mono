@@ -1,1 +1,1 @@
-{{operators_model('plm', 'month', 'both')}}
+{{ operators_model('plm', 'month', 'both') }}

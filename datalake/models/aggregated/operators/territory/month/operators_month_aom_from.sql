@@ -1,1 +1,1 @@
-{{operators_model('aom', 'month', 'from')}}
+{{ operators_model('aom', 'month', 'from') }}

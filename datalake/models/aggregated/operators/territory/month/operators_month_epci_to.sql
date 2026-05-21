@@ -1,1 +1,1 @@
-{{operators_model('epci', 'month', 'to')}}
+{{ operators_model('epci', 'month', 'to') }}
