@@ -1,1 +1,1 @@
-{{operators_model('plm', 'quarter', 'from')}}
+{{ operators_model('plm', 'quarter', 'from') }}

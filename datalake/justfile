@@ -12,13 +12,18 @@ dbt-env:
 dbt cmd *args:
   dbt {{cmd}} --profiles-dir profiles {{args}}
 
-# Lint SQL models with sqlfluff
+# Lint SQL models with sqlfluff (per-file to avoid dbt connection bursts)
 lint *args:
-  DBT_PROFILES_DIR=profiles sqlfluff lint models/ analyses/ {{args}}
+  #!/usr/bin/env bash
+  set -e
+  find models analyses -name '*.sql' -print0 \
+    | xargs -0 -I {} sh -c 'DBT_PROFILES_DIR=profiles sqlfluff lint --processes 1 "$1" {{args}}' _ {}
 
-# Lint SQL models and auto-fix violations
+# Lint SQL models and auto-fix violations (per-file to avoid dbt connection bursts)
 lint-fix *args:
-  DBT_PROFILES_DIR=profiles sqlfluff fix models/ analyses/ {{args}}
+  #!/usr/bin/env bash
+  find models analyses -name '*.sql' -print0 \
+    | xargs -0 -I {} sh -c 'DBT_PROFILES_DIR=profiles sqlfluff fix --processes 1 "$1" {{args}}' _ {}
 
 # Seed data from S3 to Postgres
 seed config schema *args:

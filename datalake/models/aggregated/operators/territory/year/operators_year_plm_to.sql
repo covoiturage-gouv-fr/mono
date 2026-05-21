@@ -1,1 +1,1 @@
-{{operators_model('plm', 'year', 'to')}}
+{{ operators_model('plm', 'year', 'to') }}

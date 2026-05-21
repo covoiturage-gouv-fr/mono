@@ -1,1 +1,1 @@
-{{('aomreg', 'month', 'from')}}
+{{ fraud_model('aomreg', 'month', 'from') }}

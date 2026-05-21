@@ -1,1 +1,1 @@
-{{('aomreg', 'quarter', 'both')}}
+{{ fraud_model('aomreg', 'quarter', 'both') }}

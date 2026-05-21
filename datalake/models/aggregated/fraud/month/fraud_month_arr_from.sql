@@ -1,1 +1,1 @@
-{{('arr', 'month', 'from')}}
+{{ fraud_model('arr', 'month', 'from') }}

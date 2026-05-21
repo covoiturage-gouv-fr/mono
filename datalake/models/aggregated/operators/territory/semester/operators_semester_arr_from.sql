@@ -1,1 +1,1 @@
-{{operators_model('arr', 'semester', 'from')}}
+{{ operators_model('arr', 'semester', 'from') }}

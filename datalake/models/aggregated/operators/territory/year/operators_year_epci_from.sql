@@ -1,1 +1,1 @@
-{{operators_model('epci', 'year', 'from')}}
+{{ operators_model('epci', 'year', 'from') }}

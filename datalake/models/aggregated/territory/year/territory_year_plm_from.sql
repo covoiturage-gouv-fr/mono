@@ -1,1 +1,1 @@
-{{territory_model('plm', 'year', 'from')}}
+{{ territory_model('plm', 'year', 'from') }}

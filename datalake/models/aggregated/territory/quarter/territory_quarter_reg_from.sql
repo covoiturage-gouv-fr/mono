@@ -1,1 +1,1 @@
-{{territory_model('reg', 'quarter', 'from')}}
+{{ territory_model('reg', 'quarter', 'from') }}

@@ -1,1 +1,1 @@
-{{operators_model('dep', 'day', 'from')}}
+{{ operators_model('dep', 'day', 'from') }}

@@ -1,3 +1,4 @@
+-- noqa: disable=LT02,LT01,AL01,CP01,CP03,CP05,LT05,LT09,RF02,RF03,RF04,ST01,ST06,ST09
 {{ config(
     materialized='incremental',
     incremental_strategy='delete+insert',

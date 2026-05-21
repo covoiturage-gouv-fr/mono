@@ -1,1 +1,1 @@
-{{('country', 'day', 'from')}}
+{{ fraud_model('country', 'day', 'from') }}

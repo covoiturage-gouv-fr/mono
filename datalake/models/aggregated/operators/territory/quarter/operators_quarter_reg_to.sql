@@ -1,1 +1,1 @@
-{{operators_model('reg', 'quarter', 'to')}}
+{{ operators_model('reg', 'quarter', 'to') }}

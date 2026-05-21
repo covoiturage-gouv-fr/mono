@@ -1,1 +1,1 @@
-{{territory_model('arr', 'month', 'both')}}
+{{ territory_model('arr', 'month', 'both') }}
