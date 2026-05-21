@@ -1,5 +1,5 @@
 import { provider } from "@/ilos/common/index.ts";
-import { LegacyPostgresConnection } from "@/ilos/connection-postgres/index.ts";
+import { DenoPostgresConnection } from "@/ilos/connection-postgres/index.ts";
 import sql, { join, raw } from "@/lib/pg/sql.ts";
 import { checkIndicParam, checkTerritoryParam } from "@/pdc/services/observatory/helpers/checkParams.ts";
 import { getTableName } from "@/pdc/services/observatory/helpers/tableName.ts";
@@ -28,7 +28,7 @@ export class OccupationRepositoryProvider implements OccupationRepositoryInterfa
   };
   private readonly perim_table = "geo.perimeters";
 
-  constructor(private pg: LegacyPostgresConnection) {}
+  constructor(private pgConnection: DenoPostgresConnection) {}
 
   async getOccupation(
     params: OccupationParamsInterface,
@@ -73,13 +73,12 @@ export class OccupationRepositoryProvider implements OccupationRepositoryInterfa
     }
 
     const query = sql`
-      SELECT 
+      SELECT
       ${join(selectedVar, ", ")}
       FROM ${raw(tableName)}
       WHERE ${join(filters, " AND ")}
     `;
-    const response = await this.pg.getClient().query(query);
-    return response.rows;
+    return await this.pgConnection.query<OccupationResultInterface[number]>(query);
   }
 
   // Retourne les données pour les graphiques construits à partir de la table observatory._occupation
@@ -128,8 +127,7 @@ export class OccupationRepositoryProvider implements OccupationRepositoryInterfa
       LIMIT ${limit};
     `;
 
-    const response = await this.pg.getClient().query(query);
-    return response.rows;
+    return await this.pgConnection.query<EvolOccupationResultInterface[number]>(query);
   }
 
   // Retourne les données pour le top 10 des territoires dans le dashboard
@@ -171,7 +169,6 @@ export class OccupationRepositoryProvider implements OccupationRepositoryInterfa
       LIMIT ${params.limit};
     `;
 
-    const response = await this.pg.getClient().query(query);
-    return response.rows;
+    return await this.pgConnection.query<BestTerritoriesResultInterface[number]>(query);
   }
 }

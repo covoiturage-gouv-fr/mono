@@ -1,5 +1,5 @@
 import { provider } from "@/ilos/common/index.ts";
-import { LegacyPostgresConnection } from "@/ilos/connection-postgres/index.ts";
+import { DenoPostgresConnection } from "@/ilos/connection-postgres/index.ts";
 import sql, { join, raw } from "@/lib/pg/sql.ts";
 import { getTableName } from "@/pdc/services/observatory/helpers/tableName.ts";
 import {
@@ -18,7 +18,7 @@ export class IncentiveRepositoryProvider implements IncentiveRepositoryInterface
   ) => {
     return getTableName(params, "observatoire_stats", "incentive");
   };
-  constructor(private pg: LegacyPostgresConnection) {}
+  constructor(private pgConnection: DenoPostgresConnection) {}
 
   async getIncentive(
     params: IncentiveParamsInterface,
@@ -53,7 +53,6 @@ export class IncentiveRepositoryProvider implements IncentiveRepositoryInterface
       FROM ${raw(tableName)}
       WHERE ${join(filters, " AND ")}
     `;
-    const response = await this.pg.getClient().query(query);
-    return response.rows;
+    return await this.pgConnection.query<IncentiveResultInterface[number]>(query);
   }
 }

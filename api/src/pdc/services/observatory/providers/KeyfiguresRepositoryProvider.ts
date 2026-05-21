@@ -1,5 +1,5 @@
 import { provider } from "@/ilos/common/index.ts";
-import { LegacyPostgresConnection } from "@/ilos/connection-postgres/index.ts";
+import { DenoPostgresConnection } from "@/ilos/connection-postgres/index.ts";
 import sql, { join, raw } from "@/lib/pg/sql.ts";
 import { getTableName } from "@/pdc/services/observatory/helpers/tableName.ts";
 import { checkTerritoryParam } from "../helpers/checkParams.ts";
@@ -20,7 +20,7 @@ export class KeyfiguresRepositoryProvider implements KeyfiguresRepositoryInterfa
   ) => {
     return getTableName(params, "observatoire_stats", table);
   };
-  constructor(private pg: LegacyPostgresConnection) {}
+  constructor(private pgConnection: DenoPostgresConnection) {}
 
   // Retourne les données de la table observatory.monthly_flux pour le mois et l'année
   // et le type de territoire en paramètres
@@ -103,7 +103,6 @@ export class KeyfiguresRepositoryProvider implements KeyfiguresRepositoryInterfa
       WHERE ${join(filters, " AND ")}
       GROUP BY b.code,b.libelle,b.direction,b.journeys,b.occupation_rate,c.new_drivers,c.new_passengers;
     `;
-    const response = await this.pg.getClient().query(query);
-    return response.rows;
+    return await this.pgConnection.query<KeyfiguresResultInterface[number]>(query);
   }
 }

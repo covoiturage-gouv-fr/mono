@@ -1,5 +1,5 @@
 import { provider } from "@/ilos/common/index.ts";
-import { LegacyPostgresConnection } from "@/ilos/connection-postgres/index.ts";
+import { DenoPostgresConnection } from "@/ilos/connection-postgres/index.ts";
 import sql, { empty, join, raw } from "@/lib/pg/sql.ts";
 import { checkIndicParam, checkTerritoryParam } from "@/pdc/services/observatory/helpers/checkParams.ts";
 import { getTableName } from "@/pdc/services/observatory/helpers/tableName.ts";
@@ -27,7 +27,7 @@ export class FluxRepositoryProvider implements FluxRepositoryInterface {
   ) => {
     return getTableName(params, "observatoire_stats", "flux");
   };
-  constructor(private pg: LegacyPostgresConnection) {}
+  constructor(private pgConnection: DenoPostgresConnection) {}
 
   async getFlux(
     params: FluxParamsInterface,
@@ -65,15 +65,14 @@ export class FluxRepositoryProvider implements FluxRepositoryInterface {
     }
 
     const query = sql`
-      SELECT 
+      SELECT
         l_territory_1 AS ter_1, lng_1, lat_1,
         l_territory_2 AS ter_2, lng_2, lat_2,
-        passengers, distance, duration 
+        passengers, distance, duration
       FROM ${raw(tableName)}
       WHERE ${join(filters, " AND ")}
     `;
-    const response = await this.pg.getClient().query(query);
-    return response.rows;
+    return await this.pgConnection.query<FluxResultInterface[number]>(query);
   }
 
   async getEvolFlux(
@@ -122,8 +121,7 @@ export class FluxRepositoryProvider implements FluxRepositoryInterface {
       ORDER BY (${join(groupBy, ", ")}) DESC
       LIMIT ${limit};
     `;
-    const response = await this.pg.getClient().query(query);
-    return response.rows;
+    return await this.pgConnection.query<EvolFluxResultInterface[number]>(query);
   }
 
   // Retourne les données pour le top 10 des trajets dans le dashboard
@@ -161,7 +159,6 @@ export class FluxRepositoryProvider implements FluxRepositoryInterface {
       ORDER BY journeys DESC
       LIMIT ${params.limit}
     `;
-    const response = await this.pg.getClient().query(query);
-    return response.rows;
+    return await this.pgConnection.query<BestFluxResultInterface[number]>(query);
   }
 }

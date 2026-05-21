@@ -1,5 +1,5 @@
 import { provider } from "@/ilos/common/index.ts";
-import { LegacyPostgresConnection } from "@/ilos/connection-postgres/index.ts";
+import { DenoPostgresConnection } from "@/ilos/connection-postgres/index.ts";
 import sql, { join, raw } from "@/lib/pg/sql.ts";
 import { getTableName } from "@/pdc/services/observatory/helpers/tableName.ts";
 import {
@@ -23,7 +23,7 @@ export class DistributionRepositoryProvider implements DistributionRepositoryInt
     return getTableName(params, "observatoire_stats", "distribution");
   };
 
-  constructor(private pg: LegacyPostgresConnection) {}
+  constructor(private pgConnection: DenoPostgresConnection) {}
 
   async getJourneysByHours(
     params: JourneysByHoursParamsInterface,
@@ -44,16 +44,15 @@ export class DistributionRepositoryProvider implements DistributionRepositoryInt
       filters.push(sql`semester = ${params.semester}`);
     }
     const query = sql`
-      SELECT 
-        code, 
+      SELECT
+        code,
         libelle,
         direction,
-        hours 
+        hours
       FROM ${raw(tableName)}
       WHERE ${join(filters, " AND ")}
     `;
-    const response = await this.pg.getClient().query(query);
-    return response.rows;
+    return await this.pgConnection.query<JourneysByHoursResultInterface[number]>(query);
   }
 
   async getJourneysByDistances(
@@ -76,15 +75,14 @@ export class DistributionRepositoryProvider implements DistributionRepositoryInt
       filters.push(sql`semester = ${params.semester}`);
     }
     const query = sql`
-      SELECT 
-        code, 
+      SELECT
+        code,
         libelle,
         direction,
-        distances 
+        distances
       FROM ${raw(tableName)}
       WHERE ${join(filters, " AND ")}
     `;
-    const response = await this.pg.getClient().query(query);
-    return response.rows;
+    return await this.pgConnection.query<JourneysByDistancesResultInterface[number]>(query);
   }
 }

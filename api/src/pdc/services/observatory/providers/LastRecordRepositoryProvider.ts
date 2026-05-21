@@ -1,5 +1,5 @@
 import { provider } from "@/ilos/common/index.ts";
-import { LegacyPostgresConnection } from "@/ilos/connection-postgres/index.ts";
+import { DenoPostgresConnection } from "@/ilos/connection-postgres/index.ts";
 import sql, { join } from "@/lib/pg/sql.ts";
 import { checkTerritoryParam } from "@/pdc/services/observatory/helpers/checkParams.ts";
 import {
@@ -13,7 +13,7 @@ import {
   identifier: LastRecordRepositoryInterfaceResolver,
 })
 export class LastRecordRepositoryProvider implements LastRecordRepositoryInterface {
-  constructor(private pg: LegacyPostgresConnection) {}
+  constructor(private pgConnection: DenoPostgresConnection) {}
 
   async getLastRecord(
     params: LastRecordParamsInterface,
@@ -40,9 +40,7 @@ export class LastRecordRepositoryProvider implements LastRecordRepositoryInterfa
       LIMIT 1
     `;
 
-    const response = await this.pg.getClient().query(query);
-    return response.rows.length > 0
-      ? { year: response.rows[0].year, month: response.rows[0].month }
-      : null;
+    const rows = await this.pgConnection.query<{ year: number; month: number }>(query);
+    return rows.length > 0 ? { year: rows[0].year, month: rows[0].month } : null;
   }
 }

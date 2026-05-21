@@ -1,5 +1,5 @@
 import { provider } from "@/ilos/common/index.ts";
-import { LegacyPostgresConnection } from "@/ilos/connection-postgres/index.ts";
+import { DenoPostgresConnection } from "@/ilos/connection-postgres/index.ts";
 import sql, { join, raw } from "@/lib/pg/sql.ts";
 import { checkTerritoryParam } from "../helpers/checkParams.ts";
 import {
@@ -15,7 +15,7 @@ import {
 export class InfraRepositoryProvider implements InfraRepositoryInterface {
   private readonly table = "observatory.aires_covoiturage";
   private readonly perim_table = "geo.perimeters";
-  constructor(private pg: LegacyPostgresConnection) {}
+  constructor(private pgConnection: DenoPostgresConnection) {}
 
   async getAiresCovoiturage(
     params: AiresCovoiturageParamsInterface,
@@ -48,7 +48,6 @@ export class InfraRepositoryProvider implements InfraRepositoryInterface {
       FROM ${raw(this.table)}
       WHERE ${join(filters, " AND ")}
     `;
-    const response = await this.pg.getClient().query(query);
-    return response.rows;
+    return await this.pgConnection.query<AiresCovoiturageResultInterface[number]>(query);
   }
 }
