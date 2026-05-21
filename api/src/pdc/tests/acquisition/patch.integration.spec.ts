@@ -1,6 +1,6 @@
 import { assert, assertEquals } from "dep:assert";
 import { afterAll, beforeAll, describe, it } from "dep:testing-bdd";
-import { LegacyPostgresConnection } from "@/ilos/connection-postgres/index.ts";
+import { DenoPostgresConnection, LegacyPostgresConnection } from "@/ilos/connection-postgres/index.ts";
 import {
   CarpoolAcquisitionService,
   CarpoolGeoRepository,
@@ -34,6 +34,7 @@ describe("Operator patches a journey", () => {
   // ---------------------------------------------------------------------------
 
   let db: LegacyDbContext;
+  let denoConnection: DenoPostgresConnection;
   let kc: KernelContext;
   let carpoolRepository: CarpoolRepository;
   let statusRepository: CarpoolStatusRepository;
@@ -73,10 +74,13 @@ describe("Operator patches a journey", () => {
       .rebind(LegacyPostgresConnection)
       .toConstantValue(db.connection);
 
+    denoConnection = new DenoPostgresConnection(db.db.currentConnectionString);
+    await denoConnection.up();
+
     geoProvider = new GeoProvider(
       new EtalabAPIGeoProvider(),
       new EtalabBaseAdresseNationaleProvider(),
-      new LocalGeoProvider(db.connection),
+      new LocalGeoProvider(denoConnection),
       new OSRMProvider(),
     );
     carpoolRepository = new CarpoolRepository(db.connection);
@@ -88,6 +92,7 @@ describe("Operator patches a journey", () => {
   });
 
   afterAll(async () => {
+    await denoConnection?.down();
     await kernelAfter(kc);
     await dbAfter(db);
   });

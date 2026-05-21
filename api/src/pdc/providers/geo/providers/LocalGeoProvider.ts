@@ -1,5 +1,6 @@
 import { NotFoundException, provider } from "@/ilos/common/index.ts";
-import { LegacyPostgresConnection } from "@/ilos/connection-postgres/index.ts";
+import { DenoPostgresConnection } from "@/ilos/connection-postgres/index.ts";
+import sql, { raw } from "@/lib/pg/sql.ts";
 import { logger } from "@/lib/logger/index.ts";
 import { InseeCoderInterface, PointInterface } from "../interfaces/index.ts";
 
@@ -9,58 +10,43 @@ export class LocalGeoProvider implements InseeCoderInterface {
   protected fb = "geo.get_closest_country";
   protected fbclose = "geo.get_closest_com";
 
-  constructor(protected connection: LegacyPostgresConnection) {}
+  constructor(protected connection: DenoPostgresConnection) {}
 
   async positionToInsee(geo: PointInterface): Promise<string> {
     const { lat, lon } = geo;
-    const pool = this.connection.getClient();
-    const client = await pool.connect();
 
     try {
-      const resultInCom = await client.query({
-        text: `
+      const inCom = await this.connection.query<{ arr: string }>(sql`
         SELECT arr
-        FROM ${this.fn}($1::float, $2::float)
+        FROM ${raw(this.fn)}(${lon}::float, ${lat}::float)
         WHERE arr NOT IN ('XXXXX','99100')
-      `,
-        values: [lon, lat],
-      });
-
-      if (resultInCom.rowCount > 0) {
-        return resultInCom.rows[0].arr;
+      `);
+      if (inCom.length > 0) {
+        return inCom[0].arr;
       }
 
-      const resultOutFr = await client.query({
-        text: `
+      const outFr = await this.connection.query<{ arr: string }>(sql`
         SELECT arr
-        FROM ${this.fb}($1::float, $2::float)
+        FROM ${raw(this.fb)}(${lon}::float, ${lat}::float)
         WHERE com IS NULL
-      `,
-        values: [lon, lat],
-      });
-
-      if (resultOutFr.rowCount > 0) {
-        return resultOutFr.rows[0].arr;
+      `);
+      if (outFr.length > 0) {
+        return outFr[0].arr;
       }
 
-      const resultCloseCom = await client.query({
-        text: `
+      const closeCom = await this.connection.query<{ arr: string }>(sql`
         SELECT arr
-        FROM ${this.fbclose}($1::float, $2::float,1000)
-      `,
-        values: [lon, lat],
-      });
-
-      if (resultCloseCom.rowCount === 0) {
+        FROM ${raw(this.fbclose)}(${lon}::float, ${lat}::float, 1000)
+      `);
+      if (closeCom.length === 0) {
         throw new NotFoundException();
       }
 
-      return resultCloseCom.rows[0].arr;
+      return closeCom[0].arr;
     } catch (e) {
-      logger.error(`[LocalGeoProvider] (${lon},${lat}) ${e.message}`);
+      const message = e instanceof Error ? e.message : String(e);
+      logger.error(`[LocalGeoProvider] (${lon},${lat}) ${message}`);
       throw e;
-    } finally {
-      client.release();
     }
   }
 }
