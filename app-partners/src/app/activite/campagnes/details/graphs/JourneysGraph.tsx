@@ -69,7 +69,21 @@ export default function JourneysGraph(props: { title: string; campaignId: number
   }
 
   if (!data || data.length === 0) {
-    return null;
+    return (
+      <div className={fr.cx("fr-my-4w")}>
+        {header}
+        <Alert
+          severity="info"
+          title="Aucune donnée disponible"
+          description={
+            period === "day"
+              ? "Aucun trajet enregistré sur les jours récents pour cette campagne."
+              : "Aucun trajet enregistré sur les derniers mois pour cette campagne."
+          }
+          small
+        />
+      </div>
+    );
   }
   const name = ["Trajets avec Origine OU destination sur le territoire", "Trajets incités et validés par le RPC"];
   const colors = ["#6a6af4", "#000091"];
