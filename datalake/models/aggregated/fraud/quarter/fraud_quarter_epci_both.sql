@@ -1,1 +1,1 @@
-{{ fraud_model('epci', 'quarter', 'both')}}
+{{ fraud_model('epci', 'quarter', 'both') }}
