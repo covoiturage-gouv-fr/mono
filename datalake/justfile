@@ -12,6 +12,14 @@ dbt-env:
 dbt cmd *args:
   dbt {{cmd}} --profiles-dir profiles {{args}}
 
+# Lint SQL models with sqlfluff
+lint *args:
+  sqlfluff lint models/ analyses/ {{args}}
+
+# Lint SQL models and auto-fix violations
+lint-fix *args:
+  sqlfluff fix models/ analyses/ {{args}}
+
 # Seed data from S3 to Postgres
 seed config schema *args:
   python -m pipelines.cmd.seed  pipelines/config/{{config}} {{schema}} {{args}}
