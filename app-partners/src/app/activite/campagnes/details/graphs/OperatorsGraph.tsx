@@ -70,7 +70,21 @@ export default function OperatorsGraph(props: { title: string; campaignId: numbe
   }
 
   if (!data || data.length === 0) {
-    return <></>;
+    return (
+      <div className={fr.cx("fr-my-4w")}>
+        {header}
+        <Alert
+          severity="info"
+          title="Aucune donnée disponible"
+          description={
+            period === "day"
+              ? "Aucun trajet enregistré sur les jours récents pour cette campagne."
+              : "Aucun trajet enregistré sur les derniers mois pour cette campagne."
+          }
+          small
+        />
+      </div>
+    );
   }
   const name = [...new Set(data?.map((d) => d.operator_name))] as string[];
   const colors = [
