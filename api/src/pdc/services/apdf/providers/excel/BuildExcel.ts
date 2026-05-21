@@ -1,6 +1,5 @@
 import { defaultTimezone } from "@/config/time.ts";
 import { KernelInterfaceResolver, provider } from "@/ilos/common/index.ts";
-import { NativeCursor } from "@/ilos/connection-postgres/LegacyPostgresConnection.ts";
 import { logger } from "@/lib/logger/index.ts";
 import { APDFNameProvider } from "@/pdc/providers/storage/index.ts";
 import { APDFTripInterface } from "@/pdc/services/apdf/interfaces/APDFTripInterface.ts";
@@ -80,10 +79,9 @@ export class BuildExcel {
     wkw: excel.stream.xlsx.WorkbookWriter,
     params: CampaignSearchParamsInterface,
   ): Promise<void> {
-    let cursor: NativeCursor<APDFTripInterface> | undefined = undefined;
     try {
       const config = await this.getConfig(params.campaign_id);
-      cursor = await this.apdfRepoProvider.getPolicyCursor(params);
+      await using cursor = await this.apdfRepoProvider.getPolicyCursor(params);
       await this.TripsWsWriter.call(cursor, config, wkw);
     } catch (e) {
       logger.error(`[apdf:buildExcel] Error while writing trips. Campaign: ${params.campaign_id}`);
@@ -91,8 +89,6 @@ export class BuildExcel {
         logger.error(e.message);
         logger.error(e.stack);
       }
-    } finally {
-      cursor && await cursor.release();
     }
   }
 

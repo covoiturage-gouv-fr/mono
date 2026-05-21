@@ -1,7 +1,7 @@
 import { assertEquals } from "dep:assert";
 import { afterEach, beforeEach, describe, it } from "dep:testing-bdd";
 import { KernelInterfaceResolver } from "@/ilos/common/index.ts";
-import { NativeCursor } from "@/ilos/connection-postgres/LegacyPostgresConnection.ts";
+import { Cursor } from "@/ilos/connection-postgres/index.ts";
 import { APDFNameProvider } from "@/pdc/providers/storage/index.ts";
 import excel from "dep:excel";
 import sinon from "dep:sinon";
@@ -63,11 +63,11 @@ describe("BuildExcel", () => {
     createSlicesSheetToWorkbook,
     nameProvider,
   );
-  const cursorCallback: NativeCursor<unknown[]> = {
-    read: async (_rowCount?: number) => {
-      return [];
+  const cursorCallback: Cursor<unknown> = {
+    read: async function* (_rowCount?: number) {
+      // empty cursor — yields no batches
     },
-    release: async () => {},
+    [Symbol.asyncDispose]: async () => {},
   };
 
   beforeEach(() => {
