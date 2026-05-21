@@ -122,12 +122,12 @@ it(
   async () =>
     await process(
       {
-        policy: { handler: Handler.id, max_amount: 2_200_000_00n },
+        policy: { handler: Handler.id, max_amount: 2_200_000_00 },
         carpool: [{ distance: 5_000, driver_identity_key: "one" }],
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 2_199_999_00n,
+            value: 2_199_999_00,
           },
         ],
       },
@@ -136,11 +136,11 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 2_200_000_00n,
+            value: 2_200_000_00,
           },
           {
             key: "max_amount_restriction.0-one.month.4-2024",
-            value: 150n,
+            value: 150,
           },
         ],
       },
@@ -169,11 +169,11 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 900n,
+            value: 900,
           },
           {
             key: "max_amount_restriction.0-driver_A.month.4-2024",
-            value: 900n,
+            value: 900,
           },
         ],
       },
@@ -193,11 +193,11 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 100_00n,
+            value: 100_00,
           },
           {
             key: "max_amount_restriction.0-one.month.4-2024",
-            value: 119_00n,
+            value: 119_00,
           },
         ],
       },
@@ -206,11 +206,11 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 101_00n,
+            value: 101_00,
           },
           {
             key: "max_amount_restriction.0-one.month.4-2024",
-            value: 120_00n,
+            value: 120_00,
           },
         ],
       },

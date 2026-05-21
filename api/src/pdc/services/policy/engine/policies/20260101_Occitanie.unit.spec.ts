@@ -293,11 +293,11 @@ describe("Occitanie 2026 - Passenger daily limits", () => {
 describe("Occitanie 2026 - Campaign global limit", () => {
   it("should limit campaign total amount to 210 000 €", async () => {
     await process({
-      policy: { handler: Handler.id, max_amount: 61_163_00n },
+      policy: { handler: Handler.id, max_amount: 61_163_00 },
       carpool: [{}, {}, {}],
       meta: [{
         key: "max_amount_restriction.global.campaign.global",
-        value: 61_162_00n,
+        value: 61_162_00,
       }],
     }, {
       incentive: [100, 0, 0], // 1.00€ left to reach the limit

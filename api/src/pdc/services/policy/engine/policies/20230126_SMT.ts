@@ -64,7 +64,7 @@ export const SMT2023: PolicyHandlerStaticInterface = class extends AbstractPolic
     },
   ];
 
-  constructor(public max_amount: bigint) {
+  constructor(public max_amount: number) {
     super();
     this.limits = [
       [

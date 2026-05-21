@@ -20,7 +20,7 @@ export const Cotentin2023: PolicyHandlerStaticInterface = class extends Abstract
   implements PolicyHandlerInterface {
   static readonly id = "cotentin_2023";
 
-  constructor(public max_amount: bigint) {
+  constructor(public max_amount: number) {
     super();
     this.limits = [
       [

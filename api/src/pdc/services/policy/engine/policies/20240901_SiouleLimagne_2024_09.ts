@@ -41,7 +41,7 @@ export const SiouleLimagne: PolicyHandlerStaticInterface = class extends Abstrac
   protected first_period: IsAfterParams = { date: new Date("2024-09-15") };
   protected second_period: IsAfterParams = { date: new Date("2024-10-15") };
 
-  constructor(public policy_max_amount: bigint) {
+  constructor(public policy_max_amount: number) {
     super();
     this.limits = [
       [

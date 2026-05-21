@@ -58,18 +58,18 @@ export const LaRochelle2026: PolicyHandlerStaticInterface = class extends Abstra
     },
   ];
 
-  constructor(public max_amount: bigint) {
+  constructor(public max_amount: number) {
     super();
     this.limits = [
       [
         "ba5fb7f9-ad6e-4323-89c5-07a4110790d5",
-        6n,
+        6,
         watchForPersonMaxTripByDay,
         LimitTargetEnum.Driver,
       ],
       [
         "24c25b2a-6d62-489f-88a0-caef643b93cf",
-        80_00n,
+        80_00,
         watchForPersonMaxAmountByMonth,
         LimitTargetEnum.Driver,
       ],

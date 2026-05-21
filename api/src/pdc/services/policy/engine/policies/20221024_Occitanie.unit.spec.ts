@@ -83,7 +83,7 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 580n,
+            value: 580,
           },
         ],
       },
@@ -112,7 +112,7 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 590n,
+            value: 590,
           },
         ],
       },
@@ -124,12 +124,12 @@ it(
   async () =>
     await process(
       {
-        policy: { handler: Handler.id, max_amount: 70_000_00n },
+        policy: { handler: Handler.id, max_amount: 70_000_00 },
         carpool: [{ distance: 5_000, driver_identity_key: "one" }],
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 69_999_00n,
+            value: 69_999_00,
           },
         ],
       },
@@ -138,7 +138,7 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 70_000_00n,
+            value: 70_000_00,
           },
         ],
       },
@@ -195,7 +195,7 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 1140n,
+            value: 1140,
           },
         ],
       },
@@ -232,7 +232,7 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 380n,
+            value: 380,
           },
         ],
       },

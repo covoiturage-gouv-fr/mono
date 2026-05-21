@@ -98,15 +98,15 @@ it(
         meta: [
           {
             key: "max_amount_restriction.0-one.month.10-2023",
-            value: 450n,
+            value: 450,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 600n,
+            value: 600,
           },
           {
             key: "max_amount_restriction.0-two.month.10-2023",
-            value: 150n,
+            value: 150,
           },
         ],
       },
@@ -126,11 +126,11 @@ it(
         meta: [
           {
             key: "max_amount_restriction.0-one.month.10-2023",
-            value: 119_00n,
+            value: 119_00,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 119_00n,
+            value: 119_00,
           },
         ],
       },
@@ -139,11 +139,11 @@ it(
         meta: [
           {
             key: "max_amount_restriction.0-one.month.10-2023",
-            value: 120_00n,
+            value: 120_00,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 120_00n,
+            value: 120_00,
           },
         ],
       },
@@ -207,11 +207,11 @@ it(
         meta: [
           {
             key: "max_amount_restriction.0-11.month.10-2023",
-            value: 900n,
+            value: 900,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 900n,
+            value: 900,
           },
         ],
       },
@@ -251,11 +251,11 @@ it(
         meta: [
           {
             key: "max_amount_restriction.0-11.month.10-2023",
-            value: 300n,
+            value: 300,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 300n,
+            value: 300,
           },
         ],
       },
@@ -276,11 +276,11 @@ it(
         meta: [
           {
             key: "max_amount_restriction.0-three.month.9-2023",
-            value: 120_00n,
+            value: 120_00,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 120_00n,
+            value: 120_00,
           },
         ],
       },

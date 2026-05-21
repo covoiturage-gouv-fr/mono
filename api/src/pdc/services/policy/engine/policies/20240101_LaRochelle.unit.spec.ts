@@ -80,11 +80,11 @@ it("should work basic", async () =>
       meta: [
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 900n,
+          value: 900,
         },
         {
           key: "max_amount_restriction.0-driver_id_one.month.0-2024",
-          value: 900n,
+          value: 900,
         },
       ],
     },
@@ -101,11 +101,11 @@ it("should work with driver month limits of 80 €", async () =>
       meta: [
         {
           key: "max_amount_restriction.0-driver_id_one.month.0-2024",
-          value: 79_00n,
+          value: 79_00,
         },
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 79_00n,
+          value: 79_00,
         },
       ],
     },
@@ -114,11 +114,11 @@ it("should work with driver month limits of 80 €", async () =>
       meta: [
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 80_00n,
+          value: 80_00,
         },
         {
           key: "max_amount_restriction.0-driver_id_one.month.0-2024",
-          value: 80_00n,
+          value: 80_00,
         },
       ],
     },

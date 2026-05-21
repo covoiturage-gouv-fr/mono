@@ -372,7 +372,7 @@ export const Rennes2025: PolicyHandlerStaticInterface = class extends AbstractPo
     },
   ];
 
-  constructor(public max_amount: bigint) {
+  constructor(public max_amount: number) {
     super();
     this.limits = [
       [

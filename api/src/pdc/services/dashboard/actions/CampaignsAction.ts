@@ -15,8 +15,8 @@ export type CampaignResult = {
   unit: string;
   status: string;
   handler: string;
-  incentive_sum: bigint;
-  max_amount: bigint;
+  incentive_sum: number;
+  max_amount: number;
 };
 export type ResultInterface = {
   meta: {

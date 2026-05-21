@@ -128,12 +128,12 @@ it(
   async () =>
     await process(
       {
-        policy: { handler: Handler.id, max_amount: 2_200_000_00n },
+        policy: { handler: Handler.id, max_amount: 2_200_000_00 },
         carpool: [{ distance: 5_000, driver_identity_key: "one" }],
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 2_199_998_00n,
+            value: 2_199_998_00,
           },
         ],
       },
@@ -142,11 +142,11 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 2_200_000_00n,
+            value: 2_200_000_00,
           },
           {
             key: "max_amount_restriction.0-one.month.3-2024",
-            value: 200n,
+            value: 200,
           },
         ],
       },
@@ -186,23 +186,23 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 800n,
+            value: 800,
           },
           {
             key: "max_amount_restriction.0-driver_A.month.3-2024",
-            value: 400n,
+            value: 400,
           },
           {
             key: "max_amount_restriction.0-driver_B.month.3-2024",
-            value: 200n,
+            value: 200,
           },
           {
             key: "max_amount_restriction.0-driver_C.month.3-2024",
-            value: 200n,
+            value: 200,
           },
           {
             key: "max_amount_restriction.0-driver_D.month.3-2024",
-            value: 0n,
+            value: 0,
           },
         ],
       },
@@ -222,11 +222,11 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 100_00n,
+            value: 100_00,
           },
           {
             key: "max_amount_restriction.0-one.month.3-2024",
-            value: 98_00n,
+            value: 98_00,
           },
         ],
       },
@@ -235,11 +235,11 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 102_00n,
+            value: 102_00,
           },
           {
             key: "max_amount_restriction.0-one.month.3-2024",
-            value: 100_00n,
+            value: 100_00,
           },
         ],
       },

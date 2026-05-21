@@ -100,11 +100,11 @@ it(
         meta: [
           {
             key: "max_trip_restriction.global.campaign.global",
-            value: 4n,
+            value: 4,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 1350n,
+            value: 1350,
           },
         ],
       },
@@ -116,16 +116,16 @@ it(
   async () =>
     await process(
       {
-        policy: { handler: Handler.id, max_amount: 10_000_000_00n },
+        policy: { handler: Handler.id, max_amount: 10_000_000_00 },
         carpool: [{ distance: 5_000, driver_identity_key: "one" }],
         meta: [
           {
             key: "max_trip_restriction.global.campaign.global",
-            value: 2n,
+            value: 2,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 9_999_999_50n,
+            value: 9_999_999_50,
           },
         ],
       },
@@ -134,11 +134,11 @@ it(
         meta: [
           {
             key: "max_trip_restriction.global.campaign.global",
-            value: 3n,
+            value: 3,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 10_000_000_00n,
+            value: 10_000_000_00,
           },
         ],
       },
@@ -158,11 +158,11 @@ it(
         meta: [
           {
             key: "max_trip_restriction.global.campaign.global",
-            value: 9_999_999n,
+            value: 9_999_999,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 50n,
+            value: 50,
           },
         ],
       },
@@ -171,11 +171,11 @@ it(
         meta: [
           {
             key: "max_trip_restriction.global.campaign.global",
-            value: 10_000_000n,
+            value: 10_000_000,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 250n,
+            value: 250,
           },
         ],
       },
@@ -233,11 +233,11 @@ it(
         meta: [
           {
             key: "max_trip_restriction.global.campaign.global",
-            value: 4n,
+            value: 4,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 800n,
+            value: 800,
           },
         ],
       },
@@ -295,11 +295,11 @@ it(
         meta: [
           {
             key: "max_trip_restriction.global.campaign.global",
-            value: 4n,
+            value: 4,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 800n,
+            value: 800,
           },
         ],
       },
@@ -346,11 +346,11 @@ it(
         meta: [
           {
             key: "max_trip_restriction.global.campaign.global",
-            value: 2n,
+            value: 2,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 600n,
+            value: 600,
           },
         ],
       },

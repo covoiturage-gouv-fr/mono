@@ -186,19 +186,19 @@ describe("CCSPSL 2026 - Limite mensuelle conducteur", () => {
       carpool: [{ driver_identity_key: "driver_1" }],
       meta: [{
         key: "max_amount_restriction.0-driver_1.month.3-2026",
-        value: 149_00n,
+        value: 149_00,
       }, {
         key: "max_amount_restriction.global.campaign.global",
-        value: 149_00n,
+        value: 149_00,
       }],
     }, {
       incentive: [1_00], // only 1 EUR left
       meta: [{
         key: "max_amount_restriction.0-driver_1.month.3-2026",
-        value: 150_00n,
+        value: 150_00,
       }, {
         key: "max_amount_restriction.global.campaign.global",
-        value: 150_00n,
+        value: 150_00,
       }],
     });
   });
@@ -212,10 +212,10 @@ describe("CCSPSL 2026 - Limite mensuelle conducteur", () => {
       ],
       meta: [{
         key: "max_amount_restriction.0-driver_1.month.3-2026",
-        value: 149_00n,
+        value: 149_00,
       }, {
         key: "max_amount_restriction.global.campaign.global",
-        value: 149_00n,
+        value: 149_00,
       }],
     }, {
       incentive: [
@@ -224,13 +224,13 @@ describe("CCSPSL 2026 - Limite mensuelle conducteur", () => {
       ],
       meta: [{
         key: "max_amount_restriction.0-driver_1.month.3-2026",
-        value: 150_00n,
+        value: 150_00,
       }, {
         key: "max_amount_restriction.global.campaign.global",
-        value: 151_00n,
+        value: 151_00,
       }, {
         key: "max_amount_restriction.0-driver_1.month.4-2026",
-        value: 1_00n,
+        value: 1_00,
       }],
     });
   });
@@ -239,11 +239,11 @@ describe("CCSPSL 2026 - Limite mensuelle conducteur", () => {
 describe("CCSPSL 2026 - Plafond global de la campagne", () => {
   it("should limit total campaign amount to 2 135 EUR", async () => {
     await process({
-      policy: { handler: Handler.id, max_amount: 2_135_00n },
+      policy: { handler: Handler.id, max_amount: 2_135_00 },
       carpool: [{}, {}, {}],
       meta: [{
         key: "max_amount_restriction.global.campaign.global",
-        value: 2_134_50n,
+        value: 2_134_50,
       }],
     }, {
       incentive: [50, 0, 0], // only 0.50 EUR left

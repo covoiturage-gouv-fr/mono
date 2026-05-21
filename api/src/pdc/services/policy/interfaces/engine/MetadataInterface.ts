@@ -11,7 +11,7 @@ export interface MetadataVariableDefinitionInterface {
   key?: string;
   name?: string;
   scope?: string;
-  initialValue?: bigint;
+  initialValue?: number;
   lifetime?: MetadataLifetime;
   carpoolValue?: number;
 }
@@ -20,14 +20,14 @@ export interface SerializedMetadataVariableDefinitionInterface {
   uuid: string;
   key: string;
   lifetime?: MetadataLifetime;
-  initialValue?: bigint;
+  initialValue?: number;
   carpoolValue?: number;
 }
 
 export interface StoredMetadataVariableInterface extends SerializedMetadataVariableDefinitionInterface {
   policy_id: number;
   datetime: Date;
-  value: bigint;
+  value: number;
 }
 
 export interface MetadataRegistryInterface {
@@ -40,15 +40,15 @@ export interface MetadataRegistryInterface {
 export interface SerializedAccessibleMetadataInterface {
   policy_id: number;
   key: string;
-  value: bigint;
+  value: number;
   carpoolValue?: number;
 }
 
 export interface MetadataAccessorInterface {
   datetime: Date;
-  get(uuid: string): bigint;
+  get(uuid: string): number;
   getRaw(uuid: string): SerializedAccessibleMetadataInterface;
-  set(uuid: string, data: bigint): void;
+  set(uuid: string, data: number): void;
   isEmpty(): boolean;
   export(): Array<SerializedAccessibleMetadataInterface>;
 }

@@ -39,7 +39,7 @@ export const SMT2022: PolicyHandlerStaticInterface = class extends AbstractPolic
       fn: (ctx: StatelessContextInterface) => perSeat(ctx, perKm(ctx, { amount: 10, offset: 20_000, limit: 40_000 })),
     },
   ];
-  constructor(public max_amount: bigint) {
+  constructor(public max_amount: number) {
     super();
     this.limits = [
       [

@@ -76,15 +76,15 @@ it("should work basic with start/end inside aom", async () =>
       meta: [
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 1050n,
+          value: 1050,
         },
         {
           key: "max_amount_restriction.0-one.month.10-2024",
-          value: 450n,
+          value: 450,
         },
         {
           key: "max_amount_restriction.0-two.month.10-2024",
-          value: 600n,
+          value: 600,
         },
       ],
     },
@@ -93,12 +93,12 @@ it("should work basic with start/end inside aom", async () =>
 it("should work with global limits", async () =>
   await process(
     {
-      policy: { handler: Handler.id, max_amount: 15_000_00n },
+      policy: { handler: Handler.id, max_amount: 15_000_00 },
       carpool: [{ distance: 59_000, driver_identity_key: "one" }],
       meta: [
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 14_999_99n,
+          value: 14_999_99,
         },
       ],
     },
@@ -107,11 +107,11 @@ it("should work with global limits", async () =>
       meta: [
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 15_000_00n,
+          value: 15_000_00,
         },
         {
           key: "max_amount_restriction.0-one.month.10-2024",
-          value: 250n,
+          value: 250,
         },
       ],
     },
@@ -137,11 +137,11 @@ it("should work with 6 trips per day limit", async () =>
       meta: [
         {
           key: "max_amount_restriction.global.campaign.global",
-          value: 900n,
+          value: 900,
         },
         {
           key: "max_amount_restriction.0-one.month.10-2024",
-          value: 900n,
+          value: 900,
         },
       ],
     },

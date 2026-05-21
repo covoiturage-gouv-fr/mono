@@ -132,7 +132,7 @@ describe("getCampaignOperator", () => {
       end_date: new Date("2020-02-08T00:00:00Z"),
       status: PolicyStatusEnum.ACTIVE,
       handler: `handler_${id}`,
-      incentive_sum: 100n,
+      incentive_sum: 100,
       params: {
         operators,
       },

@@ -51,13 +51,13 @@ export const CovoitIDFM2026: PolicyHandlerStaticInterface = class extends Abstra
   implements PolicyHandlerInterface {
   static readonly id = "covoit_idfm_2026";
 
-  constructor(public max_amount: bigint) {
+  constructor(public max_amount: number) {
     super();
     this.limits = [
       // Nous appliquerons un plafonnement de soutien financier d’IDFM à 200 € par mois et par conducteur.
       [
         "dcee0b35-222c-46f1-aa49-cb76725aabeb",
-        200_00n,
+        200_00,
         watchForPersonMaxAmountByMonth,
         LimitTargetEnum.Driver,
       ],
@@ -66,7 +66,7 @@ export const CovoitIDFM2026: PolicyHandlerStaticInterface = class extends Abstra
       // (indépendamment du nombre de passagers par trajet).
       [
         "13b6f5ac-2764-4865-9224-3f49989a3734",
-        4n,
+        4,
         watchForPersonMaxTripByDay,
         LimitTargetEnum.Driver,
       ],
@@ -74,14 +74,14 @@ export const CovoitIDFM2026: PolicyHandlerStaticInterface = class extends Abstra
       // Chaque trajet aura un maximum de 3 passagers
       [
         "72361283-eec4-44a6-9f83-8953281f9627",
-        3n,
+        3,
         watchForMaxPassengersPerTrip,
       ],
 
       // Un conducteur est limité à un maximum de 6 passagers transportés par jour
       [
         "d55bc553-7841-4e29-82f6-0505b9efaef6",
-        6n,
+        6,
         watchForMaxPassengersPerDriverPerDay,
       ],
 

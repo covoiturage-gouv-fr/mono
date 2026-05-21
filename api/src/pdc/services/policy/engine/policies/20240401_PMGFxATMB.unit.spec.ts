@@ -207,7 +207,7 @@ it(
         meta: [
           {
             key: "max_amount_restriction.0-one.month.3-2024",
-            value: 48_50n,
+            value: 48_50,
           },
         ],
       },
@@ -216,11 +216,11 @@ it(
         meta: [
           {
             key: "max_amount_restriction.0-one.month.3-2024",
-            value: 50_00n,
+            value: 50_00,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 150n,
+            value: 150,
           },
         ],
       },

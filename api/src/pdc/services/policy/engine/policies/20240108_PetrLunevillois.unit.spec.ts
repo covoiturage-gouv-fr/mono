@@ -82,7 +82,7 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 546n,
+            value: 546,
           },
         ],
       },
@@ -173,7 +173,7 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 9_999_99n,
+            value: 9_999_99,
           },
         ],
       },
@@ -182,7 +182,7 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 10_000_00n,
+            value: 10_000_00,
           },
         ],
       },
@@ -208,7 +208,7 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 42n,
+            value: 42,
           },
         ],
       },

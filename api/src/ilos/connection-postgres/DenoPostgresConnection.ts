@@ -82,9 +82,13 @@ export class DenoPostgresConnection
           queryInError: debugString.includes("queryinerror"),
         },
         decoders: {
-          //   // BigInt are kept as strings for compatibility with node-postgres
-          //   // TODO: migrate the code to BigInt (remove the custom decoder)
-          //   20: (value: string): string => value,
+          // Postgres int8 / bigint (OID 20). Without this decoder, deno-postgres
+          // returns native BigInt for COUNT/SUM results and Express res.json()
+          // throws "Do not know how to serialize a BigInt" (issue #3176).
+          // Carpool counts and incentive sums stay well below
+          // Number.MAX_SAFE_INTEGER (2^53 - 1), so decoding to number is safe
+          // and keeps ResultInterface.<field>: number truthful at runtime.
+          20: (value: string): number => Number(value),
         },
       },
       ...config,

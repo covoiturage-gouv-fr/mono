@@ -15,7 +15,7 @@ export enum LimitCounterTypeEnum {
 
 export type ConfiguredLimitInterface = [
   string,
-  bigint,
+  number,
   LimitStatelessStageHelper,
   LimitTargetEnum?,
 ];
@@ -64,7 +64,7 @@ export function applyLimitsOnStatefulStage(
   ) => (fnb.priority > fna.priority ? -1 : 1));
 
   for (const [uuid, max, fn] of sortedLimits) {
-    applyLimitOnStatefulStage(ctx, uuid, BigInt(max), fn);
+    applyLimitOnStatefulStage(ctx, uuid, max, fn);
   }
 }
 
@@ -234,7 +234,7 @@ export const watchForMaxPassengersPerTrip: LimitStatelessStageHelper = (() => {
 export function applyLimitOnStatefulStage(
   ctx: StatefulContextInterface,
   uuid: string,
-  max: bigint,
+  max: number,
   helper: LimitStatelessStageHelper,
 ): void {
   if (ctx.incentive.get() === 0) {
@@ -251,11 +251,11 @@ export function applyLimitOnStatefulStage(
   switch (helper.counter) {
     case LimitCounterTypeEnum.Seats: {
       const raw = ctx.meta.getRaw(uuid);
-      const val = BigInt(raw.carpoolValue as number);
+      const val = raw.carpoolValue as number;
 
       if (state + val > max) {
         ctx.meta.set(uuid, max);
-        const allowedSeats = Number(max - state);
+        const allowedSeats = max - state;
         const seatIncentive = Math.floor(ctx.incentive.get() / (raw.carpoolValue as number));
         ctx.incentive.set(seatIncentive * allowedSeats);
         return;
@@ -265,19 +265,19 @@ export function applyLimitOnStatefulStage(
       return;
     }
     case LimitCounterTypeEnum.Trip: {
-      ctx.meta.set(uuid, state + 1n);
+      ctx.meta.set(uuid, state + 1);
       return;
     }
     case LimitCounterTypeEnum.Amount: {
-      const incBigInt = BigInt(ctx.incentive.get());
-      const delta = state + incBigInt;
+      const inc = ctx.incentive.get();
+      const delta = state + inc;
       if (delta >= max) {
         // limit will be reached, get diff
         ctx.meta.set(uuid, max);
-        ctx.incentive.set(Number(max - state));
+        ctx.incentive.set(max - state);
         return;
       }
-      ctx.meta.set(uuid, state + incBigInt);
+      ctx.meta.set(uuid, state + inc);
       return;
     }
     case LimitCounterTypeEnum.Other: {
@@ -286,7 +286,7 @@ export function applyLimitOnStatefulStage(
         throw new MisconfigurationException("Missing carpool value");
       }
 
-      ctx.meta.set(uuid, state + BigInt(raw.carpoolValue));
+      ctx.meta.set(uuid, state + raw.carpoolValue);
       return;
     }
   }

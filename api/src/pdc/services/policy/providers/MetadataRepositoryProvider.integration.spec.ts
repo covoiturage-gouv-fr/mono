@@ -24,37 +24,37 @@ describe("MetadataRepositoryProvider", () => {
       {
         policy_id: 1,
         key: "my_key",
-        value: 0n,
+        value: 0,
         datetime: new Date("2021-01-01"),
       },
       {
         policy_id: 1,
         key: "my_key_2",
-        value: 500n,
+        value: 500,
         datetime: new Date("2021-02-01"),
       },
       {
         policy_id: 1,
         key: "my_key",
-        value: 100n,
+        value: 100,
         datetime: new Date("2021-03-01"),
       },
       {
         policy_id: 1,
         key: "my_key",
-        value: 200n,
+        value: 200,
         datetime: new Date("2021-04-01"),
       },
       {
         policy_id: 1,
         key: "bigint_key",
-        value: 2147483647n, // int4 max
+        value: 2147483647, // int4 max
         datetime: new Date("2021-05-01"),
       },
       {
         policy_id: 1,
         key: "bigint_key",
-        value: 2147483647n + 2147483647n,
+        value: 2147483647 + 2147483647,
         datetime: new Date("2021-06-01"),
       },
     ];
@@ -76,19 +76,19 @@ describe("MetadataRepositoryProvider", () => {
       {
         policy_id: 1,
         key: "my_key",
-        value: 200n,
+        value: 200,
         datetime: new Date("2021-04-01"),
       },
       {
         policy_id: 1,
         key: "my_key_2",
-        value: 500n,
+        value: 500,
         datetime: new Date("2021-02-01"),
       },
       {
         policy_id: 1,
         key: "bigint_key",
-        value: 2147483647n + 2147483647n,
+        value: 2147483647 + 2147483647,
         datetime: new Date("2021-06-01"),
       },
     ]);
@@ -104,13 +104,13 @@ describe("MetadataRepositoryProvider", () => {
       {
         policy_id: 1,
         key: "my_key",
-        value: 100n,
+        value: 100,
         datetime: new Date("2021-03-01"),
       },
       {
         policy_id: 1,
         key: "my_key_2",
-        value: 500n,
+        value: 500,
         datetime: new Date("2021-02-01"),
       },
     ]);
@@ -126,7 +126,7 @@ describe("MetadataRepositoryProvider", () => {
       {
         policy_id: 1,
         key: "my_key",
-        value: 0n,
+        value: 0,
         datetime: new Date("2021-01-01"),
       },
     ]);
@@ -137,13 +137,13 @@ describe("MetadataRepositoryProvider", () => {
       {
         policy_id: 1,
         key: "my_key",
-        value: 0n,
+        value: 0,
         datetime: new Date("2021-01-01"),
       },
       {
         policy_id: 1,
         key: "my_key_2",
-        value: 500n,
+        value: 500,
         datetime: new Date("2021-02-01"),
       },
     ];

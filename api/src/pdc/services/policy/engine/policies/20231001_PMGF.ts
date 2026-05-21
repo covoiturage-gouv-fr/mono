@@ -32,7 +32,7 @@ export const PMGFOctobre2023: PolicyHandlerStaticInterface = class extends Abstr
 
   protected operator_class = ["B", "C"];
 
-  constructor(public max_amount: bigint) {
+  constructor(public max_amount: number) {
     super();
     this.limits = [
       [

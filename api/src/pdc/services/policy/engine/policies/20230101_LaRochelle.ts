@@ -62,7 +62,7 @@ export const LaRochelle20232024: PolicyHandlerStaticInterface = class extends Ab
 
   private updated_policy_date: Date = new Date("2023-05-01");
 
-  constructor(public max_amount: bigint) {
+  constructor(public max_amount: number) {
     super();
     this.limits = [
       [

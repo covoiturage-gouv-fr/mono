@@ -97,7 +97,7 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 1350n,
+            value: 1350,
           },
         ],
       },
@@ -167,7 +167,7 @@ it(
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 1200n,
+            value: 1200,
           },
         ],
       },
@@ -175,7 +175,7 @@ it(
 );
 
 it("latest operator", () => {
-  const handler = new Handler(100n);
+  const handler = new Handler(100);
   const { operators } = handler.params();
   assertNotEquals(operators, undefined);
   assertNotEquals(operators, []);

@@ -42,7 +42,7 @@ export const PMGF2022: PolicyHandlerStaticInterface = class extends AbstractPoli
   ];
   protected operator_class = ["B", "C"];
 
-  constructor(public max_amount: bigint) {
+  constructor(public max_amount: number) {
     super();
     this.limits = [
       [

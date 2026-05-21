@@ -82,15 +82,15 @@ it(
         meta: [
           {
             key: "max_amount_restriction.0-one.month.10-2022",
-            value: 600n,
+            value: 600,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 1750n,
+            value: 1750,
           },
           {
             key: "max_amount_restriction.0-two.month.10-2022",
-            value: 1150n,
+            value: 1150,
           },
         ],
       },
@@ -139,15 +139,15 @@ it(
         meta: [
           {
             key: "max_amount_restriction.0-one.month.10-2022",
-            value: 300n,
+            value: 300,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 1050n,
+            value: 1050,
           },
           {
             key: "max_amount_restriction.0-two.month.10-2022",
-            value: 750n,
+            value: 750,
           },
         ],
       },
@@ -159,12 +159,12 @@ it(
   async () =>
     await process(
       {
-        policy: { handler: Handler.id, max_amount: 100_000_00n },
+        policy: { handler: Handler.id, max_amount: 100_000_00 },
         carpool: [{ distance: 5_000, driver_identity_key: "one" }],
         meta: [
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 99_999_50n,
+            value: 99_999_50,
           },
         ],
       },
@@ -173,11 +173,11 @@ it(
         meta: [
           {
             key: "max_amount_restriction.0-one.month.10-2022",
-            value: 200n,
+            value: 200,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 100_000_00n,
+            value: 100_000_00,
           },
         ],
       },
@@ -205,11 +205,11 @@ it(
         meta: [
           {
             key: "max_amount_restriction.0-one.month.0-2023",
-            value: 200n,
+            value: 200,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 200n,
+            value: 200,
           },
         ],
       },
@@ -231,7 +231,7 @@ it(
         meta: [
           {
             key: "max_amount_restriction.0-one.month.10-2022",
-            value: 11500n,
+            value: 11500,
           },
         ],
       },
@@ -240,11 +240,11 @@ it(
         meta: [
           {
             key: "max_amount_restriction.0-one.month.10-2022",
-            value: 12000n,
+            value: 12000,
           },
           {
             key: "max_amount_restriction.global.campaign.global",
-            value: 500n,
+            value: 500,
           },
         ],
       },

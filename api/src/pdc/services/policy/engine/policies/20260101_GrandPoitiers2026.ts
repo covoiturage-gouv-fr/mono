@@ -37,24 +37,24 @@ export const GrandPoitiers2026: PolicyHandlerStaticInterface = class extends Abs
     },
   ];
 
-  constructor(public max_amount: bigint) {
+  constructor(public max_amount: number) {
     super();
     this.limits = [
       [
         "51554928-b185-4ac4-a3b5-c567ada6c0fe",
-        120_00n,
+        120_00,
         watchForPersonMaxAmountByMonth,
         LimitTargetEnum.Driver,
       ],
       [
         "5d165b48-92e1-4d79-acc0-315e520a0ae9",
-        6n,
+        6,
         watchForPersonMaxTripByDay,
         LimitTargetEnum.Driver,
       ],
       [
         "8addc22a-bbfa-49c5-bed7-bf9d0b8a86b7",
-        2n,
+        2,
         watchForPersonMaxTripByDay,
         LimitTargetEnum.Passenger,
       ],

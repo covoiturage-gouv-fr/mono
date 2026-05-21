@@ -29,13 +29,13 @@ export const MontluconCommunaute2026: PolicyHandlerStaticInterface = class exten
   implements PolicyHandlerInterface {
   static readonly id = "montlucon_2026";
 
-  constructor(public max_amount: bigint) {
+  constructor(public max_amount: number) {
     super();
     this.limits = [
       // 150€ max par conducteur et par mois
       [
         "dcee0b35-222c-46f1-aa49-cb76725aabeb",
-        150_00n,
+        150_00,
         watchForPersonMaxAmountByMonth,
         LimitTargetEnum.Driver,
       ],
@@ -43,7 +43,7 @@ export const MontluconCommunaute2026: PolicyHandlerStaticInterface = class exten
       // 6 trajets par conducteur et par jour
       [
         "e1771f85-8ec1-4d60-bf42-a3515e2ad9dd",
-        6n,
+        6,
         watchForPersonMaxTripByDay,
         LimitTargetEnum.Driver,
       ],

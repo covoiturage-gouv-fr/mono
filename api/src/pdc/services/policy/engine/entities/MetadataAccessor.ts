@@ -19,7 +19,7 @@ export class MetadataAccessor implements MetadataAccessorInterface {
     return [...this.data.values()];
   }
 
-  get(uuid: string): bigint {
+  get(uuid: string): number {
     const meta = this.data.get(uuid);
     if (!meta || !("value" in meta)) {
       logger.error(`key ${uuid} not found in [${[...this.data.keys()].join(", ")}] (${JSON.stringify(meta)})`);
@@ -32,7 +32,7 @@ export class MetadataAccessor implements MetadataAccessorInterface {
     return this.data.get(uuid)!;
   }
 
-  set(uuid: string, value: bigint): void {
+  set(uuid: string, value: number): void {
     const data = this.getRaw(uuid);
     this.data.set(uuid, { ...data, value });
   }

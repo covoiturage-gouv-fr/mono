@@ -36,7 +36,7 @@ export const ATMB202305: PolicyHandlerStaticInterface = class extends AbstractPo
   protected readonly operator_class = ["B", "C"];
   protected readonly policy_change_date = new Date("2023-12-18");
 
-  constructor(public max_amount: bigint) {
+  constructor(public max_amount: number) {
     super();
     this.limits = [
       [

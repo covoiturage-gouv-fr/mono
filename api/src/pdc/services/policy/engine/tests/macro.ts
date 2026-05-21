@@ -17,13 +17,13 @@ interface ProcessParams {
   carpool: Array<Partial<CarpoolInterface>>;
   handler?: PolicyHandlerInterface;
   policy?: Partial<SerializedPolicyInterface>;
-  meta?: Array<{ key: string; value: bigint } & Partial<SerializedStoredMetadataInterface>>;
+  meta?: Array<{ key: string; value: number } & Partial<SerializedStoredMetadataInterface>>;
   lifetime?: MetadataLifetime;
 }
 
 interface ProcessResult {
   incentive: Array<number>;
-  meta?: Array<{ key: string; value: bigint }>;
+  meta?: Array<{ key: string; value: number }>;
 }
 
 class MemoryMetadataRepository implements MetadataRepositoryProviderInterfaceResolver {
@@ -71,8 +71,8 @@ export const makeProcessHelper = (cp?: CarpoolInterface) => {
       status: PolicyStatusEnum.ACTIVE,
       tz: "Europe/Paris",
       handler: "",
-      incentive_sum: 0n,
-      max_amount: 10_000_000_00n,
+      incentive_sum: 0,
+      max_amount: 10_000_000_00,
       ...(input.policy || {}),
     };
 

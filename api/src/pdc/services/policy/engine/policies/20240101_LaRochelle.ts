@@ -47,7 +47,7 @@ export const LaRochelle2024: PolicyHandlerStaticInterface = class extends Abstra
     },
   ];
 
-  constructor(public max_amount: bigint) {
+  constructor(public max_amount: number) {
     super();
     this.limits = [
       [

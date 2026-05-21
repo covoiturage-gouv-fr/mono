@@ -19,14 +19,14 @@ export interface PolicyInterface {
   end_date: Date;
   status: PolicyStatusEnum;
   handler: string;
-  incentive_sum: bigint;
+  incentive_sum: number;
   params: {
     tz?: Timezone;
     slices?: BoundedSlices | UnboundedSlices;
     operators?: Array<string>;
     allTimeOperators?: Array<string>;
     limits?: {
-      glob?: bigint;
+      glob?: number;
     };
     booster_dates?: Array<string>;
     extras?: unknown;

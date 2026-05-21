@@ -46,7 +46,7 @@ export const PaysDeLaLoire2021: PolicyHandlerStaticInterface = class extends Abs
     },
   ];
 
-  constructor(public max_amount: bigint) {
+  constructor(public max_amount: number) {
     super();
     this.limits = [
       [

@@ -36,7 +36,7 @@ export const PetrLunevilloisS12023: PolicyHandlerStaticInterface = class extends
     },
   ];
 
-  constructor(public max_amount: bigint) {
+  constructor(public max_amount: number) {
     super();
     this.limits = [
       [
