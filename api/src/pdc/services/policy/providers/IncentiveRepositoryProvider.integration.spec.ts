@@ -1,14 +1,15 @@
 import { assertEquals } from "dep:assert";
 import { afterAll, beforeAll, describe, it } from "dep:testing-bdd";
-import { LegacyDbContext, makeLegacyDbBeforeAfter } from "@/pdc/providers/test/index.ts";
+import sql, { raw } from "@/lib/pg/sql.ts";
+import { DenoDbContext, makeDenoDbBeforeAfter } from "@/pdc/providers/test/index.ts";
 
 import { IncentiveStateEnum, IncentiveStatusEnum } from "../interfaces/index.ts";
 import { IncentiveRepositoryProvider } from "./IncentiveRepositoryProvider.ts";
 
 describe("IncentiveRepositoryProvider", () => {
-  let db: LegacyDbContext;
+  let db: DenoDbContext;
   let repository: IncentiveRepositoryProvider | undefined;
-  const { before, after } = makeLegacyDbBeforeAfter();
+  const { before, after } = makeDenoDbBeforeAfter();
   beforeAll(async () => {
     db = await before();
     repository = new IncentiveRepositoryProvider(
@@ -70,17 +71,17 @@ describe("IncentiveRepositoryProvider", () => {
 
     await repository?.createOrUpdateMany(incentives);
 
-    const incentiveResults = await db.connection.getClient().query({
-      text: `SELECT * FROM ${repository?.incentivesTable} WHERE policy_id = $1`,
-      values: [0],
-    });
-    assertEquals(incentiveResults.rowCount, 2);
+    type IncentiveRow = { operator_journey_id: string; result: number; state: string };
+    const incentiveResults = await db.connection.query<IncentiveRow>(sql`
+      SELECT * FROM ${raw(repository!.incentivesTable)} WHERE policy_id = ${0}
+    `);
+    assertEquals(incentiveResults.length, 2);
     assertEquals(
-      incentiveResults.rows.find((i) => i.operator_journey_id === "operator_journey_id-1").result,
+      incentiveResults.find((i) => i.operator_journey_id === "operator_journey_id-1")?.result,
       100,
     );
     assertEquals(
-      incentiveResults.rows.find((i) => i.operator_journey_id === "operator_journey_id-2").result,
+      incentiveResults.find((i) => i.operator_journey_id === "operator_journey_id-2")?.result,
       200,
     );
   });
@@ -137,47 +138,46 @@ describe("IncentiveRepositoryProvider", () => {
 
     await repository?.createOrUpdateMany(incentives);
 
-    const incentiveResults = await db.connection.getClient().query({
-      text: `SELECT * FROM ${repository?.incentivesTable} WHERE policy_id = $1`,
-      values: [0],
-    });
+    type IncentiveRow = { operator_journey_id: string; result: number; state: string };
+    const incentiveResults = await db.connection.query<IncentiveRow>(sql`
+      SELECT * FROM ${raw(repository!.incentivesTable)} WHERE policy_id = ${0}
+    `);
 
-    assertEquals(incentiveResults.rowCount, 3);
+    assertEquals(incentiveResults.length, 3);
     assertEquals(
-      incentiveResults.rows.find((i) => i.operator_journey_id === "operator_journey_id-1").result,
+      incentiveResults.find((i) => i.operator_journey_id === "operator_journey_id-1")?.result,
       0,
     );
     assertEquals(
-      incentiveResults.rows.find((i) => i.operator_journey_id === "operator_journey_id-1").state,
+      incentiveResults.find((i) => i.operator_journey_id === "operator_journey_id-1")?.state,
       "null",
     );
     assertEquals(
-      incentiveResults.rows.find((i) => i.operator_journey_id === "operator_journey_id-2").result,
+      incentiveResults.find((i) => i.operator_journey_id === "operator_journey_id-2")?.result,
       500,
     );
     assertEquals(
-      incentiveResults.rows.find((i) => i.operator_journey_id === "operator_journey_id-3").result,
+      incentiveResults.find((i) => i.operator_journey_id === "operator_journey_id-3")?.result,
       100,
     );
   });
 
   it("Should update many incentives amount", async () => {
-    const incentives = await db.connection.getClient().query({
-      text: `SELECT * FROM ${repository?.incentivesTable} WHERE policy_id = $1`,
-      values: [0],
-    });
+    type IncentiveRow = { state: string };
+    const incentives = await db.connection.query<Record<string, unknown>>(sql`
+      SELECT * FROM ${raw(repository!.incentivesTable)} WHERE policy_id = ${0}
+    `);
 
-    const data = incentives.rows.map((i) => ({ ...i, statefulAmount: 0 }));
+    const data = incentives.map((i) => ({ ...i, statefulAmount: 0 }));
     await repository?.updateStatefulAmount(data as any);
 
-    const incentiveResults = await db.connection.getClient().query({
-      text: `SELECT * FROM ${repository?.incentivesTable} WHERE policy_id = $1`,
-      values: [0],
-    });
+    const incentiveResults = await db.connection.query<IncentiveRow>(sql`
+      SELECT * FROM ${raw(repository!.incentivesTable)} WHERE policy_id = ${0}
+    `);
 
-    assertEquals(incentiveResults.rowCount, 3);
+    assertEquals(incentiveResults.length, 3);
     assertEquals(
-      incentiveResults.rows.filter((i) => i.state === "null").length,
+      incentiveResults.filter((i) => i.state === "null").length,
       3,
     );
   });
