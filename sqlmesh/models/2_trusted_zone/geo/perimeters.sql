@@ -34,16 +34,16 @@ WITH old_perimeters AS (
   LEFT JOIN raw_zone.old_perimeters_centroid c ON a.year = c.year AND a.arr = c.arr
 ),
 new_com AS (
-  SELECT 
+  SELECT
     2025 AS year,
-    a.com AS arr, 
-    a.l_com AS l_arr, 
-    a.com, 
+    a.com AS arr,
+    a.l_com AS l_arr,
+    a.com,
     a.l_com,
     a.epci,
     b.l_epci,
-    e.aom,
-    e.l_aom,
+    COALESCE(e.aom,   prev.aom)   AS aom,
+    COALESCE(e.l_aom, prev.l_aom) AS l_aom,
     a.dep,
     c.l_dep,
     a.reg,
@@ -60,8 +60,9 @@ new_com AS (
   LEFT JOIN raw_zone.ign_aecarto_dep_2025 c ON a.dep = c.dep
   LEFT JOIN raw_zone.ign_aecarto_reg_2025 d ON a.reg = d.reg
   LEFT JOIN raw_zone.cerema_aom_2025 e ON a.com = e.com
+  LEFT JOIN raw_zone.old_perimeters_simple prev ON a.com = prev.arr AND prev.year = 2024
   LEFT JOIN raw_zone.ign_ae_com_2025 f ON a.com = f.com
-  LEFT JOIN raw_zone.ign_aecentroid_com_2025 g ON a.com = g.com 
+  LEFT JOIN raw_zone.ign_aecentroid_com_2025 g ON a.com = g.com
 ),
 new_arr AS (
   SELECT 
