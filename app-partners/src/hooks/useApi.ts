@@ -25,16 +25,31 @@ export const useApi = <T>(
       setError(null);
       setLoading(true);
       const response = await fetch(url, { ...init, credentials: "include" });
-      const res = (await response.json()) as ApiResponse<T>;
+      const text = await response.text();
+      let res: ApiResponse<T> | null = null;
+      if (text.length > 0) {
+        try {
+          res = JSON.parse(text) as ApiResponse<T>;
+        } catch {
+          if (!response.ok) {
+            throw new Error(
+              response.statusText || `Erreur ${response.status}`,
+            );
+          }
+          res = null;
+        }
+      }
       if (!response.ok) {
         throw new Error(
-          (res as ErrorResponse).message ?? "Une erreur est survenue",
+          (res as ErrorResponse | null)?.message ??
+            response.statusText ??
+            "Une erreur est survenue",
         );
       }
 
       if (
         paginate &&
-        ((res as PaginateAPIResponse<T>).meta?.totalPages ?? 0) > 1
+        ((res as PaginateAPIResponse<T> | null)?.meta?.totalPages ?? 0) > 1
       ) {
         const paginateResponse = res as PaginateAPIResponse<T>;
 
@@ -43,7 +58,7 @@ export const useApi = <T>(
           data: paginateResponse.data,
         } as T);
       } else {
-        setData(res as T);
+        setData((res ?? undefined) as T | undefined);
       }
     } catch (e) {
       setError(e as Error);
