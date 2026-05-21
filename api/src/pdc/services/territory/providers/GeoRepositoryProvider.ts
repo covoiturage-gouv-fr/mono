@@ -1,5 +1,6 @@
 import { KernelInterfaceResolver, provider } from "@/ilos/common/index.ts";
-import { LegacyPostgresConnection } from "@/ilos/connection-postgres/index.ts";
+import { DenoPostgresConnection } from "@/ilos/connection-postgres/index.ts";
+import sql, { empty, raw } from "@/lib/pg/sql.ts";
 import {
   ResultInterface as AllGeoResultInterface,
   SingleResultInterface as GeoResultInterface,
@@ -30,21 +31,17 @@ export class GeoRepositoryProvider implements GeoRepositoryProviderInterface {
   public readonly getMillesimeFunction = "geo.get_latest_millesime";
 
   constructor(
-    protected connection: LegacyPostgresConnection,
+    protected pgConnection: DenoPostgresConnection,
     protected kernel: KernelInterfaceResolver,
   ) {}
 
   async getAllGeo(): Promise<AllGeoResultInterface> {
-    const results = await this.connection.getClient().query<GeoResultInterface>(
-      `
+    return await this.pgConnection.query<GeoResultInterface>(sql`
       SELECT concat(territory, '_', type) as id, territory, l_territory, type
-      FROM ${this.tableCentroid}
+      FROM ${raw(this.tableCentroid)}
       WHERE year = geo.get_latest_millesime()
       ORDER BY type, territory
-    `,
-    );
-
-    return results.rows;
+    `);
   }
 
   async list(params: ListGeoParamsInterface): Promise<ListGeoResultInterface> {
@@ -53,111 +50,75 @@ export class GeoRepositoryProvider implements GeoRepositoryProviderInterface {
       offset: 0,
       ...params,
     };
-    const where = [];
-    const values = [];
+    const pattern = `%${search.toLowerCase().trim()}%`;
 
-    // search
-    where.push(`lower(l_com) like $1`);
-    values.push(`%${search.toLowerCase().trim()}%`); // $1
+    const yearRows = await this.pgConnection.query<{ year: number }>(sql`
+      SELECT * from ${raw(this.getMillesimeFunction)}() as year
+    `);
+    const year = yearRows[0]?.year;
 
-    // year
-    const yearRes = await this.connection.getClient().query(
-      `SELECT * from ${this.getMillesimeFunction}() as year`,
-    );
-    const year = yearRes.rows[0]?.year;
-    where.push(`year = $${where.length + 1}`);
-    values.push(year); // $2
+    const inseeFilter = whereParams && whereParams.insee && whereParams.insee.length
+      ? sql`AND arr = ANY(${whereParams.insee})`
+      : empty;
 
-    // INSEE codes constraints
-    if (whereParams && whereParams.insee && whereParams.insee.length) {
-      where.push(`arr = ANY($${where.length + 1})`);
-      values.push(whereParams.insee); //$3
-    }
+    const comLikeBranch = exclude_coms ? empty : sql`OR lower(l_com) LIKE ${pattern}`;
+    const comProjection = exclude_coms ? empty : sql`l_com, com,`;
+    const comUnion = exclude_coms
+      ? empty
+      : sql`UNION SELECT DISTINCT l_com AS name, com AS insee, ${TerritoryCodeEnum.City} AS type FROM search WHERE lower(l_com) LIKE ${pattern}`;
 
-    /* eslint-disable max-len,prettier/prettier */
-    const totalResult = await this.connection.getClient().query<
-      { count: string }
-    >({
-      values,
-      text: `
-        WITH search AS (
-          SELECT aom, l_aom, epci, l_epci, ${
-        exclude_coms ? "" : "l_com, com,"
-      } l_reg, reg, l_dep, dep FROM ${this.table}
-          WHERE
-            (
-              l_aom LIKE $1
-              ${exclude_coms ? "" : "OR lower(l_com) LIKE $1"}
-              OR lower(l_epci) LIKE $1
-              OR lower(l_reg) LIKE $1
-              OR lower(l_dep) LIKE $1
-            )
-            AND year = $2
-            ${whereParams && whereParams.insee && whereParams.insee.length ? "AND arr = ANY($3)" : ""}
-          ORDER BY YEAR DESC
+    const searchCte = sql`
+      SELECT aom, l_aom, epci, l_epci, ${comProjection} l_reg, reg, l_dep, dep FROM ${raw(this.table)}
+      WHERE
+        (
+          l_aom LIKE ${pattern}
+          ${comLikeBranch}
+          OR lower(l_epci) LIKE ${pattern}
+          OR lower(l_reg) LIKE ${pattern}
+          OR lower(l_dep) LIKE ${pattern}
         )
-        SELECT count(*) FROM (
-          SELECT DISTINCT l_aom AS name, aom AS insee, '${TerritoryCodeEnum.Mobility}' AS type FROM search WHERE lower(l_aom) LIKE $1
-          UNION
-          SELECT DISTINCT l_epci AS name, epci AS insee, '${TerritoryCodeEnum.CityGroup}' AS type FROM search WHERE lower(l_epci) LIKE $1
-          UNION
-          SELECT DISTINCT l_reg AS name, reg AS insee, '${TerritoryCodeEnum.Region}' AS type FROM search WHERE lower(l_reg) LIKE $1
-          ${
-        exclude_coms
-          ? ""
-          : `UNION SELECT DISTINCT l_com AS name, com AS insee, '${TerritoryCodeEnum.City}' AS type FROM search WHERE lower(l_com) LIKE $1`
-      }
-          UNION
-          SELECT DISTINCT l_dep AS name, dep AS insee, '${TerritoryCodeEnum.District}' AS type FROM search WHERE lower(l_dep) LIKE $1
-        ) AS x
-      `,
-    });
+        AND year = ${year}
+        ${inseeFilter}
+      ORDER BY YEAR DESC
+    `;
 
-    const total = parseFloat(totalResult.rows[0].count || "0");
-
-    values.push(limit); // $4
-    values.push(offset); // $5
-
-    const results = await this.connection.getClient().query({
-      values,
-      text: `
-        WITH search AS (
-          SELECT aom, l_aom, epci, l_epci, ${
-        exclude_coms ? "" : "l_com, com,"
-      } l_reg, reg, l_dep, dep FROM geo.perimeters 
-          WHERE
-            (
-              l_aom LIKE $1
-              ${exclude_coms ? "" : "OR lower(l_com) LIKE $1"}
-              OR lower(l_epci) LIKE $1
-              OR lower(l_reg) LIKE $1
-              OR lower(l_dep) LIKE $1
-            )
-            AND year = $2
-            ${whereParams && whereParams.insee && whereParams.insee.length ? "and arr = ANY($3)" : ""}
-          ORDER BY YEAR DESC
-        )
-        SELECT DISTINCT l_aom AS name, aom AS insee, '${TerritoryCodeEnum.Mobility}' AS type from search WHERE lower(l_aom) LIKE $1
+    const totalRows = await this.pgConnection.query<{ count: number }>(sql`
+      WITH search AS (${searchCte})
+      SELECT count(*)::int AS count FROM (
+        SELECT DISTINCT l_aom AS name, aom AS insee, ${TerritoryCodeEnum.Mobility} AS type FROM search WHERE lower(l_aom) LIKE ${pattern}
         UNION
-        SELECT DISTINCT l_epci AS name, epci AS insee, '${TerritoryCodeEnum.CityGroup}' AS type from search WHERE lower(l_epci) LIKE $1
+        SELECT DISTINCT l_epci AS name, epci AS insee, ${TerritoryCodeEnum.CityGroup} AS type FROM search WHERE lower(l_epci) LIKE ${pattern}
         UNION
-        SELECT DISTINCT l_reg AS name, reg AS insee, '${TerritoryCodeEnum.Region}' AS type from search WHERE lower(l_reg) LIKE $1
-        ${
-        exclude_coms
-          ? ""
-          : `UNION SELECT DISTINCT l_com AS name, com AS insee, '${TerritoryCodeEnum.City}' AS type from search WHERE lower(l_com) LIKE $1`
-      }
+        SELECT DISTINCT l_reg AS name, reg AS insee, ${TerritoryCodeEnum.Region} AS type FROM search WHERE lower(l_reg) LIKE ${pattern}
+        ${comUnion}
         UNION
-        SELECT DISTINCT l_dep AS name, dep AS insee, '${TerritoryCodeEnum.District}' AS type from search WHERE lower(l_dep) LIKE $1
-        ORDER BY name ASC
-        LIMIT $${where.length + 1}
-        OFFSET $${where.length + 2}
-      `,
-    });
-    /* eslint-enable max-len,prettier/prettier */
+        SELECT DISTINCT l_dep AS name, dep AS insee, ${TerritoryCodeEnum.District} AS type FROM search WHERE lower(l_dep) LIKE ${pattern}
+      ) AS x
+    `);
 
+    const total = totalRows[0]?.count ?? 0;
+
+    const results = await this.pgConnection.query<ListGeoSingleResultInterface>(sql`
+      WITH search AS (${searchCte})
+      SELECT DISTINCT l_aom AS name, aom AS insee, ${TerritoryCodeEnum.Mobility} AS type from search WHERE lower(l_aom) LIKE ${pattern}
+      UNION
+      SELECT DISTINCT l_epci AS name, epci AS insee, ${TerritoryCodeEnum.CityGroup} AS type from search WHERE lower(l_epci) LIKE ${pattern}
+      UNION
+      SELECT DISTINCT l_reg AS name, reg AS insee, ${TerritoryCodeEnum.Region} AS type from search WHERE lower(l_reg) LIKE ${pattern}
+      ${comUnion}
+      UNION
+      SELECT DISTINCT l_dep AS name, dep AS insee, ${TerritoryCodeEnum.District} AS type from search WHERE lower(l_dep) LIKE ${pattern}
+      ORDER BY name ASC
+      LIMIT ${limit}
+      OFFSET ${offset}
+    `);
+
+    // ResultWithPagination<T>.data is T[], so the declared
+    // ResultInterface = ResultWithPagination<SingleResultInterface[]>
+    // claims data is SingleResultInterface[][]. Pre-existing contract
+    // bug; runtime has always returned a flat SingleResultInterface[].
     return {
-      data: results.rows,
+      data: results as unknown as ListGeoSingleResultInterface[][],
       meta: {
         pagination: {
           offset,
@@ -171,28 +132,23 @@ export class GeoRepositoryProvider implements GeoRepositoryProviderInterface {
   async findBySiren(
     params: FindBySirenParamsInterface,
   ): Promise<FindBySirenResultInterface> {
-    const yearRes = await this.connection.getClient().query(
-      `SELECT * from ${this.getMillesimeFunction}() as year`,
-    );
-    const year = yearRes.rows[0]?.year;
+    const yearRows = await this.pgConnection.query<{ year: number }>(sql`
+      SELECT * from ${raw(this.getMillesimeFunction)}() as year
+    `);
+    const year = yearRows[0]?.year;
 
-    const results = await this.connection.getClient().query<
-      FindBySiretRawResultInterface
-    >({
-      values: [params.siren, year],
-      text: `
-        SELECT l_aom, aom, epci, l_epci, com, l_com, l_reg, reg, l_dep, dep
-        FROM geo.perimeters
-        WHERE ${
-        params.siren.length === 2 || params.siren.length === 3
-          ? "(reg = $1::varchar OR dep = $1::varchar)"
-          : "(aom = $1::varchar OR epci = $1::varchar)"
-      } 
-          AND year = $2::int
-      `,
-    });
+    const sirenFilter = (params.siren.length === 2 || params.siren.length === 3)
+      ? sql`(reg = ${params.siren}::varchar OR dep = ${params.siren}::varchar)`
+      : sql`(aom = ${params.siren}::varchar OR epci = ${params.siren}::varchar)`;
 
-    if (!results.rows[0]) {
+    const rows = await this.pgConnection.query<FindBySiretRawResultInterface>(sql`
+      SELECT l_aom, aom, epci, l_epci, com, l_com, l_reg, reg, l_dep, dep
+      FROM geo.perimeters
+      WHERE ${sirenFilter}
+        AND year = ${year}::int
+    `);
+
+    if (!rows[0]) {
       return {
         reg_name: null,
         reg_siren: null,
@@ -207,17 +163,15 @@ export class GeoRepositoryProvider implements GeoRepositoryProviderInterface {
     }
 
     return {
-      reg_name: results.rows[0].l_reg,
-      reg_siren: results.rows[0].reg,
-      aom_name: results.rows[0].l_aom,
-      aom_siren: results.rows[0].aom,
-      dep_name: results.rows[0].l_dep,
-      dep_siren: results.rows[0].dep,
-      epci_name: results.rows[0].l_epci,
-      epci_siren: results.rows[0].epci,
-      coms: results.rows.map<
-        Pick<ListGeoSingleResultInterface, "insee" | "name">
-      >((g) => ({
+      reg_name: rows[0].l_reg,
+      reg_siren: rows[0].reg,
+      aom_name: rows[0].l_aom,
+      aom_siren: rows[0].aom,
+      dep_name: rows[0].l_dep,
+      dep_siren: rows[0].dep,
+      epci_name: rows[0].l_epci,
+      epci_siren: rows[0].epci,
+      coms: rows.map<Pick<ListGeoSingleResultInterface, "insee" | "name">>((g) => ({
         insee: g.com,
         name: g.l_com,
       })),
