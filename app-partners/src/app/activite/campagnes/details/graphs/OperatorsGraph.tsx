@@ -1,6 +1,7 @@
 import { useOperatorsGraph } from "@/hooks/api";
 import { type Periods } from "@/interfaces/vizInterface";
 import { fr } from "@codegouvfr/react-dsfr";
+import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { Tag } from "@codegouvfr/react-dsfr/Tag";
 import {
   CategoryScale,
@@ -20,7 +21,54 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, T
 
 export default function OperatorsGraph(props: { title: string; campaignId: number }) {
   const [period, setPeriod] = useState<Periods>("month");
-  const { data } = useOperatorsGraph({ campaign_id: props.campaignId, period });
+  const { data, error, loading } = useOperatorsGraph({ campaign_id: props.campaignId, period });
+
+  const header = (
+    <>
+      <h3 className={fr.cx("fr-callout__title")}>{props.title}</h3>
+      <ul className={fr.cx("fr-tags-group")}>
+        <li>
+          <Tag
+            nativeButtonProps={{ onClick: () => setPeriod("month") }}
+            pressed={period === "month"}
+          >
+            Evolution mensuelle
+          </Tag>
+        </li>
+        <li>
+          <Tag
+            nativeButtonProps={{ onClick: () => setPeriod("day") }}
+            pressed={period === "day"}
+          >
+            Evolution journalière
+          </Tag>
+        </li>
+      </ul>
+    </>
+  );
+
+  if (error) {
+    return (
+      <div className={fr.cx("fr-my-4w")}>
+        {header}
+        <Alert
+          severity="error"
+          title="Erreur de chargement du graphique"
+          description={error.message}
+        />
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className={fr.cx("fr-my-4w")}>
+        {header}
+        <p>Chargement...</p>
+      </div>
+    );
+  }
+
   if (!data || data.length === 0) {
     return <></>;
   }
@@ -72,33 +120,7 @@ export default function OperatorsGraph(props: { title: string; campaignId: numbe
 
   return (
     <div className={fr.cx("fr-my-4w")}>
-      <h3 className={fr.cx("fr-callout__title")}>{props.title}</h3>
-      <ul className={fr.cx("fr-tags-group")}>
-        <li>
-          <Tag
-            nativeButtonProps={{
-              onClick: () => {
-                setPeriod("month");
-              },
-            }}
-            pressed={period === "month"}
-          >
-            Evolution mensuelle
-          </Tag>
-        </li>
-        <li>
-          <Tag
-            nativeButtonProps={{
-              onClick: () => {
-                setPeriod("day");
-              },
-            }}
-            pressed={period === "day"}
-          >
-            Evolution journalière
-          </Tag>
-        </li>
-      </ul>
+      {header}
       <Line options={options} data={chartData} aria-hidden />
     </div>
   );
