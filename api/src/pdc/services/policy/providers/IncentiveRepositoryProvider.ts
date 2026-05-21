@@ -1,7 +1,7 @@
 import { provider } from "@/ilos/common/index.ts";
-import { LegacyPostgresConnection } from "@/ilos/connection-postgres/index.ts";
-
+import { DenoPostgresConnection } from "@/ilos/connection-postgres/index.ts";
 import { logger } from "@/lib/logger/index.ts";
+import sql, { empty, raw } from "@/lib/pg/sql.ts";
 import {
   IncentiveRepositoryProviderInterfaceResolver,
   IncentiveStateEnum,
@@ -18,55 +18,41 @@ export class IncentiveRepositoryProvider implements IncentiveRepositoryProviderI
   public readonly carpoolTable = "carpool_v2.carpools";
   public readonly carpoolStatusTable = "carpool_v2.status";
 
-  constructor(protected connection: LegacyPostgresConnection) {}
+  constructor(protected pgConnection: DenoPostgresConnection) {}
 
   async disableOnExcludedCarpool(from: Date, to: Date): Promise<void> {
-    const query = {
-      text: `
-        UPDATE ${this.incentivesTable} AS pi
-        SET
-          state = 'disabled'::policy.incentive_state_enum,
-          status = 'error'::policy.incentive_status_enum
-        FROM ${this.carpoolTable} AS cc
-        JOIN ${this.carpoolStatusTable} AS cs
-          ON cs.carpool_id = cc._id
-        WHERE cc.start_datetime >= $1::timestamp
-          AND cc.start_datetime <  $2::timestamp
-          AND cc.operator_id = pi.operator_id
-          AND cc.operator_journey_id = pi.operator_journey_id
-          AND (
-            cs.acquisition_status = 'canceled'
-            OR cs.anomaly_status = 'failed'
-            OR cs.fraud_status = 'failed'
-          )
-      `,
-      values: [from, to],
-    };
-
-    await this.connection.getClient().query<any>(query);
+    await this.pgConnection.query(sql`
+      UPDATE ${raw(this.incentivesTable)} AS pi
+      SET
+        state = 'disabled'::policy.incentive_state_enum,
+        status = 'error'::policy.incentive_status_enum
+      FROM ${raw(this.carpoolTable)} AS cc
+      JOIN ${raw(this.carpoolStatusTable)} AS cs
+        ON cs.carpool_id = cc._id
+      WHERE cc.start_datetime >= ${from}::timestamp
+        AND cc.start_datetime <  ${to}::timestamp
+        AND cc.operator_id = pi.operator_id
+        AND cc.operator_journey_id = pi.operator_journey_id
+        AND (
+          cs.acquisition_status = 'canceled'
+          OR cs.anomaly_status = 'failed'
+          OR cs.fraud_status = 'failed'
+        )
+    `);
   }
 
   /**
    * Set the status of pending incentives to either Draft or Validated
    */
   async setStatus(from: Date, to: Date, hasFailed = false): Promise<void> {
-    const query = {
-      text: `
-        UPDATE ${this.incentivesTable}
-          SET status = $1::policy.incentive_status_enum
-        WHERE datetime >= $2::timestamp
-          AND datetime <  $3::timestamp
-          AND status = $4::policy.incentive_status_enum
-      `,
-      values: [
-        hasFailed ? IncentiveStatusEnum.Draft : IncentiveStatusEnum.Validated,
-        from,
-        to,
-        IncentiveStatusEnum.Pending,
-      ],
-    };
-
-    await this.connection.getClient().query<any>(query);
+    const nextStatus = hasFailed ? IncentiveStatusEnum.Draft : IncentiveStatusEnum.Validated;
+    await this.pgConnection.query(sql`
+      UPDATE ${raw(this.incentivesTable)}
+        SET status = ${nextStatus}::policy.incentive_status_enum
+      WHERE datetime >= ${from}::timestamp
+        AND datetime <  ${to}::timestamp
+        AND status = ${IncentiveStatusEnum.Pending}::policy.incentive_status_enum
+    `);
   }
 
   async updateStatefulAmount(
@@ -74,7 +60,6 @@ export class IncentiveRepositoryProvider implements IncentiveRepositoryProviderI
     status?: IncentiveStatusEnum,
   ): Promise<void> {
     const idSet: Set<string> = new Set();
-    const ids: number[] = [];
 
     // get only last incentive for each carpool / policy
     const filteredData = data.reverse().filter((d) => {
@@ -87,30 +72,28 @@ export class IncentiveRepositoryProvider implements IncentiveRepositoryProviderI
     });
 
     // pick values for the given keys. Override status if defined
-    const values: [Array<number>, Array<number>, Array<IncentiveStatusEnum>] = filteredData.reduce(
-      ([ids, amounts, statuses]: [Array<number>, Array<number>, Array<IncentiveStatusEnum>], i) => {
-        ids.push(i._id);
-        amounts.push(i.statefulAmount);
-        statuses.push(status ?? i.status);
-        return [ids, amounts, statuses];
-      },
-      [[], [], []],
-    );
+    const ids: number[] = [];
+    const amounts: number[] = [];
+    const statuses: IncentiveStatusEnum[] = [];
+    for (const i of filteredData) {
+      ids.push(i._id);
+      amounts.push(i.statefulAmount);
+      statuses.push(status ?? i.status);
+    }
 
-    const query = {
-      text: `
+    await this.pgConnection.query(sql`
       WITH data AS (
         SELECT * FROM UNNEST (
-          $1::int[],
-          $2::int[],
-          $3::policy.incentive_status_enum[]
+          ${ids}::int[],
+          ${amounts}::int[],
+          ${statuses}::policy.incentive_status_enum[]
         ) as t(
           _id,
           amount,
           status
         )
       )
-      UPDATE ${this.incentivesTable} as pi
+      UPDATE ${raw(this.incentivesTable)} as pi
       SET (
         amount,
         state,
@@ -123,11 +106,7 @@ export class IncentiveRepositoryProvider implements IncentiveRepositoryProviderI
       FROM data
       WHERE
         data._id = pi._id
-      `,
-      values: [...values],
-    };
-
-    await this.connection.getClient().query(query);
+    `);
   }
 
   async *findDraftIncentive(
@@ -135,23 +114,20 @@ export class IncentiveRepositoryProvider implements IncentiveRepositoryProviderI
     batchSize = 100,
     from?: Date,
   ): AsyncGenerator<SerializedIncentiveInterface<number>[], void, void> {
-    const resCount = await this.connection.getClient().query({
-      text: `
-      SELECT
-        count(*)
-      FROM ${this.incentivesTable}
+    const fromFilter = from ? sql`AND datetime >= ${from}::timestamp` : empty;
+
+    const countRows = await this.pgConnection.query<{ count: number }>(sql`
+      SELECT count(*)::int as count
+      FROM ${raw(this.incentivesTable)}
       WHERE
-        status = $1::policy.incentive_status_enum
-        ${from ? "AND datetime >= $3::timestamp" : ""}
-        AND datetime < $2::timestamp
-      `,
-      values: [IncentiveStatusEnum.Draft, to, ...(from ? [from] : [])],
-    });
+        status = ${IncentiveStatusEnum.Draft}::policy.incentive_status_enum
+        ${fromFilter}
+        AND datetime < ${to}::timestamp
+    `);
 
-    logger.debug(`FOUND ${resCount.rows[0].count} incentives to process`);
+    logger.debug(`FOUND ${countRows[0].count} incentives to process`);
 
-    const query = {
-      text: `
+    const query = sql`
       SELECT
         _id,
         policy_id,
@@ -163,35 +139,40 @@ export class IncentiveRepositoryProvider implements IncentiveRepositoryProviderI
         operator_id,
         operator_journey_id,
         meta
-      FROM ${this.incentivesTable}
+      FROM ${raw(this.incentivesTable)}
       WHERE
-        status = $1::policy.incentive_status_enum
-        ${from ? "AND datetime >= $3::timestamp" : ""}
-        AND datetime <= $2::timestamp
-      ORDER BY datetime ASC;
-      `,
-      values: [IncentiveStatusEnum.Draft, to, ...(from ? [from] : [])],
+        status = ${IncentiveStatusEnum.Draft}::policy.incentive_status_enum
+        ${fromFilter}
+        AND datetime <= ${to}::timestamp
+      ORDER BY datetime ASC
+    `;
+
+    type DraftRow = {
+      _id: number;
+      policy_id: number;
+      datetime: Date;
+      stateless_amount: number;
+      stateful_amount: number;
+      status: IncentiveStatusEnum;
+      state: IncentiveStateEnum;
+      operator_id: number;
+      operator_journey_id: string;
+      meta: SerializedMetadataVariableDefinitionInterface[];
     };
 
-    const cursor = await this.connection.getNativeCursor<any>(query.text, query.values);
-    let count = 0;
-
     try {
-      do {
-        const rows = await cursor.read(batchSize);
-        count = rows.length;
-        if (count > 0) {
-          yield rows.map((r) => {
-            const { stateful_amount, stateless_amount, ...other } = r;
-            return {
-              ...other,
-              statefulAmount: r.stateful_amount,
-              statelessAmount: r.stateless_amount,
-            };
-          });
-        }
-        logger.log({ count });
-      } while (count > 0);
+      await using cursor = await this.pgConnection.cursor<DraftRow>(query);
+      for await (const rows of cursor.read(batchSize)) {
+        yield rows.map((r) => {
+          const { stateful_amount, stateless_amount, ...other } = r;
+          return {
+            ...other,
+            statefulAmount: stateful_amount,
+            statelessAmount: stateless_amount,
+          };
+        });
+        logger.log({ count: rows.length });
+      }
     } catch (e) {
       if (e instanceof Error) {
         logger.error(`[IncentiveRepositoryProvider] ${e.message}`, { from, to });
@@ -199,8 +180,6 @@ export class IncentiveRepositoryProvider implements IncentiveRepositoryProviderI
         logger.error(`[IncentiveRepositoryProvider] Unknown error`, { from, to });
       }
       throw e;
-    } finally {
-      await cursor.release();
     }
   }
 
@@ -225,130 +204,92 @@ export class IncentiveRepositoryProvider implements IncentiveRepositoryProviderI
         meta: i.meta || {},
       }));
 
-    const values: [
-      Array<number>,
-      Array<Date>,
-      Array<number>,
-      Array<number>,
-      Array<IncentiveStatusEnum>,
-      Array<IncentiveStateEnum>,
-      Array<number>,
-      Array<number>,
-      Array<SerializedMetadataVariableDefinitionInterface>,
-    ] = filteredData.reduce(
-      (
-        [
-          policyIds,
-          datetimes,
-          statelessAmounts,
-          statefulAmounts,
-          statuses,
-          states,
-          operatorIds,
-          operatorJourneyIds,
-          metas,
-        ],
-        i,
-      ) => {
-        policyIds.push(i.policy_id);
-        datetimes.push(i.datetime);
-        statelessAmounts.push(i.statelessAmount);
-        statefulAmounts.push(i.statefulAmount);
-        statuses.push(i.status);
-        states.push(i.state);
-        operatorIds.push(i.operator_id);
-        operatorJourneyIds.push(i.operator_journey_id);
-        metas.push(JSON.stringify(i.meta));
-        return [
-          policyIds,
-          datetimes,
-          statelessAmounts,
-          statefulAmounts,
-          statuses,
-          states,
-          operatorIds,
-          operatorJourneyIds,
-          metas,
-        ];
-      },
-      [[], [], [], [], [], [], [], [], []],
-    );
+    const policyIds: number[] = [];
+    const datetimes: Date[] = [];
+    const statelessAmounts: number[] = [];
+    const statefulAmounts: number[] = [];
+    const statuses: IncentiveStatusEnum[] = [];
+    const states: IncentiveStateEnum[] = [];
+    const operatorIds: number[] = [];
+    const operatorJourneyIds: string[] = [];
+    const metas: string[] = [];
 
-    const query = {
-      text: `
-        WITH lowest_incentive AS (
-          SELECT min(dtz) AS datetime
-          FROM UNNEST($2::timestamp with time zone[]) AS x(dtz)
-        )
-        --
+    for (const i of filteredData) {
+      policyIds.push(i.policy_id);
+      datetimes.push(i.datetime);
+      statelessAmounts.push(i.statelessAmount);
+      statefulAmounts.push(i.statefulAmount);
+      statuses.push(i.status);
+      states.push(i.state);
+      operatorIds.push(i.operator_id);
+      operatorJourneyIds.push(i.operator_journey_id);
+      metas.push(JSON.stringify(i.meta));
+    }
 
-        INSERT INTO ${this.incentivesTable} (
-          policy_id,
-          carpool_id,
-          datetime,
-          result,
-          amount,
-          status,
-          state,
-          operator_id,
-          operator_journey_id,
-          meta
-        )
-        SELECT
-          unnest_data.policy_id,
-          null as carpool_id,
-          unnest_data.datetime,
-          unnest_data.result,
-          unnest_data.amount,
-          unnest_data.status,
-          unnest_data.state,
-          unnest_data.operator_id,
-          unnest_data.operator_journey_id,
-          unnest_data.meta
-        FROM UNNEST(
-          $1::int[],
-          $2::timestamp[],
-          $3::int[],
-          $4::int[],
-          $5::policy.incentive_status_enum[],
-          $6::policy.incentive_state_enum[],
-          $7::int[],
-          $8::varchar[],
-          $9::json[]
-        ) AS unnest_data(policy_id, datetime, result, amount, status, state, operator_id, operator_journey_id, meta)
-        ON CONFLICT (policy_id, operator_id, operator_journey_id)
-        DO UPDATE SET
-          result = excluded.result,
-          amount = excluded.amount,
-          status = excluded.status,
-          state = excluded.state,
-          meta = excluded.meta;
-      `,
-      values,
-    };
+    await this.pgConnection.query(sql`
+      WITH lowest_incentive AS (
+        SELECT min(dtz) AS datetime
+        FROM UNNEST(${datetimes}::timestamp with time zone[]) AS x(dtz)
+      )
+      --
 
-    await this.connection.getClient().query<any>(query);
-    return;
+      INSERT INTO ${raw(this.incentivesTable)} (
+        policy_id,
+        carpool_id,
+        datetime,
+        result,
+        amount,
+        status,
+        state,
+        operator_id,
+        operator_journey_id,
+        meta
+      )
+      SELECT
+        unnest_data.policy_id,
+        null as carpool_id,
+        unnest_data.datetime,
+        unnest_data.result,
+        unnest_data.amount,
+        unnest_data.status,
+        unnest_data.state,
+        unnest_data.operator_id,
+        unnest_data.operator_journey_id,
+        unnest_data.meta
+      FROM UNNEST(
+        ${policyIds}::int[],
+        ${datetimes}::timestamp[],
+        ${statelessAmounts}::int[],
+        ${statefulAmounts}::int[],
+        ${statuses}::policy.incentive_status_enum[],
+        ${states}::policy.incentive_state_enum[],
+        ${operatorIds}::int[],
+        ${operatorJourneyIds}::varchar[],
+        ${metas}::json[]
+      ) AS unnest_data(policy_id, datetime, result, amount, status, state, operator_id, operator_journey_id, meta)
+      ON CONFLICT (policy_id, operator_id, operator_journey_id)
+      DO UPDATE SET
+        result = excluded.result,
+        amount = excluded.amount,
+        status = excluded.status,
+        state = excluded.state,
+        meta = excluded.meta
+    `);
   }
 
   async latestDraft(): Promise<Date> {
-    const query = {
-      text: `
-        SELECT min(datetime) AS datetime
-        FROM ${this.incentivesTable}
-        WHERE status = $1::policy.incentive_status_enum
-          AND datetime > current_timestamp - interval '1 year'
-        `,
-      values: [IncentiveStatusEnum.Draft],
-    };
-
-    const res = await this.connection.getClient().query<any>(query);
-    return res.rows[0]?.datetime;
+    const rows = await this.pgConnection.query<{ datetime: Date }>(sql`
+      SELECT min(datetime) AS datetime
+      FROM ${raw(this.incentivesTable)}
+      WHERE status = ${IncentiveStatusEnum.Draft}::policy.incentive_status_enum
+        AND datetime > current_timestamp - interval '1 year'
+    `);
+    return rows[0]?.datetime;
   }
 
   // TODO dedup from PolicyRepositoryProvider.syncIncentiveSum
   async updateIncentiveSum(): Promise<void> {
-    await this.connection.getClient().query<any>(`
+    await this.pgConnection.query(sql`
       UPDATE policy.policies p
       SET incentive_sum = policy_incentive_sum.amount
       FROM

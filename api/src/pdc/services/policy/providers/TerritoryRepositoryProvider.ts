@@ -1,6 +1,7 @@
 import { NotFoundException, provider } from "@/ilos/common/index.ts";
-import { LegacyPostgresConnection } from "@/ilos/connection-postgres/index.ts";
+import { DenoPostgresConnection } from "@/ilos/connection-postgres/index.ts";
 import { logger } from "@/lib/logger/index.ts";
+import sql, { raw } from "@/lib/pg/sql.ts";
 import {
   TerritoryCodeEnum,
   TerritoryCodeInterface,
@@ -21,92 +22,79 @@ export class TerritoryRepositoryProvider implements TerritoryRepositoryProviderI
   protected readonly operatorTable = "operator.operators";
   protected readonly companyTable = "company.companies";
 
-  constructor(protected connection: LegacyPostgresConnection) {}
+  constructor(protected pgConnection: DenoPostgresConnection) {}
 
   async findByPoint(
     { lon, lat }: { lon: number; lat: number },
   ): Promise<TerritoryCodeInterface> {
     try {
-      const result = await this.connection.getClient().query<any>({
-        text: `
-          SELECT * FROM ${this.getByPointFunction}($1::float, $2::float)
-        `,
-        values: [lon, lat],
-      });
+      const rows = await this.pgConnection.query<TerritoryCodeInterface>(sql`
+        SELECT * FROM ${raw(this.getByPointFunction)}(${lon}::float, ${lat}::float)
+      `);
 
-      if (result.rowCount < 1) {
+      if (!rows.length) {
         throw new NotFoundException();
       }
-      return result.rows[0];
+      return rows[0];
     } catch (e) {
-      logger.error(e.message, e);
+      const message = e instanceof Error ? e.message : String(e);
+      logger.error(message, e);
       return null;
     }
   }
 
   async findUUIDByOperatorId(_id: number): Promise<string> {
-    const query = {
-      text: `
-        SELECT
-          o._id, c.uuid
-        FROM ${this.operatorTable} AS o
-        LEFT JOIN ${this.companyTable} AS c
-          ON c._id = o.company_id
-        WHERE o._id = $1 LIMIT 1
-      `,
-      values: [_id],
-    };
-    const result = await this.connection.getClient().query<any>(query);
+    const rows = await this.pgConnection.query<{ _id: number; uuid: string }>(sql`
+      SELECT
+        o._id, c.uuid
+      FROM ${raw(this.operatorTable)} AS o
+      LEFT JOIN ${raw(this.companyTable)} AS c
+        ON c._id = o.company_id
+      WHERE o._id = ${_id} LIMIT 1
+    `);
 
-    if (result.rowCount < 1) {
+    if (!rows.length) {
       throw new NotFoundException();
     }
 
-    return result.rows[0]?.uuid;
+    return rows[0]?.uuid;
   }
 
   async findUUIDById(
     _id: number | number[],
   ): Promise<{ _id: number; uuid: string }[]> {
-    const query = {
-      text: `
-        SELECT
-          t._id, c.uuid
-        FROM ${this.territoryGroupTable} AS t
-        LEFT JOIN ${this.companyTable} AS c
-          ON c._id = t.company_id
-        WHERE t._id = ${Array.isArray(_id) ? "ANY($1)" : "$1"}
-      `,
-      values: [_id],
-    };
-    const result = await this.connection.getClient().query<any>(query);
-    return result.rows;
+    const idFilter = Array.isArray(_id)
+      ? sql`t._id = ANY(${_id})`
+      : sql`t._id = ${_id}`;
+
+    return await this.pgConnection.query<{ _id: number; uuid: string }>(sql`
+      SELECT
+        t._id, c.uuid
+      FROM ${raw(this.territoryGroupTable)} AS t
+      LEFT JOIN ${raw(this.companyTable)} AS c
+        ON c._id = t.company_id
+      WHERE ${idFilter}
+    `);
   }
 
   async findBySelector(
     data: Partial<TerritoryCodeInterface>,
   ): Promise<number[]> {
-    const result = await this.connection.getClient().query<any>({
-      text: `SELECT _id FROM ${this.getBySelectorFunction}($1::varchar, $2::varchar)`,
-      values: [
-        data[TerritoryCodeEnum.Arr] || data[TerritoryCodeEnum.City],
-        data[TerritoryCodeEnum.Mobility],
-      ],
-    });
-    return result.rows.map((r) => r._id);
+    const arr = data[TerritoryCodeEnum.Arr] || data[TerritoryCodeEnum.City];
+    const mobility = data[TerritoryCodeEnum.Mobility];
+    const rows = await this.pgConnection.query<{ _id: number }>(sql`
+      SELECT _id FROM ${raw(this.getBySelectorFunction)}(${arr}::varchar, ${mobility}::varchar)
+    `);
+    return rows.map((r) => r._id);
   }
 
   async findSelectorFromId(id: number): Promise<TerritorySelectorsInterface> {
-    const query = {
-      text: `
-        SELECT * FROM ${this.getTerritorySelectorFn}($1) 
-      `,
-      values: [[id]],
-    };
-    const result = await this.connection.getClient().query<any>(query);
-    if (result.rowCount !== 1) {
+    const rows = await this.pgConnection.query<{ selector: TerritorySelectorsInterface }>(sql`
+      SELECT * FROM ${raw(this.getTerritorySelectorFn)}(${[id]})
+    `);
+    if (rows.length !== 1) {
       throw new NotFoundException();
     }
-    return result.rows[0].selector;
+    return rows[0].selector;
   }
 }

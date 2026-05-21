@@ -1,6 +1,6 @@
 import { provider } from "@/ilos/common/index.ts";
-import { LegacyPostgresConnection } from "@/ilos/connection-postgres/index.ts";
-import { logger } from "@/lib/logger/index.ts";
+import { DenoPostgresConnection } from "@/ilos/connection-postgres/index.ts";
+import sql, { empty, raw } from "@/lib/pg/sql.ts";
 import { CarpoolInterface, PolicyInterface, TripRepositoryProviderInterfaceResolver } from "../interfaces/index.ts";
 
 @provider({
@@ -15,7 +15,7 @@ export class TripRepositoryProvider implements TripRepositoryProviderInterfaceRe
   public readonly getComFunction = "territory.get_com_by_territory_id";
   public readonly getMillesimeFunction = "geo.get_latest_millesime";
 
-  constructor(protected connection: LegacyPostgresConnection) {}
+  constructor(protected pgConnection: DenoPostgresConnection) {}
 
   async *findTripByGeo(
     coms: string[],
@@ -25,71 +25,72 @@ export class TripRepositoryProvider implements TripRepositoryProviderInterfaceRe
     override = true,
     policy_id?: number,
   ): AsyncGenerator<CarpoolInterface[], void, void> {
-    const query = {
-      text: `
-        SELECT
-          oo.uuid as operator_uuid,
-          cc.operator_trip_id,
-          cc.operator_id,
-          cc.operator_journey_id,
-          cc.operator_class,
-          cc.passenger_contribution,
-          cc.passenger_identity_key,
-          cc.passenger_travelpass_user_id IS NOT NULL as passenger_has_travel_pass,
-          cc.passenger_over_18 as passenger_is_over_18,
-          cc.passenger_seats as seats,
-          cc.driver_revenue,
-          cc.driver_identity_key,
-          cc.driver_travelpass_user_id IS NOT NULL as driver_has_travel_pass,
-          cc.start_datetime as datetime,
-          cc.distance,
-          row_to_json(
-            geo.get_by_code(
-              co.start_geo_code::varchar,
-              geo.get_latest_millesime_or(EXTRACT(year FROM cc.start_datetime)::smallint)
-            )
-          ) as start,
-          row_to_json(
-            geo.get_by_code(
-              co.end_geo_code::varchar,
-              geo.get_latest_millesime_or(EXTRACT(year FROM cc.start_datetime)::smallint)
-            )
-          ) as end,
-          ST_X(cc.start_position::geometry)::numeric as start_lon,
-          ST_Y(cc.start_position::geometry)::numeric as start_lat,
-          ST_X(cc.end_position::geometry)::numeric as end_lon,
-          ST_Y(cc.end_position::geometry)::numeric as end_lat
-        FROM ${this.table} cc
-        JOIN ${this.geoTable} co
-          ON co.carpool_id = cc._id
-        JOIN ${this.operatorTable} oo
-          ON oo._id = cc.operator_id
-        JOIN ${this.statusTable} cs
-          ON cs.carpool_id = cc._id
-        ${
-        override ? "" : `
-              LEFT JOIN ${this.incentiveTable} pi
-                ON
-                  cc.operator_journey_id = pi.operator_journey_id
-                  AND cc.operator_id = pi.operator_id
-                  AND pi.policy_id = $4::int
-            `
-      }
-        WHERE
-          cc.start_datetime >= $2::timestamp
-          AND cc.start_datetime < $3::timestamp
-          AND (
-            co.start_geo_code = ANY($1::varchar[])
-            OR co.end_geo_code = ANY($1::varchar[])
+    const overrideJoin = override ? empty : sql`
+      LEFT JOIN ${raw(this.incentiveTable)} pi
+        ON
+          cc.operator_journey_id = pi.operator_journey_id
+          AND cc.operator_id = pi.operator_id
+          AND pi.policy_id = ${policy_id}::int
+    `;
+    const overrideFilter = override ? empty : sql`AND pi._id IS NULL`;
+
+    const query = sql`
+      SELECT
+        oo.uuid as operator_uuid,
+        cc.operator_trip_id,
+        cc.operator_id,
+        cc.operator_journey_id,
+        cc.operator_class,
+        cc.passenger_contribution,
+        cc.passenger_identity_key,
+        cc.passenger_travelpass_user_id IS NOT NULL as passenger_has_travel_pass,
+        cc.passenger_over_18 as passenger_is_over_18,
+        cc.passenger_seats as seats,
+        cc.driver_revenue,
+        cc.driver_identity_key,
+        cc.driver_travelpass_user_id IS NOT NULL as driver_has_travel_pass,
+        cc.start_datetime as datetime,
+        cc.distance,
+        row_to_json(
+          geo.get_by_code(
+            co.start_geo_code::varchar,
+            geo.get_latest_millesime_or(EXTRACT(year FROM cc.start_datetime)::smallint)
           )
-          ${override ? "" : "AND pi._id IS NULL"}
-        ORDER BY cc.start_datetime ASC
-      `,
-      values: [coms, from, to, ...(!override && policy_id ? [policy_id] : [])],
-    };
+        ) as start,
+        row_to_json(
+          geo.get_by_code(
+            co.end_geo_code::varchar,
+            geo.get_latest_millesime_or(EXTRACT(year FROM cc.start_datetime)::smallint)
+          )
+        ) as end,
+        ST_X(cc.start_position::geometry)::numeric as start_lon,
+        ST_Y(cc.start_position::geometry)::numeric as start_lat,
+        ST_X(cc.end_position::geometry)::numeric as end_lon,
+        ST_Y(cc.end_position::geometry)::numeric as end_lat
+      FROM ${raw(this.table)} cc
+      JOIN ${raw(this.geoTable)} co
+        ON co.carpool_id = cc._id
+      JOIN ${raw(this.operatorTable)} oo
+        ON oo._id = cc.operator_id
+      JOIN ${raw(this.statusTable)} cs
+        ON cs.carpool_id = cc._id
+      ${overrideJoin}
+      WHERE
+        cc.start_datetime >= ${from}::timestamp
+        AND cc.start_datetime < ${to}::timestamp
+        AND (
+          co.start_geo_code = ANY(${coms}::varchar[])
+          OR co.end_geo_code = ANY(${coms}::varchar[])
+        )
+        ${overrideFilter}
+      ORDER BY cc.start_datetime ASC
+    `;
     // TODO status
 
-    yield* this.queryAndYieldRows(query, batchSize);
+    await using cursor = await this.pgConnection.cursor<CarpoolInterface>(query);
+    for await (const rows of cursor.read(batchSize)) {
+      yield rows;
+    }
   }
 
   async *findTripByPolicy(
@@ -99,48 +100,17 @@ export class TripRepositoryProvider implements TripRepositoryProviderInterfaceRe
     batchSize = 100,
     override = false,
   ): AsyncGenerator<CarpoolInterface[], void, void> {
-    const yearResult = await this.connection.getClient().query(
-      `SELECT * from ${this.getMillesimeFunction}() as year`,
-    );
-    const year = yearResult.rows[0]?.year;
+    const yearRows = await this.pgConnection.query<{ year: number }>(sql`
+      SELECT * from ${raw(this.getMillesimeFunction)}() as year
+    `);
+    const year = yearRows[0]?.year;
 
-    const comRes = await this.connection.getClient().query({
-      text: `
-        SELECT * FROM ${this.getComFunction}($1::int, $2::smallint)
-      `,
-      values: [policy.territory_id, year],
-    });
+    const comRows = await this.pgConnection.query<{ com: string }>(sql`
+      SELECT * FROM ${raw(this.getComFunction)}(${policy.territory_id}::int, ${year}::smallint)
+    `);
 
-    const com: string[] = comRes.rowCount ? comRes.rows.map((r) => r.com) : [];
+    const com: string[] = comRows.map((r) => r.com);
 
     yield* this.findTripByGeo(com, from, to, batchSize, override, policy._id);
-  }
-
-  private async *queryAndYieldRows(
-    query: { text: string; values: (number | Date | string[])[] },
-    batchSize: number,
-  ): AsyncGenerator<CarpoolInterface[], void, void> {
-    const cursor = await this.connection.getNativeCursor<CarpoolInterface>(query.text, query.values);
-    let count = 0;
-
-    try {
-      do {
-        const rows = await cursor.read(batchSize);
-        count = rows.length;
-        if (count > 0) {
-          yield rows;
-        }
-      } while (count > 0);
-    } catch (e) {
-      if (e instanceof Error) {
-        logger.error(`[queryAndYieldRows] ${e.message}`);
-        logger.debug(e.stack);
-      } else {
-        logger.error("[queryAndYieldRows] An unknown error occurred");
-      }
-      throw e;
-    } finally {
-      await cursor.release();
-    }
   }
 }
