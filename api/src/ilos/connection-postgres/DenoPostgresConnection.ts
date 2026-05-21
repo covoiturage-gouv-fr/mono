@@ -89,6 +89,14 @@ export class DenoPostgresConnection
           // Number.MAX_SAFE_INTEGER (2^53 - 1), so decoding to number is safe
           // and keeps ResultInterface.<field>: number truthful at runtime.
           20: (value: string): number => Number(value),
+          // Postgres float4 / float8 (OIDs 700, 701). deno-postgres 0.19.5
+          // returns these as strings by default; node-pg returned them as
+          // numbers. Without these decoders, callers reading ST_X / ST_Y,
+          // AVG(), or any double-precision column get "string" where the
+          // result interface declares "number" (ticket #3179 regression
+          // surfaced by the company.companies geo round-trip).
+          700: (value: string): number => Number(value),
+          701: (value: string): number => Number(value),
         },
       },
       ...config,
