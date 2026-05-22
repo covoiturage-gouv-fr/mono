@@ -30,7 +30,7 @@ backfill-batch model period start end *args:
     next=$(date -d "$current +1 $period" +%Y-%m-%d)
     echo "▶️  Processing $current → $next"
     vars="{start: $current, end: $next}"
-    just dbt run --select {{model}} --vars "'{start: $current, end: $next}'" {{ args }}
+    dbt run --profiles-dir profiles --select {{model}} --vars "{start: \"$current\", end: \"$next\"}" {{ args }}
     current=$next
   done
 

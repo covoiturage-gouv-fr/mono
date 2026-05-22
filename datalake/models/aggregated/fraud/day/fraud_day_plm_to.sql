@@ -1,1 +1,1 @@
-{{('plm', 'day', 'to')}}
+{{ fraud_model('plm', 'day', 'to')}}

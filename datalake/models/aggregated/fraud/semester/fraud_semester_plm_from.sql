@@ -1,1 +1,1 @@
-{{('plm', 'semester', 'from')}}
+{{ fraud_model('plm', 'semester', 'from')}}
