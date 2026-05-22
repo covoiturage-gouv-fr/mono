@@ -1,1 +1,1 @@
-{{('country', 'year', 'both')}}
+{{ fraud_model('country', 'year', 'both')}}

@@ -1,1 +1,1 @@
-{{('h3z9', 'day', 'to')}}
+{{ fraud_model('h3z9', 'day', 'to')}}

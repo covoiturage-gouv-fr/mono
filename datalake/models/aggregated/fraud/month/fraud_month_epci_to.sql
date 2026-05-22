@@ -1,1 +1,1 @@
-{{('epci', 'month', 'to')}}
+{{ fraud_model('epci', 'month', 'to')}}

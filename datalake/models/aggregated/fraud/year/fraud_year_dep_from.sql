@@ -1,1 +1,1 @@
-{{('dep', 'year', 'from')}}
+{{ fraud_model('dep', 'year', 'from')}}
