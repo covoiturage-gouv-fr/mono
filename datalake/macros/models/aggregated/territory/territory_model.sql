@@ -44,7 +44,7 @@ SELECT * FROM {{ ref('territory_' ~ grain ~ '_plm_' ~ direction) }}
   indexes=[
     {'columns': ['code', 'incremental_date'], 'unique': true}
   ],
-  tags=['aggregated', 'territory', grain, grain ~ '_' ~ perim ~ '_' ~ direction]
+  tags=['aggregated', 'territory', grain, grain ~ '_' ~ perim ~ '_' ~ direction, 'daily']
 ) }}
 
 WITH filtered_carpools AS (
