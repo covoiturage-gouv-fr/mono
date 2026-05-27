@@ -179,6 +179,7 @@ base_carpools AS (
         c.passenger_contribution,
         c.passenger_payments::jsonb AS passenger_payments,
 
+        oi.oi_details,  
         COALESCE(oi.oi_amount_collectivite, 0) AS oi_amount_collectivite,
         COALESCE(oi.oi_amount_operator, 0) AS oi_amount_operator,
         COALESCE(oi.oi_amount_other, 0) AS oi_amount_other,
