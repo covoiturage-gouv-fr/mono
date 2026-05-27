@@ -42,6 +42,8 @@ models:
       +schema: "dbt_trusted"
     aggregated:
       +schema: "dbt_aggregated"
+    exposed:
+      +schema: "dbt_exposed"
 
   ## see docs: https://docs.elementary-data.com/
   elementary:
