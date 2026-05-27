@@ -1,0 +1,16 @@
+version: 2
+models:
+  - name: com_evolution
+    columns:
+      - name: id
+        data_type: bigint
+      - name: year
+        data_type: integer
+      - name: mod
+        data_type: integer
+      - name: old_com
+        data_type: character varying
+      - name: new_com
+        data_type: character varying
+      - name: l_mod
+        data_type: character varying

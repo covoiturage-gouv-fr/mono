@@ -4,21 +4,328 @@ sources:
     schema: dbt_raw
     tables:
       - name: insee_mvt_com_2025
+        columns:
+          - name: mod
+            data_type: integer
+          - name: date_eff
+            data_type: date
+          - name: typecom_av
+            data_type: character varying
+          - name: typecom_ap
+            data_type: character varying
+          - name: old_com
+            data_type: character varying
+          - name: new_com
+            data_type: character varying
       - name: aires_covoiturage
+        columns:
+          - name: id_lieu
+            data_type: character varying
+          - name: id_local
+            data_type: character varying
+          - name: nom_lieu
+            data_type: character varying
+          - name: ad_lieu
+            data_type: character varying
+          - name: com_lieu
+            data_type: character varying
+          - name: insee
+            data_type: character varying
+          - name: type
+            data_type: character varying
+          - name: date_maj
+            data_type: date
+          - name: ouvert
+            data_type: boolean
+          - name: source
+            data_type: bigint
+          - name: Xlong
+            data_type: double precision
+          - name: Ylat
+            data_type: double precision
+          - name: nbre_pl
+            data_type: bigint
+          - name: nbre_pmr
+            data_type: bigint
+          - name: duree
+            data_type: bigint
+          - name: horaires
+            data_type: character varying
+          - name: proprio
+            data_type: character varying
+          - name: lumiere
+            data_type: boolean
+          - name: comm
+            data_type: character varying
+          - name: dataset_id
+            data_type: character varying
+          - name: resource_id
+            data_type: character varying
       - name: campaigns
+        columns:
+          - name: column00
+            data_type: character varying
+          - name: collectivite
+            data_type: character varying
+          - name: operateurs
+            data_type: character varying
+          - name: Mise à jour
+            data_type: date
+          - name: email
+            data_type: character varying
+          - name: type
+            data_type: character varying
+          - name: code
+            data_type: character varying
+          - name: premiere_campagne
+            data_type: character varying
+          - name: budget_incitations
+            data_type: character varying
+          - name: date_debut
+            data_type: date
+          - name: date_fin
+            data_type: date
+          - name: conducteur_montant_max_par_passager
+            data_type: character varying
+          - name: conducteur_montant_max_par_mois
+            data_type: bigint
+          - name: conducteur_montant_min_par_passager
+            data_type: character varying
+          - name: conducteur_trajets_max_par_mois
+            data_type: bigint
+          - name: passager_trajets_max_par_mois
+            data_type: bigint
+          - name: passager_gratuite
+            data_type: character varying
+          - name: passager_eligible_gratuite
+            data_type: character varying
+          - name: passager_reduction_ticket
+            data_type: character varying
+          - name: passager_eligibilite_reduction
+            data_type: character varying
+          - name: passager_montant_ticket
+            data_type: character varying
+          - name: zone_sens_des_trajets
+            data_type: character varying
+          - name: zone_exclusion
+            data_type: character varying
+          - name: si_zone_exclue_liste
+            data_type: character varying
+          - name: autre_exclusion
+            data_type: character varying
+          - name: trajet_longueur_min
+            data_type: bigint
+          - name: trajet_longueur_max
+            data_type: bigint
+          - name: trajet_classe_de_preuve
+            data_type: character varying
+          - name: autres_informations
+            data_type: character varying
+          - name: zone_sens_des_trajets_litteral
+            data_type: character varying
+          - name: lien_page_collectivité
+            data_type: character varying
+          - name: nom_plateforme
+            data_type: character varying
+          - name: nom_région
+            data_type: character varying
+          - name: siren_et_code_région
+            data_type: character varying
+          - name: conducteur_trajets_max_par_jour
+            data_type: bigint
+          - name: passager_trajets_max_par_jour
+            data_type: bigint
+          - name: politique_incitative_aom
+            data_type: character varying
       - name: cerema_aom_2025
+        columns:
+          - name: code_insee
+            data_type: character varying
+          - name: l_aom
+            data_type: character varying
+          - name: aom
+            data_type: character varying
       - name: ign_ae_arr_2025
+        columns:
+          - name: l_arr
+            data_type: character varying
+          - name: arr
+            data_type: character varying
+          - name: com
+            data_type: character varying
+          - name: population
+            data_type: integer
+          - name: geom
+            data_type: USER-DEFINED
       - name: ign_ae_com_2025
+        columns:
+          - name: l_com
+            data_type: character varying
+          - name: com
+            data_type: character varying
+          - name: epci
+            data_type: character varying
+          - name: dep
+            data_type: character varying
+          - name: reg
+            data_type: character varying
+          - name: population
+            data_type: integer
+          - name: geom
+            data_type: USER-DEFINED
       - name: ign_ae_dep_2025
+        columns:
+          - name: l_dep
+            data_type: character varying
+          - name: dep
+            data_type: character varying
+          - name: geom
+            data_type: USER-DEFINED
       - name: ign_ae_epci_2025
+        columns:
+          - name: l_epci
+            data_type: character varying
+          - name: epci
+            data_type: character varying
+          - name: geom
+            data_type: USER-DEFINED
       - name: ign_ae_reg_2025
+        columns:
+          - name: l_reg
+            data_type: character varying
+          - name: reg
+            data_type: character varying
+          - name: geom
+            data_type: USER-DEFINED
       - name: ign_aecarto_arr_2025
+        columns:
+          - name: l_arr
+            data_type: character varying
+          - name: arr
+            data_type: character varying
+          - name: com
+            data_type: character varying
+          - name: population
+            data_type: integer
+          - name: geom
+            data_type: USER-DEFINED
       - name: ign_aecarto_com_2025
+        columns:
+          - name: l_com
+            data_type: character varying
+          - name: com
+            data_type: character varying
+          - name: epci
+            data_type: character varying
+          - name: dep
+            data_type: character varying
+          - name: reg
+            data_type: character varying
+          - name: population
+            data_type: integer
+          - name: geom
+            data_type: USER-DEFINED
       - name: ign_aecarto_dep_2025
+        columns:
+          - name: l_dep
+            data_type: character varying
+          - name: dep
+            data_type: character varying
+          - name: geom
+            data_type: USER-DEFINED
       - name: ign_aecarto_epci_2025
+        columns:
+          - name: l_epci
+            data_type: character varying
+          - name: epci
+            data_type: character varying
+          - name: geom
+            data_type: USER-DEFINED
       - name: ign_aecarto_reg_2025
+        columns:
+          - name: l_reg
+            data_type: character varying
+          - name: reg
+            data_type: character varying
+          - name: geom
+            data_type: USER-DEFINED
       - name: ign_aecentroid_arr_2025
+        columns:
+          - name: l_arr
+            data_type: character varying
+          - name: arr
+            data_type: character varying
+          - name: com
+            data_type: character varying
+          - name: geom
+            data_type: USER-DEFINED
       - name: ign_aecentroid_com_2025
+        columns:
+          - name: l_com
+            data_type: character varying
+          - name: com
+            data_type: character varying
+          - name: geom
+            data_type: USER-DEFINED
       - name: old_perimeters_centroid
+        columns:
+          - name: year
+            data_type: integer
+          - name: arr
+            data_type: character varying
+          - name: l_arr
+            data_type: character varying
+          - name: geom
+            data_type: USER-DEFINED
       - name: old_perimeters_full
+        columns:
+          - name: year
+            data_type: integer
+          - name: arr
+            data_type: character varying
+          - name: l_arr
+            data_type: character varying
+          - name: geom
+            data_type: USER-DEFINED
       - name: old_perimeters_simple
+        columns:
+          - name: year
+            data_type: integer
+          - name: l_arr
+            data_type: character varying
+          - name: arr
+            data_type: character varying
+          - name: l_com
+            data_type: character varying
+          - name: com
+            data_type: character varying
+          - name: l_epci
+            data_type: character varying
+          - name: epci
+            data_type: character varying
+          - name: l_dep
+            data_type: character varying
+          - name: dep
+            data_type: character varying
+          - name: l_reg
+            data_type: character varying
+          - name: reg
+            data_type: character varying
+          - name: l_country
+            data_type: character varying
+          - name: country
+            data_type: character varying
+          - name: l_aom
+            data_type: character varying
+          - name: aom
+            data_type: character varying
+          - name: l_reseau
+            data_type: character varying
+          - name: reseau
+            data_type: integer
+          - name: pop
+            data_type: integer
+          - name: surface
+            data_type: double precision
+          - name: geom
+            data_type: USER-DEFINED

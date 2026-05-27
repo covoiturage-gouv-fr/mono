@@ -1,0 +1,28 @@
+version: 2
+models:
+  - name: fraud_month_plm_to
+    columns:
+      - name: operator_id
+        data_type: integer
+      - name: operator_name
+        data_type: character varying
+      - name: code
+        data_type: character varying
+      - name: incremental_date
+        data_type: date
+      - name: year
+        data_type: integer
+      - name: month
+        data_type: integer
+      - name: carpools
+        data_type: bigint
+      - name: carpools_valid
+        data_type: bigint
+      - name: carpools_invalid
+        data_type: bigint
+      - name: carpools_fraud
+        data_type: bigint
+      - name: carpools_anomaly
+        data_type: bigint
+      - name: carpools_terms_violation
+        data_type: bigint

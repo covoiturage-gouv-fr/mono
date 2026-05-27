@@ -1,0 +1,172 @@
+version: 2
+models:
+  - name: export_partners
+    columns:
+      - name: journey_id
+        data_type: bigint
+      - name: operator_trip_id
+        data_type: character varying
+      - name: operator_journey_id
+        data_type: character varying
+      - name: operator_class
+        data_type: character varying
+      - name: acquisition_status
+        data_type: character varying
+      - name: fraud_status
+        data_type: character varying
+      - name: anomaly_status
+        data_type: character varying
+      - name: operator_id
+        data_type: integer
+      - name: start_date_filter
+        data_type: date
+      - name: start_datetime
+        data_type: text
+      - name: start_date
+        data_type: text
+      - name: start_time
+        data_type: text
+      - name: end_datetime
+        data_type: text
+      - name: end_date
+        data_type: text
+      - name: end_time
+        data_type: text
+      - name: duration
+        data_type: text
+      - name: distance
+        data_type: double precision
+      - name: start_lat
+        data_type: numeric
+      - name: start_lon
+        data_type: numeric
+      - name: end_lat
+        data_type: numeric
+      - name: end_lon
+        data_type: numeric
+      - name: start_insee
+        data_type: character varying
+      - name: start_arr
+        data_type: character varying
+      - name: start_com
+        data_type: character varying
+      - name: start_dep
+        data_type: character varying
+      - name: start_epci_code
+        data_type: character varying
+      - name: start_aom_code
+        data_type: character varying
+      - name: start_reg
+        data_type: character varying
+      - name: start_country
+        data_type: character varying
+      - name: end_insee
+        data_type: character varying
+      - name: end_arr
+        data_type: character varying
+      - name: end_com
+        data_type: character varying
+      - name: end_dep
+        data_type: character varying
+      - name: end_epci_code
+        data_type: character varying
+      - name: end_aom_code
+        data_type: character varying
+      - name: end_reg
+        data_type: character varying
+      - name: end_country
+        data_type: character varying
+      - name: start_commune
+        data_type: character varying
+      - name: start_departement
+        data_type: character varying
+      - name: start_epci
+        data_type: character varying
+      - name: start_aom
+        data_type: character varying
+      - name: start_region
+        data_type: character varying
+      - name: start_pays
+        data_type: character varying
+      - name: end_commune
+        data_type: character varying
+      - name: end_departement
+        data_type: character varying
+      - name: end_epci
+        data_type: character varying
+      - name: end_aom
+        data_type: character varying
+      - name: end_region
+        data_type: character varying
+      - name: end_pays
+        data_type: character varying
+      - name: operator
+        data_type: character varying
+      - name: operator_passenger_id
+        data_type: character varying
+      - name: passenger_identity_key
+        data_type: character varying
+      - name: operator_driver_id
+        data_type: character varying
+      - name: driver_identity_key
+        data_type: character varying
+      - name: driver_revenue
+        data_type: double precision
+      - name: passenger_contribution
+        data_type: double precision
+      - name: passenger_seats
+        data_type: smallint
+      - name: cee_application
+        data_type: boolean
+      - name: incentive_0_siret
+        data_type: text
+      - name: incentive_0_name
+        data_type: text
+      - name: incentive_0_amount
+        data_type: text
+      - name: incentive_1_siret
+        data_type: text
+      - name: incentive_1_name
+        data_type: text
+      - name: incentive_1_amount
+        data_type: text
+      - name: incentive_2_siret
+        data_type: text
+      - name: incentive_2_name
+        data_type: text
+      - name: incentive_2_amount
+        data_type: text
+      - name: incentive_rpc_0_campaign_id
+        data_type: text
+      - name: incentive_rpc_0_campaign_name
+        data_type: text
+      - name: incentive_rpc_0_siret
+        data_type: text
+      - name: incentive_rpc_0_name
+        data_type: text
+      - name: incentive_rpc_0_amount
+        data_type: text
+      - name: incentive_rpc_1_campaign_id
+        data_type: text
+      - name: incentive_rpc_1_campaign_name
+        data_type: text
+      - name: incentive_rpc_1_siret
+        data_type: text
+      - name: incentive_rpc_1_name
+        data_type: text
+      - name: incentive_rpc_1_amount
+        data_type: text
+      - name: incentive_rpc_2_campaign_id
+        data_type: text
+      - name: incentive_rpc_2_campaign_name
+        data_type: text
+      - name: incentive_rpc_2_siret
+        data_type: text
+      - name: incentive_rpc_2_name
+        data_type: text
+      - name: incentive_rpc_2_amount
+        data_type: text
+      - name: offer_public
+        data_type: boolean
+      - name: offer_accepted_at
+        data_type: timestamp with time zone

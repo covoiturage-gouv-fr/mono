@@ -1,0 +1,16 @@
+version: 2
+models:
+  - name: perimeters_agg
+    columns:
+      - name: year
+        data_type: integer
+      - name: code
+        data_type: character varying
+      - name: type
+        data_type: text
+      - name: libelle
+        data_type: character varying
+      - name: geom
+        data_type: USER-DEFINED
+      - name: centroid
+        data_type: USER-DEFINED

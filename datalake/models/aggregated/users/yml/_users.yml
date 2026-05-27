@@ -1,0 +1,20 @@
+version: 2
+models:
+  - name: users
+    columns:
+      - name: user_id
+        data_type: text
+      - name: first_date_driver
+        data_type: date
+      - name: first_date_passenger
+        data_type: date
+      - name: last_date_driver
+        data_type: date
+      - name: last_date_passenger
+        data_type: date
+      - name: first_geo_code_driver
+        data_type: character varying
+      - name: first_geo_code_passenger
+        data_type: character varying
+      - name: updated_at
+        data_type: date

@@ -1,0 +1,10 @@
+version: 2
+seeds:
+  - name: aom_region
+    columns:
+      - name: aom
+        data_type: character varying
+      - name: l_aom
+        data_type: character varying
+      - name: reg
+        data_type: character varying

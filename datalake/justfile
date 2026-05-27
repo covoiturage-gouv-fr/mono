@@ -10,7 +10,23 @@ dbt-env:
 
 # Run dbt command
 dbt cmd *args:
-  dbt {{cmd}} --profiles-dir profiles {{args}}
+  dbt {{cmd}} {{args}} --profiles-dir profiles 
+
+# Run dbt-osmosis command
+dbt-osmosis cmd *args:
+  dbt-osmosis {{cmd}} {{args}} --profiles-dir profiles --project-dir .
+
+# Génère les YMLs pour une couche (ex: just osmosis-refactor trusted)
+osmosis-refactor layer *args:
+  dbt-osmosis yaml refactor --fqn covoiturage.{{layer}} --profiles-dir profiles --project-dir . {{args}}
+
+# Dry-run : affiche les changements sans écrire sur disque
+osmosis-dry-run layer *args:
+  dbt-osmosis yaml refactor --fqn covoiturage.{{layer}} --profiles-dir profiles --project-dir . --dry-run {{args}}
+
+# Affiche la documentation dbt dans le navigateur
+docs-serve *args:
+  dbt docs serve --profiles-dir profiles {{args}}
 
 # Seed data from S3 to Postgres
 seed config schema *args:

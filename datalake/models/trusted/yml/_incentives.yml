@@ -1,0 +1,30 @@
+version: 2
+models:
+  - name: incentives
+    columns:
+      - name: _id
+        data_type: integer
+      - name: carpool_v2_id
+        data_type: integer
+      - name: datetime
+        data_type: timestamp with time zone
+      - name: operator_id
+        data_type: integer
+      - name: operator_journey_id
+        data_type: character varying
+      - name: campaign_id
+        data_type: integer
+      - name: campaign_name
+        data_type: character varying
+      - name: territory_siret
+        data_type: character varying
+      - name: territory_name
+        data_type: character varying
+      - name: amount
+        data_type: integer
+      - name: result
+        data_type: integer
+      - name: status
+        data_type: character varying
+      - name: state
+        data_type: character varying

@@ -1,0 +1,27 @@
+version: 2
+models:
+  - name: cee
+    columns:
+      - name: _id
+        data_type: uuid
+      - name: carpool_v2_id
+        data_type: integer
+      - name: operator_id
+        data_type: integer
+      - name: operator_journey_id
+        data_type: character varying
+      - name: datetime
+        data_type: timestamp without time zone
+      - name: journey_type
+        description: Enum type indicating the type of journey.
+        data_type: character varying
+      - name: is_specific
+        description: Boolean indicating whether the journey is specific. Defaults to false.
+        data_type: boolean
+      - name: application_timestamp
+        description: Timestamp when the application was made.
+        data_type: timestamp without time zone
+      - name: created_at
+        data_type: timestamp with time zone
+      - name: updated_at
+        data_type: timestamp with time zone

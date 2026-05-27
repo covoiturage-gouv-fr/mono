@@ -1,0 +1,50 @@
+version: 2
+models:
+  - name: perimeters
+    columns:
+      - name: id
+        data_type: bigint
+      - name: year
+        data_type: integer
+      - name: arr
+        data_type: character varying
+      - name: l_arr
+        data_type: character varying
+      - name: com
+        data_type: character varying
+      - name: l_com
+        data_type: character varying
+      - name: epci
+        data_type: character varying
+      - name: l_epci
+        data_type: character varying
+      - name: aom
+        data_type: character varying
+      - name: l_aom
+        data_type: character varying
+      - name: dep
+        data_type: character varying
+      - name: l_dep
+        data_type: character varying
+      - name: reg
+        data_type: character varying
+      - name: l_reg
+        data_type: character varying
+      - name: country
+        data_type: character varying
+      - name: l_country
+        data_type: character varying
+      - name: pop
+        data_type: integer
+      - name: surface
+        data_type: double precision
+      - name: geom
+        data_type: USER-DEFINED
+      - name: geom_simple
+        data_type: USER-DEFINED
+      - name: centroid
+        data_type: USER-DEFINED
+      - name: valid_from
+        data_type: date
+      - name: valid_until
+        data_type: date

@@ -1,0 +1,12 @@
+version: 2
+models:
+  - name: operator_incentives
+    columns:
+      - name: carpool_id
+        data_type: integer
+      - name: start_datetime
+        data_type: timestamp with time zone
+      - name: siret
+        data_type: character varying
+      - name: amount
+        data_type: integer

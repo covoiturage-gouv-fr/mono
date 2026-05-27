@@ -1,0 +1,64 @@
+version: 2
+models:
+  - name: export_opendata
+    columns:
+      - name: journey_id
+        data_type: bigint
+      - name: trip_id
+        data_type: text
+      - name: start_date_filter
+        data_type: date
+      - name: journey_start_datetime
+        data_type: text
+      - name: journey_start_date
+        data_type: text
+      - name: journey_start_time
+        data_type: text
+      - name: journey_start_lon
+        data_type: numeric
+      - name: journey_start_lat
+        data_type: numeric
+      - name: journey_start_insee
+        data_type: character varying
+      - name: journey_start_department
+        data_type: character varying
+      - name: journey_start_town
+        data_type: character varying
+      - name: journey_start_towngroup
+        data_type: character varying
+      - name: journey_start_country
+        data_type: character varying
+      - name: journey_end_datetime
+        data_type: text
+      - name: journey_end_date
+        data_type: text
+      - name: journey_end_time
+        data_type: text
+      - name: journey_end_lon
+        data_type: numeric
+      - name: journey_end_lat
+        data_type: numeric
+      - name: journey_end_insee
+        data_type: character varying
+      - name: journey_end_department
+        data_type: character varying
+      - name: journey_end_town
+        data_type: character varying
+      - name: journey_end_towngroup
+        data_type: character varying
+      - name: journey_end_country
+        data_type: character varying
+      - name: passenger_seats
+        data_type: smallint
+      - name: operator_class
+        data_type: character varying
+      - name: journey_distance
+        data_type: integer
+      - name: journey_duration
+        data_type: numeric
+      - name: has_incentive
+        data_type: boolean
+      - name: start_insee_count
+        data_type: bigint
+      - name: end_insee_count
+        data_type: bigint
