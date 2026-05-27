@@ -1,0 +1,116 @@
+version: 2
+models:
+  - name: carpools
+    columns:
+      - name: _id
+        data_type: integer
+      - name: uuid
+        data_type: character varying
+      - name: legacy_id
+        data_type: bigint
+      - name: created_at
+        data_type: timestamp with time zone
+      - name: updated_at
+        data_type: timestamp with time zone
+      - name: operator_id
+        data_type: integer
+      - name: operator_name
+        data_type: character varying
+      - name: operator_siret
+        data_type: character varying
+      - name: operator_journey_id
+        data_type: character varying
+      - name: operator_trip_id
+        data_type: character varying
+      - name: operator_class
+        data_type: character varying
+      - name: start_datetime
+        data_type: timestamp with time zone
+      - name: start_datetime_tz
+        data_type: timestamp without time zone
+      - name: start_h3index_z9
+        data_type: USER-DEFINED
+      - name: start_h3index_z8
+        data_type: USER-DEFINED
+      - name: start_geo_code
+        data_type: character varying
+      - name: end_datetime
+        data_type: timestamp with time zone
+      - name: end_datetime_tz
+        data_type: timestamp without time zone
+      - name: end_h3index_z9
+        data_type: USER-DEFINED
+      - name: end_h3index_z8
+        data_type: USER-DEFINED
+      - name: end_geo_code
+        data_type: character varying
+      - name: geo_errors
+        data_type: jsonb
+      - name: geo_updated_at
+        data_type: timestamp with time zone
+      - name: distance
+        data_type: integer
+      - name: duration
+        data_type: integer
+      - name: driver_key
+        data_type: text
+      - name: driver_revenue
+        data_type: integer
+      - name: passenger_key
+        data_type: text
+      - name: passenger_over_18
+        data_type: boolean
+      - name: passenger_seats
+        data_type: smallint
+      - name: passenger_contribution
+        data_type: integer
+      - name: passenger_payments
+        data_type: jsonb
+      - name: oi_details
+        data_type: jsonb
+      - name: oi_amount_collectivite
+        data_type: bigint
+      - name: oi_amount_operator
+        data_type: bigint
+      - name: oi_amount_other
+        data_type: bigint
+      - name: oi_amount_total
+        data_type: bigint
+      - name: oi_collectivite
+        data_type: bigint
+      - name: oi_operator
+        data_type: bigint
+      - name: oi_other
+        data_type: bigint
+      - name: with_incentive
+        data_type: boolean
+      - name: campaigns
+        data_type: jsonb
+      - name: campaigns_amount_total
+        data_type: bigint
+      - name: campaigns_result_total
+        data_type: bigint
+      - name: fraud_status
+        data_type: character varying
+      - name: fraud_labels
+        data_type: ARRAY
+      - name: anomaly_status
+        data_type: character varying
+      - name: anomaly_labels
+        data_type: ARRAY
+      - name: acquisition_status
+        data_type: character varying
+      - name: status_updated_at
+        data_type: timestamp with time zone
+      - name: final_acquisition_status
+        data_type: boolean
+      - name: valid_acquisition_status
+        data_type: boolean
+      - name: terms_violation_error_labels
+        data_type: ARRAY
+      - name: hour
+        data_type: integer
+      - name: dist_class
+        data_type: text
+      - name: is_intra
+        data_type: boolean

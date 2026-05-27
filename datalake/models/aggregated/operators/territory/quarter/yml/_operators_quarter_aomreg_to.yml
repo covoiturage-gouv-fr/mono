@@ -1,0 +1,72 @@
+version: 2
+models:
+  - name: operators_quarter_aomreg_to
+    columns:
+      - name: operator_id
+        data_type: integer
+      - name: operator_name
+        data_type: character varying
+      - name: code
+        data_type: character varying
+      - name: incremental_date
+        data_type: date
+      - name: year
+        data_type: integer
+      - name: quarter
+        data_type: integer
+      - name: carpools
+        data_type: bigint
+      - name: intra_carpools
+        data_type: bigint
+      - name: trips
+        data_type: bigint
+      - name: carpools_new_drivers
+        data_type: bigint
+      - name: unique_drivers
+        data_type: bigint
+      - name: new_drivers
+        data_type: bigint
+      - name: driver_revenue
+        data_type: bigint
+      - name: carpools_new_passengers
+        data_type: bigint
+      - name: unique_passengers
+        data_type: bigint
+      - name: new_passengers
+        data_type: bigint
+      - name: passenger_seats
+        data_type: bigint
+      - name: passenger_over_18
+        data_type: bigint
+      - name: passenger_contribution
+        data_type: bigint
+      - name: distance
+        data_type: bigint
+      - name: oi_collectivite
+        data_type: numeric
+      - name: oi_operator
+        data_type: numeric
+      - name: oi_other
+        data_type: numeric
+      - name: no_oi
+        data_type: bigint
+      - name: oi_amount_collectivite
+        data_type: numeric
+      - name: oi_amount_operator
+        data_type: numeric
+      - name: oi_amount_other
+        data_type: numeric
+      - name: oi_amount_total
+        data_type: numeric
+      - name: ci_collectivite
+        data_type: bigint
+      - name: ci_amount_total
+        data_type: numeric
+      - name: ci_result_total
+        data_type: numeric
+      - name: hours_distribution
+        data_type: ARRAY
+      - name: dist_distribution
+        data_type: ARRAY
+      - name: oc_distribution
+        data_type: ARRAY

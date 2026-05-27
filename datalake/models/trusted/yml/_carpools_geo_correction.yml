@@ -1,0 +1,12 @@
+version: 2
+models:
+  - name: carpools_geo_correction
+    columns:
+      - name: carpool_id
+        data_type: integer
+      - name: start_datetime
+        data_type: timestamp with time zone
+      - name: start_geo_code
+        data_type: character varying
+      - name: end_geo_code
+        data_type: character varying
