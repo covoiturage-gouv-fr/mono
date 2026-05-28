@@ -22,18 +22,7 @@
       {% if var('start', none) %}
         '{{ var("start") }}'{{ cast }}
       {% elif is_incremental() %}
-        (
-          SELECT COALESCE(
-            {% if type == 'date' %}
-            MAX({{ model_col }}::{{ type }}),
-            {% else %}
-            MAX({{ model_col }}::{{ type }}) - INTERVAL '{{ interval_expr }}',
-            {% endif %}
-            {{ default_start }}
-          )
-          FROM {{ this }}
-          WHERE {{ model_col }}::{{ type }} <= CURRENT_TIMESTAMP{{ cast }}
-        )
+        {{ window_start(this, model_col, type, default_start, lookback_nb, lookback_unit) }}
       {% else %}
         {{ default_start }}
       {% endif %}
