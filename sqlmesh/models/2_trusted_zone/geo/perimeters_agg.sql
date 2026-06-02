@@ -30,7 +30,7 @@ UNION ALL
 SELECT
   year,
   aom AS code,
-  
+  'aom' AS type,
   l_aom AS libelle,
   ST_Multi(ST_Union(geom_simple)) AS geom,
   ST_PointOnSurface(ST_Union(geom_simple)) AS centroid

@@ -89,7 +89,7 @@ od_agg AS (
   UNION
   -- aom classiques
   SELECT
-    a.year, a.month, 
+    a.year, a.month, 'aom' AS type,
     least(b.aom, c.aom) AS territory_1,
     greatest(b.aom, c.aom) AS territory_2,
     sum(journeys) AS journeys,
@@ -107,7 +107,7 @@ od_agg AS (
   UNION
   -- aom regionales
   SELECT
-    a.year, a.month, 
+    a.year, a.month, 'aom' AS type,
     least(b.aom_r, c.aom_r) AS territory_1,
     greatest(b.aom_r, c.aom_r) AS territory_2,
     sum(journeys) AS journeys,
