@@ -28,7 +28,7 @@
 
 {{ config(
   materialized='view',
-  tags=['aggregated', 'operators', grain, grain ~ '_com_' ~ direction]
+  tags=['aggregated', 'operators', grain, 'com', direction]
 ) }}
 
 SELECT * FROM {{ ref('operators_' ~ grain ~ '_arr_' ~ direction) }}
@@ -44,7 +44,7 @@ SELECT * FROM {{ ref('operators_' ~ grain ~ '_plm_' ~ direction) }}
   indexes=[
     {'columns': ['operator_id', 'code', 'incremental_date'], 'unique': true}
   ],
-  tags=['aggregated', 'operators', grain, grain ~ '_' ~ perim ~ '_' ~ direction, 'daily']
+  tags=['aggregated', 'operators', grain, perim, direction, 'daily']
 ) }}
 
 WITH filtered_carpools AS (

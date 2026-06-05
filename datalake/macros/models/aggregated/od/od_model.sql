@@ -24,7 +24,7 @@
 
 {{ config(
   materialized='view',
-  tags=['refined', 'od', grain, grain ~ '_com', 'daily']
+  tags=['aggregated', 'od', grain, 'com', 'daily']
 ) }}
 
 SELECT * FROM {{ ref('od_' ~ grain ~ '_arr') }}
@@ -40,7 +40,7 @@ SELECT * FROM {{ ref('od_' ~ grain ~ '_plm') }}
   indexes=[
     {'columns': ['territory_1', 'territory_2', 'incremental_date'], 'unique': true}
   ],
-  tags=['aggregated', 'od', grain, grain ~ '_' ~ perim]
+  tags=['aggregated', 'od', grain, perim]
 ) }}
 
 WITH filtered_carpools AS (

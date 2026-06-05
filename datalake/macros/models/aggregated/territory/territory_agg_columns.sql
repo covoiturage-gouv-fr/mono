@@ -13,6 +13,7 @@
   COUNT(*) FILTER (WHERE passenger_over_18) AS passenger_over_18,
   SUM(passenger_contribution) AS passenger_contribution,
   SUM(distance) AS distance,
+  SUM(duration) AS duration,
   SUM(oi_collectivite) AS oi_collectivite,
   SUM(oi_operator) AS oi_operator,
   SUM(oi_other) AS oi_other,

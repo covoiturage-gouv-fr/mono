@@ -2,6 +2,7 @@
   COUNT(*) AS carpools,
   COUNT(DISTINCT operator_trip_id) AS trips,
   SUM(distance) AS distance,
+  SUM(duration) AS duration,
   SUM(driver_revenue) AS driver_revenue,
   SUM(passenger_seats) AS passenger_seats,
   COUNT(*) FILTER (WHERE passenger_over_18) AS passenger_over_18,
