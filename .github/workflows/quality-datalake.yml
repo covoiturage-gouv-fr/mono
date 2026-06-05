@@ -104,6 +104,7 @@ jobs:
     name: "(datalake) sqlfluff lint"
     runs-on: ubuntu-latest
     env:
+      DBT_PROFILES_DIR: profiles
       DBT_HOST: localhost
       DBT_PORT: "5432"
       DBT_USER: postgres
