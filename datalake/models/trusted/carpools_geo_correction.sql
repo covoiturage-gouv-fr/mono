@@ -32,11 +32,11 @@ perimeters_retablissement AS (
     geom
   FROM {{ ref('perimeters') }} AS p
   WHERE com IN (
-    SELECT DISTINCT new_com
-    FROM {{ ref('com_evolution') }}
+    SELECT DISTINCT ce.new_com
+    FROM {{ ref('com_evolution') }} AS ce
     WHERE
-      mod = 21
-      AND year = p.year
+      ce.mod = 21
+      AND ce.year = p.year
   )
 ),
 

@@ -26,7 +26,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Install uv
-        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
+        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
         with:
           python-version: "3.13"
       - name: Check uv lockfile
@@ -42,9 +42,9 @@ jobs:
         with:
           persist-credentials: false
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435
+        uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4.1.0
       - name: Build Docker image (no push)
-        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83
+        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7.2.0
         with:
           context: ./datalake
           file: ./docker/datalake/prod/Dockerfile
@@ -87,7 +87,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Install uv
-        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
+        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
         with:
           python-version: "3.13"
       - name: Install dependencies
@@ -133,8 +133,27 @@ jobs:
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
         with:
           persist-credentials: false
+      # The sqlfluff dbt templater opens a DB connection per file and can
+      # leave them "idle in transaction"; a lint run bursts past the
+      # default max_connections (100) -> "too many clients already".
+      # Service containers can't override the postgres command, so raise
+      # max_connections (needs a restart) and add a short idle-in-tx
+      # timeout (self-reaps leaked connections) via ALTER SYSTEM.
+      - name: Tune postgres for lint connection bursts
+        run: |
+          set -euo pipefail
+          cid=$(docker ps --filter "ancestor=postgres:17" --format '{{.ID}}' | head -1)
+          docker exec "$cid" psql -U postgres -v ON_ERROR_STOP=1 \
+            -c "ALTER SYSTEM SET max_connections = 1000;" \
+            -c "ALTER SYSTEM SET idle_in_transaction_session_timeout = '15s';"
+          docker restart "$cid"
+          for _ in $(seq 1 30); do
+            docker exec "$cid" pg_isready -U postgres -q && break
+            sleep 2
+          done
+          docker exec "$cid" psql -U postgres -tAc "SHOW max_connections;"
       - name: Install uv
-        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
+        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
         with:
           python-version: "3.13"
       - name: Install dependencies

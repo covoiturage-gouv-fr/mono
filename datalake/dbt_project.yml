@@ -26,6 +26,12 @@ flags:
   # Needed for elementary
   require_explicit_package_overrides_for_builtin_materializations: False
   source_freshness_run_project_hooks: True
+  # Silence deprecation emitted by the vendored elementary package
+  # (top-level `meta` in its run_results.yml). Not fixable in our code;
+  # would be overwritten by `dbt deps`.
+  warn_error_options:
+    silence:
+      - PropertyMovedToConfigDeprecation
 
 # Configuring models
 # Full documentation: https://docs.getdbt.com/docs/configuring-models

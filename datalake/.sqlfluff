@@ -29,3 +29,10 @@ align_scope = bracketed
 [sqlfluff:indentation]
 indent_unit = space
 tab_space_size = 2
+
+# Non-reserved postgres keywords intentionally used as column names.
+# They are valid unquoted (models run in production), so whitelist them
+# for RF04 instead of quoting (quoting would trigger RF06). RF04 still
+# catches any other accidental keyword-as-identifier usage.
+[sqlfluff:rules:references.keywords]
+ignore_words = year,type,precision,operator
