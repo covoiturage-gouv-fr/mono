@@ -356,4 +356,70 @@ describe("CarpoolAcquisitionService", () => {
       ],
     );
   });
+
+  it("Should keep terms_violation_error status when geo batch processes the carpool", async () => {
+    const service = getService({});
+
+    const data = {
+      ...insertableCarpool,
+      operator_journey_id: "tve_geo_guard",
+      distance: 100, // triggers distance_too_short
+    };
+
+    const res = await service.registerRequest({ ...data, api_version: "3" });
+    assert(res.terms_violation_error_labels.includes("distance_too_short"));
+
+    const before = await statusRepository.getStatusByOperatorJourneyId(
+      data.operator_id,
+      data.operator_journey_id,
+    );
+    assertEquals(before?.acquisition_status, "terms_violation_error");
+
+    // The geo batch must geocode the carpool WITHOUT downgrading its status.
+    await service.processGeo({
+      batchSize: 1000,
+      from: new Date(Date.now() - 86_400_000),
+      to: new Date(Date.now() + 86_400_000),
+      failedOnly: false,
+    });
+
+    const after = await statusRepository.getStatusByOperatorJourneyId(
+      data.operator_id,
+      data.operator_journey_id,
+    );
+    assertEquals(after?.acquisition_status, "terms_violation_error");
+  });
+
+  it("Should move a received carpool to processed when geo batch runs", async () => {
+    const service = getService({});
+
+    const data = {
+      ...insertableCarpool,
+      operator_journey_id: "geo_no_violation",
+      driver_identity_key: "2".repeat(64),
+      passenger_identity_key: "3".repeat(64),
+    };
+
+    const res = await service.registerRequest({ ...data, api_version: "3" });
+    assertEquals(res.terms_violation_error_labels, []);
+
+    const before = await statusRepository.getStatusByOperatorJourneyId(
+      data.operator_id,
+      data.operator_journey_id,
+    );
+    assertEquals(before?.acquisition_status, "received");
+
+    await service.processGeo({
+      batchSize: 1000,
+      from: new Date(Date.now() - 86_400_000),
+      to: new Date(Date.now() + 86_400_000),
+      failedOnly: false,
+    });
+
+    const after = await statusRepository.getStatusByOperatorJourneyId(
+      data.operator_id,
+      data.operator_journey_id,
+    );
+    assertEquals(after?.acquisition_status, "processed");
+  });
 });

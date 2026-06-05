@@ -273,17 +273,19 @@ export class CarpoolAcquisitionService {
             end_geo_code: end,
           }, conn);
 
-          await this.statusRepository.saveAcquisitionStatus({
-            carpool_id: item.carpool_id,
-            status: CarpoolAcquisitionStatusEnum.Processed,
-          }, conn);
+          await this.statusRepository.setGeoProcessingStatus(
+            item.carpool_id,
+            CarpoolAcquisitionStatusEnum.Processed,
+            conn,
+          );
           await conn.query("COMMIT");
         } catch (e) {
           await conn.query("ROLLBACK");
-          await this.statusRepository.saveAcquisitionStatus({
-            carpool_id: item.carpool_id,
-            status: CarpoolAcquisitionStatusEnum.Failed,
-          }, conn);
+          await this.statusRepository.setGeoProcessingStatus(
+            item.carpool_id,
+            CarpoolAcquisitionStatusEnum.Failed,
+            conn,
+          );
 
           await this.geoRepository.upsert({
             carpool_id: item.carpool_id,

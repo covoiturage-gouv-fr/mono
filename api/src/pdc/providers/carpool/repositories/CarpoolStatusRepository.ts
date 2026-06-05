@@ -1,7 +1,7 @@
 import { provider } from "@/ilos/common/index.ts";
 import { LegacyPostgresConnection, PoolClient } from "@/ilos/connection-postgres/index.ts";
 import sql, { join, raw } from "@/lib/pg/sql.ts";
-import { CarpoolFraudStatusEnum } from "@/pdc/providers/carpool/interfaces/common.ts";
+import { CarpoolAcquisitionStatusEnum, CarpoolFraudStatusEnum } from "@/pdc/providers/carpool/interfaces/common.ts";
 import { CarpoolStatus } from "../interfaces/database/label.ts";
 import { Id, InsertableCarpoolAcquisitionStatus } from "../interfaces/index.ts";
 
@@ -15,6 +15,26 @@ export class CarpoolStatusRepository {
 
   public async saveAcquisitionStatus(data: InsertableCarpoolAcquisitionStatus, client?: PoolClient): Promise<void> {
     await this.setStatus(data.carpool_id, "acquisition", data.status, client);
+  }
+
+  /**
+   * Advance the acquisition status after geo encoding WITHOUT downgrading a
+   * terminal status. The geo batch (processGeo) must geocode every carpool but
+   * must never overwrite a `terms_violation_error` (or `canceled`) status with
+   * `processed`/`failed`. Only geocodable statuses are eligible.
+   */
+  public async setGeoProcessingStatus(
+    carpool_id: Id,
+    status: CarpoolAcquisitionStatusEnum.Processed | CarpoolAcquisitionStatusEnum.Failed,
+    client?: PoolClient,
+  ): Promise<void> {
+    const cl = client ?? this.connection.getClient();
+    await cl.query(sql`
+      UPDATE ${raw(this.table)}
+      SET acquisition_status = ${status}
+      WHERE carpool_id = ${carpool_id}
+        AND acquisition_status IN ('received', 'updated', 'failed')
+    `);
   }
 
   public async saveFraudStatus(carpool_id: Id, status: CarpoolFraudStatusEnum, client?: PoolClient): Promise<void> {
