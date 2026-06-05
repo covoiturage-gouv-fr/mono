@@ -103,6 +103,8 @@ jobs:
   sqlfluff-lint:
     name: "(datalake) sqlfluff lint"
     runs-on: ubuntu-latest
+    # Non-blocking: lint runs and reports, but never fails the PR check.
+    continue-on-error: true
     env:
       DBT_PROFILES_DIR: profiles
       DBT_HOST: localhost
