@@ -54,6 +54,9 @@ export function normalize(src: APDFTripInterface, config: ExcelCampaignConfig): 
 
     // incentives in euros
     rpc_incentive: src.rpc_incentive / 100,
+
+    // passenger contribution in euros
+    passenger_contribution: src.passenger_contribution == null ? null : src.passenger_contribution / 100,
   };
 
   return data;

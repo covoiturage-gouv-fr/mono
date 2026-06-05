@@ -32,6 +32,7 @@ export class TripsWorksheetWriter extends AbstractWorksheetWriter {
     "passenger_operator_user_id",
     "rpc_incentive",
     "incentive_type",
+    "passenger_contribution",
   ].map((header) => ({ header, key: header }));
 
   async call(
@@ -67,6 +68,7 @@ export class TripsWorksheetWriter extends AbstractWorksheetWriter {
       Q: { width: 29, font },
       R: { width: 12, font },
       S: { width: 12, font },
+      T: { width: 12, font },
     };
 
     Object.entries(columns).forEach(([key, value]) => {

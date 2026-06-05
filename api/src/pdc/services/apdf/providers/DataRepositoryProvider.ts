@@ -171,6 +171,7 @@ export class DataRepositoryProvider implements DataRepositoryInterface {
 
         cc.driver_operator_user_id,
         cc.passenger_operator_user_id,
+        cc.passenger_contribution,
 
         pi.amount as rpc_incentive,
 
