@@ -11,6 +11,7 @@ export interface APDFTripInterface {
   operator_journey_id: string;
   operator_trip_id: string;
   operator: string;
+  passenger_contribution: number | null;
   passenger_operator_user_id: string;
   rpc_incentive: number;
   rpc_journey_id: string;

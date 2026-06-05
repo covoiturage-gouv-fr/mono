@@ -12,12 +12,14 @@ export class SlicesWorksheetWriter extends AbstractWorksheetWriter {
     "Incitations RPC",
     "Tous les trajets",
     "Trajets incités",
+    "Contribution passagers",
   ];
   public readonly COLUMN_HEADERS_BOOSTER = [
     'Tranche "période booster"',
     "Incitations RPC",
     "Tous les trajets",
     "Trajets incités",
+    "Contribution passagers",
   ];
 
   async call(
@@ -47,6 +49,9 @@ export class SlicesWorksheetWriter extends AbstractWorksheetWriter {
     ws.getColumn("C").font = font;
     ws.getColumn("D").width = 20;
     ws.getColumn("D").font = font;
+    ws.getColumn("E").width = 20;
+    ws.getColumn("E").font = font;
+    ws.getColumn("E").numFmt = "# ##0.00€";
 
     // --------------------------------------------------------------------------------
     // Data
@@ -140,6 +145,10 @@ export class SlicesWorksheetWriter extends AbstractWorksheetWriter {
     ws.getCell("A40").value = "incentive_type";
     ws.mergeCells("B40:D40");
     ws.getCell("B40").value = "Type d'incitation (normale ou booster)";
+
+    ws.getCell("A41").value = "passenger_contribution";
+    ws.mergeCells("B41:D41");
+    ws.getCell("B41").value = "Contribution financière du passager en euros";
 
     // --------------------------------------------------------------------------------
     // Rules
@@ -256,6 +265,7 @@ export class SlicesWorksheetWriter extends AbstractWorksheetWriter {
     // S : incentive_type
     // M : distance
     // R : rpc_incentive
+    // T : passenger_contribution
     for (const s of slices) {
       const { start, end } = s.slice;
       const mode_criteria = `Trajets!S:S,"${mode}"`;
@@ -275,6 +285,10 @@ export class SlicesWorksheetWriter extends AbstractWorksheetWriter {
         {
           date1904: false,
           formula: `COUNTIFS(Trajets!R:R,">0",${mode_criteria},${slice_criteria})`,
+        },
+        {
+          date1904: false,
+          formula: `SUMIFS(Trajets!T:T,${mode_criteria},${slice_criteria})`,
         },
       ]);
       r.height = 20;
@@ -301,6 +315,11 @@ export class SlicesWorksheetWriter extends AbstractWorksheetWriter {
       date1904: false,
     };
     ws.getCell(`D${last + 1}`).border = border;
+    ws.getCell(`E${last + 1}`).value = {
+      formula: `SUM(E${first}:E${last})`,
+      date1904: false,
+    };
+    ws.getCell(`E${last + 1}`).border = border;
   }
 
   private pad(ws: excel.Worksheet, n: number): void {
