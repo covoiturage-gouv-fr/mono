@@ -97,7 +97,7 @@ export type CarpoolListType = {
 };
 
 export function carpoolListQuery(params: ExportParams): Sql {
-  const table = "dbt_exposed.export_partners";
+  const table = "refined_zone.export_carpool_list";
   const { start_at, end_at } = params.get();
   const geo_selectors = params.geoToSQL();
   const operator_id = params.operatorToSQL();
