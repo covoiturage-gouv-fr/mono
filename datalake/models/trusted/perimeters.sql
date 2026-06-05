@@ -113,7 +113,7 @@ new_arr AS (
 
 new_country AS (
   SELECT
-    2025 AS year,
+    2025                    AS year,
     arr,
     l_arr,
     com,

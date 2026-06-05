@@ -31,20 +31,20 @@ max_perim_year AS (
 
 territory AS (
   {% for model_type, exposed_type in type_map %}
-  SELECT
-    '{{ exposed_type }}'  AS type,
-    code,
-    year,
-    quarter,
-    unique_drivers,
-    new_drivers,
-    unique_passengers,
-    new_passengers
-  FROM {{ ref('territory_quarter_' ~ model_type ~ '_both') }}
-  {% if is_incremental() %}
+    SELECT
+      '{{ exposed_type }}' AS type,
+      code,
+      year,
+      quarter,
+      unique_drivers,
+      new_drivers,
+      unique_passengers,
+      new_passengers
+    FROM {{ ref('territory_quarter_' ~ model_type ~ '_both') }}
+    {% if is_incremental() %}
   WHERE year * 4 + quarter >= (SELECT min_yq FROM lookback)
   {% endif %}
-  {% if not loop.last %}UNION ALL{% endif %}
+    {% if not loop.last %}UNION ALL{% endif %}
   {% endfor %}
 )
 
@@ -58,6 +58,7 @@ SELECT
   t.new_drivers,
   t.unique_passengers,
   t.new_passengers
-FROM territory t
-LEFT JOIN {{ ref('perimeters_agg') }} p ON p.code = t.code AND p.type = t.type
-  AND p.year = LEAST(t.year, (SELECT y FROM max_perim_year))
+FROM territory AS t
+LEFT JOIN {{ ref('perimeters_agg') }}
+  AS p ON t.code = p.code AND t.type = p.type
+AND p.year = LEAST(t.year, (SELECT y FROM max_perim_year))

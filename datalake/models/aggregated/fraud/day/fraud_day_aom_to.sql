@@ -1,1 +1,1 @@
-{{ fraud_model('aom', 'day', 'to')}}
+{{ fraud_model('aom', 'day', 'to') }}
