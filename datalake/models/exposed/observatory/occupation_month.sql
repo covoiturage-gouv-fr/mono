@@ -31,21 +31,21 @@ max_perim_year AS (
 
 territory AS (
   {% for model_type, exposed_type in type_map %}
-  SELECT
-    '{{ exposed_type }}'  AS type,
-    code,
-    year,
-    month,
-    carpools              AS journeys,
-    trips,
-    carpools - no_oi      AS has_incentive,
-    carpools,
-    passenger_seats
-  FROM {{ ref('territory_month_' ~ model_type ~ '_both') }}
-  {% if is_incremental() %}
+    SELECT
+      '{{ exposed_type }}' AS type,
+      code,
+      year,
+      month,
+      carpools             AS journeys,
+      trips,
+      carpools - no_oi     AS has_incentive,
+      carpools,
+      passenger_seats
+    FROM {{ ref('territory_month_' ~ model_type ~ '_both') }}
+    {% if is_incremental() %}
   WHERE year * 100 + month >= (SELECT min_ym FROM lookback)
   {% endif %}
-  {% if not loop.last %}UNION ALL{% endif %}
+    {% if not loop.last %}UNION ALL{% endif %}
   {% endfor %}
 )
 
@@ -58,11 +58,13 @@ SELECT
   t.journeys,
   t.trips,
   t.has_incentive,
-  round(
-    (t.carpools + t.passenger_seats)::numeric / nullif(t.carpools, 0), 2
-  )                                            AS occupation_rate,
-  st_asgeojson(p.geom, 6)::json               AS geom
-FROM territory t
-LEFT JOIN {{ ref('perimeters_agg') }} p ON p.code = t.code AND p.type = t.type
-  AND p.year = LEAST(t.year, (SELECT y FROM max_perim_year))
+  ROUND(
+    (t.carpools + t.passenger_seats)::numeric / NULLIF(t.carpools, 0), 2
+  )                             AS occupation_rate,
+  ST_ASGEOJSON(p.geom, 6)::json AS geom
+FROM territory AS t
+LEFT JOIN {{ ref('perimeters_agg') }} AS p
+  ON
+    t.code = p.code AND t.type = p.type
+    AND p.year = LEAST(t.year, (SELECT y FROM max_perim_year))
 WHERE t.carpools > 0

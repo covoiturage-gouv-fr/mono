@@ -18,20 +18,24 @@ WITH source_carpools AS (
     c.end_position::geometry   AS end_position,
     g.start_geo_code,
     g.end_geo_code,
-    g.updated_at AS geo_updated_at
-  FROM {{ source('carpool_v2', 'carpools') }} c
-  JOIN {{ source('carpool_v2', 'geo') }} g ON g.carpool_id = c._id
+    g.updated_at               AS geo_updated_at
+  FROM {{ source('carpool_v2', 'carpools') }} AS c
+  INNER JOIN {{ source('carpool_v2', 'geo') }} AS g ON c._id = g.carpool_id
   WHERE {{ time_filter('c.start_datetime', 'start_datetime', lookback_nb=3) }}
 ),
 
 -- communes rétablies (mod=21) — sous-ensemble rare de com_evolution
 perimeters_retablissement AS (
-  SELECT year, com, geom
-  FROM {{ ref('perimeters') }} p
+  SELECT
+    year,
+    com,
+    geom
+  FROM {{ ref('perimeters') }} AS p
   WHERE com IN (
     SELECT DISTINCT new_com
     FROM {{ ref('com_evolution') }}
-    WHERE mod = 21
+    WHERE
+      mod = 21
       AND year = p.year
   )
 ),
@@ -39,21 +43,23 @@ perimeters_retablissement AS (
 -- carpools dont au moins un bout est dans une commune rétablie (mod=21)
 affected_retablissement AS (
   SELECT DISTINCT sc._id
-  FROM source_carpools sc
-  JOIN {{ ref('com_evolution') }} ce
-    ON (sc.start_geo_code = ce.old_com OR sc.end_geo_code = ce.old_com)
-    AND ce.mod = 21
-    AND ce.year = EXTRACT(YEAR FROM sc.geo_updated_at)::int
+  FROM source_carpools AS sc
+  INNER JOIN {{ ref('com_evolution') }} AS ce
+    ON
+      (sc.start_geo_code = ce.old_com OR sc.end_geo_code = ce.old_com)
+      AND ce.mod = 21
+      AND ce.year = EXTRACT(YEAR FROM sc.geo_updated_at)::int
 ),
 
 -- carpools dont au moins un bout est dans une commune fusionnée (mod=32)
 affected_fusion AS (
   SELECT DISTINCT sc._id
-  FROM source_carpools sc
-  JOIN {{ ref('com_evolution') }} ce
-    ON (sc.start_geo_code = ce.old_com OR sc.end_geo_code = ce.old_com)
-    AND ce.mod = 32
-    AND ce.year = EXTRACT(YEAR FROM sc.geo_updated_at)::int
+  FROM source_carpools AS sc
+  INNER JOIN {{ ref('com_evolution') }} AS ce
+    ON
+      (sc.start_geo_code = ce.old_com OR sc.end_geo_code = ce.old_com)
+      AND ce.mod = 32
+      AND ce.year = EXTRACT(YEAR FROM sc.geo_updated_at)::int
 ),
 
 affected AS (
@@ -63,23 +69,27 @@ affected AS (
 )
 
 SELECT
-  sc._id            AS carpool_id,
+  sc._id                                          AS carpool_id,
   sc.start_datetime,
   COALESCE(ps.com, cs.new_com, sc.start_geo_code) AS start_geo_code,
   COALESCE(pe.com, ce.new_com, sc.end_geo_code)   AS end_geo_code
-FROM source_carpools sc
-JOIN affected a ON a._id = sc._id
-LEFT JOIN perimeters_retablissement ps
-  ON ST_Intersects(sc.start_position, ps.geom)
-  AND ps.year = EXTRACT(YEAR FROM sc.geo_updated_at)::int
-LEFT JOIN perimeters_retablissement pe
-  ON ST_Intersects(sc.end_position, pe.geom)
-  AND pe.year = EXTRACT(YEAR FROM sc.geo_updated_at)::int
-LEFT JOIN {{ ref('com_evolution') }} cs
-  ON sc.start_geo_code = cs.old_com
-  AND cs.mod = 32
-  AND cs.year = EXTRACT(YEAR FROM sc.geo_updated_at)::int
-LEFT JOIN {{ ref('com_evolution') }} ce
-  ON sc.end_geo_code = ce.old_com
-  AND ce.mod = 32
-  AND ce.year = EXTRACT(YEAR FROM sc.geo_updated_at)::int
+FROM source_carpools AS sc
+INNER JOIN affected AS a ON sc._id = a._id
+LEFT JOIN perimeters_retablissement AS ps
+  ON
+    ST_INTERSECTS(sc.start_position, ps.geom)
+    AND ps.year = EXTRACT(YEAR FROM sc.geo_updated_at)::int
+LEFT JOIN perimeters_retablissement AS pe
+  ON
+    ST_INTERSECTS(sc.end_position, pe.geom)
+    AND pe.year = EXTRACT(YEAR FROM sc.geo_updated_at)::int
+LEFT JOIN {{ ref('com_evolution') }} AS cs
+  ON
+    sc.start_geo_code = cs.old_com
+    AND cs.mod = 32
+    AND cs.year = EXTRACT(YEAR FROM sc.geo_updated_at)::int
+LEFT JOIN {{ ref('com_evolution') }} AS ce
+  ON
+    sc.end_geo_code = ce.old_com
+    AND ce.mod = 32
+    AND ce.year = EXTRACT(YEAR FROM sc.geo_updated_at)::int

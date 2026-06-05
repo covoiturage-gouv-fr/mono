@@ -1,6 +1,10 @@
 [sqlfluff]
 templater = dbt
 dialect = postgres
+# Bound dbt-templater connections: 1 process = 1 DB connection.
+# Avoids bursting past postgres max_connections and leaking
+# "idle in transaction" sessions. Use `just lint` for per-file runs.
+processes = 1
 
 [sqlfluff:templater:dbt]
 project_dir = ./

@@ -64,11 +64,11 @@ GROUP BY year, reg, l_reg
 UNION ALL
 SELECT
   year,
-  country                                            AS code,
-  'country'                                          AS type,  -- noqa: RF04
-  MODE() WITHIN GROUP (ORDER BY l_country)           AS libelle,
-  ST_MULTI(ST_UNION(geom_simple))                    AS geom,
-  ST_POINTONSURFACE(ST_UNION(geom_simple))           AS centroid
+  country                                  AS code,
+  'country'                                AS type,  -- noqa: RF04
+  MODE() WITHIN GROUP (ORDER BY l_country) AS libelle,
+  ST_MULTI(ST_UNION(geom_simple))          AS geom,
+  ST_POINTONSURFACE(ST_UNION(geom_simple)) AS centroid
 FROM {{ ref('perimeters') }}
 WHERE country IS NOT NULL
 GROUP BY year, country
