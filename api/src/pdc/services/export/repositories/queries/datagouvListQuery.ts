@@ -36,7 +36,7 @@ export type DataGouvListType = {
 };
 
 export function datagouvListQuery(params: ExportParams, config: DataGouvQueryConfig): Sql {
-  const table = "refined_zone.export_opendata_list";
+  const table = "dbt_exposed.export_opendata";
   const { start_at, end_at } = params.get();
   const { min_occurrences } = config;
 
