@@ -41,3 +41,15 @@ dbt/edr_target
 .mcp.json
 .worktrees
 
+# security find-and-fix loop scan artifacts (THREAT_MODEL.md is committed; these are not)
+.threat-model-state/
+.triage-state/
+.patch-state/
+VULN-FINDINGS.json
+VULN-FINDINGS.md
+TRIAGE.json
+TRIAGE.md
+PATCHES/
+PATCHES.json
+PATCHES.md
+

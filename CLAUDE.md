@@ -39,6 +39,8 @@ Sub-agents:
 - `/check-qa` Deno standards + project coherence
 - `/check-doc` docs + CLAUDE.md updated with code
 
+Deep periodic pass (whole subtree, not PR diff): `/threat-model` -> `/vuln-scan` -> `/triage` -> `/patch`, anchored on root `THREAT_MODEL.md`. Complements `/check-security`. See `SECURITY-REVIEW.md`.
+
 ### Docs
 
 Notion = internal technical docs.
