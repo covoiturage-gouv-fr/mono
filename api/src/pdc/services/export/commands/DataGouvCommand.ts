@@ -13,6 +13,7 @@ import { NotificationService } from "@/pdc/services/export/services/Notification
 import { StorageService } from "@/pdc/services/export/services/StorageService.ts";
 import { ExportRepositoryInterfaceResolver } from "../repositories/ExportRepository.ts";
 import { DataGouvListType } from "../repositories/queries/datagouvListQuery.ts";
+import { DataGouvStatsType } from "../repositories/queries/datagouvStatsQuery.ts";
 import { DataGouvFileCreatorServiceInterfaceResolver } from "../services/DataGouvFileCreatorService.ts";
 import { FieldServiceInterfaceResolver } from "../services/FieldService.ts";
 import { LogServiceInterfaceResolver } from "../services/LogService.ts";
@@ -27,6 +28,24 @@ export type Options = {
 function defaultDate(offset = 0): Date {
   const now = today();
   return new Date(now.getFullYear(), now.getMonth() + offset, 1);
+}
+
+/**
+ * Guard against publishing an empty dataset on data.gouv.fr.
+ *
+ * The export depends on trusted_zone.insee_counters (sqlmesh @monthly model
+ * that withholds the current month until it is complete). If the export runs
+ * before that month is materialised, the INNER JOIN yields zero rows and we
+ * would otherwise upload an empty file. Abort loudly instead.
+ */
+export function assertDatagouvNotEmpty(stats: DataGouvStatsType, filename: string): void {
+  if (Number(stats?.count_exposed) >= 1) return;
+
+  throw new Error(
+    `[export:datagouv] Refusing to upload empty dataset ${filename} ` +
+      `(count_exposed=${stats?.count_exposed ?? 0}, count_total=${stats?.count_total ?? 0}). ` +
+      `Upstream data likely not ready (trusted_zone.insee_counters @monthly).`,
+  );
 }
 
 @command({
@@ -100,6 +119,7 @@ export class DataGouvCommand implements CommandInterface {
       // generate dataset description
       logger.info(`Generating metadata for ${filename}`);
       const stats = await this.carpoolRepository.datagouvStats(params);
+      assertDatagouvNotEmpty(stats, filename);
       const description = this.metadata.description(stats);
 
       // upload to storage
