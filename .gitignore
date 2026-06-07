@@ -23,6 +23,11 @@ notebooks/scripts/playground
 # python
 *.pyc
 __pycache__
+.venv
+.nix-venv
+
+# direnv
+.direnv/
 
 #dbt
 logs/dbt.log

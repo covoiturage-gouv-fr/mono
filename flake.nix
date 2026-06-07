@@ -24,8 +24,8 @@
 
           # Binary URL from GitHub Releases
           src = pkgs.fetchurl {
+            inherit sha256;
             url = "https://github.com/thoughtworks/talisman/releases/download/v${version}/talisman_linux_amd64";
-            sha256 = sha256;
           };
 
           dontUnpack = true;
@@ -47,11 +47,11 @@
       in
       {
         devShells.default = pkgs.mkShell {
-          # expose pg_config for building psycopg2
+          # expose pg_config for building psycopg2 in per-folder uv venvs
           nativeBuildInputs = [ pkgs.postgresql_17.pg_config ];
 
           buildInputs = with pkgs; [
-            # system packages
+            # system
             p7zip
             just
             openssl
@@ -64,7 +64,7 @@
             postgresql_17
             deno
 
-            # data stack
+            # data stack (python envs are managed per-folder via direnv + uv)
             cmake
             python313
             uv
@@ -87,10 +87,9 @@
             export DENO_DIR="$PWD/api/.cache"
             export SEVEN_ZIP_BIN_PATH=$(which 7z)
             export LESS="-SRXF"
-            if [ -L /run/current-system ]; then export LD_LIBRARY_PATH="${pkgs.lib.getLib pkgs.postgresql_17}/lib:${pkgs.stdenv.cc.cc.lib.outPath}/lib:${pkgs.pythonManylinuxPackages.manylinux2014Package}/lib:$LD_LIBRARY_PATH"; fi;
-            test -d .nix-venv || uv venv .nix-venv --no-project --no-managed-python --no-python-downloads
-            source .nix-venv/bin/activate
-            $(cd sqlmesh && UV_PROJECT_ENVIRONMENT=../.nix-venv uv sync)
+            if [ -L /run/current-system ]; then
+              export LD_LIBRARY_PATH="${pkgs.lib.getLib pkgs.postgresql_17}/lib:${pkgs.stdenv.cc.cc.lib.outPath}/lib:${pkgs.pythonManylinuxPackages.manylinux2014Package}/lib:$LD_LIBRARY_PATH"
+            fi
           '';
         };
       }

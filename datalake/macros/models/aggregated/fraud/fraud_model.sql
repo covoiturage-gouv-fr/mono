@@ -28,7 +28,7 @@
 
 {{ config(
   materialized='view',
-  tags=['aggregated', 'fraud', grain, grain ~ '_com_' ~ direction]
+  tags=['aggregated', 'fraud', grain, 'com', direction]
 ) }}
 
 SELECT * FROM {{ ref('fraud_' ~ grain ~ '_arr_' ~ direction) }}
@@ -44,7 +44,7 @@ SELECT * FROM {{ ref('fraud_' ~ grain ~ '_plm_' ~ direction) }}
   indexes=[
     {'columns': ['operator_id', 'code', 'incremental_date'], 'unique': true}
   ],
-  tags=['aggregated', 'fraud', grain, grain ~ '_' ~ perim ~ '_' ~ direction, 'daily']
+  tags=['aggregated', 'fraud', grain, perim, direction, 'daily']
 ) }}
 
 WITH filtered_carpools AS (

@@ -1,1 +1,1 @@
-{{territory_model('aomreg', 'day', 'to')}}
+{{ territory_model('aomreg', 'day', 'to') }}

@@ -16,18 +16,19 @@ WITH latest_perimeters AS (
     reg,
     l_reg,
     country,
-    CASE WHEN arr <> country THEN l_arr    ELSE NULL  END AS l_arr,
+    CASE WHEN arr <> country THEN l_arr END                AS l_arr,
     CASE WHEN arr <> country THEN l_country ELSE l_arr END AS l_country,
     CASE
       WHEN surface > 0 AND (pop::float / (surface / 100.0)) > 40 THEN 3
       ELSE 2
-    END AS precision
+    END                                                    AS precision
   FROM {{ ref('perimeters') }}
-  ORDER BY arr, year DESC
+  ORDER BY arr ASC, year DESC
 )
 
 SELECT
-  c.legacy_id                                                    AS journey_id,
+  c.legacy_id
+    AS journey_id,
   c.operator_trip_id,
   c.operator_journey_id,
   c.operator_class,
@@ -37,107 +38,207 @@ SELECT
   c.operator_id,
 
   -- date filtering column (raw DATE in Europe/Paris)
-  c.start_datetime_tz::date                                     AS start_date_filter,
+  c.start_datetime_tz::date
+    AS start_date_filter,
 
   -- formatted dates (rounded to 10 min, Europe/Paris)
-  to_char(ts_ceil(c.start_datetime_tz, 600), 'YYYY-MM-DD HH24:MI:SS') AS start_datetime,
-  to_char(ts_ceil(c.start_datetime_tz, 600), 'YYYY-MM-DD')            AS start_date,
-  to_char(ts_ceil(c.start_datetime_tz, 600), 'HH24:MI:SS')            AS start_time,
-  to_char(ts_ceil(c.end_datetime_tz,   600), 'YYYY-MM-DD HH24:MI:SS') AS end_datetime,
-  to_char(ts_ceil(c.end_datetime_tz,   600), 'YYYY-MM-DD')            AS end_date,
-  to_char(ts_ceil(c.end_datetime_tz,   600), 'HH24:MI:SS')            AS end_time,
-  to_char((c.duration || ' seconds')::interval, 'HH24:MI:SS')   AS duration,
+  c.start_geo_code
+    AS start_insee,
+  gps.arr
+    AS start_arr,
+  gps.com
+    AS start_com,
+  gps.dep
+    AS start_dep,
+  gps.epci
+    AS start_epci_code,
+  gps.aom
+    AS start_aom_code,
+  gps.reg
+    AS start_reg,
 
-  c.distance::float / 1000                                       AS distance,
+  gps.country
+    AS start_country,
 
-  TRUNC(ST_Y(sc.start_position::geometry)::numeric, gps.precision)         AS start_lat,
-  TRUNC(ST_X(sc.start_position::geometry)::numeric, gps.precision)         AS start_lon,
-  TRUNC(ST_Y(sc.end_position::geometry)::numeric,   gpe.precision)         AS end_lat,
-  TRUNC(ST_X(sc.end_position::geometry)::numeric,   gpe.precision)         AS end_lon,
+  c.end_geo_code
+    AS end_insee,
+  gpe.arr
+    AS end_arr,
+  gpe.com
+    AS end_com,
+  gpe.dep
+    AS end_dep,
 
-  c.start_geo_code                                               AS start_insee,
-  gps.arr                                                        AS start_arr,
-  gps.com                                                        AS start_com,
-  gps.dep                                                        AS start_dep,
-  gps.epci                                                       AS start_epci_code,
-  gps.aom                                                        AS start_aom_code,
-  gps.reg                                                        AS start_reg,
-  gps.country                                                    AS start_country,
+  gpe.epci
+    AS end_epci_code,
+  gpe.aom
+    AS end_aom_code,
+  gpe.reg
+    AS end_reg,
+  gpe.country
+    AS end_country,
+  gps.l_arr
+    AS start_commune,
+  gps.l_dep
+    AS start_departement,
+  gps.l_epci
+    AS start_epci,
+  gps.l_aom
+    AS start_aom,
 
-  c.end_geo_code                                                 AS end_insee,
-  gpe.arr                                                        AS end_arr,
-  gpe.com                                                        AS end_com,
-  gpe.dep                                                        AS end_dep,
-  gpe.epci                                                       AS end_epci_code,
-  gpe.aom                                                        AS end_aom_code,
-  gpe.reg                                                        AS end_reg,
-  gpe.country                                                    AS end_country,
+  gps.l_reg
+    AS start_region,
+  gps.l_country
+    AS start_pays,
+  gpe.l_arr
+    AS end_commune,
+  gpe.l_dep
+    AS end_departement,
+  gpe.l_epci
+    AS end_epci,
+  gpe.l_aom
+    AS end_aom,
+  gpe.l_reg
+    AS end_region,
+  gpe.l_country
+    AS end_pays,
 
-  gps.l_arr                                                      AS start_commune,
-  gps.l_dep                                                      AS start_departement,
-  gps.l_epci                                                     AS start_epci,
-  gps.l_aom                                                      AS start_aom,
-  gps.l_reg                                                      AS start_region,
-  gps.l_country                                                  AS start_pays,
-
-  gpe.l_arr                                                      AS end_commune,
-  gpe.l_dep                                                      AS end_departement,
-  gpe.l_epci                                                     AS end_epci,
-  gpe.l_aom                                                      AS end_aom,
-  gpe.l_reg                                                      AS end_region,
-  gpe.l_country                                                  AS end_pays,
-
-  c.operator_name                                                AS operator,
-  sc.passenger_operator_user_id                                   AS operator_passenger_id,
+  c.operator_name
+    AS operator,
+  sc.passenger_operator_user_id
+    AS operator_passenger_id,
   sc.passenger_identity_key,
-  sc.driver_operator_user_id                                      AS operator_driver_id,
+  sc.driver_operator_user_id
+    AS operator_driver_id,
   sc.driver_identity_key,
-
-  c.driver_revenue::float / 100                                  AS driver_revenue,
-  c.passenger_contribution::float / 100                          AS passenger_contribution,
   c.passenger_seats,
 
-  cee._id IS NOT NULL                              AS cee_application,
+  TRUE
+    AS offer_public,
+  c.start_datetime
+    AS offer_accepted_at,
+  to_char(ts_ceil(c.start_datetime_tz, 600), 'YYYY-MM-DD HH24:MI:SS')
+    AS start_datetime,
+  to_char(ts_ceil(c.start_datetime_tz, 600), 'YYYY-MM-DD')
+    AS start_date,
+  to_char(ts_ceil(c.start_datetime_tz, 600), 'HH24:MI:SS')
+    AS start_time,
+  to_char(ts_ceil(c.end_datetime_tz, 600), 'YYYY-MM-DD HH24:MI:SS')
+    AS end_datetime,
+
+  to_char(ts_ceil(c.end_datetime_tz, 600), 'YYYY-MM-DD')
+    AS end_date,
+  to_char(ts_ceil(c.end_datetime_tz, 600), 'HH24:MI:SS')
+    AS end_time,
+  to_char((c.duration || ' seconds')::interval, 'HH24:MI:SS')
+    AS duration,
+  c.distance::float
+  / 1000
+    AS distance,
+  trunc(st_y(sc.start_position::geometry)::numeric, gps.precision)
+    AS start_lat,
+
+  trunc(st_x(sc.start_position::geometry)::numeric, gps.precision)
+    AS start_lon,
+  trunc(st_y(sc.end_position::geometry)::numeric, gpe.precision)
+    AS end_lat,
+  trunc(st_x(sc.end_position::geometry)::numeric, gpe.precision)
+    AS end_lon,
+
+  c.driver_revenue::float
+  / 100
+    AS driver_revenue,
 
   -- operator incentives (spread from JSONB array)
-  c.oi_details[0]->>'siret'                             AS incentive_0_siret,
-  c.oi_details[0]->>'name'                              AS incentive_0_name,
-  c.oi_details[0]->>'amount'                            AS incentive_0_amount,
+  c.passenger_contribution::float
+  / 100
+    AS passenger_contribution,
+  cee._id IS NOT NULL
+    AS cee_application,
+  c.oi_details[0]
+  ->> 'siret'
+    AS incentive_0_siret,
 
-  c.oi_details[1]->>'siret'                             AS incentive_1_siret,
-  c.oi_details[1]->>'name'                              AS incentive_1_name,
-  c.oi_details[1]->>'amount'                            AS incentive_1_amount,
+  c.oi_details[0]
+  ->> 'name'
+    AS incentive_0_name,
+  c.oi_details[0]
+  ->> 'amount'
+    AS incentive_0_amount,
+  c.oi_details[1]
+  ->> 'siret'
+    AS incentive_1_siret,
 
-  c.oi_details[2]->>'siret'                             AS incentive_2_siret,
-  c.oi_details[2]->>'name'                              AS incentive_2_name,
-  c.oi_details[2]->>'amount'                            AS incentive_2_amount,
+  c.oi_details[1]
+  ->> 'name'
+    AS incentive_1_name,
+  c.oi_details[1]
+  ->> 'amount'
+    AS incentive_1_amount,
+  c.oi_details[2]
+  ->> 'siret'
+    AS incentive_2_siret,
 
   -- RPC incentives (spread from JSONB array)
-  c.campaigns[0]->>'campaign_id'                       AS incentive_rpc_0_campaign_id,
-  c.campaigns[0]->>'campaign_name'                     AS incentive_rpc_0_campaign_name,
-  c.campaigns[0]->>'siret'                             AS incentive_rpc_0_siret,
-  c.campaigns[0]->>'name'                              AS incentive_rpc_0_name,
-  c.campaigns[0]->>'amount'                            AS incentive_rpc_0_amount,
+  c.oi_details[2]
+  ->> 'name'
+    AS incentive_2_name,
+  c.oi_details[2]
+  ->> 'amount'
+    AS incentive_2_amount,
+  c.campaigns[0]
+  ->> 'campaign_id'
+    AS incentive_rpc_0_campaign_id,
+  c.campaigns[0]
+  ->> 'campaign_name'
+    AS incentive_rpc_0_campaign_name,
+  c.campaigns[0]
+  ->> 'siret'
+    AS incentive_rpc_0_siret,
 
-  c.campaigns[1]->>'campaign_id'                       AS incentive_rpc_1_campaign_id,
-  c.campaigns[1]->>'campaign_name'                     AS incentive_rpc_1_campaign_name,
-  c.campaigns[1]->>'siret'                             AS incentive_rpc_1_siret,
-  c.campaigns[1]->>'name'                              AS incentive_rpc_1_name,
-  c.campaigns[1]->>'amount'                            AS incentive_rpc_1_amount,
+  c.campaigns[0]
+  ->> 'name'
+    AS incentive_rpc_0_name,
+  c.campaigns[0]
+  ->> 'amount'
+    AS incentive_rpc_0_amount,
+  c.campaigns[1]
+  ->> 'campaign_id'
+    AS incentive_rpc_1_campaign_id,
+  c.campaigns[1]
+  ->> 'campaign_name'
+    AS incentive_rpc_1_campaign_name,
+  c.campaigns[1]
+  ->> 'siret'
+    AS incentive_rpc_1_siret,
 
-  c.campaigns[2]->>'campaign_id'                       AS incentive_rpc_2_campaign_id,
-  c.campaigns[2]->>'campaign_name'                     AS incentive_rpc_2_campaign_name,
-  c.campaigns[2]->>'siret'                             AS incentive_rpc_2_siret,
-  c.campaigns[2]->>'name'                              AS incentive_rpc_2_name,
-  c.campaigns[2]->>'amount'                            AS incentive_rpc_2_amount,
+  c.campaigns[1]
+  ->> 'name'
+    AS incentive_rpc_1_name,
+  c.campaigns[1]
+  ->> 'amount'
+    AS incentive_rpc_1_amount,
+  c.campaigns[2]
+  ->> 'campaign_id'
+    AS incentive_rpc_2_campaign_id,
+  c.campaigns[2]
+  ->> 'campaign_name'
+    AS incentive_rpc_2_campaign_name,
+  c.campaigns[2]
+  ->> 'siret'
+    AS incentive_rpc_2_siret,
 
   -- offer (placeholders)
-  TRUE                                                           AS offer_public,
-  c.start_datetime                                               AS offer_accepted_at
+  c.campaigns[2]
+  ->> 'name'
+    AS incentive_rpc_2_name,
+  c.campaigns[2]
+  ->> 'amount'
+    AS incentive_rpc_2_amount
 
-FROM {{ref('carpools')}} c
-LEFT JOIN {{ source('carpool_v2', 'carpools') }} sc ON sc._id = c._id
-LEFT JOIN latest_perimeters gps ON c.start_geo_code = gps.arr
-LEFT JOIN latest_perimeters gpe ON c.end_geo_code = gpe.arr
-LEFT JOIN {{ ref('cee') }} cee ON cee.carpool_v2_id = c._id
+FROM {{ ref('carpools') }} AS c
+LEFT JOIN {{ source('carpool_v2', 'carpools') }} AS sc ON c._id = sc._id
+LEFT JOIN latest_perimeters AS gps ON c.start_geo_code = gps.arr
+LEFT JOIN latest_perimeters AS gpe ON c.end_geo_code = gpe.arr
+LEFT JOIN {{ ref('cee') }} AS cee ON c._id = cee.carpool_v2_id
 WHERE c.valid_acquisition_status = TRUE

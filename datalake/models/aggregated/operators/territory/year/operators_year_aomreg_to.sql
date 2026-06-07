@@ -1,1 +1,1 @@
-{{operators_model('aomreg', 'year', 'to')}}
+{{ operators_model('aomreg', 'year', 'to') }}

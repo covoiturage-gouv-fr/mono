@@ -1,1 +1,1 @@
-{{operators_model('arr', 'year', 'to')}}
+{{ operators_model('arr', 'year', 'to') }}

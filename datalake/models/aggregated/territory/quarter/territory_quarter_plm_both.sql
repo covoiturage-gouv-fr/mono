@@ -1,1 +1,1 @@
-{{territory_model('plm', 'quarter', 'both')}}
+{{ territory_model('plm', 'quarter', 'both') }}

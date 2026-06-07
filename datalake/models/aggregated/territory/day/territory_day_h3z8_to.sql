@@ -1,1 +1,1 @@
-{{territory_model('h3z8', 'day', 'to')}}
+{{ territory_model('h3z8', 'day', 'to') }}

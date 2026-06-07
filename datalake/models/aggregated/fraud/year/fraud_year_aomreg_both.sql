@@ -1,1 +1,1 @@
-{{ fraud_model('aomreg', 'year', 'both')}}
+{{ fraud_model('aomreg', 'year', 'both') }}

@@ -19,7 +19,7 @@
       'end_col':    'c.end_geo_code',
       'joins':      '',
       'is_intra':   'c.is_intra',
-      'where_geo':  "(c.start_geo_code NOT IN ('75056', '13055', '69123') OR c.end_geo_code NOT IN ('75056', '13055', '69123'))"
+      'where_geo':  "(c.start_geo_code NOT IN ('75056', '13055', '69123') AND c.end_geo_code NOT IN ('75056', '13055', '69123'))"
     },
     'h3z9': {
       'start_col':  'c.start_h3index_z9',
@@ -68,7 +68,7 @@
       'end_col':    'pe.aom',
       'joins':      perim_join,
       'is_intra':   '(ps.aom IS NOT NULL AND pe.aom IS NOT NULL AND ps.aom = pe.aom)',
-      'where_geo':  "((ps.aom IS NOT NULL OR ps.aom NOT IN (SELECT aom FROM " ~ aom_region_ref ~ ")) OR (pe.aom IS NOT NULL OR pe.aom NOT IN (SELECT aom FROM " ~ aom_region_ref ~ ")))"
+      'where_geo':  "((ps.aom IS NOT NULL AND ps.aom NOT IN (SELECT aom FROM " ~ aom_region_ref ~ ")) OR (pe.aom IS NOT NULL AND pe.aom NOT IN (SELECT aom FROM " ~ aom_region_ref ~ ")))"
     },
     'plm': {
       'start_col':  'COALESCE(plm_s.com, c.start_geo_code)',
@@ -97,7 +97,7 @@ WITH plm_perim AS (
   SELECT DISTINCT arr, com
   FROM {{ ref('perimeters') }}
   WHERE com IS NOT NULL AND arr <> com
-  ORDER BY arr ASC
+  UNION VALUES ('75056','75056'), ('69123','69123'), ('13055','13055')
 )
 SELECT
 {% else %}
@@ -117,6 +117,7 @@ SELECT
   c.passenger_over_18,
   c.passenger_contribution,
   c.distance,
+  c.duration,
   c.dist_class,
   {{ cfg.start_col }} AS start_code,
   {{ cfg.end_col }} AS end_code,

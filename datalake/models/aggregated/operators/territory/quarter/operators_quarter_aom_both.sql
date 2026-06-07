@@ -1,1 +1,1 @@
-{{operators_model('aom', 'quarter', 'both')}}
+{{ operators_model('aom', 'quarter', 'both') }}

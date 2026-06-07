@@ -1,1 +1,1 @@
-{{ fraud_model('dep', 'month', 'both')}}
+{{ fraud_model('dep', 'month', 'both') }}

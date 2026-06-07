@@ -1,1 +1,1 @@
-{{ fraud_model('com', 'day', 'from')}}
+{{ fraud_model('com', 'day', 'from') }}

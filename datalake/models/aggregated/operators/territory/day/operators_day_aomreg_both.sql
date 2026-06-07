@@ -1,1 +1,1 @@
-{{operators_model('aomreg', 'day', 'both')}}
+{{ operators_model('aomreg', 'day', 'both') }}

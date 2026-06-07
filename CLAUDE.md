@@ -1,60 +1,63 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Caveman mode always active.
 
-## Project Overview
+## Project
 
-Registre de Preuve de Covoiturage (RPC) - A beta.gouv.fr initiative that certifies carpooling journeys to incentivize shared mobility in France. Acts as trusted intermediary between carpool operators, mobility authorities, and organizations.
+RPC (Registre de Preuve de Covoiturage) - beta.gouv.fr. Certifies carpooling journeys. Intermediary between operators, mobility authorities, orgs.
 
-## Repository Structure
+## Repo structure
 
-Monorepo with these main components:
-
-| Directory | Description | Tech Stack |
-| --------- | ----------- | ---------- |
-| `api/` | Main backend | Deno 2.x, TypeScript, Express, Inversify |
+| Dir | What | Stack |
+| --- | ---- | ----- |
+| `api/` | Backend | Deno 2.x, TS, Express, Inversify |
 | `app-partners/` | Partner dashboard | Next.js 15, React 19, DSFR |
-| `app-observatory/` | Public statistics | Next.js 15, React 19, MapLibre, Deck.gl |
-| `app-attestation/` | Certificate generator | Angular 16 (frozen) |
-| `cms/` | Content management | Strapi 4 |
-| `shared/` | Shared TypeScript types | TypeScript (deprecated) |
-| `dbt/` | Analytics transformations | DBT, Python (deprecated) |
-| `sqlmesh/` | SQL transformations | SQLMesh, Python |
-| `docker/` | Container configurations | Docker |
+| `app-observatory/` | Public stats | Next.js 15, React 19, MapLibre, Deck.gl |
+| `app-attestation/` | Cert generator | Angular 16 (frozen) |
+| `cms/` | CMS | Strapi 4 |
+| `shared/` | Shared TS types | (deprecated) |
+| `dbt/` | Analytics | DBT, Python (deprecated) |
+| `sqlmesh/` | SQL transforms | SQLMesh, Python |
+| `docker/` | Containers | Docker |
 
-Each directory has its own `README.md`. Claude skills in `.claude/skills/` provide coding patterns for each domain.
+Each dir has `README.md`. Skills in `.claude/skills/`.
 
-## Coding style
+## Code style
 
-Simple, testable and readable.
-Repeating code twice is fine, then refactor.
-Do not over-engineer solutions.
+TDD. Simple, testable, readable. Repeat twice then refactor. No over-engineering.
 
-### Testing
+### Tests
 
-Write unit tests for specific calculations. Target the edge cases.
-Write integration tests for database repositories
+Unit: specific calcs, edge cases. Integration: DB repositories.
 
-### Code Reviews
+### Code reviews
 
-Use sub-agents to perform :
+Sub-agents:
 
-- `/check-security` a security code review
-- `/check-perf` a performance analysis with improvement suggestions if needed
-- `/check-qa` a quality code review to enforce up to date Deno coding standards and project coherence
-- `/check-doc` to make sure documentation and CLAUDE instructions are updated alongside the code
+- `/check-security` security review
+- `/check-perf` perf analysis
+- `/check-qa` Deno standards + project coherence
+- `/check-doc` docs + CLAUDE.md updated with code
 
-### documentation
+### Docs
 
-Technical internal documentation is available on Notion.
-`api/specs` are published on <https://tech.covoiturage.beta.gouv.fr> using bump.sh in a Github Action.
-Local README.md files are used as entrypoints to the different applications and must be updated alongside code.
-`sqlmesh/README.md` is the primary reference for the data warehouse architecture and conventions — keep it in sync when modifying SQLMesh models.
+Notion = internal technical docs.
+`api/specs` published at <https://tech.covoiturage.beta.gouv.fr> via bump.sh CI.
+README.md = entrypoints, update alongside code.
+`sqlmesh/README.md` = data warehouse reference, keep in sync.
 
 ### Skills
 
-Skills must be project-specific (`.claude/skills/`), never cross-project (`~/.claude/skills/`).
+Project-specific only: `.claude/skills/`. Never `~/.claude/skills/`.
+
+### MCP tools
+
+Use MCP tools when available:
+
+- **GitHub** (`mcp__github__*`) - PRs, issues, branches, search. Prefer over `gh` CLI.
+- **Notion** (`mcp__claude_ai_Notion__*`) - internal technical docs. Read before writing new docs.
+- **Postgres** - query DB directly when available. Prefer over `docker exec psql`.
 
 ### Git
 
-CLAUDE agent cannot commit. Code must be human reviewed before committing to the repository.
+New session = new worktree. Claude cannot commit. Human review required before commit.

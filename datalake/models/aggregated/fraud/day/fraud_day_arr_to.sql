@@ -1,1 +1,1 @@
-{{ fraud_model('arr', 'day', 'to')}}
+{{ fraud_model('arr', 'day', 'to') }}
