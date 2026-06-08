@@ -304,10 +304,37 @@ jobs:
   #
   # ###########################################################################################
 
+  changes:
+    name: (chore) detect app changes
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    outputs:
+      app: ${{ steps.filter.outputs.app }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
+        with:
+          persist-credentials: false
+      - name: Detect app-stack changes
+        id: filter
+        uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d
+        with:
+          filters: |
+            app:
+              - 'api/**'
+              - 'app-partners/**'
+              - 'app-observatory/**'
+              - 'shared/**'
+
   release:
     name: (chore) release
     runs-on: ubuntu-latest
+    # Only release when the app stack (api / front-ends) changed. Data-only
+    # merges (dbt / sqlmesh / datalake / cms) must not cut an app version.
+    if: github.ref == 'refs/heads/main' && needs.changes.outputs.app == 'true'
     needs:
+      - changes
       - api-lint
       - api-unit
       - api-integration
@@ -334,5 +361,9 @@ jobs:
         uses: cycjimmy/semantic-release-action@9cc899c47e6841430bbaedb43de1560a568dfd16
         with:
           branch: main
+          # Required by the conventionalcommits preset used in .releaserc
+          # (semantic-release 24 ships only the angular preset by default).
+          extra_plugins: |
+            conventional-changelog-conventionalcommits@8
         env:
           GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN_RELEASE }}

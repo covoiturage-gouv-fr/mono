@@ -1,0 +1,42 @@
+name: PR Title
+
+# Squash-merge means the PR title becomes the commit subject, which feeds
+# semantic-release. Enforce Conventional Commits on the title so every merge
+# produces a clean, parseable changelog line and the correct version bump.
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  pull-requests: read
+
+concurrency:
+  group: pr-title-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: (chore) validate title
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate Conventional Commit title
+        uses: amannn/action-semantic-pull-request@48f256284bd46cdaab1048c3721360e808335d50
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          # Validate the type only. Scope is free-form on purpose: the repo uses
+          # many domain scopes (apdf, carpool, campaign, honor, policy, ...).
+          types: |
+            feat
+            fix
+            perf
+            refactor
+            docs
+            chore
+            test
+            ci
+            build
+            style
+            revert
+          requireScope: false
