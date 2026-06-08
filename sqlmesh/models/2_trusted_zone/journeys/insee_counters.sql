@@ -32,5 +32,5 @@ WHERE j.valid_acquisition_status = TRUE
       AT TIME ZONE 'Europe/Paris'
   );
 
-@IF(@runtime_stage = 'creating', CREATE INDEX IF NOT EXISTS insee_counters_id_index ON trusted_zone.insee_counters (_id));
-@IF(@runtime_stage = 'creating', CREATE INDEX IF NOT EXISTS insee_counters_start_datetime_index ON trusted_zone.insee_counters (start_datetime));
+@IF(@runtime_stage = 'creating', CREATE INDEX IF NOT EXISTS @index_name('insee_counters_id_index') ON trusted_zone.insee_counters (_id));
+@IF(@runtime_stage = 'creating', CREATE INDEX IF NOT EXISTS @index_name('insee_counters_start_datetime_index') ON trusted_zone.insee_counters (start_datetime));

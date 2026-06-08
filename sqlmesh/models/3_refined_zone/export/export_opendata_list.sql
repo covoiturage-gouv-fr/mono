@@ -18,6 +18,14 @@ WITH latest_perimeters AS (
     END AS precision
   FROM trusted_zone.perimeters
   ORDER BY arr, year DESC
+),
+
+-- Pre-aggregated semi-join: avoids a correlated EXISTS subplan that re-scans
+-- campaigns once per output row (O(n*m)). Planned as a single hash join.
+incentivised AS (
+  SELECT DISTINCT carpool_v2_id
+  FROM trusted_zone.campaigns
+  WHERE status = 'validated'
 )
 
 SELECT
@@ -26,6 +34,9 @@ SELECT
 
   -- date filtering column (raw DATE in Europe/Paris)
   (j.start_datetime AT TIME ZONE 'Europe/Paris')::date                     AS start_date_filter,
+  -- raw UTC timestamp, exposed so consumers can add a sargable range
+  -- predicate that hits the journeys (start_datetime) index
+  j.start_datetime                                                         AS start_datetime,
 
   -- start
   to_char(ts_ceil(j.start_datetime_tz, 600) AT TIME ZONE 'Europe/Paris', 'YYYY-MM-DD HH24:MI:SS') AS journey_start_datetime,
@@ -56,10 +67,7 @@ SELECT
   j.distance                                                               AS journey_distance,
   ROUND(j.duration / 60.0)                                                 AS journey_duration,
 
-  EXISTS (
-    SELECT 1 FROM trusted_zone.campaigns ci
-    WHERE ci.carpool_v2_id = j._id AND ci.status = 'validated'
-  )                                                                        AS has_incentive,
+  (inc.carpool_v2_id IS NOT NULL)                                          AS has_incentive,
 
   -- INSEE occurrence counts (for filtering by API)
   ic.start_insee_count,
@@ -67,6 +75,7 @@ SELECT
 
 FROM trusted_zone.journeys j
 JOIN trusted_zone.insee_counters ic ON j._id = ic._id
+LEFT JOIN incentivised inc ON inc.carpool_v2_id = j._id
 LEFT JOIN latest_perimeters gps ON j.start_geo_code = gps.arr
 LEFT JOIN latest_perimeters gpe ON j.end_geo_code   = gpe.arr
 

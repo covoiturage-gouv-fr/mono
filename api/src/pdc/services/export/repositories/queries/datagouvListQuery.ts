@@ -40,11 +40,18 @@ export function datagouvListQuery(params: ExportParams, config: DataGouvQueryCon
   const { start_at, end_at } = params.get();
   const { min_occurrences } = config;
 
+  // The start_datetime bounds below are the sargable equivalent of the
+  // start_date_filter range: paris_date(t) in [start, end) iff
+  // t in [paris_midnight(start), paris_midnight(end)). They let the planner
+  // use the journeys (start_datetime) index instead of a full seq scan; the
+  // start_date_filter predicates stay as the authoritative (exact) filter.
   return sql`
     SELECT *
     FROM ${raw(table)}
     WHERE start_date_filter >= ${start_at}
       AND start_date_filter  < ${end_at}
+      AND start_datetime >= (${start_at}::date)::timestamp AT TIME ZONE 'Europe/Paris'
+      AND start_datetime  < (${end_at}::date)::timestamp   AT TIME ZONE 'Europe/Paris'
       AND start_insee_count >= ${min_occurrences}
       AND end_insee_count   >= ${min_occurrences}
     ORDER BY start_date_filter ASC

@@ -217,7 +217,8 @@ journeys AS (
 
 SELECT * FROM journeys;
 
-@IF(@runtime_stage = 'creating', CREATE INDEX IF NOT EXISTS journeys_id_index ON trusted_zone.journeys (_id));
-@IF(@runtime_stage = 'creating', CREATE INDEX IF NOT EXISTS journeys_start_datetime_tz_index ON trusted_zone.journeys (start_datetime_tz));
-@IF(@runtime_stage = 'creating', CREATE INDEX IF NOT EXISTS journeys_start_h3_idx ON trusted_zone.journeys (start_h3_index));
-@IF(@runtime_stage = 'creating', CREATE INDEX IF NOT EXISTS journeys_end_h3_idx ON trusted_zone.journeys (end_h3_index));
+@IF(@runtime_stage = 'creating', CREATE INDEX IF NOT EXISTS @index_name('journeys_id_index') ON trusted_zone.journeys (_id));
+@IF(@runtime_stage = 'creating', CREATE INDEX IF NOT EXISTS @index_name('journeys_start_datetime_index') ON trusted_zone.journeys (start_datetime));
+@IF(@runtime_stage = 'creating', CREATE INDEX IF NOT EXISTS @index_name('journeys_start_datetime_tz_index') ON trusted_zone.journeys (start_datetime_tz));
+@IF(@runtime_stage = 'creating', CREATE INDEX IF NOT EXISTS @index_name('journeys_start_h3_idx') ON trusted_zone.journeys (start_h3_index));
+@IF(@runtime_stage = 'creating', CREATE INDEX IF NOT EXISTS @index_name('journeys_end_h3_idx') ON trusted_zone.journeys (end_h3_index));
