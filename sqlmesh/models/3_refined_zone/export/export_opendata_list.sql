@@ -34,6 +34,9 @@ SELECT
 
   -- date filtering column (raw DATE in Europe/Paris)
   (j.start_datetime AT TIME ZONE 'Europe/Paris')::date                     AS start_date_filter,
+  -- raw UTC timestamp, exposed so consumers can add a sargable range
+  -- predicate that hits the journeys (start_datetime) index
+  j.start_datetime                                                         AS start_datetime,
 
   -- start
   to_char(ts_ceil(j.start_datetime_tz, 600) AT TIME ZONE 'Europe/Paris', 'YYYY-MM-DD HH24:MI:SS') AS journey_start_datetime,
