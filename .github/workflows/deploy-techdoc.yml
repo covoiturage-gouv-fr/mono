@@ -24,7 +24,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
 
@@ -37,7 +37,7 @@ jobs:
           fi
 
       - name: Deploy
-        uses: bump-sh/github-action@590e36a25548cb10a8efb1ca9e5b1e111ad67120
+        uses: bump-sh/github-action@6aff793a699f2e3269de3124a7a3eb46e5ffb261 # v1.3.0
         with:
           doc: api
           token: ${{ secrets.BUMP_TOKEN_API }}
