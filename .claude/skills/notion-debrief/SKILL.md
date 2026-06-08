@@ -35,8 +35,14 @@ sur la data source pour relire les noms exacts avant d'écrire.
 
 - **Undercover** : aucune mention de Claude, d'IA ou d'assistant dans le titre ou le
   contenu Notion. On écrit à la première personne de l'équipe.
-- **Langage** : français correct (invoquer le skill `french`), simple et direct.
-  Pas de mode caveman dans le contenu Notion.
+- **Encodage** : tout le contenu Notion en **UTF-8**, avec les accents et caractères
+  spéciaux corrects (é è à ù â ê î ô û ç ë ï ü œ ...). Jamais d'ASCII appauvri, jamais
+  de mode caveman, y compris les accents sur les majuscules (État, À, Écrire).
+- **Langage** : **français correct et idiomatique** - invoquer le skill `french` avant
+  de rédiger, simple et direct. Proscrire les calques de l'anglais : ne pas écrire
+  "couper une version" ni "couper une release" (dire « taguer une nouvelle version » ou
+  « créer une nouvelle version »), ni "release coupée". Relire l'orthographe et les
+  accents avant de montrer le contenu.
 - **Historique** : en réutilisation, on **ajoute** une section datée en fin de page.
   On n'écrase jamais le contenu existant - l'historique doit s'accumuler.
 - **Action sortante** : Notion est un service externe. Toujours montrer le contenu et
@@ -102,8 +108,8 @@ et le système*, pas comment on a manipulé l'outillage.
   exécutions de routine (lint, fmt, install), allers-retours d'outillage.
 
 La fusion d'une PR ou un changement d'état peut être mentionné en une ligne s'il
-porte un fait utile (ex. "déployé en prod", "release coupée/non coupée"), mais ce
-n'est jamais le sujet de la section.
+porte un fait utile (ex. "déployé en prod", "nouvelle version taguée / non taguée"),
+mais ce n'est jamais le sujet de la section.
 
 Exemple (cas réel PR #3211, à resserrer) :
 
@@ -111,7 +117,7 @@ Exemple (cas réel PR #3211, à resserrer) :
   supprimé ; branche `worktree-chore+release-hardening` supprimée en local et côté
   distant ; 12 checks requis confirmés."
 - Resserré : "Périmétrage du versionnage validé en conditions réelles : un merge
-  CI-only n'a pas coupé de release applicative (tag inchangé `v3.97.2`)."
+  CI-only n'a pas tagué de nouvelle version applicative (tag inchangé `v3.97.2`)."
 
 ### 5. Confirmer
 Montrer à l'utilisateur le titre, les propriétés (Personne, État) et le contenu.
