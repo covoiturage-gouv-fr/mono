@@ -37,6 +37,7 @@ or asks me to open one. It is the only path that should create a PR for this pro
 
 - `git branch --show-current`. If on `main`, infer `<type>/<scope-kebab>` from the diff paths
   and `git switch -c <type>/<scope-kebab>` (ASCII, no accents). Otherwise keep current branch.
+- Pick a release-appropriate `<type>`/`<scope>` per step 2b when the diff touches app-stack code.
 
 ### 2. Commit
 
@@ -47,6 +48,50 @@ or asks me to open one. It is the only path that should create a PR for this pro
   accents. Body in French if useful.
 - Commit with **no `Co-Authored-By` trailer** and no Claude mention.
 - Many local commits are fine (squash-merge later). Commit before checks so the diff is stable.
+- Choose `<type>(<scope>)` **release-aware** per step 2b below - the squash-merge uses the
+  PR title as the commit subject, so this token decides whether the app deploys.
+
+### 2b. Release-aware type & scope
+
+The release/deploy pipeline has **two independent gates**; **both** must pass for
+semantic-release to cut a version and the app to deploy. Because squash-merge turns the PR
+title into the commit subject, the PR title's `<type>(<scope>)` is decisive - get it wrong
+and merged app code never ships.
+
+**Gate 1 - file filter** (`.github/workflows/quality.yml`, `changes` job, `dorny/paths-filter`):
+sets `app=true` only when the diff touches `api/**`, `app-partners/**`, `app-observatory/**`,
+or `shared/**`. The `release` job is gated on `app=true`. A **data-only** PR (sqlmesh / dbt /
+datalake / cms / docker / .github ...) can **never** cut a release, whatever the title says.
+
+**Gate 2 - commit-analyzer** (`.releaserc`, `conventionalcommits` preset):
+
+- Releasing types: `feat` -> minor, `fix` / `perf` / `revert` -> patch, `BREAKING CHANGE` (or `!`) -> major.
+- Non-releasing types: `chore`, `docs`, `refactor`, `style`, `test`, `build`, `ci` -> **no release**.
+- Scope override (`releaseRules`): scope `dbt`, `sqlmesh`, `datalake`, `cms` -> **no release**,
+  even with a `feat`/`fix` type.
+
+**Naming rule:**
+
+- Diff touches **app-stack code** (`api` / `app-partners` / `app-observatory` / `shared`) **and
+  must deploy** -> title MUST be a releasing type (`feat`/`fix`/`perf`) with a **non-data scope**
+  reflecting the app area (e.g. `export`, `api`, `partners`, `observatory`). **Never** scope app
+  code with `sqlmesh`/`dbt`/`datalake`/`cms`.
+- PR **mixes** app code with data files -> do not use a data scope (it suppresses the release and
+  the app code never deploys). Use an app scope, or split the data-only part into its own PR.
+- PR is **data-only** or intentionally non-deploying (docs/CI/chore) -> use the honest
+  type/scope; it will correctly **not** cut a release.
+
+**Pitfalls (both seen in practice):**
+
+- `fix(sqlmesh)` on a PR that also edits `api/**`: files pass gate 1, but the `sqlmesh` scope
+  trips gate 2 -> no release -> API not deployed.
+- A data-only PR retitled `fix(api)` to force a release: gate 2 ok, but gate 1 sees no app
+  files -> `release` job skipped -> still no release.
+
+**Why it matters:** `deploy-api` / `deploy-partner` / `deploy-observatory` fire on
+`release: published` and build an image tagged with the **release tag**, which the cluster
+deploys. A manual `workflow_dispatch` builds a `github.sha`-tagged image the cluster does not
+reference -> no rollout. A real release is the only way to deploy app code.
 
 ### 3. CGU freshness (refresh if stale)
 
@@ -92,7 +137,8 @@ checklist** rather than invoking the command.
   - `pr-body.md` - French PR description: summary, what changed, and a section per check
     embedding its French report (`## Sécurité`, `## CGU`). **No** "Generated with Claude" line,
     no Claude mention.
-- PR title = the commit subject (French description, ASCII conventional token).
+- PR title = the commit subject (French description, ASCII conventional token). The
+  `<type>(<scope>)` must follow step 2b - on app-stack PRs that should deploy, never a data scope.
 
 ### 7. Create the PR (with confirmation)
 
@@ -104,5 +150,6 @@ checklist** rather than invoking the command.
 
 ## Output
 
-Report: branch, commit subject, each check's verdict (PASS/FAIL + count), and the PR URL once
-created - or the blocking reason if halted at the gate.
+Report: branch, commit subject, each check's verdict (PASS/FAIL + count), the PR URL once
+created - or the blocking reason if halted at the gate - and the **release verdict** per step 2b
+(will this PR cut a version and deploy, or not, and why).
