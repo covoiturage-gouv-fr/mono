@@ -40,13 +40,45 @@ export function datagouvListQuery(params: ExportParams, config: DataGouvQueryCon
   const { start_at, end_at } = params.get();
   const { min_occurrences } = config;
 
+  // Project only the columns the CSV export consumes (DataGouvListType). The
+  // view also exposes filter-only columns (start_date_filter, start_datetime,
+  // start_insee_count, end_insee_count) that the writer never publishes, so
+  // SELECT * would ship them over the wire for nothing.
+  //
   // The start_datetime bounds below are the sargable equivalent of the
   // start_date_filter range: paris_date(t) in [start, end) iff
   // t in [paris_midnight(start), paris_midnight(end)). They let the planner
   // use the journeys (start_datetime) index instead of a full seq scan; the
   // start_date_filter predicates stay as the authoritative (exact) filter.
   return sql`
-    SELECT *
+    SELECT
+      journey_id,
+      trip_id,
+      journey_start_datetime,
+      journey_start_date,
+      journey_start_time,
+      journey_start_lon,
+      journey_start_lat,
+      journey_start_insee,
+      journey_start_department,
+      journey_start_town,
+      journey_start_towngroup,
+      journey_start_country,
+      journey_end_datetime,
+      journey_end_date,
+      journey_end_time,
+      journey_end_lon,
+      journey_end_lat,
+      journey_end_insee,
+      journey_end_department,
+      journey_end_town,
+      journey_end_towngroup,
+      journey_end_country,
+      passenger_seats,
+      operator_class,
+      journey_distance,
+      journey_duration,
+      has_incentive
     FROM ${raw(table)}
     WHERE start_date_filter >= ${start_at}
       AND start_date_filter  < ${end_at}
