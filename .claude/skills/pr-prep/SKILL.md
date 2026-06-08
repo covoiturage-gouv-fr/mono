@@ -1,5 +1,5 @@
 ---
-name: pr-preparer
+name: pr-prep
 description: Use when creating a pull request for this project - triggers on "open a PR", "create a PR", "gh pr create", or any request to open/create a PR. Commits pending work, runs parallel CGU + security checks, writes a French PR description, then creates the PR with confirmation.
 allowed-tools: Bash, Read, Grep, Glob, Edit, Write, WebFetch, Agent, Skill
 ---
@@ -10,7 +10,9 @@ Pre-flight gate that wraps PR creation: commit pending work, run blocking/non-bl
 checks in parallel, write a French PR, then create it with confirmation.
 
 > ## Authorised CLAUDE.md overrides - DO NOT "fix" these
+>
 > This skill deliberately overrides two repo/global rules, on explicit user instruction:
+>
 > 1. **It commits.** CLAUDE.md says "Claude cannot commit". Here, committing is the
 >    intended behaviour (squash-merge cleans history later, so many local commits are fine).
 > 2. **It scrubs attribution.** Global rules say append `Co-Authored-By: Claude` and a
@@ -32,10 +34,12 @@ or asks me to open one. It is the only path that should create a PR for this pro
 ## Procedure
 
 ### 1. Branch
+
 - `git branch --show-current`. If on `main`, infer `<type>/<scope-kebab>` from the diff paths
   and `git switch -c <type>/<scope-kebab>` (ASCII, no accents). Otherwise keep current branch.
 
 ### 2. Commit
+
 - Stage all intended changes (`git add -A`, or a targeted subset if the user scoped it).
 - Invoke the **`french`** skill, then write a conventional-commit message:
   `<type>(<scope>): <description en français>` - the `<type>(<scope>)` token stays ASCII
@@ -45,6 +49,7 @@ or asks me to open one. It is the only path that should create a PR for this pro
 - Many local commits are fine (squash-merge later). Commit before checks so the diff is stable.
 
 ### 3. CGU freshness (refresh if stale)
+
 - Read `cgu-rules.md` frontmatter `last_synced`. Compute age with `date`.
 - If missing or **older than 7 days** -> mark stale:
   - `WebFetch` the canonical CGU URL in `cgu-rules.md`'s header.
@@ -54,6 +59,7 @@ or asks me to open one. It is the only path that should create a PR for this pro
 - The CGU guard (step 4) always runs against the refreshed file.
 
 ### 4. Parallel checks (registry-driven)
+
 Dispatch **every registry row as a parallel read-only `Explore` subagent in one batch**.
 Each subagent reads its `source` checklist + the PR diff
 (`git diff $(git merge-base main HEAD)`) and returns a structured report **in French**:
@@ -63,13 +69,14 @@ verdict `PASS`/`FAIL`, severity, and findings (`fichier:ligne`, problème, recom
 
 | name            | blocking | source (checklist read by the subagent)          |
 | --------------- | -------- | ------------------------------------------------ |
-| `cgu-guard`     | **yes**  | `.claude/skills/pr-preparer/cgu-rules.md`        |
+| `cgu-guard`     | **yes**  | `.claude/skills/pr-prep/cgu-rules.md`        |
 | `check-security`| no       | `.claude/skills/check-security/SKILL.md`         |
 
 `check-security` stays slash-only and untouched; the subagent **reads its SKILL.md as a
 checklist** rather than invoking the command.
 
 ### 5. Gate
+
 - Wait for all subagents.
 - If any **blocking** check returns `FAIL`:
   - Write the draft PR body to `tmp/pr/pr-body.md` with the blocking violation flagged at the
@@ -79,6 +86,7 @@ checklist** rather than invoking the command.
 - Else continue.
 
 ### 6. Artifacts (French, undercover)
+
 - Invoke the **`french`** skill. Write to `tmp/pr/`:
   - `commit-msg.txt` (already committed in step 2; keep for reference).
   - `pr-body.md` - French PR description: summary, what changed, and a section per check
@@ -87,6 +95,7 @@ checklist** rather than invoking the command.
 - PR title = the commit subject (French description, ASCII conventional token).
 
 ### 7. Create the PR (with confirmation)
+
 - Ensure the branch is pushed: `git push -u origin <branch>` (confirm first - outward-facing).
 - Create the PR, **base `main`**, with the title + `tmp/pr/pr-body.md`, via either:
   - `mcp__github__create_pull_request` (preferred per CLAUDE.md), or
