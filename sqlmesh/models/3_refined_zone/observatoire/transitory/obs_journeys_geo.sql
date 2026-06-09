@@ -11,7 +11,7 @@ MODEL (
 );
 
 -- Pre-resolve geographic dimensions (epci, aom, dep, reg, country) per journey.
--- Avoids repeated perimeters DISTINCT ON lookups in obs_directions_day and obs_directions_users_*.
+-- Avoids repeated perimeters DISTINCT ON lookups in downstream observatoire models.
 
 WITH journey_years AS (
   SELECT EXTRACT(YEAR FROM @start_ts::date)::int AS year

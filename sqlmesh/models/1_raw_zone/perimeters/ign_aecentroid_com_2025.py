@@ -15,6 +15,7 @@ COLUMN_TYPES = {
 @model(
     "raw_zone.ign_aecentroid_com_2025",
     kind="FULL",
+    cron="@yearly",
     columns=COLUMN_TYPES,
     tags=["raw", "perimeters", "ign_aecentroid_com_2025"],
 )
