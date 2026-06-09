@@ -19,6 +19,7 @@ COLUMN_TYPES = {
 @model(
     "raw_zone.insee_mvt_com_2025",
     kind="FULL",
+    cron="@yearly",
     columns=COLUMN_TYPES,
     tags=["raw","perimeters","insee_mvt_com_2025"],
 )

@@ -32,6 +32,7 @@ COLUMN_TYPES = {
 @model(
     "raw_zone.aires_covoiturage",
     kind="FULL",
+    cron="@weekly",
     columns=COLUMN_TYPES,
     grain=("id_lieu", "date_maj"),
     tags=["raw", "aires_covoiturage"],

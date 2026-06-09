@@ -11,7 +11,7 @@ MODEL (
 );
 
 -- Classify operator incentive sirets per journey into collectivite/operator/other.
--- Pre-computed to avoid repeating the LATERAL unnest in obs_directions_day and obs_od_day.
+-- Pre-computed to avoid repeating the LATERAL unnest in obs_od_day.
 
 WITH operators_siren AS (
   SELECT DISTINCT left(siret, 9) AS siren FROM operator.operators

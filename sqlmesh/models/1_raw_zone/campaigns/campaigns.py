@@ -44,6 +44,7 @@ COLUMN_TYPES = {
 @model(
     "raw_zone.campaigns",
     kind="FULL",
+    cron="@weekly",
     columns=COLUMN_TYPES,
     tags=["raw", "campaigns"],
 )
