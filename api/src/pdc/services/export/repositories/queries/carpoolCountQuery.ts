@@ -13,6 +13,8 @@ export function carpoolCountQuery(params: ExportParams): Sql {
     WHERE true
       AND cc.start_date_filter >= ${start_at}
       AND cc.start_date_filter  < ${end_at}
+      AND cc.start_datetime_utc >= (${start_at}::date)::timestamp AT TIME ZONE 'Europe/Paris'
+      AND cc.start_datetime_utc  < (${end_at}::date)::timestamp   AT TIME ZONE 'Europe/Paris'
         ${raw(geo_selectors)}
         ${raw(operator_id)}
     `;

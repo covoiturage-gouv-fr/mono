@@ -21,13 +21,12 @@ export default function TabExport() {
   const { user, simulate, simulatedRole } = useAuth();
   const [territoryId, setTerritoryId] = useState(user?.territory_id);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-  const forceHour = (input: Date | Dayjs, range: "start" | "end"): Date => {
+  // The selected calendar day is emitted as a UTC-midnight marker. The export
+  // API filters on a Paris-date column, so boundaries must be inclusive lower /
+  // exclusive upper: start = selected start day, end = day after selected end.
+  const utcDayStart = (input: Dayjs, offsetDays = 0): Date => {
     const d = dayjs(input);
-    const date =
-      range === "start"
-        ? new Date(Date.UTC(d.year(), d.month(), d.date() - 1, 22, 0, 0, 0))
-        : new Date(Date.UTC(d.year(), d.month(), d.date(), 21, 59, 59, 999));
-    return date;
+    return new Date(Date.UTC(d.year(), d.month(), d.date() + offsetDays, 0, 0, 0, 0));
   };
   const [startDate, setStartDate] = useState(dayjs().subtract(1, "month"));
   const [endDate, setEndDate] = useState(dayjs().subtract(5, "days"));
@@ -61,8 +60,8 @@ export default function TabExport() {
     try {
       await createExport({
         tz: "Europe/Paris",
-        start_at: forceHour(startDate, "start"),
-        end_at: forceHour(endDate, "end"),
+        start_at: utcDayStart(startDate),
+        end_at: utcDayStart(endDate, 1),
         territory_id: territorySelectors ? [] : territoryId ? [territoryId] : [],
         geo_selector: territorySelectors,
         operator_id: user?.operator_id ? [user.operator_id] : [],
