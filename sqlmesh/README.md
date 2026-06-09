@@ -151,10 +151,11 @@ Chaque modèle matérialisé doit définir un `cron` pour contrôler sa fréquen
 | Fréquence | Syntaxe | Exemples |
 |-----------|---------|----------|
 | Quotidien | `@daily` | journeys, incentives, obs_od_day |
+| Hebdomadaire | `@weekly` | campaigns, aires_covoiturage (chargeurs API « latest ») |
 | Mensuel | `@monthly` | insee_counters, obs_od_month |
 | Trimestriel | `0 0 1 1,4,7,10 *` | obs_od_quarter |
 | Semestriel | `0 0 1 1,7 *` | obs_od_semester |
-| Annuel | `@yearly` | obs_od_year, périmètres |
+| Annuel | `@yearly` | obs_od_year, périmètres millésimés (IGN, CEREMA, INSEE) |
 
 SQLMesh utilise la librairie `croniter`. Presets supportés : `@daily`, `@weekly`, `@monthly`, `@yearly` (ou `@annually`), `@hourly`. La syntaxe cron standard à 5 champs fonctionne également.
 
