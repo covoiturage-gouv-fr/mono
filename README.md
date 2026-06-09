@@ -90,6 +90,20 @@ Les différents fichiers `docker-compose.*.yml` sont utilisés en _overlay_ pour
 > **Note**
 > Les stacks de tests CI sont lancées sur des volumes Docker qui sont détruits à la fin des runs.
 
+### Flux de travail
+
+Cycle de contribution recommandé avec Claude Code :
+
+1. Choisir une tâche sur Notion (suivi des tâches Data)
+2. Créer un worktree et une branche depuis `main` (gitflow)
+3. Coder en TDD
+4. `/pr-prep` -- commit, vérifications (CGU + sécurité), push et ouverture de la PR, avec confirmation
+5. `/notion-debrief` -- journaliser le travail réalisé dans le suivi des tâches
+6. Revue humaine, puis squash-merge de la PR
+
+> **Note**
+> `/pr-prep` gère le commit, le push et l'ouverture de la PR : pas d'étape `commit + push` séparée.
+
 ### Versions
 
 Le code suit les spécifications [semver](https://semver.org/).
