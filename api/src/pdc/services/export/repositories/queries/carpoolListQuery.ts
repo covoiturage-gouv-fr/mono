@@ -108,6 +108,8 @@ export function carpoolListQuery(params: ExportParams): Sql {
     WHERE true
       AND start_date_filter >= ${start_at}
       AND start_date_filter  < ${end_at}
+      AND start_datetime_utc >= (${start_at}::date)::timestamp AT TIME ZONE 'Europe/Paris'
+      AND start_datetime_utc  < (${end_at}::date)::timestamp   AT TIME ZONE 'Europe/Paris'
       ${raw(geo_selectors)}
       ${raw(operator_id)}
     ORDER BY start_date_filter ASC

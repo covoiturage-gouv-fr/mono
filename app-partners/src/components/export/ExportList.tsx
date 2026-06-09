@@ -26,6 +26,19 @@ const formatFileSize = (bytes: number): string => {
   return `${(bytes / Math.pow(1024, i)).toFixed(1)} ${sizes[i]}`;
 };
 
+// Stored export bounds are UTC-midnight calendar markers. The start is the
+// selected start day; the end is the exclusive upper bound (day after the
+// selected end), so it is rendered rolled back one day. Format in UTC so the
+// marker maps back to the day the user picked.
+const formatBoundStart = (value: Date | string): string =>
+  new Date(value).toLocaleDateString("fr-FR", { timeZone: "UTC" });
+
+const formatBoundEnd = (value: Date | string): string => {
+  const d = new Date(value);
+  d.setUTCDate(d.getUTCDate() - 1);
+  return d.toLocaleDateString("fr-FR", { timeZone: "UTC" });
+};
+
 const getStatusBadge = (status: string) => {
   const statusConfig: Record<string, { severity: "success" | "error" | "info" | "warning" | "new"; label: string }> = {
     pending: { severity: "info", label: "En cours de traitement" },
@@ -76,8 +89,8 @@ export default function ExportList({ refreshTrigger, days = 30, pageSize = 25 }:
 
   const dataTableFull = Array.isArray(allData)
     ? (allData.map((d: ExportListItemInterface) => [
-        new Date(d.start_date).toLocaleDateString("fr-FR"),
-        new Date(d.end_date).toLocaleDateString("fr-FR"),
+        formatBoundStart(d.start_date),
+        formatBoundEnd(d.end_date),
         d.geo_selector?.length > 0 ? d.geo_selector.join(", ") : "-",
         d.download_url && d.filename ? (
           <Download
