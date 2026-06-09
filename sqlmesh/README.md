@@ -138,7 +138,7 @@ Pour les index uniques, préfixer avec `UNIQUE` :
 
 ```sql
 @create_indexes(
-  'UNIQUE uq_code_type_date ON refined_zone.obs_directions_day (code, type, journey_date, direction)',
+  'UNIQUE uq_start_geo_code_end_geo_code_journey_date ON refined_zone.obs_od_day (start_geo_code, end_geo_code, journey_date)',
 );
 ```
 
@@ -150,11 +150,11 @@ Chaque modèle matérialisé doit définir un `cron` pour contrôler sa fréquen
 
 | Fréquence | Syntaxe | Exemples |
 |-----------|---------|----------|
-| Quotidien | `@daily` | journeys, incentives, obs_directions_day |
-| Mensuel | `@monthly` | insee_counters, obs_directions_month |
-| Trimestriel | `0 0 1 1,4,7,10 *` | obs_directions_quarter |
-| Semestriel | `0 0 1 1,7 *` | obs_directions_semester |
-| Annuel | `@yearly` | obs_directions_year, périmètres |
+| Quotidien | `@daily` | journeys, incentives, obs_od_day |
+| Mensuel | `@monthly` | insee_counters, obs_od_month |
+| Trimestriel | `0 0 1 1,4,7,10 *` | obs_od_quarter |
+| Semestriel | `0 0 1 1,7 *` | obs_od_semester |
+| Annuel | `@yearly` | obs_od_year, périmètres |
 
 SQLMesh utilise la librairie `croniter`. Presets supportés : `@daily`, `@weekly`, `@monthly`, `@yearly` (ou `@annually`), `@hourly`. La syntaxe cron standard à 5 champs fonctionne également.
 
