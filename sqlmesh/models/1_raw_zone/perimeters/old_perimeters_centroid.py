@@ -19,6 +19,7 @@ COLUMN_TYPES = {
 @model(
     "raw_zone.old_perimeters_centroid",
     kind="FULL",
+    cron="@yearly",
     columns=COLUMN_TYPES,
     tags=["raw", "perimeters", "old_perimeters_centroid"],
 )
