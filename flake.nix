@@ -74,7 +74,6 @@
             talisman
 
             # misc
-            gh
             yq-go
             zizmor
           ];
