@@ -142,7 +142,12 @@ checklist** rather than invoking the command.
 
 ### 7. Create the PR (with confirmation)
 
+- **Rebase on `origin/main` first** (before pushing): `git fetch origin main` then
+  `git rebase origin/main`. A branch behind `main` is flagged out-of-date by GitHub
+  (blocks the merge) and re-runs the CI for nothing. If the rebase hits conflicts,
+  stop, resolve them (or surface to the user), and only continue once clean.
 - Ensure the branch is pushed: `git push -u origin <branch>` (confirm first - outward-facing).
+  After a rebase that rewrote already-pushed commits, this needs `--force-with-lease`.
 - Create the PR, **base `main`**, with the title + `tmp/pr/pr-body.md`, via either:
   - `mcp__github__create_pull_request` (preferred per CLAUDE.md), or
   - `gh pr create --base main --title "<titre>" -F tmp/pr/pr-body.md`.
