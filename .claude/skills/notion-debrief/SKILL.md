@@ -92,11 +92,14 @@ hors-scope. Emoji de statut juste après `TLDR;` :
 dans le code.
 
 ### 🛠️ Solution
-~3 phrases : ce qui a été fait pour corriger, statut, ce qu'il reste à faire si
-applicable.
+Ce qui a été fait pour corriger, statut, ce qu'il reste à faire si applicable.
+Si plusieurs actions distinctes, utiliser des **bullet points** plutôt qu'un bloc
+de phrases — plus lisible pour un manager qui survole.
 
 ### 🔗 Liens
 - PR, ressources, autres tâches Notion liées.
+
+---
 
 ## Contexte
 Pourquoi ce travail : besoin, problème, demande à l'origine, résultat visé.
