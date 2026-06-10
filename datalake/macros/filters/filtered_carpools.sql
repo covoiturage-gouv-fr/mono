@@ -7,12 +7,31 @@
   lookback_nb=0,
   lookback_unit='day',
   with_new_users=true,
-  with_valid=true
+  with_valid=true,
+  strict=false
 ) %}
-  
+
   {%- set perim_join = carpools_perim_join() -%}
   {%- set aom_region_ref = ref('aom_region') -%}
- 
+
+  {# En mode strict (territory, fraud) : les codes hors-périmètre sont NULL
+     En mode non-strict (od) : fallback sur le geo_code brut #}
+  {% if strict %}
+    {% set plm_start_col = 'plm_s.com' %}
+    {% set plm_end_col   = 'plm_e.com' %}
+    {% set plm_is_intra  = '(plm_s.com IS NOT NULL AND plm_e.com IS NOT NULL AND plm_s.com = plm_e.com)' %}
+    {% set aom_start_col = 'CASE WHEN aom_excl_s.aom IS NULL THEN ps.aom END' %}
+    {% set aom_end_col   = 'CASE WHEN aom_excl_e.aom IS NULL THEN pe.aom END' %}
+    {% set aom_joins     = perim_join ~ " LEFT JOIN " ~ aom_region_ref ~ " aom_excl_s ON aom_excl_s.aom = ps.aom LEFT JOIN " ~ aom_region_ref ~ " aom_excl_e ON aom_excl_e.aom = pe.aom" %}
+  {% else %}
+    {% set plm_start_col = 'COALESCE(plm_s.com, c.start_geo_code)' %}
+    {% set plm_end_col   = 'COALESCE(plm_e.com, c.end_geo_code)' %}
+    {% set plm_is_intra  = '(COALESCE(plm_s.com, c.start_geo_code) = COALESCE(plm_e.com, c.end_geo_code))' %}
+    {% set aom_start_col = 'ps.aom' %}
+    {% set aom_end_col   = 'pe.aom' %}
+    {% set aom_joins     = perim_join %}
+  {% endif %}
+
   {% set perimeters = {
     'arr': {
       'start_col':  'c.start_geo_code',
@@ -64,17 +83,17 @@
       'where_geo':  '(ps.country IS NOT NULL OR pe.country IS NOT NULL)'
     },
     'aom': {
-      'start_col':  'ps.aom',
-      'end_col':    'pe.aom',
-      'joins':      perim_join,
+      'start_col':  aom_start_col,
+      'end_col':    aom_end_col,
+      'joins':      aom_joins,
       'is_intra':   '(ps.aom IS NOT NULL AND pe.aom IS NOT NULL AND ps.aom = pe.aom)',
       'where_geo':  "((ps.aom IS NOT NULL AND ps.aom NOT IN (SELECT aom FROM " ~ aom_region_ref ~ ")) OR (pe.aom IS NOT NULL AND pe.aom NOT IN (SELECT aom FROM " ~ aom_region_ref ~ ")))"
     },
     'plm': {
-      'start_col':  'COALESCE(plm_s.com, c.start_geo_code)',
-      'end_col':    'COALESCE(plm_e.com, c.end_geo_code)',
+      'start_col':  plm_start_col,
+      'end_col':    plm_end_col,
       'joins':      'LEFT JOIN plm_perim plm_s ON plm_s.arr = c.start_geo_code LEFT JOIN plm_perim plm_e ON plm_e.arr = c.end_geo_code',
-      'is_intra':   '(COALESCE(plm_s.com, c.start_geo_code) = COALESCE(plm_e.com, c.end_geo_code))',
+      'is_intra':   plm_is_intra,
       'where_geo':  '(plm_s.com IS NOT NULL OR plm_e.com IS NOT NULL)'
     },
     'aomreg': {
@@ -85,13 +104,13 @@
       'where_geo':  '((aomr_s.aom IS NOT NULL OR aomr_e.aom IS NOT NULL) AND NOT (ps.aom IS NOT NULL AND pe.aom IS NOT NULL AND ps.aom = pe.aom))'
     }
   } %}
- 
+
   {% if perim not in perimeters %}
     {{ exceptions.raise_compiler_error("Invalid perimeter: " ~ perim ~ ". Expected: arr, h3z9, h3z8, dep, reg, epci, country, aom, plm, aomreg") }}
   {% endif %}
- 
+
   {%- set cfg = perimeters[perim] -%}
- 
+
 {% if perim == 'plm' %}
 WITH plm_perim AS (
   SELECT DISTINCT arr, com
