@@ -73,10 +73,31 @@ Réunir la matière du débrief depuis :
 - **Aucun match** -> créer une nouvelle tâche (étape 6, création).
 
 ### 4. Rédiger le débrief
-Contenu en Markdown Notion, français, avec **ce gabarit exact** (garder ces 5
-titres ; laisser une section vide avec "_RAS_" plutôt que la supprimer) :
+Contenu en Markdown Notion, français, avec **ce gabarit exact** (garder toutes
+les sections ; laisser une section vide avec "_RAS_" plutôt que la supprimer) :
 
 ```markdown
+## TLDR; <emoji statut>
+Cible : un manager qui survole le board. Doit suffire à comprendre le problème
+et la solution sans lire la suite. Succinct, pas de jargon outillage, pas de
+hors-scope. Emoji de statut juste après `TLDR;` :
+- `✅` si le sujet est résolu / livré (PR mergées ou prêtes au merge, fix validé).
+- `🚫` si le sujet n'est pas terminé (en cours, bloqué, en attente de décision).
+
+### 🐞 Problème
+~3 phrases : ce que voit l'utilisateur, périmètre touché, impact métier.
+
+### 🔎 Cause
+~3 phrases : analyse, cause racine. Niveau « manager averti », pas de plongée
+dans le code.
+
+### 🛠️ Solution
+~3 phrases : ce qui a été fait pour corriger, statut, ce qu'il reste à faire si
+applicable.
+
+### 🔗 Liens
+- PR, ressources, autres tâches Notion liées.
+
 ## Contexte
 Pourquoi ce travail : besoin, problème, demande à l'origine, résultat visé.
 
@@ -137,15 +158,21 @@ Attendre son accord avant d'écrire.
   - `État` : `Tâches priorisées`.
 
 **Réutilisation** (`notion-update-page`) :
-- `command: "insert_content"`, `position: { "type": "end" }`.
-- `content` : un séparateur puis une section datée, pour empiler l'historique :
+- **Rafraîchir le `TLDR;` global en tête de page** pour qu'il reflète l'état
+  cumulé de la tâche après cette itération : relire l'ancien `TLDR;`, le réécrire
+  en intégrant ce qui vient d'être livré, et mettre à jour l'emoji de statut
+  (`✅` résolu / `🚫` non terminé). C'est la seule partie du contenu existant
+  qu'on réécrit ; le reste s'empile. Utiliser `command: "update_content"` avec
+  un `old_str` ciblé sur le bloc `TLDR;` actuel.
+- Puis `command: "insert_content"`, `position: { "type": "end" }` avec un
+  séparateur et une section datée, pour empiler l'historique :
 
   ```markdown
   ---
   ### Mise à jour - AAAA-MM-JJ
   ```
-  suivie du même gabarit (Contexte / Travail réalisé / Ressources liées /
-  Hors-scope / Prochaines étapes) pour cette itération.
+  suivie du gabarit **sans `TLDR;`** (Contexte / Travail réalisé / Ressources
+  liées / Hors-scope / Prochaines étapes) pour cette itération.
 - Mettre à jour `Personne`/`État` (`command: "update_properties"`) seulement si
   nécessaire ; ne jamais repasser en `Done`.
 
