@@ -39,11 +39,14 @@ services:
       APP_REQUEST_TIMEOUT: 0
       APP_APDF_S3_UPLOAD_ENABLED: false
       DENO_DIR: /app/api/.cache
+      # Opt out of `--cached-only` so dev auto-fetches missing deps into the mounted cache.
+      DENO_CACHED_ONLY: ''
     ports:
       - ${PORT:-8080}:${PORT:-8080}
     volumes:
       - ./api:/app/api
-      - ./api/.cache:/app/api/.cache:rw
+      # Named volume avoids the host/container uid mismatch that would block cache writes.
+      - deno_cache:/app/api/.cache
       - ./tmp:/tmp
 
   # cms:
@@ -64,3 +67,6 @@ services:
   s3:
     ports:
       - 9000:9000
+
+volumes:
+  deno_cache:

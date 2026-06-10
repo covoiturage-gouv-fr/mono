@@ -7,7 +7,11 @@ docker_compose_dev_file:=join(parent_directory(justfile_directory()),"docker-com
 docker_compose_e2e_file:=join(parent_directory(justfile_directory()),"docker-compose.e2e.yml")
 docker_compose_base_file:=join(parent_directory(justfile_directory()),"docker-compose.base.yml")
 docker_compose_proxy_file:=join(parent_directory(justfile_directory()),"docker-compose.proxy.yml")
-deno_flags := "--allow-net --allow-env --allow-read --allow-write --allow-ffi --allow-sys --allow-run --unstable-fs --cached-only"
+# `--cached-only` by default (CI/image-safe). Override with `DENO_CACHED_ONLY=`
+# (empty) locally to allow Deno to auto-fetch missing deps.
+deno_cached_only := env_var_or_default("DENO_CACHED_ONLY", "--cached-only")
+deno_allow_import := "--allow-import=cdn.sheetjs.com:443,cdn.esm.sh:443,deno.land:443,raw.githubusercontent.com:443,jsr.io:443"
+deno_flags := "--allow-net --allow-env --allow-read --allow-write --allow-ffi --allow-sys --allow-run --unstable-fs " + deno_allow_import + " " + deno_cached_only
 
 # List available just commands
 default:
@@ -347,26 +351,26 @@ add-hosts:
 # install
 [group('deno')]
 install:
-  deno install --frozen=true --allow-import=cdn.sheetjs.com:443,cdn.esm.sh:443,deno.land:443,raw.githubusercontent.com:443,jsr.io:443
+  deno install --frozen=true {{ deno_allow_import }}
 
 # cache all dependencies for src/mains.ts
 [group('deno')]
 cache:
-  deno cache --quiet --frozen=true --allow-import=cdn.esm.sh:443,deno.land:443,raw.githubusercontent.com:443,jsr.io:443 src/main.ts
+  deno cache --quiet --frozen=true {{ deno_allow_import }} src/main.ts
 
 # cache all dependencies for src/db/cmd-migrate.ts
 [group('deno')]
 cache-migrator:
-  deno cache --quiet --frozen=true --allow-import=cdn.sheetjs.com:443,cdn.esm.sh:443,deno.land:443,raw.githubusercontent.com:443,jsr.io:443 src/db/cmd-migrate.ts
+  deno cache --quiet --frozen=true {{ deno_allow_import }} src/db/cmd-migrate.ts
 
 # refresh the deno.lock file
 [group('deno')]
 lock:
   #!/usr/bin/env bash
-  deno install --frozen=false --allow-import=cdn.sheetjs.com:443,cdn.esm.sh:443,deno.land:443,raw.githubusercontent.com:443,jsr.io:443
-  deno cache --frozen=false --allow-import=cdn.sheetjs.com:443,cdn.esm.sh:443,deno.land:443,raw.githubusercontent.com:443,jsr.io:443 ./**/*.spec.ts
-  deno cache --frozen=false --allow-import=cdn.sheetjs.com:443,cdn.esm.sh:443,deno.land:443,raw.githubusercontent.com:443,jsr.io:443 ./**/*.test.ts
-  deno cache --frozen=false --allow-import=cdn.sheetjs.com:443,cdn.esm.sh:443,deno.land:443,raw.githubusercontent.com:443,jsr.io:443 ./src/lib/logger/index.ts
+  deno install --frozen=false {{ deno_allow_import }}
+  deno cache --frozen=false {{ deno_allow_import }} ./**/*.spec.ts
+  deno cache --frozen=false {{ deno_allow_import }} ./**/*.test.ts
+  deno cache --frozen=false {{ deno_allow_import }} ./src/lib/logger/index.ts
 
 # Eval and run a file
 [group('development')]
@@ -374,7 +378,7 @@ eval *filepath:
   deno eval \
     --allow-net \
     --allow-env \
-    --cached-only \
+    {{ deno_cached_only }} \
     # --allow-read \
     # --allow-write \
     # --allow-ffi \
