@@ -19,17 +19,16 @@ ad-hoc après le stand-up.
   `collection://35d994be-c931-800c-aca3-000be22465c3`
 - **Page parent du stand-up** :
   <https://app.notion.com/p/356994bec9318053a8cacba279c7d066>
-- Utilisateur par défaut : Jonathan Fallon =
-  `cea451b0-d0ea-48ed-9fb0-240a95de8739` (jonathan@scopopop.com).
-  Si quelqu'un d'autre lance le skill, résoudre son ID via `notion-search`
-  (`query_type: "user"`, requête = son email).
+- Utilisateur courant : résoudre dynamiquement son ID Notion via `notion-search`
+  (`query_type: "user"`, requête = l'email git de l'utilisateur, obtenu avec
+  `git config user.email`). Ne jamais coder en dur d'identité (nom, ID, email).
 
 Schéma de la table hebdo (vérifier via `notion-fetch` sur la data source si
 besoin) :
 
 | Colonne | Type | Contenu |
 | --- | --- | --- |
-| `Membre` | title | Nom du membre (« Jonathan Fallon ») |
+| `Membre` | title | Nom du membre (celui de l'utilisateur courant) |
 | `Stand up` | date | Date du stand-up (jour de la visio) |
 | `Points saillants réalisés` | text | Section 1 |
 | `Points bloquants` | text | Section 2 |
@@ -142,7 +141,7 @@ Demander aussi la **date du stand-up** si elle n'est pas le jour courant
 - `parent` : `{ "type": "data_source_id", "data_source_id": "35d994be-c931-800c-aca3-000be22465c3" }`
 - `content` : laisser vide (la valeur passe dans les propriétés, pas le corps).
 - `properties` :
-  - `Membre` : nom de l'utilisateur (titre, ex. « Jonathan Fallon »).
+  - `Membre` : nom de l'utilisateur courant (titre).
   - `date:Stand up:start` : date du stand-up (`AAAA-MM-JJ`).
   - `date:Stand up:is_datetime` : `0`.
   - `Points saillants réalisés` : le bloc Markdown de la section 1 (sans titre,
