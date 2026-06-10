@@ -40,26 +40,32 @@ perimeters_retablissement AS (
   )
 ),
 
+max_evolution_year AS (
+  SELECT MAX(year) AS y FROM {{ ref('com_evolution') }}
+),
+
 -- carpools dont au moins un bout est dans une commune rétablie (mod=21)
 affected_retablissement AS (
   SELECT DISTINCT sc._id
   FROM source_carpools AS sc
+  CROSS JOIN max_evolution_year AS mey
   INNER JOIN {{ ref('com_evolution') }} AS ce
     ON
       (sc.start_geo_code = ce.old_com OR sc.end_geo_code = ce.old_com)
       AND ce.mod = 21
-      AND ce.year = EXTRACT(YEAR FROM sc.geo_updated_at)::int
+      AND ce.year = LEAST(EXTRACT(YEAR FROM sc.geo_updated_at)::int, mey.y)
 ),
 
--- carpools dont au moins un bout est dans une commune fusionnée (mod=32)
+-- carpools dont au moins un bout est dans une commune fusionnée ou recodée (mod=31,32,33,41,50)
 affected_fusion AS (
   SELECT DISTINCT sc._id
   FROM source_carpools AS sc
+  CROSS JOIN max_evolution_year AS mey
   INNER JOIN {{ ref('com_evolution') }} AS ce
     ON
       (sc.start_geo_code = ce.old_com OR sc.end_geo_code = ce.old_com)
-      AND ce.mod = 32
-      AND ce.year = EXTRACT(YEAR FROM sc.geo_updated_at)::int
+      AND ce.mod IN (31, 32, 33, 41, 50)
+      AND ce.year = LEAST(EXTRACT(YEAR FROM sc.geo_updated_at)::int, mey.y)
 ),
 
 affected AS (
@@ -74,22 +80,23 @@ SELECT
   COALESCE(ps.com, cs.new_com, sc.start_geo_code) AS start_geo_code,
   COALESCE(pe.com, ce.new_com, sc.end_geo_code)   AS end_geo_code
 FROM source_carpools AS sc
+CROSS JOIN max_evolution_year AS mey
 INNER JOIN affected AS a ON sc._id = a._id
 LEFT JOIN perimeters_retablissement AS ps
   ON
     ST_INTERSECTS(sc.start_position, ps.geom)
-    AND ps.year = EXTRACT(YEAR FROM sc.geo_updated_at)::int
+    AND ps.year = LEAST(EXTRACT(YEAR FROM sc.geo_updated_at)::int, mey.y)
 LEFT JOIN perimeters_retablissement AS pe
   ON
     ST_INTERSECTS(sc.end_position, pe.geom)
-    AND pe.year = EXTRACT(YEAR FROM sc.geo_updated_at)::int
+    AND pe.year = LEAST(EXTRACT(YEAR FROM sc.geo_updated_at)::int, mey.y)
 LEFT JOIN {{ ref('com_evolution') }} AS cs
   ON
     sc.start_geo_code = cs.old_com
-    AND cs.mod = 32
-    AND cs.year = EXTRACT(YEAR FROM sc.geo_updated_at)::int
+    AND cs.mod IN (31, 32, 33, 41, 50)
+    AND cs.year = LEAST(EXTRACT(YEAR FROM sc.geo_updated_at)::int, mey.y)
 LEFT JOIN {{ ref('com_evolution') }} AS ce
   ON
     sc.end_geo_code = ce.old_com
-    AND ce.mod = 32
-    AND ce.year = EXTRACT(YEAR FROM sc.geo_updated_at)::int
+    AND ce.mod IN (31, 32, 33, 41, 50)
+    AND ce.year = LEAST(EXTRACT(YEAR FROM sc.geo_updated_at)::int, mey.y)
