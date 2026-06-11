@@ -72,7 +72,8 @@ affected_retablissement AS (
       AND ce.year = LEAST(EXTRACT(YEAR FROM sc.geo_updated_at)::int, mey.y)
 ),
 
--- carpools dont au moins un bout est dans une commune fusionnée ou recodée (mod=31,32,33,41,50)
+-- carpools dont au moins un bout est dans une commune fusionnée ou recodée
+-- (mod=31,32,33,41,50)
 affected_fusion AS (
   SELECT DISTINCT sc._id
   FROM source_carpools AS sc
