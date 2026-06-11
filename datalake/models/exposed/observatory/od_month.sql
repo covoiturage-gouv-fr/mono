@@ -20,13 +20,13 @@
 
 WITH
 {% if is_incremental() %}
-lookback AS (
-  SELECT max(year * 100 + month) - 1 AS min_ym FROM {{ this }}
-),
+  lookback AS (
+    SELECT max(year * 100 + month) - 1 AS min_ym FROM {{ this }}
+  ),
 {% endif %}
 
 max_perim_year AS (
-  SELECT MAX(year) AS y FROM {{ ref('perimeters_agg') }}
+  SELECT max(year) AS y FROM {{ ref('perimeters_agg') }}
 ),
 
 od AS (
@@ -43,8 +43,8 @@ od AS (
       duration
     FROM {{ ref('od_month_' ~ model_type) }}
     {% if is_incremental() %}
-  WHERE year * 100 + month >= (SELECT min_ym FROM lookback)
-  {% endif %}
+      WHERE year * 100 + month >= (SELECT min_ym FROM lookback)
+    {% endif %}
     {% if not loop.last %}UNION ALL{% endif %}
   {% endfor %}
 )
@@ -59,17 +59,17 @@ SELECT
   p2.libelle                     AS l_territory_2,
   od.journeys,
   od.passengers,
-  ROUND(od.distance / 1000.0, 2) AS distance,
-  ROUND(od.duration / 60.0, 2)   AS duration,
-  ST_X(p1.centroid)              AS lng_1,
-  ST_Y(p1.centroid)              AS lat_1,
-  ST_X(p2.centroid)              AS lng_2,
-  ST_Y(p2.centroid)              AS lat_2
+  round(od.distance / 1000.0, 2) AS distance,
+  round(od.duration / 60.0, 2)   AS duration,
+  st_x(p1.centroid)              AS lng_1,
+  st_y(p1.centroid)              AS lat_1,
+  st_x(p2.centroid)              AS lng_2,
+  st_y(p2.centroid)              AS lat_2
 FROM od
 LEFT JOIN {{ ref('perimeters_agg') }} AS p1
   ON
     od.territory_1 = p1.code AND od.type = p1.type
-    AND p1.year = LEAST(od.year, (SELECT y FROM max_perim_year))
+    AND p1.year = least(od.year, (SELECT y FROM max_perim_year))
 LEFT JOIN {{ ref('perimeters_agg') }}
   AS p2 ON od.territory_2 = p2.code AND od.type = p2.type
-AND p2.year = LEAST(od.year, (SELECT y FROM max_perim_year))
+AND p2.year = least(od.year, (SELECT y FROM max_perim_year))

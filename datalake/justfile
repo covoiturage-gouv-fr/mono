@@ -28,18 +28,13 @@ osmosis-dry-run layer *args:
 docs-serve *args:
   dbt docs serve --profiles-dir profiles {{args}}
 
-# Lint SQL models with sqlfluff (per-file to avoid dbt connection bursts)
+# Lint SQL models with sqlfluff
 lint *args:
-  #!/usr/bin/env bash
-  set -e
-  find models analyses -name '*.sql' -print0 \
-    | xargs -0 -I {} sh -c 'DBT_PROFILES_DIR=profiles sqlfluff lint --processes 1 "$1" {{args}}' _ {}
+  DBT_PROFILES_DIR=profiles sqlfluff lint --processes 1 models/ tests/ macros/ analyses/ {{args}}
 
-# Lint SQL models and auto-fix violations (per-file to avoid dbt connection bursts)
+# Lint SQL models and auto-fix violations (exit 1 = unfixable violations remain, not a failure)
 lint-fix *args:
-  #!/usr/bin/env bash
-  find models analyses -name '*.sql' -print0 \
-    | xargs -0 -I {} sh -c 'DBT_PROFILES_DIR=profiles sqlfluff fix --processes 1 "$1" {{args}}' _ {}
+  -DBT_PROFILES_DIR=profiles sqlfluff fix --processes 1 models/ tests/ macros/ analyses/ {{args}}
 
 # Seed data from S3 to Postgres
 seed config schema *args:
