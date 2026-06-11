@@ -43,7 +43,7 @@ od AS (
       duration
     FROM {{ ref('od_month_' ~ model_type) }}
     {% if is_incremental() %}
-      WHERE year * 100 + month >= (SELECT min_ym FROM lookback)
+      WHERE year * 100 + month >= (SELECT lookback.min_ym FROM lookback)
     {% endif %}
     {% if not loop.last %}UNION ALL{% endif %}
   {% endfor %}

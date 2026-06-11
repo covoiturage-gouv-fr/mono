@@ -43,7 +43,7 @@ od AS (
       duration
     FROM {{ ref('od_quarter_' ~ model_type) }}
     {% if is_incremental() %}
-      WHERE year * 4 + quarter >= (SELECT min_yq FROM lookback)
+      WHERE year * 4 + quarter >= (SELECT lookback.min_yq FROM lookback)
     {% endif %}
     {% if not loop.last %}UNION ALL{% endif %}
   {% endfor %}

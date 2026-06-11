@@ -42,7 +42,7 @@ territory AS (
       no_oi                AS no_incentive
     FROM {{ ref('territory_semester_' ~ model_type ~ '_both') }}
     {% if is_incremental() %}
-      WHERE year * 2 + semester >= (SELECT min_ys FROM lookback)
+      WHERE year * 2 + semester >= (SELECT lookback.min_ys FROM lookback)
     {% endif %}
     {% if not loop.last %}UNION ALL{% endif %}
   {% endfor %}
