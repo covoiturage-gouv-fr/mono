@@ -1,7 +1,7 @@
 ---
 name: point-equipe
 description: Use when preparing the weekly standup ("point d'équipe", "stand-up hebdo", "visio hebdo", "prépare mon point équipe", "résume mes tâches de la semaine pour le standup"). Compiles tasks the current user closed this week (État Done + Date fermeture tâche), plus current blockers and next items, into a tight aide-mémoire formatted as numbered bullets (1.X / 2.X / 3.X) with GEN-* links, validates with the user, then writes a new row in the standup table.
-allowed-tools: Bash, Skill, AskUserQuestion, mcp__claude_ai_Notion__notion-fetch, mcp__claude_ai_Notion__notion-search, mcp__claude_ai_Notion__notion-create-pages, mcp__claude_ai_Notion__notion-update-page
+allowed-tools: Bash, Skill, AskUserQuestion, mcp__plugin_Notion_notion__notion-fetch, mcp__plugin_Notion_notion__notion-search, mcp__plugin_Notion_notion__notion-query-database-view, mcp__plugin_Notion_notion__notion-create-pages, mcp__plugin_Notion_notion__notion-update-page
 ---
 
 # Point d'équipe
@@ -15,6 +15,16 @@ ad-hoc après le stand-up.
 
 - **Suivi des tâches** (source des tâches Done) :
   `collection://2759b461-218e-4764-ae17-0025d728193c`
+  - Vue **« Tâches Done »** (filtre `État = Done`, tri `Date fermeture`
+    décroissante) — pour la section 1 :
+    `https://www.notion.so/b358a631afcc4e7a9a0a39092bf2d953?v=272994bec93180eaac01000c57d33607`
+  - Vue **« Liste Tâches / pers. Tech »** (filtre `État` To-do/In progress, tri
+    `État` **décroissant** → les « Tâches priorisées » remontent en tête, avant
+    le backlog) — pour bloquants et prochaines tâches :
+    `https://www.notion.so/b358a631afcc4e7a9a0a39092bf2d953?v=28c994bec93180028480000cff33bc71`
+  - Ces vues ne sont pas filtrées par personne : filtrer sur l'utilisateur
+    courant en local. (Si elles sont renommées/supprimées, les retrouver via
+    `notion-fetch` sur la database `b358a631afcc4e7a9a0a39092bf2d953`.)
 - **Tableau hebdo « Semaine (modèle) »** (où on écrit) :
   `collection://35d994be-c931-800c-aca3-000be22465c3`
 - **Page parent du stand-up** :
@@ -47,6 +57,12 @@ besoin) :
 - **Français correct** (invoquer le skill `french` avant de rédiger), accents
   sur majuscules, anglicismes métier admis (release, merge, scope, backfill...).
 - **Undercover** : aucune mention de Claude / IA / assistant.
+- **Vues plutôt que pages** : pour collecter des tâches, toujours passer par une
+  requête de vue (`notion-query-database-view`) — filtres/tris appliqués côté
+  serveur, propriétés renvoyées sans le corps des pages. Ne `fetch` une page
+  (corps complet, coûteux) qu'en dernier recours, pour lire un contenu qu'un
+  titre ne permet pas de reformuler. Éviter `notion-search` pour les sélections
+  de tâches (classe par modification/pertinence, rate des résultats).
 - **Action sortante** : Notion est externe. Toujours montrer le contenu et
   **confirmer avec l'utilisateur avant d'écrire**.
 
@@ -76,23 +92,39 @@ besoin) :
 But : lister les tâches avec **`État = Done`** + **`Date fermeture tâche` dans
 [lundi, dimanche]** + **`Personne` = utilisateur courant**.
 
-- L'API `notion-search` ne filtre pas sur les propriétés métier ; faire une
-  recherche large sur la data source des tâches (mots-clés génériques :
-  `Done terminée`, ou le nom de l'utilisateur), `page_size: 25`,
-  `max_highlight_length: 0`.
-- Lister les candidats récents (timestamps de la semaine), puis **fetch en
-  parallèle** chaque candidat pour lire ses propriétés
-  (`État`, `date:Date fermeture tâche:start`, `Personne`).
-- Garder ceux qui matchent les trois critères. Ne **jamais** se fier au seul
-  timestamp de la recherche : c'est la date de modification, pas de fermeture.
+Méthode : interroger la vue **« Tâches Done »** avec
+`notion-query-database-view` (URL dans les constantes). Elle filtre déjà
+`État = Done` côté serveur et trie par `Date fermeture tâche` **décroissante**,
+donc les fermetures les plus récentes arrivent en tête.
 
-Si la recherche large rate des tâches (rare), demander à l'utilisateur s'il en
-manque d'évidentes.
+- La réponse renvoie directement les propriétés **sans le corps des pages** :
+  `date:Date fermeture tâche:start`, `Personne` (tableau d'`user://…`),
+  `userDefined:ID` (= le numéro `GEN-NNN`), `Tâche`, `url`. Pas de `fetch` page
+  par page.
+- Filtrer en local : `Personne` contient l'utilisateur courant **et**
+  `date:Date fermeture tâche:start` ∈ [lundi, dimanche]. Comme c'est trié par
+  date décroissante, s'arrêter dès qu'on passe sous `lundi` ; ne paginer
+  (`start_cursor` = `next_cursor`) que si la première page n'a pas encore
+  atteint `lundi`.
+- Ne lire le corps d'une tâche (`notion-fetch`) que si son libellé est trop
+  vague pour rédiger la puce.
+
+Ne **pas** utiliser `notion-search` ici : il classe par date de *modification*
+et par pertinence sémantique, rate des tâches (ex. observé : une tâche fermée
+dans la semaine jamais remontée) et oblige à lire chaque page en entier. Le
+garder uniquement en filet de secours si la vue « Tâches Done » est
+indisponible.
 
 ### 3. Identifier bloquants et prochaines tâches
 
 Ces deux sections ne se déduisent pas des Done : elles viennent de la
 conversation, des PR ouvertes, et des tâches **en cours / priorisées** du suivi.
+Pour ces dernières, interroger la vue **« Liste Tâches / pers. Tech »**
+(`notion-query-database-view`, URL dans les constantes) et filtrer sur
+l'utilisateur courant — même logique que l'étape 2. Comme elle est triée
+priorisées d'abord, lire le haut de la liste suffit : ignorer les tâches
+récurrentes « Run mensuel » et arrêter dès qu'on atteint le backlog (`État`
+repasse à `Backlog`).
 
 - **Bloquants** : tâches en attente d'une décision externe (équipe, partenaire,
   donneur d'ordre), ou correctifs livrés dont l'exécution finale attend un
