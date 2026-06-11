@@ -43,7 +43,7 @@ territory AS (
       passenger_seats
     FROM {{ ref('territory_month_' ~ model_type ~ '_both') }}
     {% if is_incremental() %}
-      WHERE year * 100 + month >= (SELECT min_ym FROM lookback)
+      WHERE year * 100 + month >= (SELECT lookback.min_ym FROM lookback)
     {% endif %}
     {% if not loop.last %}UNION ALL{% endif %}
   {% endfor %}

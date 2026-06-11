@@ -42,7 +42,7 @@ territory AS (
       no_oi                AS no_incentive
     FROM {{ ref('territory_quarter_' ~ model_type ~ '_both') }}
     {% if is_incremental() %}
-      WHERE year * 4 + quarter >= (SELECT min_yq FROM lookback)
+      WHERE year * 4 + quarter >= (SELECT lookback.min_yq FROM lookback)
     {% endif %}
     {% if not loop.last %}UNION ALL{% endif %}
   {% endfor %}

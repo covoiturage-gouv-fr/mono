@@ -41,7 +41,7 @@ territory AS (
       new_passengers
     FROM {{ ref('territory_year_' ~ model_type ~ '_both') }}
     {% if is_incremental() %}
-      WHERE year >= (SELECT min_year FROM lookback)
+      WHERE year >= (SELECT lookback.min_year FROM lookback)
     {% endif %}
     {% if not loop.last %}UNION ALL{% endif %}
   {% endfor %}
