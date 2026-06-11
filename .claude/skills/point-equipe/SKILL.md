@@ -55,12 +55,21 @@ besoin) :
 ### 1. Préparer
 
 - Invoquer le skill `french`.
-- Récupérer la date du jour : `date -I`.
-- Calculer la fenêtre **lundi → dimanche de la semaine en cours** (semaine ISO).
-  Bash : `lundi=$(date -I -d "monday this week")` /
-  `dimanche=$(date -I -d "sunday this week")`. Vérifier sur le calendrier que la
-  fenêtre est cohérente (si on est un lundi très tôt, demander à l'utilisateur
-  si on cible la semaine qui démarre ou celle qui finit).
+- Calculer la date du jour et la fenêtre **lundi → dimanche de la semaine ISO**
+  par décalage sur le jour de semaine (`%u`). Ne **pas** utiliser l'idiome
+  `… this week` : selon la locale il renvoie un lundi *postérieur* au dimanche
+  (vu un jeudi : `monday this week` = lundi suivant), d'où une fenêtre incohérente.
+
+  ```bash
+  jour=$(date -I)
+  dow=$(date +%u)                               # 1=lundi … 7=dimanche
+  lundi=$(date -I -d "$jour -$((dow - 1)) days")
+  dimanche=$(date -I -d "$jour +$((7 - dow)) days")
+  ```
+
+  Correct quel que soit le jour de préparation, bords d'année compris. Si on
+  prépare un lundi très tôt pour la semaine précédente, demander à l'utilisateur
+  quelle semaine cibler.
 
 ### 2. Identifier les tâches Done de la semaine
 
