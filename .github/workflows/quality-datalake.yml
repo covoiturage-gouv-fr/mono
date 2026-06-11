@@ -135,6 +135,8 @@ jobs:
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
+          # Full history so we can compute the merge-base diff against the PR base.
+          fetch-depth: 0
       # The sqlfluff dbt templater opens a DB connection per file and can
       # leave them "idle in transaction"; a lint run bursts past the
       # default max_connections (100) -> "too many clients already".
@@ -164,6 +166,38 @@ jobs:
       - name: Install dbt packages
         working-directory: datalake
         run: uv run dbt deps --profiles-dir profiles
-      - name: Run sqlfluff lint
+      # Only lint the .sql files changed in this PR (merge-base diff vs the base
+      # branch). The dbt templater is serialized (processes = 1), so linting all
+      # ~495 models takes ~1h; scoping to the diff keeps the job to a few minutes.
+      - name: Determine changed SQL files
+        id: changed
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "$BASE_REF"
+          # Allowlist filenames (safe charset only) so a malicious filename
+          # cannot inject into later steps via $GITHUB_OUTPUT.
+          mapfile -t files < <(
+            git diff --name-only --diff-filter=d \
+              "origin/${BASE_REF}...HEAD" \
+              -- datalake/models datalake/analyses \
+              | sed 's#^datalake/##' \
+              | grep -E '^[A-Za-z0-9_./-]+\.sql$' || true
+          )
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo "Aucun .sql modifié sous models/ ou analyses/ — lint sauté."
+            echo "none=true" >> "$GITHUB_OUTPUT"
+          else
+            printf 'Fichiers à linter:\n'; printf '  %s\n' "${files[@]}"
+            { echo "files<<EOF"; printf '%s\n' "${files[@]}"; echo "EOF"; } >> "$GITHUB_OUTPUT"
+          fi
+      - name: Run sqlfluff lint (changed files only)
+        if: steps.changed.outputs.none != 'true'
         working-directory: datalake
-        run: uv run sqlfluff lint models/ analyses/
+        env:
+          CHANGED_FILES: ${{ steps.changed.outputs.files }}
+        run: |
+          set -euo pipefail
+          mapfile -t files <<< "$CHANGED_FILES"
+          uv run sqlfluff lint -- "${files[@]}"
