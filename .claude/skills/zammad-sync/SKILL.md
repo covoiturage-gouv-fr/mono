@@ -116,8 +116,9 @@ Présenter un tableau dans la conversation :
 ### 5. Laisser l'utilisateur décider
 
 Lister explicitement les **manquants** et demander lesquels créer :
-`AskUserQuestion` (ou texte libre) — « tous / aucun / les numéros ». Ne rien
-créer si la réponse est « aucun ».
+`AskUserQuestion` (ou texte libre) — « tous / aucun / les numéros ». Les
+« numéros » sont les `number` affichés dans le tableau (ex. `347614, 347622`).
+Ne rien créer si la réponse est « aucun ».
 
 ### 6. Créer les tâches choisies
 
@@ -127,6 +128,11 @@ Pour chaque ticket retenu, `notion-create-pages` :
 - `properties` :
   - `Tâche` (titre) : libellé court `<opérateur> - <sujet>`, minuscules, sans le
     numéro de ticket (ex. `karos - trajets refusés limite quotidienne`).
+    L'**opérateur** se déduit du client : nom de l'organisation Zammad du ticket,
+    sinon domaine de l'email `customer` sans le TLD (`...@karos.fr` → `karos`,
+    `…@ecov.fr` → `ecov`, `…@karos-mobility.com` → `karos`). Si le rattachement
+    est ambigu (adresse générique type gmail, plusieurs opérateurs), demander à
+    l'utilisateur plutôt que deviner.
   - `zammad_url` : `https://covoiturage-betagouv.zammad.com/#ticket/zoom/<id>`
     (id **interne**) — c'est ce champ qui rend la synchro idempotente.
   - `Personne` : `["<id Notion utilisateur courant>"]` (JSON array).
