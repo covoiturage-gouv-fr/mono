@@ -20,13 +20,13 @@
 
 WITH
 {% if is_incremental() %}
-lookback AS (
-  SELECT max(year) - 1 AS min_year FROM {{ this }}
-),
+  lookback AS (
+    SELECT max(year) - 1 AS min_year FROM {{ this }}
+  ),
 {% endif %}
 
 max_perim_year AS (
-  SELECT MAX(year) AS y FROM {{ ref('perimeters_agg') }}
+  SELECT max(year) AS y FROM {{ ref('perimeters_agg') }}
 ),
 
 territory AS (
@@ -42,8 +42,8 @@ territory AS (
       passenger_seats
     FROM {{ ref('territory_year_' ~ model_type ~ '_both') }}
     {% if is_incremental() %}
-  WHERE year >= (SELECT min_year FROM lookback)
-  {% endif %}
+      WHERE year >= (SELECT min_year FROM lookback)
+    {% endif %}
     {% if not loop.last %}UNION ALL{% endif %}
   {% endfor %}
 )
@@ -56,13 +56,13 @@ SELECT
   t.journeys,
   t.trips,
   t.has_incentive,
-  ROUND(
-    (t.carpools + t.passenger_seats)::numeric / NULLIF(t.carpools, 0), 2
+  round(
+    (t.carpools + t.passenger_seats)::numeric / nullif(t.carpools, 0), 2
   )                             AS occupation_rate,
-  ST_ASGEOJSON(p.geom, 6)::json AS geom
+  st_asgeojson(p.geom, 6)::json AS geom
 FROM territory AS t
 LEFT JOIN {{ ref('perimeters_agg') }} AS p
   ON
     t.code = p.code AND t.type = p.type
-    AND p.year = LEAST(t.year, (SELECT y FROM max_perim_year))
+    AND p.year = least(t.year, (SELECT y FROM max_perim_year))
 WHERE t.carpools > 0

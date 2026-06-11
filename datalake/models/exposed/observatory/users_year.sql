@@ -20,13 +20,13 @@
 
 WITH
 {% if is_incremental() %}
-lookback AS (
-  SELECT max(year) - 1 AS min_year FROM {{ this }}
-),
+  lookback AS (
+    SELECT max(year) - 1 AS min_year FROM {{ this }}
+  ),
 {% endif %}
 
 max_perim_year AS (
-  SELECT MAX(year) AS y FROM {{ ref('perimeters_agg') }}
+  SELECT max(year) AS y FROM {{ ref('perimeters_agg') }}
 ),
 
 territory AS (
@@ -41,8 +41,8 @@ territory AS (
       new_passengers
     FROM {{ ref('territory_year_' ~ model_type ~ '_both') }}
     {% if is_incremental() %}
-  WHERE year >= (SELECT min_year FROM lookback)
-  {% endif %}
+      WHERE year >= (SELECT min_year FROM lookback)
+    {% endif %}
     {% if not loop.last %}UNION ALL{% endif %}
   {% endfor %}
 )
@@ -59,4 +59,4 @@ SELECT
 FROM territory AS t
 LEFT JOIN {{ ref('perimeters_agg') }}
   AS p ON t.code = p.code AND t.type = p.type
-AND p.year = LEAST(t.year, (SELECT y FROM max_perim_year))
+AND p.year = least(t.year, (SELECT y FROM max_perim_year))

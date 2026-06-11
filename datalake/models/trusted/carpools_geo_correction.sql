@@ -40,26 +40,48 @@ perimeters_retablissement AS (
   )
 ),
 
+-- com_evolution est borné par la source insee_mvt_com_2025 : son année max
+-- sert à rabattre les trajets géocodés une année plus récente (ex. 2026) sur
+-- les dernières évolutions connues, sinon ils ne seraient jamais corrigés.
+max_evolution_year AS (
+  SELECT MAX(year) AS y FROM {{ ref('com_evolution') }}
+),
+
+-- une seule cible par (old_com, année) : un old_com peut cumuler plusieurs
+-- mouvements la même année (recodage + fusion), ce qui dédoublerait les
+-- carpool_id en sortie et violerait l'index unique. On en garde un seul.
+com_recodage AS (
+  SELECT DISTINCT ON (old_com, year)
+    old_com,
+    new_com,
+    year
+  FROM {{ ref('com_evolution') }}
+  WHERE mod IN (31, 32, 33, 41, 50)
+  ORDER BY old_com, year, mod, new_com
+),
+
 -- carpools dont au moins un bout est dans une commune rétablie (mod=21)
 affected_retablissement AS (
   SELECT DISTINCT sc._id
   FROM source_carpools AS sc
+  CROSS JOIN max_evolution_year AS mey
   INNER JOIN {{ ref('com_evolution') }} AS ce
     ON
       (sc.start_geo_code = ce.old_com OR sc.end_geo_code = ce.old_com)
       AND ce.mod = 21
-      AND ce.year = EXTRACT(YEAR FROM sc.geo_updated_at)::int
+      AND ce.year = LEAST(EXTRACT(YEAR FROM sc.geo_updated_at)::int, mey.y)
 ),
 
--- carpools dont au moins un bout est dans une commune fusionnée (mod=32)
+-- carpools dont au moins un bout est dans une commune fusionnée ou recodée
+-- (mod=31,32,33,41,50)
 affected_fusion AS (
   SELECT DISTINCT sc._id
   FROM source_carpools AS sc
-  INNER JOIN {{ ref('com_evolution') }} AS ce
+  CROSS JOIN max_evolution_year AS mey
+  INNER JOIN com_recodage AS ce
     ON
       (sc.start_geo_code = ce.old_com OR sc.end_geo_code = ce.old_com)
-      AND ce.mod = 32
-      AND ce.year = EXTRACT(YEAR FROM sc.geo_updated_at)::int
+      AND ce.year = LEAST(EXTRACT(YEAR FROM sc.geo_updated_at)::int, mey.y)
 ),
 
 affected AS (
@@ -74,22 +96,21 @@ SELECT
   COALESCE(ps.com, cs.new_com, sc.start_geo_code) AS start_geo_code,
   COALESCE(pe.com, ce.new_com, sc.end_geo_code)   AS end_geo_code
 FROM source_carpools AS sc
+CROSS JOIN max_evolution_year AS mey
 INNER JOIN affected AS a ON sc._id = a._id
 LEFT JOIN perimeters_retablissement AS ps
   ON
     ST_INTERSECTS(sc.start_position, ps.geom)
-    AND ps.year = EXTRACT(YEAR FROM sc.geo_updated_at)::int
+    AND ps.year = LEAST(EXTRACT(YEAR FROM sc.geo_updated_at)::int, mey.y)
 LEFT JOIN perimeters_retablissement AS pe
   ON
     ST_INTERSECTS(sc.end_position, pe.geom)
-    AND pe.year = EXTRACT(YEAR FROM sc.geo_updated_at)::int
-LEFT JOIN {{ ref('com_evolution') }} AS cs
+    AND pe.year = LEAST(EXTRACT(YEAR FROM sc.geo_updated_at)::int, mey.y)
+LEFT JOIN com_recodage AS cs
   ON
     sc.start_geo_code = cs.old_com
-    AND cs.mod = 32
-    AND cs.year = EXTRACT(YEAR FROM sc.geo_updated_at)::int
-LEFT JOIN {{ ref('com_evolution') }} AS ce
+    AND cs.year = LEAST(EXTRACT(YEAR FROM sc.geo_updated_at)::int, mey.y)
+LEFT JOIN com_recodage AS ce
   ON
     sc.end_geo_code = ce.old_com
-    AND ce.mod = 32
-    AND ce.year = EXTRACT(YEAR FROM sc.geo_updated_at)::int
+    AND ce.year = LEAST(EXTRACT(YEAR FROM sc.geo_updated_at)::int, mey.y)
