@@ -10,7 +10,19 @@ dbt-env:
 
 # Run dbt command
 dbt cmd *args:
-  dbt {{cmd}} {{args}} --profiles-dir profiles 
+  dbt {{cmd}} {{args}} --profiles-dir profiles
+
+# Supprime une fenêtre temporelle puis relance proprement (évite les lignes fantômes)
+# ex: just dbt-recompute models/aggregated/od 2026-01-01 2027-01-01
+dbt-recompute path start end *args:
+  #!/usr/bin/env bash
+  set -e
+  DBT_PROFILES_DIR=profiles dbt run-operation delete_window \
+    --args "{\"path_prefix\": \"{{path}}\", \"start\": \"{{start}}\", \"end\": \"{{end}}\"}"
+  DBT_PROFILES_DIR=profiles dbt run \
+    --select "{{path}}" \
+    --vars "{\"start\":\"{{start}}\",\"end\":\"{{end}}\"}" \
+    {{args}}
 
 # Run dbt-osmosis command
 dbt-osmosis cmd *args:
