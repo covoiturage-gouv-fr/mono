@@ -55,7 +55,7 @@ new_com AS (
     a.l_com                              AS l_arr,
     a.com,
     a.l_com,
-    a.epci,
+    left(a.epci,9) AS epci,
     b.l_epci,
     e.aom,
     e.l_aom,
@@ -73,7 +73,7 @@ new_com AS (
     MAKE_DATE(2025, 1, 1)                AS valid_from,
     MAKE_DATE(2026, 12, 31)              AS valid_until
   FROM {{ source('raw', 'ign_aecarto_com_2025') }} AS a
-  LEFT JOIN {{ source('raw', 'ign_aecarto_epci_2025') }} AS b ON a.epci = b.epci
+  LEFT JOIN {{ source('raw', 'ign_aecarto_epci_2025') }} AS b ON left(a.epci,9) = left(b.epci,9)
   LEFT JOIN {{ source('raw', 'ign_aecarto_dep_2025') }} AS c ON a.dep = c.dep
   LEFT JOIN {{ source('raw', 'ign_aecarto_reg_2025') }} AS d ON a.reg = d.reg
   LEFT JOIN {{ source('raw', 'cerema_aom_2025') }} AS e ON a.com = e.code_insee
