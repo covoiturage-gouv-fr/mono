@@ -76,7 +76,7 @@ UNION ALL
 SELECT
   year,
   country                                  AS code,
-  'com'                                AS type,  -- noqa: RF04
+  'com'                                    AS type,  -- noqa: RF04
   MODE() WITHIN GROUP (ORDER BY l_country) AS libelle,
   ST_MULTI(ST_UNION(geom_simple))          AS geom,
   ST_POINTONSURFACE(ST_UNION(geom_simple)) AS centroid
