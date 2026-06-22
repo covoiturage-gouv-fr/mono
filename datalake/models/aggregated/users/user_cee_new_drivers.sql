@@ -2,7 +2,7 @@
   config(
     materialized='table',
     indexes=[
-      { 'columns': ['driver_key'], 'unique': true },
+      { 'columns': ['user_id'], 'unique': true },
       { 'columns': ['carpool_v2_id'] }
     ],
     tags=['aggregated', 'cee', 'primo_drivers']
