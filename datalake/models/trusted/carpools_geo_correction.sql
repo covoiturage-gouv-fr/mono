@@ -69,7 +69,7 @@ affected_retablissement AS (
     ON
       (sc.start_geo_code = ce.old_com OR sc.end_geo_code = ce.old_com)
       AND ce.mod = 21
-      AND ce.year = LEAST(EXTRACT(YEAR FROM sc.geo_updated_at)::int, mey.y)
+      AND ce.year <= LEAST(EXTRACT(YEAR FROM sc.geo_updated_at)::int, mey.y)
 ),
 
 -- carpools dont au moins un bout est dans une commune fusionnée ou recodée
@@ -81,7 +81,7 @@ affected_fusion AS (
   INNER JOIN com_recodage AS ce
     ON
       (sc.start_geo_code = ce.old_com OR sc.end_geo_code = ce.old_com)
-      AND ce.year = LEAST(EXTRACT(YEAR FROM sc.geo_updated_at)::int, mey.y)
+      AND ce.year <= LEAST(EXTRACT(YEAR FROM sc.geo_updated_at)::int, mey.y)
 ),
 
 affected AS (
@@ -98,19 +98,39 @@ SELECT
 FROM source_carpools AS sc
 CROSS JOIN max_evolution_year AS mey
 INNER JOIN affected AS a ON sc._id = a._id
-LEFT JOIN perimeters_retablissement AS ps
-  ON
-    ST_INTERSECTS(sc.start_position, ps.geom)
-    AND ps.year = LEAST(EXTRACT(YEAR FROM sc.geo_updated_at)::int, mey.y)
-LEFT JOIN perimeters_retablissement AS pe
-  ON
-    ST_INTERSECTS(sc.end_position, pe.geom)
-    AND pe.year = LEAST(EXTRACT(YEAR FROM sc.geo_updated_at)::int, mey.y)
-LEFT JOIN com_recodage AS cs
-  ON
-    sc.start_geo_code = cs.old_com
-    AND cs.year = LEAST(EXTRACT(YEAR FROM sc.geo_updated_at)::int, mey.y)
-LEFT JOIN com_recodage AS ce
-  ON
-    sc.end_geo_code = ce.old_com
-    AND ce.year = LEAST(EXTRACT(YEAR FROM sc.geo_updated_at)::int, mey.y)
+LEFT JOIN LATERAL (
+  SELECT p.com
+  FROM perimeters_retablissement AS p
+  WHERE
+    ST_INTERSECTS(sc.start_position, p.geom)
+    AND p.year <= LEAST(EXTRACT(YEAR FROM sc.geo_updated_at)::int, mey.y)
+  ORDER BY p.year DESC
+  LIMIT 1
+) AS ps ON TRUE
+LEFT JOIN LATERAL (
+  SELECT p.com
+  FROM perimeters_retablissement AS p
+  WHERE
+    ST_INTERSECTS(sc.end_position, p.geom)
+    AND p.year <= LEAST(EXTRACT(YEAR FROM sc.geo_updated_at)::int, mey.y)
+  ORDER BY p.year DESC
+  LIMIT 1
+) AS pe ON TRUE
+LEFT JOIN LATERAL (
+  SELECT cr.new_com
+  FROM com_recodage AS cr
+  WHERE
+    cr.old_com = sc.start_geo_code
+    AND cr.year <= LEAST(EXTRACT(YEAR FROM sc.geo_updated_at)::int, mey.y)
+  ORDER BY cr.year DESC
+  LIMIT 1
+) AS cs ON TRUE
+LEFT JOIN LATERAL (
+  SELECT cr.new_com
+  FROM com_recodage AS cr
+  WHERE
+    cr.old_com = sc.end_geo_code
+    AND cr.year <= LEAST(EXTRACT(YEAR FROM sc.geo_updated_at)::int, mey.y)
+  ORDER BY cr.year DESC
+  LIMIT 1
+) AS ce ON TRUE
