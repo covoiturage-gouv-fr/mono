@@ -1,0 +1,34 @@
+{
+  "name": "app-attestation-forms",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "predev": "react-dsfr update-icons",
+    "prebuild": "react-dsfr update-icons",
+    "serve": "npx serve out -p 4200"
+  },
+  "dependencies": {
+    "@codegouvfr/react-dsfr": "^1.32.4",
+    "@hookform/resolvers": "^5.4.0",
+    "file-saver": "^2.0.5",
+    "next": "16.2.9",
+    "pdf-lib": "^1.17.1",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "sass": "^1.101.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/file-saver": "^2.0.7",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.9",
+    "typescript": "^5"
+  }
+}
