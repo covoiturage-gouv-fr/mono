@@ -60,4 +60,6 @@ Use MCP tools when available:
 
 ### Git
 
-New session = new worktree. Claude cannot commit. Human review required before commit.
+Never commit on main. Always worktree + PR (skill /prep-pr)
+Always rebase onto main before pushing PR
+Claude cannot commit. Human review required before commit.
