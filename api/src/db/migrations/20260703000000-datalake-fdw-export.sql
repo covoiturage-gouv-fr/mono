@@ -1,34 +1,6 @@
 -- =====================================================================
---  dlk_export.sql — côté API (covoiturage_production) du FDW datalake
+--  côté API (covoiturage_production) du FDW datalake
 -- =====================================================================
---  CONTEXTE (pour reprise dans une autre session)
---  ---------------------------------------------------------------------
---  Projet : covoiturage-gouv-fr/infra (OpenTofu/Scaleway + Flux/kustomize).
---  Le datalake (dbt, repo covoiturage-gouv-fr/mono, dossier `datalake/`)
---  vit dans une base SÉPARÉE `datalake_production` et lit les tables de
---  l'API (`covoiturage_production`) via un foreign data wrapper (postgres_fdw).
---
---  Architecture FDW, deux schémas symétriques :
---    - covoiturage_production.dlk_export  -> LES VUES (ce script)
---    - datalake_production.dlk_import     -> LES FOREIGN TABLES (autre script)
---    Noms plats identiques des deux côtés (`<schema>_<table>`) =>
---    `IMPORT FOREIGN SCHEMA dlk_export ... INTO dlk_import` crée les 14 d'un coup.
---
---  Tickets/PR liés :
---    - #20  spike + mise en place FDW (extension postgres_fdw confirmée dispo)
---    - #34  création de la base datalake_production (OpenTofu)
---    - #36  (PR) user OpenTofu `datalake_fdw` (lecture seule) + secret
---             `pg_password_datalake_fdw_production` (Scaleway Secret Manager)
---    - #35  rotation du mot de passe (le USER MAPPING devra être mis à jour)
---
---  PRÉREQUIS D'EXÉCUTION
---    - Connexion : vnmqdctpgsro @ covoiturage_production (user applicatif).
---    - L'utilisateur `datalake_fdw` existe déjà (OpenTofu PR #36 + `tofu apply`),
---      sinon les GRANT échouent.
---    - vnm doit avoir SELECT sur les schémas sources (carpool_v2, policy, cee,
---      operator, territory, fraudcheck, company, anomaly, carpool) — sinon un
---      CREATE VIEW lèvera une erreur de droit sur la table concernée.
---
 --  CHOIX DE CONCEPTION
 --    - Vues "security definer" (défaut) : elles tournent avec les droits de leur
 --      propriétaire (vnm). `datalake_fdw` n'a AUCUN accès aux schémas applicatifs,
@@ -66,11 +38,6 @@
 --    - TODO (suivi, hors périmètre de cette migration) : acter la borne dans le
 --      registre RGPD / AIPD et, si un TTL propre au datalake est décidé, ajouter un
 --      job de purge côté `datalake_production`.
---
---  ÉTAPE SUIVANTE (autre script, côté datalake_production) :
---    CREATE EXTENSION postgres_fdw; CREATE SERVER; CREATE USER MAPPING
---    (datalake -> datalake_fdw); IMPORT FOREIGN SCHEMA dlk_export INTO dlk_import;
---    puis refactor des sources dbt vers source('dlk_import', ...).
 -- =====================================================================
 
 CREATE SCHEMA IF NOT EXISTS dlk_export;
@@ -193,7 +160,6 @@ FROM cee.cee_applications;
 --  Droits pour datalake_fdw (lecture seule, user créé par OpenTofu PR #36)
 -- =====================================================================
 
-GRANT CONNECT ON DATABASE covoiturage_production TO datalake_fdw;
 GRANT USAGE   ON SCHEMA   dlk_export              TO datalake_fdw;
 GRANT SELECT  ON ALL TABLES IN SCHEMA dlk_export  TO datalake_fdw;
 
