@@ -2,7 +2,7 @@
 
 SELECT 1 AS failure
 WHERE (
-  SELECT COUNT(*) FROM {{ source('cee', 'cee_applications') }}
+  SELECT COUNT(*) FROM {{ source('dlk_import', 'cee_cee_applications') }}
   WHERE
     datetime >= {{ window_start(ref('cee'), 'datetime') }}
     AND datetime <= CURRENT_TIMESTAMP

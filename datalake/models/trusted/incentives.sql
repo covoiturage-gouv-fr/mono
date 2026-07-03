@@ -10,7 +10,7 @@
 
 WITH incentives AS (
   SELECT *
-  FROM {{ source('policy', 'incentives') }}
+  FROM {{ source('dlk_import', 'policy_incentives') }}
   WHERE {{ time_filter('datetime', lookback_nb=3) }}
 ),
 
@@ -21,7 +21,7 @@ ni AS (
     pi.operator_id,
     pi.operator_journey_id
   FROM incentives AS pi
-  LEFT JOIN {{ source('carpool_v2', 'carpools') }} AS c2
+  LEFT JOIN {{ source('dlk_import', 'carpool_v2_carpools') }} AS c2
     ON
       pi.operator_id = c2.operator_id
       AND pi.operator_journey_id = c2.operator_journey_id
@@ -39,10 +39,10 @@ ni AS (
     c2.operator_journey_id
   FROM incentives AS pi
   LEFT JOIN
-    {{ source('carpool_v1', 'carpools') }} AS c1
+    {{ source('dlk_import', 'carpool_carpools') }} AS c1
     ON pi.carpool_id = c1._id
   LEFT JOIN
-    {{ source('carpool_v2', 'carpools') }} AS c2
+    {{ source('dlk_import', 'carpool_v2_carpools') }} AS c2
     ON c1.acquisition_id = c2.legacy_id
   WHERE
     pi.carpool_id IS NOT NULL
@@ -66,10 +66,10 @@ SELECT DISTINCT
 
 FROM incentives AS pi
 INNER JOIN ni ON pi._id = ni._id
-LEFT JOIN {{ source('policy', 'policies') }} AS pp ON pi.policy_id = pp._id
+LEFT JOIN {{ source('dlk_import', 'policy_policies') }} AS pp ON pi.policy_id = pp._id
 LEFT JOIN
-  {{ source('territory', 'territory_group') }} AS ttg
+  {{ source('dlk_import', 'territory_territory_group') }} AS ttg
   ON pp.territory_id = ttg._id
 LEFT JOIN
-  {{ source('company', 'companies') }} AS ccp
+  {{ source('dlk_import', 'company_companies') }} AS ccp
   ON ttg.company_id = ccp._id

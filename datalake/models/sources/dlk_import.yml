@@ -1,0 +1,22 @@
+version: 2
+sources:
+  - name: dlk_import
+    schema: dlk_import
+    description: >
+      Tables etrangeres (postgres_fdw) important les vues dlk_export de
+      covoiturage_production. Noms plats <schema_api>_<table>.
+    tables:
+      - name: carpool_v2_carpools
+      - name: carpool_v2_geo
+      - name: carpool_v2_status
+      - name: carpool_v2_operator_incentives
+      - name: carpool_v2_terms_violation_error_labels
+      - name: carpool_carpools # carpool v1 (temporaire, suppr. apres consolidation trusted)
+      - name: policy_policies
+      - name: policy_incentives
+      - name: operator_operators
+      - name: territory_territory_group
+      - name: fraudcheck_labels
+      - name: company_companies
+      - name: anomaly_labels
+      - name: cee_cee_applications # CEE deprecie (temporaire, suppr. plus tard)

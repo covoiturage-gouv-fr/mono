@@ -237,7 +237,7 @@ SELECT
     AS incentive_rpc_2_amount
 
 FROM {{ ref('carpools') }} AS c
-LEFT JOIN {{ source('carpool_v2', 'carpools') }} AS sc ON c._id = sc._id
+LEFT JOIN {{ source('dlk_import', 'carpool_v2_carpools') }} AS sc ON c._id = sc._id
 LEFT JOIN latest_perimeters AS gps ON c.start_geo_code = gps.arr
 LEFT JOIN latest_perimeters AS gpe ON c.end_geo_code = gpe.arr
 LEFT JOIN {{ ref('cee') }} AS cee ON c._id = cee.carpool_v2_id

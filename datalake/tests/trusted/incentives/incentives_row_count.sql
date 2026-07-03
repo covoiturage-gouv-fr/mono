@@ -3,7 +3,7 @@
 
 SELECT 1 AS failure
 WHERE (
-  SELECT COUNT(*) FROM {{ source('policy', 'incentives') }}
+  SELECT COUNT(*) FROM {{ source('dlk_import', 'policy_incentives') }}
   WHERE
     datetime >= {{ window_start(ref('incentives'), 'datetime', lookback_nb=3) }}
     AND datetime <= CURRENT_TIMESTAMP

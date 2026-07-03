@@ -1,7 +1,7 @@
 {{ config(severity='error', tags=['trusted', 'cee']) }}
 
 SELECT cee._id
-FROM {{ source('cee', 'cee_applications') }} AS cee
+FROM {{ source('dlk_import', 'cee_cee_applications') }} AS cee
 WHERE
   cee.datetime >= {{ window_start(ref('cee'), 'datetime') }}
   AND cee.datetime <= CURRENT_TIMESTAMP
