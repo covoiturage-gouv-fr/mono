@@ -43,15 +43,15 @@ models:
   covoiturage:
     +dbt-osmosis: "_{model}.yml"
     raw:
-      +schema: "dbt_raw"
+      +schema: "zone_raw"
     trusted:
-      +schema: "dbt_trusted"
+      +schema: "zone_trusted"
       +dbt-osmosis: "yml/_{model}.yml"
     aggregated:
-      +schema: "dbt_aggregated"
+      +schema: "zone_aggregated"
       +dbt-osmosis: "yml/_{model}.yml"
     exposed:
-      +schema: "dbt_exposed"
+      +schema: "zone_exposed"
       +dbt-osmosis: "yml/_{model}.yml"
 
   ## see docs: https://docs.elementary-data.com/
@@ -62,7 +62,7 @@ seeds:
     +dbt-osmosis: "_{model}.yml"
     trusted:
       aom_region:
-        +schema: "dbt_trusted"
+        +schema: "zone_trusted"
         +tags: ["trusted", "geo", "aom_region"]
         +column_types:
           aom: varchar
