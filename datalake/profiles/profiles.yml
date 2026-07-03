@@ -9,7 +9,7 @@ default:
       port: "{{ env_var('DBT_PORT') | int }}"
       dbname: "{{ env_var('DBT_DBNAME') }}" # or database instead of dbname
       schema: ""
-      threads: 4
+      threads: "{{ env_var('DBT_THREADS', 2) | int }}"
     dev:
       type: postgres
       host: "{{ env_var('DBT_HOST', 'localhost') }}"
