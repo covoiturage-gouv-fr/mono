@@ -66,7 +66,9 @@ SELECT DISTINCT
 
 FROM incentives AS pi
 INNER JOIN ni ON pi._id = ni._id
-LEFT JOIN {{ source('dlk_import', 'policy_policies') }} AS pp ON pi.policy_id = pp._id
+LEFT JOIN
+  {{ source('dlk_import', 'policy_policies') }} AS pp
+  ON pi.policy_id = pp._id
 LEFT JOIN
   {{ source('dlk_import', 'territory_territory_group') }} AS ttg
   ON pp.territory_id = ttg._id

@@ -15,7 +15,9 @@ SELECT
   t.siret,
   t.amount
 FROM {{ source('dlk_import', 'carpool_v2_operator_incentives') }} AS t
-INNER JOIN {{ source('dlk_import', 'carpool_v2_carpools') }} AS c ON t.carpool_id = c._id
+INNER JOIN
+  {{ source('dlk_import', 'carpool_v2_carpools') }} AS c
+  ON t.carpool_id = c._id
 WHERE
   {{ time_filter('c.start_datetime', 'start_datetime', lookback_nb=3) }}
   AND t.amount > 0
