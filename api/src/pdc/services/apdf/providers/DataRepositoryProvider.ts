@@ -1,7 +1,7 @@
 import { provider } from "@/ilos/common/index.ts";
 import { Cursor, DenoPostgresConnection } from "@/ilos/connection-postgres/index.ts";
 import { set } from "@/lib/object/index.ts";
-import sql, { raw } from "@/lib/pg/sql.ts";
+import sql, { empty, raw } from "@/lib/pg/sql.ts";
 import { UnboundedSlices } from "../../policy/contracts/common/interfaces/Slices.ts";
 import { PolicyStatsInterface } from "../contracts/interfaces/PolicySliceStatInterface.ts";
 import {
@@ -160,7 +160,22 @@ export class DataRepositoryProvider implements DataRepositoryInterface {
    * List all carpools for CSV APDF export using a cursor
    */
   public async getPolicyCursor(params: CampaignSearchParamsInterface): Promise<Cursor<APDFTripInterface>> {
-    const { start_date, end_date, operator_id, campaign_id } = params;
+    const { start_date, end_date, operator_id, campaign_id, declared_siren } = params;
+
+    // Incitation déclarée par l'opérateur, rattachée au territoire financeur par le
+    // SIREN (9 chiffres) — cf. GEN-643. Uniquement quand la campagne l'expose.
+    const declaredSelect = declared_siren
+      ? sql`decl.amount as operator_declared_incentive,`
+      : sql`null::int as operator_declared_incentive,`;
+    const declaredJoin = declared_siren
+      ? sql`
+        left join lateral (
+          select sum(oi.amount) as amount
+          from carpool_v2.operator_incentives oi
+          where oi.carpool_id = cc._id
+            and left(oi.siret, 9) = ${declared_siren}
+        ) decl on true`
+      : empty;
 
     return this.pgConnection.cursor<APDFTripInterface>(sql`
       -- list in api/services/trip/src/providers/excel/TripsWorksheetWriter.ts
@@ -174,6 +189,7 @@ export class DataRepositoryProvider implements DataRepositoryInterface {
         cc.passenger_contribution,
 
         pi.amount as rpc_incentive,
+        ${declaredSelect}
 
         cc.start_datetime,
         cc.end_datetime,
@@ -198,6 +214,7 @@ export class DataRepositoryProvider implements DataRepositoryInterface {
       left join ${raw(this.geoPerimetersTable)} gps on cg.start_geo_code = gps.arr and gps.year = geo.get_latest_millesime_or(extract(year from cc.start_datetime)::smallint)
       left join ${raw(this.geoPerimetersTable)} gpe on cg.end_geo_code = gpe.arr and gpe.year = geo.get_latest_millesime_or(extract(year from cc.end_datetime)::smallint)
       left join ${raw(this.operatorsTable)} oo on oo._id = cc.operator_id
+      ${declaredJoin}
 
       where
             cc.start_datetime >= ${start_date}

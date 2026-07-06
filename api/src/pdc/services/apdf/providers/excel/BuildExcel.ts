@@ -2,7 +2,6 @@ import { defaultTimezone } from "@/config/time.ts";
 import { KernelInterfaceResolver, provider } from "@/ilos/common/index.ts";
 import { logger } from "@/lib/logger/index.ts";
 import { APDFNameProvider } from "@/pdc/providers/storage/index.ts";
-import { APDFTripInterface } from "@/pdc/services/apdf/interfaces/APDFTripInterface.ts";
 import { ExcelCampaignConfig } from "@/pdc/services/apdf/interfaces/ExcelTypes.ts";
 import excel from "dep:excel";
 import { ResultInterface as Campaign } from "../../../policy/contracts/find.contract.ts";
@@ -38,11 +37,17 @@ export class BuildExcel {
     end_date: Date,
     operator_id: number,
   ): Promise<{ filename: string; filepath: string }> {
+    // Delta déclaré vs calculé (GEN-643) : activé par la config de campagne
+    // extras.declared_incentives.siren = SIREN du territoire financeur. Absent → export inchangé.
+    const declared_siren = (campaign.params?.extras as { declared_incentives?: { siren?: string } })
+      ?.declared_incentives?.siren ?? null;
+
     const params = {
       start_date,
       end_date,
       operator_id,
       campaign_id: campaign._id,
+      declared_siren,
     };
 
     // fetch aggregated and slice data
@@ -68,7 +73,7 @@ export class BuildExcel {
 
     // create the Workbook and add Worksheets
     const wbWriter: excel.stream.xlsx.WorkbookWriter = BuildExcel.initWorkbookWriter(filepath);
-    if (this.hasSliceTrips(slices)) await this.writeSlices(wbWriter, slices);
+    if (this.hasSliceTrips(slices)) await this.writeSlices(wbWriter, slices, Boolean(declared_siren));
     await this.writeTrips(wbWriter, params);
     await wbWriter.commit();
 
@@ -92,10 +97,14 @@ export class BuildExcel {
     }
   }
 
-  private async writeSlices(wkw: excel.stream.xlsx.WorkbookWriter, slices: SliceStatInterface[]): Promise<void> {
+  private async writeSlices(
+    wkw: excel.stream.xlsx.WorkbookWriter,
+    slices: SliceStatInterface[],
+    withDeclared: boolean,
+  ): Promise<void> {
     try {
       if (!slices.length) return;
-      await this.slicesWsWriter.call(wkw, slices);
+      await this.slicesWsWriter.call(wkw, slices, withDeclared);
     } catch (e) {
       logger.error("[apdf:buildExcel] Error while computing slices");
       if (e instanceof Error) {

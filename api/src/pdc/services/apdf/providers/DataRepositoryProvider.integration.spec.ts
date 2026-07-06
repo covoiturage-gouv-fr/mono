@@ -64,4 +64,15 @@ describe("DataRepositoryProvider", () => {
     }
     assertEquals(batches, []);
   });
+
+  // GEN-643 : valide que la jointure latérale du montant déclaré (appariement par
+  // SIREN sur carpool_v2.operator_incentives) est un SQL valide contre le schéma réel.
+  it("getPolicyCursor supports the declared-incentive lateral join (SIREN) without crashing", async () => {
+    await using cursor = await repository.getPolicyCursor({ ...params, declared_siren: "287500078" });
+    const batches: APDFTripInterface[][] = [];
+    for await (const rows of cursor.read(50)) {
+      batches.push(rows);
+    }
+    assertEquals(batches, []);
+  });
 });

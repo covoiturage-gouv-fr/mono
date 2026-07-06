@@ -13,6 +13,9 @@ export interface CampaignSearchParamsInterface {
   operator_id: number;
   start_date: Date;
   end_date: Date;
+  // SIREN (9 chiffres) du territoire financeur, quand la campagne expose le delta
+  // déclaré vs calculé (config extras.declared_incentives). Absent sinon.
+  declared_siren?: string | null;
 }
 
 export interface DataRepositoryInterface {
