@@ -1,7 +1,7 @@
 {{ config(severity='error', tags=['trusted', 'carpools']) }}
 
 SELECT c._id
-FROM {{ source('carpool_v2', 'carpools') }} AS c
+FROM {{ source('dlk_import', 'carpool_v2_carpools') }} AS c
 WHERE
   c.start_datetime
   >= {{ window_start(ref('carpools'), 'start_datetime', lookback_nb=3) }}

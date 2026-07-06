@@ -19,7 +19,7 @@
 
 WITH source_carpools AS (
     SELECT *
-    FROM {{ source('carpool_v2', 'carpools') }} c
+    FROM {{ source('dlk_import', 'carpool_v2_carpools') }} c
     WHERE {{ time_filter('c.start_datetime', 'start_datetime', lookback_nb=3) }}
 ),
 
@@ -42,7 +42,7 @@ carpools_status AS (
             AND s.fraud_status = 'passed',
             FALSE
         ) AS valid_acquisition_status
-    FROM {{ source('carpool_v2', 'status') }} s
+    FROM {{ source('dlk_import', 'carpool_v2_status') }} s
     INNER JOIN source_carpools c ON s.carpool_id = c._id
 ),
 
@@ -50,7 +50,7 @@ fraud_labels AS (
     SELECT
         fl.carpool_id,
         ARRAY_AGG(fl.label) AS fraud_labels
-    FROM {{ source('fraudcheck', 'labels') }} fl
+    FROM {{ source('dlk_import', 'fraudcheck_labels') }} fl
     INNER JOIN source_carpools c ON fl.carpool_id = c._id
     GROUP BY 1
 ),
@@ -59,20 +59,20 @@ anomaly_labels AS (
     SELECT
         al.carpool_id,
         ARRAY_AGG(al.label) AS anomaly_labels
-    FROM {{ source('anomaly', 'labels') }} al
+    FROM {{ source('dlk_import', 'anomaly_labels') }} al
     INNER JOIN source_carpools c ON al.carpool_id = c._id
     GROUP BY 1
 ),
 
 terms_violation_error_labels AS (
     SELECT tv.carpool_id, tv.labels AS terms_violation_error_labels
-    FROM {{ source('carpool_v2', 'terms_violation_error_labels') }} tv
+    FROM {{ source('dlk_import', 'carpool_v2_terms_violation_error_labels') }} tv
     INNER JOIN source_carpools c ON tv.carpool_id = c._id
 ),
 
 operators AS (
     SELECT DISTINCT left(siret, 9) AS code, name AS libelle
-    FROM {{ source('operator', 'operators') }}
+    FROM {{ source('dlk_import', 'operator_operators') }}
 ),
 
 collectivites AS (
@@ -206,12 +206,12 @@ base_carpools AS (
 
     FROM source_carpools c
     LEFT JOIN carpools_status cs ON c._id = cs.carpool_id
-    LEFT JOIN {{ source('carpool_v2', 'geo') }} g ON g.carpool_id = c._id
+    LEFT JOIN {{ source('dlk_import', 'carpool_v2_geo') }} g ON g.carpool_id = c._id
     LEFT JOIN {{ ref('carpools_geo_correction') }} gc ON gc.carpool_id = c._id
     LEFT JOIN fraud_labels fl ON c._id = fl.carpool_id
     LEFT JOIN anomaly_labels al ON c._id = al.carpool_id
     LEFT JOIN terms_violation_error_labels tv ON c._id = tv.carpool_id
-    LEFT JOIN {{ source('operator', 'operators') }} o ON c.operator_id = o._id
+    LEFT JOIN {{ source('dlk_import', 'operator_operators') }} o ON c.operator_id = o._id
     LEFT JOIN operator_incentives_agg oi ON oi.carpool_id = c._id
     LEFT JOIN campaigns_agg rpc ON rpc.carpool_v2_id = c._id
 )

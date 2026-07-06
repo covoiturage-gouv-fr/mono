@@ -104,7 +104,9 @@ SELECT
   )                AS journey_duration
 
 FROM {{ ref('carpools') }} AS c
-LEFT JOIN {{ source('carpool_v2', 'carpools') }} AS sc ON c._id = sc._id
+LEFT JOIN
+  {{ source('dlk_import', 'carpool_v2_carpools') }} AS sc
+  ON c._id = sc._id
 LEFT JOIN
   {{ ref('territory_month_arr_from') }} AS ts
   ON

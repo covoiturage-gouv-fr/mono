@@ -1,7 +1,7 @@
 {{ config(severity='warn', tags=['trusted', 'carpools']) }}
 
 SELECT c._id
-FROM {{ source('carpool_v2', 'carpools') }} AS c
+FROM {{ source('dlk_import', 'carpool_v2_carpools') }} AS c
 INNER JOIN {{ ref('carpools') }} AS t ON c._id = t._id
 WHERE
   c.start_datetime

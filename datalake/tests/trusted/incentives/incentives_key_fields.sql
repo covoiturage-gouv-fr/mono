@@ -1,7 +1,7 @@
 {{ config(severity='warn', tags=['trusted', 'incentives']) }}
 
 SELECT pi._id
-FROM {{ source('policy', 'incentives') }} AS pi
+FROM {{ source('dlk_import', 'policy_incentives') }} AS pi
 INNER JOIN {{ ref('incentives') }} AS t ON pi._id = t._id
 WHERE
   pi.datetime

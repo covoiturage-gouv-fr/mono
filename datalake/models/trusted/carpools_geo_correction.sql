@@ -19,8 +19,10 @@ WITH source_carpools AS (
     g.start_geo_code,
     g.end_geo_code,
     g.updated_at               AS geo_updated_at
-  FROM {{ source('carpool_v2', 'carpools') }} AS c
-  INNER JOIN {{ source('carpool_v2', 'geo') }} AS g ON c._id = g.carpool_id
+  FROM {{ source('dlk_import', 'carpool_v2_carpools') }} AS c
+  INNER JOIN
+    {{ source('dlk_import', 'carpool_v2_geo') }} AS g
+    ON c._id = g.carpool_id
   WHERE {{ time_filter('c.start_datetime', 'start_datetime', lookback_nb=3) }}
 ),
 

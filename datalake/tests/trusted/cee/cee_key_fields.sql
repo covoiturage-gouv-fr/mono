@@ -1,7 +1,7 @@
 {{ config(severity='warn', tags=['trusted', 'cee']) }}
 
 SELECT cee._id
-FROM {{ source('cee', 'cee_applications') }} AS cee
+FROM {{ source('dlk_import', 'cee_cee_applications') }} AS cee
 INNER JOIN {{ ref('cee') }} AS t ON cee._id = t._id
 WHERE
   cee.datetime >= {{ window_start(ref('cee'), 'datetime') }}

@@ -3,7 +3,7 @@
 
 SELECT 1 AS failure
 WHERE (
-  SELECT COUNT(*) FROM {{ source('carpool_v2', 'carpools') }}
+  SELECT COUNT(*) FROM {{ source('dlk_import', 'carpool_v2_carpools') }}
   WHERE
     start_datetime
     >= {{ window_start(ref('carpools'), 'start_datetime', lookback_nb=3) }}

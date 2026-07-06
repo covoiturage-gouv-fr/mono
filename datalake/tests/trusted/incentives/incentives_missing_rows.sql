@@ -2,7 +2,7 @@
 {{ config(severity='warn', tags=['trusted', 'incentives']) }}
 
 SELECT pi._id
-FROM {{ source('policy', 'incentives') }} AS pi
+FROM {{ source('dlk_import', 'policy_incentives') }} AS pi
 WHERE
   pi.datetime
   >= {{ window_start(ref('incentives'), 'datetime', lookback_nb=3) }}
