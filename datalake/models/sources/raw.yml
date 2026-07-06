@@ -1,7 +1,7 @@
 version: 2
 sources:
   - name: raw
-    schema: dbt_raw
+    schema: zone_raw
     tables:
       - name: insee_mvt_com_2025
         columns:

@@ -23,7 +23,7 @@ Remplace les projet legacy `sqlmesh/` et `dbt/`. Ingère les données brutes de 
            │  (DuckDB → PG)    │  (DuckDB → PG)         │  (requests → PG)
            ▼                   ▼                        ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
-│  ZONE RAW  (dbt_raw)                                                    │
+│  ZONE RAW  (zone_raw)                                                   │
 │  Tables sources, pas de transformation, données telles quelles          │
 │  carpool_v1/v2 · cee · company · fraudcheck · anomaly · territory ·     │
 │  operator · policy · communes · EPCIs · depts · régions · campagnes     │
@@ -31,7 +31,7 @@ Remplace les projet legacy `sqlmesh/` et `dbt/`. Ingère les données brutes de 
                                 │  dbt run --select trusted.*
                                 ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
-│  ZONE TRUSTED  (dbt_trusted)  — 8 modèles                               │
+│  ZONE TRUSTED  (zone_trusted)  — 8 modèles                              │
 │  Nettoyage, enrichissement géographique, dédoublonnage                  │
 │                                                                         │
 │  ┌─────────────────────────────────────────────────────────────────┐    │
@@ -46,7 +46,7 @@ Remplace les projet legacy `sqlmesh/` et `dbt/`. Ingère les données brutes de 
                                 │  dbt run --select aggregated.*
                                 ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
-│  ZONE AGGREGATED  (dbt_aggregated)  — 469 modèles générés par macros    │
+│  ZONE AGGREGATED  (zone_aggregated)  — 469 modèles générés par macros   │
 │                                                                         │
 │  Grains temporels : day · month · quarter · semester · year             │
 │  Périmètres géo   : arr · com · plm · epci · aom · dep · reg · pays     │
@@ -107,7 +107,7 @@ Remplace les projet legacy `sqlmesh/` et `dbt/`. Ingère les données brutes de 
                                 │  dbt run --select exposed.*
                                 ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
-│  ZONE EXPOSED  (dbt_exposed)  — 22 modèles                              │
+│  ZONE EXPOSED  (zone_exposed)  — 22 modèles                             │
 │                                                                         │
 │  Observatory · 20 modèles  (4 grains : mois/trimestre/semestre/année)   │
 │  ┌────────────────────────────────────────────────────────────────┐     │
@@ -233,7 +233,7 @@ Séquence à exécuter **une seule fois** pour peupler le datalake from scratch.
 just pipeline-raw
 ```
 
-Charge via DuckDB les données IGN 2025 (GPKG), CEREMA AOMs et mouvements INSEE depuis S3 ou URL publiques vers `dbt_raw`. Chunk size : 10 000 lignes. Inclut géométries complètes, simplifiées et centroïdes pour les communes, EPCIs, départements et régions. Charge aussi les campagnes et aires de covoiturage depuis data.gouv.fr.
+Charge via DuckDB les données IGN 2025 (GPKG), CEREMA AOMs et mouvements INSEE depuis S3 ou URL publiques vers `zone_raw`. Chunk size : 10 000 lignes. Inclut géométries complètes, simplifiées et centroïdes pour les communes, EPCIs, départements et régions. Charge aussi les campagnes et aires de covoiturage depuis data.gouv.fr.
 
 ### Étape 2 — Zone trusted géographique
 
@@ -241,7 +241,7 @@ Charge via DuckDB les données IGN 2025 (GPKG), CEREMA AOMs et mouvements INSEE 
 just pipeline-trusted-geo
 ```
 
-Construit la hiérarchie géographique dans `dbt_trusted` (`perimeters`, `perimeters_agg`, `com_evolution`). Base pour tous les JOINs géographiques des carpools.
+Construit la hiérarchie géographique dans `zone_trusted` (`perimeters`, `perimeters_agg`, `com_evolution`). Base pour tous les JOINs géographiques des carpools.
 
 ### Étape 3 — Backfill des carpools
 

@@ -72,8 +72,8 @@ backfill-batch model period start end *args:
 
 # Pipeline 1: Seed raw data from S3 to raw_zone (yearly)
 pipeline-raw *args:
-  just seed raw/seed_perimeters.json dbt_raw --folder seeds {{ if args =~ "--full-refresh" { "--overwrite" } else { "" } }}
-  just seed raw/seed_datagouv.json dbt_raw {{ if args =~ "--full-refresh" { "--overwrite" } else { "" } }}
+  just seed raw/seed_perimeters.json zone_raw --folder seeds {{ if args =~ "--full-refresh" { "--overwrite" } else { "" } }}
+  just seed raw/seed_datagouv.json zone_raw {{ if args =~ "--full-refresh" { "--overwrite" } else { "" } }}
 
 # Pipeline 2: trusted geo (yearly)
 pipeline-trusted-geo *args:
