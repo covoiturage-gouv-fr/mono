@@ -12,7 +12,7 @@ export class TripsWorksheetWriter extends AbstractWorksheetWriter {
   public readonly CURSOR_BATCH_SIZE = 100;
   public readonly WORKSHEET_NAME = "Trajets";
   // TODO improve listing of columns
-  public readonly WORKSHEET_COLUMN_HEADERS: Partial<excel.Column>[] = [
+  public readonly BASE_COLUMN_KEYS: string[] = [
     "rpc_journey_id",
     "operator_journey_id",
     "operator_trip_id",
@@ -33,17 +33,23 @@ export class TripsWorksheetWriter extends AbstractWorksheetWriter {
     "rpc_incentive",
     "incentive_type",
     "passenger_contribution",
-  ].map((header) => ({ header, key: header }));
+  ];
 
   async call(
     cursor: Cursor<APDFTripInterface>,
     config: ExcelCampaignConfig,
     workbookWriter: excel.stream.xlsx.WorkbookWriter,
   ): Promise<void> {
+    // La colonne du déclaré (U) n'est ajoutée que pour les campagnes exposant le
+    // delta déclaré vs calculé (config extras.declared_incentives) — cf. GEN-643.
+    const columnKeys = config.extras?.declared_incentives
+      ? [...this.BASE_COLUMN_KEYS, "operator_declared_incentive"]
+      : this.BASE_COLUMN_KEYS;
+
     const worksheet: excel.Worksheet = this.initWorkSheet(
       workbookWriter,
       this.WORKSHEET_NAME,
-      this.WORKSHEET_COLUMN_HEADERS,
+      columnKeys.map((header) => ({ header, key: header })),
     );
 
     // style columns and apply optimised width
@@ -69,6 +75,7 @@ export class TripsWorksheetWriter extends AbstractWorksheetWriter {
       R: { width: 12, font },
       S: { width: 12, font },
       T: { width: 12, font },
+      ...(config.extras?.declared_incentives ? { U: { width: 12, font } } : {}),
     };
 
     Object.entries(columns).forEach(([key, value]) => {

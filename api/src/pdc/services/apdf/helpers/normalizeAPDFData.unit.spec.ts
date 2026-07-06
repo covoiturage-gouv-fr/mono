@@ -25,6 +25,7 @@ describe("normalizeAPDFData", () => {
       operator_journey_id: "ojid",
       operator_trip_id: "otid",
       operator: "Operator",
+      operator_declared_incentive: 150,
       passenger_contribution: 180,
       passenger_operator_user_id: "passenger",
       rpc_incentive: 200,
@@ -45,5 +46,15 @@ describe("normalizeAPDFData", () => {
   it("keeps null passenger_contribution as null", () => {
     const result = normalize(fakeTrip({ passenger_contribution: null }), config);
     assertEquals(result.passenger_contribution, null);
+  });
+
+  it("converts operator_declared_incentive from cents to euros", () => {
+    const result = normalize(fakeTrip({ operator_declared_incentive: 150 }), config);
+    assertEquals(result.operator_declared_incentive, 1.5);
+  });
+
+  it("keeps null operator_declared_incentive as null", () => {
+    const result = normalize(fakeTrip({ operator_declared_incentive: null }), config);
+    assertEquals(result.operator_declared_incentive, null);
   });
 });

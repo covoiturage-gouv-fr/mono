@@ -145,6 +145,7 @@ describe("BuildExcel", () => {
         operator_id: operator_id,
         start_date: start_date,
         end_date: end_date,
+        declared_siren: null,
       },
       wrapSlices(campaign.params.slices),
     );
@@ -154,6 +155,7 @@ describe("BuildExcel", () => {
       operator_id: operator_id,
       start_date: start_date,
       end_date: end_date,
+      declared_siren: null,
     });
 
     sinon.assert.calledOnceWithExactly(filenameStub!, {
@@ -215,6 +217,7 @@ describe("BuildExcel", () => {
         operator_id: operator_id,
         start_date: start_date,
         end_date: end_date,
+        declared_siren: null,
       },
       wrapSlices(campaign.params.slices),
     );
@@ -224,6 +227,7 @@ describe("BuildExcel", () => {
       operator_id: operator_id,
       start_date: start_date,
       end_date: end_date,
+      declared_siren: null,
     });
 
     sinon.assert.calledOnceWithExactly(filenameStub!, {
@@ -280,6 +284,7 @@ describe("BuildExcel", () => {
         operator_id: operator_id,
         start_date: start_date,
         end_date: end_date,
+        declared_siren: null,
       },
       wrapSlices(campaign.params.slices),
     );
@@ -289,6 +294,7 @@ describe("BuildExcel", () => {
       operator_id: operator_id,
       start_date: start_date,
       end_date: end_date,
+      declared_siren: null,
     });
 
     sinon.assert.calledOnceWithExactly(filenameStub!, {

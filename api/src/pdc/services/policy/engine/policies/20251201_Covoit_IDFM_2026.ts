@@ -169,7 +169,11 @@ export const CovoitIDFM2026: PolicyHandlerStaticInterface = class extends Abstra
       operators: getOperatorsAt(this.operators),
       allTimeOperators: Array.from(new Set(this.operators.flatMap((entry) => entry.operators))),
       limits: { glob: this.max_amount },
-      extras: {},
+      // GEN-643 — expose dans l'export APDF le delta entre incitation calculée (RPC)
+      // et déclarée par l'opérateur, appariée au SIREN du territoire financeur (IdFM).
+      extras: {
+        declared_incentives: { siren: "287500078" },
+      },
     };
   }
 };
