@@ -138,7 +138,7 @@ Pour les index uniques, préfixer avec `UNIQUE` :
 
 ```sql
 @create_indexes(
-  'UNIQUE uq_start_geo_code_end_geo_code_journey_date ON refined_zone.obs_od_day (start_geo_code, end_geo_code, journey_date)',
+  'UNIQUE uq_insee_counters_id ON trusted_zone.insee_counters (_id)',
 );
 ```
 
@@ -150,14 +150,12 @@ Chaque modèle matérialisé doit définir un `cron` pour contrôler sa fréquen
 
 | Fréquence | Syntaxe | Exemples |
 |-----------|---------|----------|
-| Quotidien | `@daily` | journeys, incentives, obs_od_day |
-| Hebdomadaire | `@weekly` | campaigns, aires_covoiturage (chargeurs API « latest ») |
-| Mensuel | `@monthly` | insee_counters, obs_od_month |
-| Trimestriel | `0 0 1 1,4,7,10 *` | obs_od_quarter |
-| Semestriel | `0 0 1 1,7 *` | obs_od_semester |
-| Annuel | `@yearly` | obs_od_year, périmètres millésimés (IGN, CEREMA, INSEE) |
+| Quotidien | `@daily` | journeys, incentives, operator_incentives |
+| Hebdomadaire | `@weekly` | campaigns (chargeur API « latest ») |
+| Mensuel | `@monthly` | insee_counters |
+| Annuel | `@yearly` | périmètres millésimés (IGN, CEREMA, INSEE) |
 
-SQLMesh utilise la librairie `croniter`. Presets supportés : `@daily`, `@weekly`, `@monthly`, `@yearly` (ou `@annually`), `@hourly`. La syntaxe cron standard à 5 champs fonctionne également.
+SQLMesh utilise la librairie `croniter`. Presets supportés : `@daily`, `@weekly`, `@monthly`, `@yearly` (ou `@annually`), `@hourly`. La syntaxe cron standard à 5 champs fonctionne également (ex. `0 0 1 1,4,7,10 *` pour un modèle trimestriel).
 
 ### Timezones et variables de batch
 
@@ -269,8 +267,8 @@ $ sqlmesh fetchdf "SELECT * FROM <zone>[__<env>].<table>"
 Exemples :
 
 ```shell
-sqlmesh fetchdf "SELECT * FROM raw_zone__dev.aires_covoiturage"
-sqlmesh fetchdf "SELECT * FROM refined_zone.part_campaigns_by_month"
+sqlmesh fetchdf "SELECT * FROM raw_zone__dev.journeys"
+sqlmesh fetchdf "SELECT * FROM refined_zone.export_opendata_list"
 ```
 
 ### Débug / réparation
@@ -295,11 +293,10 @@ sqlmesh plan dev --select-model 'raw_zone.old_perimeters_*' \
   --select-model 'raw_zone.insee_*' --select-model 'raw_zone.ign_*' \
   --select-model 'raw_zone.cerema_*' --auto-apply
 
-# 2. Modèles géo trusted (com_evolution, perimeters, perimeters_agg, aom_region)
+# 2. Modèles géo trusted (com_evolution, perimeters, perimeters_agg)
 sqlmesh plan dev --select-model 'trusted_zone.com_evolution' \
   --select-model 'trusted_zone.perimeters' \
-  --select-model 'trusted_zone.perimeters_agg' \
-  --select-model 'trusted_zone.aom_region' --auto-apply
+  --select-model 'trusted_zone.perimeters_agg' --auto-apply
 
 # 3. Dry-run pour créer la couche virtuelle (views) sans backfill
 sqlmesh plan dev --dry-run  # répondre 'y' au prompt
