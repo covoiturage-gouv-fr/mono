@@ -77,8 +77,8 @@ pipeline-raw *args:
 
 # Pipeline 2: trusted geo (yearly)
 pipeline-trusted-geo *args:
-  just dbt build --select "tag:trusted,tag:geo" {{args}}
+  just dbt run --select "tag:trusted,tag:geo" {{args}}
 
 # Pipeline 3 : daily update:
 pipeline-daily *args:
-  just dbt build --select "tag:daily" {{args}}
+  just dbt run --select "tag:daily" {{args}}
