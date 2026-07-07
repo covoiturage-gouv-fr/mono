@@ -40,6 +40,8 @@ models:
       +schema: "analytics"
     observatoire:
       +schema: "observatoire_stats"
+      # désactive les workers parallèles : évite la saturation du /dev/shm Postgres
+      +pre-hook: "SET max_parallel_workers_per_gather = 0"
     geo:
       +schema: "geo_stats"
     dashboard:
