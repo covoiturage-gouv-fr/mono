@@ -1,27 +1,20 @@
 import { provider } from "@/ilos/common/index.ts";
 import { DenoPostgresConnection } from "@/ilos/connection-postgres/index.ts";
-import { logger } from "@/lib/logger/index.ts";
 import sql, { join, raw } from "@/lib/pg/sql.ts";
 import { staleDelay } from "../config/export.ts";
 import { Export, ExportStatus } from "../models/Export.ts";
-import { ExportRecipient } from "../models/ExportRecipient.ts";
 import { LogServiceInterfaceResolver } from "../services/LogService.ts";
 
-export type ExportCreateData =
-  & Pick<Export, "created_by" | "target" | "params">
-  & { recipients: ExportRecipient[] };
+export type ExportCreateData = Pick<Export, "created_by" | "target" | "params">;
 export type ExportUpdateData = Partial<
-  Pick<Export, "status" | "progress" | "download_url" | "filename" | "file_size" | "error" | "stats">
+  Pick<Export, "status" | "download_url" | "filename" | "file_size" | "error" | "stats">
 >;
-export type ExportProgress = (progress: number) => Promise<void>;
 
 export abstract class ExportRepositoryInterfaceResolver {
   /**
    * Create an new export in the database
    *
    * The export is created with a `pending` status.
-   * Recipients are added to the export if passed in the data and
-   * the creator is added as a recipient if not already in the list.
    *
    * @param {ExportCreateData} _data
    * @returns {Promise<Export>}
@@ -111,19 +104,6 @@ export abstract class ExportRepositoryInterfaceResolver {
   }
 
   /**
-   * Progress callback
-   *
-   * to be injected in the carpool repository to be able
-   * to update the `progress` field of the export as the export is running
-   *
-   * @param {number} _id
-   * @returns {ExportProgress}
-   */
-  public async progress(_id: number): Promise<ExportProgress> {
-    throw new Error("Not implemented");
-  }
-
-  /**
    * Pick pending exports
    *
    * Exports are picked in a FIFO manner (older first).
@@ -135,26 +115,16 @@ export abstract class ExportRepositoryInterfaceResolver {
   }
 
   /**
-   * Get the recipients of an export
+   * Atomically claim the oldest pending export of the given targets
    *
-   * @param _id Export _id
+   * Flips the row from `pending` to `running` in a single statement,
+   * using `FOR UPDATE SKIP LOCKED` so concurrent workers never claim the
+   * same row. Returns the claimed export or `null` when the queue is empty.
+   *
+   * @param {string[]} _targets
+   * @returns {Promise<Export | null>}
    */
-  public async recipients(_id: number): Promise<ExportRecipient[]> {
-    throw new Error("Not implemented");
-  }
-
-  /**
-   * Add a recipient to an export
-   *
-   * Recipients will receive notifications when the export is done.
-   *
-   * @param {number} _export_id
-   * @param {ExportRecipient} _recipient
-   */
-  public async addRecipient(
-    _export_id: number,
-    _recipient: ExportRecipient,
-  ): Promise<void> {
+  public async claim(_targets: string[]): Promise<Export | null> {
     throw new Error("Not implemented");
   }
 
@@ -174,7 +144,6 @@ export abstract class ExportRepositoryInterfaceResolver {
 })
 export class ExportRepository {
   protected readonly exportsTable = "export.exports";
-  protected readonly recipientsTable = "export.recipients";
 
   constructor(
     protected connection: DenoPostgresConnection,
@@ -182,7 +151,7 @@ export class ExportRepository {
   ) {}
 
   public async create(data: ExportCreateData): Promise<Export> {
-    const { created_by, target, params, recipients } = data;
+    const { created_by, target, params } = data;
 
     const rows = await this.connection.query(sql`
         INSERT INTO ${raw(this.exportsTable)}
@@ -191,11 +160,6 @@ export class ExportRepository {
         RETURNING *
       `);
     const exp = Export.fromJSON(rows[0]);
-
-    // add recipients
-    for (const recipient of recipients) {
-      await this.addRecipient(exp._id, recipient);
-    }
 
     // log the creation event
     await this.logger.created(exp._id);
@@ -215,7 +179,7 @@ export class ExportRepository {
   }
 
   private static readonly UPDATABLE_COLUMNS: ReadonlySet<string> = new Set([
-    "status", "progress", "download_url", "filename", "file_size", "error", "stats",
+    "status", "download_url", "filename", "file_size", "error", "stats",
   ]);
 
   public async update(id: number, data: ExportUpdateData): Promise<void> {
@@ -288,18 +252,6 @@ export class ExportRepository {
     `);
   }
 
-  public async progress(id: number): Promise<ExportProgress> {
-    return async (progress: number): Promise<void> => {
-      logger.info(`Export #${id} progress: ${progress}%`);
-
-      await this.connection.query(sql`
-        UPDATE ${raw(this.exportsTable)}
-        SET progress = ${progress}::int
-        WHERE _id = ${id}
-      `);
-    };
-  }
-
   public async pickPending(): Promise<Export | null> {
     const rows = await this.connection.query(sql`
         SELECT * FROM ${raw(this.exportsTable)}
@@ -310,33 +262,21 @@ export class ExportRepository {
     return rows.length ? Export.fromJSON(rows[0]) : null;
   }
 
-  public async recipients(id: number): Promise<ExportRecipient[]> {
-    const rows = await this.connection.query<ExportRecipient>(sql`
-      SELECT *
-      FROM ${raw(this.recipientsTable)}
-      WHERE export_id = ${id}
-    `);
-
-    return rows.map(ExportRecipient.fromJSON);
-  }
-
-  public async addRecipient(
-    export_id: number,
-    recipient: ExportRecipient,
-  ): Promise<void> {
-    if (!export_id) throw new Error("Export _id is required");
-    if (!recipient.email) throw new Error("Recipient email is required");
-
-    await this.connection.query(sql`
-      INSERT INTO ${raw(this.recipientsTable)}
-      (export_id, email, fullname, message)
-      VALUES (
-        ${export_id},
-        ${recipient.email},
-        ${recipient.fullname},
-        ${recipient.message}
+  public async claim(targets: string[]): Promise<Export | null> {
+    const rows = await this.connection.query(sql`
+      UPDATE ${raw(this.exportsTable)}
+      SET status = ${ExportStatus.RUNNING}
+      WHERE _id = (
+        SELECT _id FROM ${raw(this.exportsTable)}
+        WHERE status = 'pending'
+          AND target = ANY(${targets})
+        ORDER BY created_at ASC
+        LIMIT 1
+        FOR UPDATE SKIP LOCKED
       )
+      RETURNING *
     `);
+    return rows.length ? Export.fromJSON(rows[0]) : null;
   }
 
   public async failStaleExports(): Promise<void> {
