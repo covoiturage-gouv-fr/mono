@@ -1,6 +1,9 @@
 # syntax=docker/dockerfile:1.7
 
-# Stage 1 -- builder: compile native wheels into /data/.venv
+# Stage 1 -- just: pin the `just` binary, no curl/bash needed in runtime
+FROM ghcr.io/casey/just:1.55.1 AS just
+
+# Stage 2 -- builder: compile native wheels into /data/.venv
 FROM ghcr.io/astral-sh/uv:python3.13-bookworm-slim AS builder
 
 # Build deps (stripped in runtime stage):
@@ -40,7 +43,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 
 RUN /data/.venv/bin/dbt deps --project-dir /data
 
-# Stage 2 -- runtime: minimal image, no compilers or dev headers
+# Stage 3 -- runtime: minimal image, no compilers or dev headers
 FROM python:3.13-slim-bookworm AS runtime
 
 # Runtime libs:
@@ -60,6 +63,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN addgroup --gid 1000 datalake \
   && adduser --uid 1000 --disabled-password --ingroup datalake datalake
+
+COPY --from=just /just /usr/local/bin/just
 
 WORKDIR /data
 COPY --from=builder --chown=datalake:datalake /data /data
