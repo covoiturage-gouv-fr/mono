@@ -12,7 +12,10 @@
       { 'columns':['end_h3index_z8'] },
       { 'columns': ['driver_key'] },
       { 'columns': ['passenger_key'] },
-      { 'columns': ['valid_acquisition_status'] }
+      { 'columns': ['valid_acquisition_status'] },
+      { 'columns': ['operator_id'] },
+      { 'columns': ['start_geo_code'] },
+      { 'columns': ['end_geo_code'] }
     ],
     tags=['trusted', 'carpools', 'daily']
 ) }}

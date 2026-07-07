@@ -18,8 +18,14 @@ models:
         data_type: character varying
       - name: operator_id
         data_type: integer
+      - name: status
+        data_type: text
       - name: start_date_filter
         data_type: date
+      - name: start_datetime_tz
+        data_type: timestamp without time zone
+      - name: start_datetime_utc
+        data_type: timestamp without time zone
       - name: start_datetime
         data_type: text
       - name: start_date
@@ -118,6 +124,8 @@ models:
         data_type: smallint
       - name: cee_application
         data_type: boolean
+      - name: incentive_type
+        data_type: text
       - name: incentive_0_siret
         data_type: text
       - name: incentive_0_name

@@ -37,9 +37,31 @@ SELECT
   c.anomaly_status,
   c.operator_id,
 
+  -- combined carpool status (port of castToStatusEnum precedence)
+  CASE
+    WHEN c.acquisition_status IS NULL                     THEN 'unknown'
+    WHEN c.acquisition_status = 'canceled'                THEN 'canceled'
+    WHEN c.acquisition_status IN ('expired', 'terms_violation_error')
+      THEN 'terms_violation_error'
+    WHEN c.acquisition_status = 'failed'                  THEN 'acquisition_error'
+    WHEN c.acquisition_status = 'processed'
+      AND c.anomaly_status = 'passed'
+      AND c.fraud_status = 'passed'                       THEN 'ok'
+    WHEN c.fraud_status = 'failed'                        THEN 'fraud_error'
+    WHEN c.anomaly_status = 'failed'                      THEN 'anomaly_error'
+    ELSE 'pending'
+  END
+    AS status,
+
   -- date filtering column (raw DATE in Europe/Paris)
   c.start_datetime_tz::date
     AS start_date_filter,
+
+  -- raw timestamps for sargable filtering (not emitted in CSV)
+  c.start_datetime_tz
+    AS start_datetime_tz,
+  c.start_datetime
+    AS start_datetime_utc,
 
   -- formatted dates (rounded to 10 min, Europe/Paris)
   c.start_geo_code
@@ -155,6 +177,8 @@ SELECT
     AS passenger_contribution,
   cee._id IS NOT NULL
     AS cee_application,
+  'normal'::text
+    AS incentive_type,
   c.oi_details[0]
   ->> 'siret'
     AS incentive_0_siret,
