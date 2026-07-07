@@ -12,6 +12,10 @@ dbt-env:
 dbt cmd *args:
   dbt {{cmd}} {{args}} --profiles-dir profiles
 
+# Apply datalake DB migrations (custom functions, grants). Idempotent — run at each deploy.
+migrate *args:
+  python -m pipelines.cmd.migrate {{args}}
+
 # Supprime une fenêtre temporelle puis relance proprement (évite les lignes fantômes)
 # ex: just dbt-recompute models/aggregated/od 2026-01-01 2027-01-01
 dbt-recompute path start end *args:

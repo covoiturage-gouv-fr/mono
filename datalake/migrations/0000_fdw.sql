@@ -1,0 +1,53 @@
+-- =============================================================================
+-- 0000_fdw — Foreign Data Wrapper setup (DOCUMENTATION ONLY, no-op for the runner)
+-- =============================================================================
+--
+-- This file intentionally contains NO executable SQL. The FDW that lets the
+-- datalake read the API database is set up ONCE by a SUPERUSER (ops repo /
+-- OpenTofu), not by this migration runner — it needs superuser privileges and
+-- per-environment secrets the runner does not have. This file documents that
+-- setup and is recorded in `schema_migrations` as a versioned placeholder.
+--
+-- Topology:
+--   covoiturage_production (API DB)          datalake_production (datalake DB)
+--     schema dlk_export  ── postgres_fdw ──►  schema dlk_import (foreign tables)
+--     (read-only, PII-minimized views)          consumed by dbt source 'dlk_import'
+--
+-- -----------------------------------------------------------------------------
+-- A. On the API DB (covoiturage_production) — done by ops + API migration
+-- -----------------------------------------------------------------------------
+--   -- role the datalake authenticates as (LOGIN + password), created by OpenTofu:
+--   -- CREATE ROLE datalake_fdw LOGIN PASSWORD '<secret>';
+--   -- the dlk_export views + grants are applied by the API migration
+--   -- api/src/db/migrations/20260703000000-datalake-fdw-export.sql:
+--   --   GRANT USAGE ON SCHEMA dlk_export TO datalake_fdw;
+--   --   GRANT SELECT ON ALL TABLES IN SCHEMA dlk_export TO datalake_fdw;
+--
+-- -----------------------------------------------------------------------------
+-- B. On the datalake DB (datalake_production) — done ONCE by a superuser
+-- -----------------------------------------------------------------------------
+--   -- CREATE EXTENSION IF NOT EXISTS postgres_fdw;
+--   --
+--   -- CREATE SERVER <FDW_SERVER>                     -- e.g. covoiturage_fdw
+--   --   FOREIGN DATA WRAPPER postgres_fdw
+--   --   OPTIONS (host '<api-db-host>', port '5432', dbname 'covoiturage_production');
+--   --
+--   -- CREATE USER MAPPING FOR <datalake_app_role>    -- the role dbt/worker connect as
+--   --   SERVER <FDW_SERVER>
+--   --   OPTIONS (user 'datalake_fdw', password '<secret>');
+--   --
+--   -- CREATE SCHEMA IF NOT EXISTS dlk_import;
+--   -- IMPORT FOREIGN SCHEMA dlk_export
+--   --   FROM SERVER <FDW_SERVER> INTO dlk_import;
+--   -- GRANT USAGE ON SCHEMA dlk_import TO <datalake_app_role>;
+--
+-- -----------------------------------------------------------------------------
+-- Password rotation
+-- -----------------------------------------------------------------------------
+--   The datalake_fdw password lives in TWO places that must stay in sync:
+--     1. the role on the API DB          (ALTER ROLE datalake_fdw PASSWORD ...)
+--     2. the USER MAPPING on this DB      (ALTER USER MAPPING ... OPTIONS SET password ...)
+--   Both are rotated by the infra / ops repo (OpenTofu), NOT from this repo —
+--   rotation needs superuser + secret management that live outside the datalake.
+--
+-- (No statements below — recorded as applied, nothing executed.)
