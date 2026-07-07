@@ -6,8 +6,7 @@ import {
   NotificationTransporterInterfaceResolver,
 } from "@/pdc/providers/notification/index.ts";
 import { Export } from "@/pdc/services/export/models/Export.ts";
-import { ExportRecipient } from "@/pdc/services/export/models/ExportRecipient.ts";
-import { ExportRepositoryInterfaceResolver } from "@/pdc/services/export/repositories/ExportRepository.ts";
+import { UserRepositoryInterfaceResolver } from "@/pdc/services/export/repositories/UserRepository.ts";
 import { ExportCSVErrorNotification } from "../notifications/ExportCSVErrorNotification.ts";
 import { ExportCSVNotification } from "../notifications/ExportCSVNotification.ts";
 import { ExportCSVSupportNotification } from "../notifications/ExportCSVSupportNotification.ts";
@@ -41,36 +40,32 @@ export class NotificationService {
 
   public constructor(
     protected kernel: KernelInterfaceResolver,
-    protected exportRepository: ExportRepositoryInterfaceResolver,
+    protected userRepository: UserRepositoryInterfaceResolver,
     protected emailer: NotificationTransporterInterfaceResolver<MailTemplateNotificationInterface>,
   ) {}
 
   /**
-   * Send the download link to the recipient
+   * Send the download link to the export creator
    */
   public async success(exp: Export, url: string): Promise<void> {
-    const recipients = await this.recipients(exp);
-    for (const { email, fullname } of recipients) {
-      const notification = new ExportCSVNotification(
-        `${fullname} <${email}>`,
-        { fullname, action_href: url },
-      );
-      await this.emailer.send(notification);
-    }
+    const { email, fullname } = await this.creator(exp);
+    const notification = new ExportCSVNotification(
+      `${fullname} <${email}>`,
+      { fullname, action_href: url },
+    );
+    await this.emailer.send(notification);
   }
 
   /**
-   * Send an error message to the recipient
+   * Send an error message to the export creator
    */
   public async error(exp: Export): Promise<void> {
-    const recipients = await this.recipients(exp);
-    for (const { email, fullname } of recipients) {
-      const notification = new ExportCSVErrorNotification(
-        `${fullname} <${email}>`,
-        { ...exp, error: exp.error },
-      );
-      await this.emailer.send(notification);
-    }
+    const { email, fullname } = await this.creator(exp);
+    const notification = new ExportCSVErrorNotification(
+      `${fullname} <${email}>`,
+      { ...exp, error: exp.error },
+    );
+    await this.emailer.send(notification);
   }
 
   /**
@@ -85,13 +80,11 @@ export class NotificationService {
     await this.emailer.send(notification);
   }
 
-  protected async recipients(exp: Export): Promise<Pick<ExportRecipient, "email" | "fullname">[]> {
-    const recipients = await this.exportRepository.recipients(exp._id);
-    return recipients.map((recipient: ExportRecipient) => {
-      return {
-        email: recipient.email,
-        fullname: recipient.fullname,
-      };
-    });
+  protected async creator(exp: Export): Promise<{ email: string; fullname: string }> {
+    const user = await this.userRepository.find(exp.created_by);
+    if (!user) {
+      throw new Error(`Export creator ${exp.created_by} not found`);
+    }
+    return { email: user.email, fullname: user.fullname };
   }
 }
