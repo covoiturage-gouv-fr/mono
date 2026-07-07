@@ -136,6 +136,9 @@ const permissions = {
   "export.status": ["common"],
   "export.cancel": ["common"],
   "export.download": ["common"],
+
+  // datalake export worker (control plane: claim/complete/fail)
+  "export.process": ["datalake.worker"],
 };
 
 function scopeToGroup(permissionName: string, group: string) {
@@ -154,6 +157,7 @@ function dispatchPermissionsFromMatrix(
     "operator.application": [],
     "registry.user": [],
     "registry.admin": [],
+    "datalake.worker": [],
   };
 
   for (const permissionName of Reflect.ownKeys(permissionsObject) as string[]) {
@@ -172,7 +176,15 @@ function dispatchPermissionsFromMatrix(
 
 const permissionsByRoles = dispatchPermissionsFromMatrix(permissions);
 
+// Machine/system roles do NOT inherit the `common` permission set granted to
+// every human user — they hold only their explicitly-scoped permissions
+// (least privilege). e.g. the datalake export worker holds only export.process.
+const SYSTEM_ROLES: ReadonlySet<string> = new Set(["datalake.worker"]);
+
 export function getPermissions(role: string): string[] {
+  if (SYSTEM_ROLES.has(role)) {
+    return [...(permissionsByRoles[role] ?? [])];
+  }
   return [
     ...permissionsByRoles["common"],
     ...permissionsByRoles[role],
