@@ -1,7 +1,17 @@
+from unittest.mock import MagicMock
+
 import pytest
 
-from pipelines.cmd.migrate import discover, select_pending, run_migrations
+from pipelines.cmd.migrate import _apply, discover, run_migrations, select_pending
 from pipelines.helpers.pg import pg_conninfo
+
+
+def test_apply_rejects_bad_version():
+    # version is a repo filename stem; a non-allowlisted stem must raise before any SQL
+    conn = MagicMock()
+    with pytest.raises(ValueError):
+        _apply(conn, "0001_bad-name", "SELECT 1;", "public.schema_migrations")
+    conn.pgconn.exec_.assert_not_called()
 
 
 def test_discover_is_sorted(tmp_path):

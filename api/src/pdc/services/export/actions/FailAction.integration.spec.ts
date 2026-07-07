@@ -121,4 +121,30 @@ describe("FailAction", () => {
       },
     );
   });
+
+  it("still marks failure when notification throws (best-effort)", async () => {
+    // rebind notification to throw — the row must still end up 'failure'
+    forceBind(NotificationService, {
+      success: async () => {},
+      error: async () => {
+        throw new Error("mail down");
+      },
+      support: async () => {},
+    });
+
+    const uuid = await seedRunning();
+
+    await assertHandler(
+      kc,
+      workerContext,
+      handlerConfig,
+      { uuid, message: "boom" },
+      async (response: ResultInterface) => {
+        assertEquals(response.status, "failure");
+        const row = await fetchByUuid(uuid);
+        assertEquals(row.status, "failure");
+        assertEquals(row.error?.message, "boom");
+      },
+    );
+  });
 });

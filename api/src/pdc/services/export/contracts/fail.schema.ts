@@ -6,7 +6,7 @@ export const schema = {
   required: ["uuid", "message"],
   properties: {
     uuid: { type: "string", format: "uuid" },
-    message: { type: "string" },
+    message: { type: "string", maxLength: 2000 },
   },
 };
 export const binding = [alias, schema];

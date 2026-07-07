@@ -15,6 +15,8 @@ SCHEMA) stays in the ops repo (OpenTofu) — this runner assumes those exist.
 import os
 from pathlib import Path
 
+import re
+
 import psycopg
 import typer
 from dotenv import load_dotenv
@@ -27,6 +29,9 @@ app = typer.Typer()
 
 MIGRATIONS_DIR = Path(__file__).resolve().parents[2] / "migrations"
 LEDGER = "public.schema_migrations"
+# version = migration filename stem, inlined into the ledger INSERT (simple protocol).
+# It is always a repo-shipped filename, never user input — this asserts that invariant.
+_VERSION_RE = re.compile(r"^[A-Za-z0-9_]+$")
 
 
 def discover(migrations_dir: Path) -> list[Path]:
@@ -57,6 +62,8 @@ def _apply(conn, version: str, sql: str, ledger: str) -> None:
     in a single call — the extended protocol (conn.execute) does not. `version` is
     an internal filename stem (never user input), safe to inline.
     """
+    if not _VERSION_RE.match(version):
+        raise ValueError(f"invalid migration version: {version!r}")
     script = f"BEGIN;\n{sql}\nINSERT INTO {ledger} (version) VALUES ('{version}');\nCOMMIT;"
     res = conn.pgconn.exec_(script.encode())
     if res.status not in (pq.ExecStatus.COMMAND_OK, pq.ExecStatus.TUPLES_OK):

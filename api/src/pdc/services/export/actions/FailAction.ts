@@ -1,6 +1,7 @@
 import { NotFoundException } from "@/ilos/common/exceptions/index.ts";
 import { handler } from "@/ilos/common/index.ts";
 import { Action as AbstractAction } from "@/ilos/core/index.ts";
+import { logger } from "@/lib/logger/index.ts";
 import { hasPermissionMiddleware } from "../../../providers/middleware/middlewares.ts";
 import { handlerConfig, ParamsInterface, ResultInterface } from "../contracts/fail.contract.ts";
 import { alias } from "../contracts/fail.schema.ts";
@@ -36,9 +37,14 @@ export class FailAction extends AbstractAction {
     // sets status = failure, stores the error JSON and logs the failure event
     await this.exportRepository.error(exp._id, params.message);
 
-    // mirror ProcessCommand's failure notification (creator + support)
-    await this.notification.error({ ...exp, error: params.message });
-    await this.notification.support({ ...exp, error: params.message });
+    // notifications best-effort: the row is already 'failure', a missing creator
+    // (or mail outage) must not undo it — mirror CompleteAction's non-fatal email
+    try {
+      await this.notification.error({ ...exp, error: params.message });
+      await this.notification.support({ ...exp, error: params.message });
+    } catch (e) {
+      logger.error(`Export ${exp.uuid} failed but notification failed: ${(e as Error).message}`);
+    }
 
     return { status: ExportStatus.FAILURE };
   }
