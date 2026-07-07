@@ -56,6 +56,10 @@ seed config schema *args:
 export config schema *args:
   python -m pipelines.cmd.export pipelines/config/{{config}} {{schema}} {{args}}
 
+# Drain the on-demand export queue (claims from API, writes to export bucket)
+export-worker *args:
+  python -m pipelines.cmd.export_worker {{args}}
+
 # Backfill par mois pour éviter les timeouts
 
 backfill-batch model period start end *args:

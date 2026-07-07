@@ -36,6 +36,19 @@ def s3_client(
     )
 
 
+def export_s3_client():
+    return s3_client(
+        endpoint=os.getenv("EXPORT_S3_ENDPOINT"),
+        access_key=os.getenv("EXPORT_S3_ACCESS_KEY"),
+        secret_key=os.getenv("EXPORT_S3_SECRET_KEY"),
+    )
+
+
+def s3_upload(bucket: str, key: str, local_path: str, client=None) -> None:
+    client = client or export_s3_client()
+    client.upload_file(local_path, bucket, key)
+
+
 def s3_exists(bucket: str, key: str, client=None) -> bool:
     """Vérifie si un objet existe dans le bucket S3."""
     client = client or s3_client()
