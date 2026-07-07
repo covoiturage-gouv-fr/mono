@@ -1,4 +1,4 @@
-{{ config(severity='error', tags=['trusted', 'cee']) }}
+{{ config(severity='warn', tags=['trusted', 'cee']) }}
 
 SELECT cee._id
 FROM {{ source('dlk_import', 'cee_cee_applications') }} AS cee

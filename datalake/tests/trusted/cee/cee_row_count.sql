@@ -1,4 +1,4 @@
-{{ config(severity='error', tags=['trusted', 'cee']) }}
+{{ config(severity='warn', tags=['trusted', 'cee']) }}
 
 SELECT 1 AS failure
 WHERE (

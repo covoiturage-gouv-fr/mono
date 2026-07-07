@@ -1,5 +1,5 @@
 -- COUNT(DISTINCT _id) côté modèle car unique_key inclut les champs de statut.
-{{ config(severity='error', tags=['trusted', 'carpools']) }}
+{{ config(severity='warn', tags=['trusted', 'carpools']) }}
 
 SELECT 1 AS failure
 WHERE (

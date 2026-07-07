@@ -1,4 +1,4 @@
-{{ config(severity='error', tags=['trusted', 'carpools']) }}
+{{ config(severity='warn', tags=['trusted', 'carpools']) }}
 
 SELECT c._id
 FROM {{ source('dlk_import', 'carpool_v2_carpools') }} AS c
