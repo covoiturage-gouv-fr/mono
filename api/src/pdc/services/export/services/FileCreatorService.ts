@@ -4,7 +4,6 @@ import { CSVWriter } from "../models/CSVWriter.ts";
 import { ExportParams } from "../models/ExportParams.ts";
 import { CampaignRepository } from "../repositories/CampaignRepository.ts";
 import { CarpoolRepository } from "../repositories/CarpoolRepository.ts";
-import { ExportProgress } from "../repositories/ExportRepository.ts";
 
 export abstract class FileCreatorServiceInterfaceResolver {
   protected async configure<T extends { [k: string]: unknown }>(
@@ -25,7 +24,6 @@ export abstract class FileCreatorServiceInterfaceResolver {
   public async write<T extends { [k: string]: unknown }>(
     params: ExportParams,
     fileWriter: CSVWriter<T>,
-    progress?: ExportProgress,
   ): Promise<string> {
     throw new Error("Not implemented");
   }
@@ -37,7 +35,6 @@ export abstract class FileCreatorServiceInterfaceResolver {
 export class FileCreatorService {
   protected fileWriter: any;
   protected params: ExportParams;
-  protected progress: ExportProgress;
 
   constructor(
     protected carpoolRepository: CarpoolRepository,
@@ -47,11 +44,9 @@ export class FileCreatorService {
   protected async configure<T extends { [k: string]: unknown }>(
     params: ExportParams,
     fileWriter: CSVWriter<T>,
-    progress?: ExportProgress,
   ): Promise<void> {
     this.params = params;
     this.fileWriter = fileWriter;
-    this.progress = progress || (async () => {});
   }
 
   protected async initialize(): Promise<void> {
@@ -67,7 +62,6 @@ export class FileCreatorService {
     await this.carpoolRepository.list(
       this.params,
       this.fileWriter,
-      this.progress,
     );
   }
 
@@ -78,10 +72,9 @@ export class FileCreatorService {
   public async write<T extends { [k: string]: unknown }>(
     params: ExportParams,
     fileWriter: CSVWriter<T>,
-    progress?: ExportProgress,
   ): Promise<string> {
     try {
-      await this.configure(params, fileWriter, progress);
+      await this.configure(params, fileWriter);
       await this.initialize();
       await this.data();
       await this.help();

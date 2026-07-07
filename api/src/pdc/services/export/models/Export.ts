@@ -24,7 +24,6 @@ export class Export {
   public uuid: string;
   public target: ExportTarget;
   public status: ExportStatus;
-  public progress: number;
   public created_by: number;
   public download_url_expire_at: Date;
   public download_url: string;
@@ -40,7 +39,6 @@ export class Export {
     export_.uuid = data.uuid;
     export_.target = data.target;
     export_.status = data.status;
-    export_.progress = data.progress;
     export_.created_by = data.created_by;
     export_.download_url_expire_at = data.download_url_expire_at;
     export_.download_url = data.download_url;
@@ -58,7 +56,6 @@ export class Export {
       uuid: export_.uuid,
       target: export_.target,
       status: export_.status,
-      progress: export_.progress,
       created_by: export_.created_by,
       download_url_expire_at: export_.download_url_expire_at,
       download_url: export_.download_url,

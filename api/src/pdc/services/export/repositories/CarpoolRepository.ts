@@ -6,7 +6,6 @@ import { CarpoolAcquisitionStatusEnum } from "@/pdc/providers/carpool/interfaces
 import { CarpoolRow } from "@/pdc/services/export/models/CarpoolRow.ts";
 import { CSVWriter } from "@/pdc/services/export/models/CSVWriter.ts";
 import { ExportParams } from "@/pdc/services/export/models/ExportParams.ts";
-import { ExportProgress } from "@/pdc/services/export/repositories/ExportRepository.ts";
 import { carpoolCountQuery } from "@/pdc/services/export/repositories/queries/carpoolCountQuery.ts";
 import { carpoolListQuery, CarpoolListType } from "@/pdc/services/export/repositories/queries/carpoolListQuery.ts";
 import {
@@ -60,21 +59,13 @@ export class CarpoolRepository {
   public async list(
     params: ExportParams,
     fileWriter: CSVWriter<CarpoolListType>,
-    progress?: ExportProgress,
   ): Promise<void> {
     try {
-      const total = progress ? await this.listCount(params) : 1; // total number of rows
-      logger.info(`[export:CarpoolRepository] Exporting ${total} rows`);
-
       await using cursor = await this.pgConnection.cursor<CarpoolListType>(carpoolListQuery(params));
-      let done = 0; // track the number of rows read
       for await (const rows of cursor.read(this.batchSize)) {
         for (const row of rows) {
           await fileWriter.append(new CarpoolRow<CarpoolListType>(row));
         }
-
-        done += rows.length;
-        if (progress && total) await progress(((done / total) * 100) | 0);
       }
     } catch (e) {
       // e instanceof AggregateError && console.error(e.errors);

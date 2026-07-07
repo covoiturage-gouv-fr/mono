@@ -62,7 +62,6 @@ export class ProcessCommand implements CommandInterface {
       const filepath = await this.fileCreatorService.write<CarpoolListType>(
         params,
         new CSVWriter<CarpoolListType>(filename, { fields }),
-        await this.exportRepository.progress(_id),
       );
 
       // upload to storage
