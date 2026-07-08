@@ -4,6 +4,8 @@ import boto3
 import tempfile
 from typing import Optional
 
+from pipelines.helpers.retry import retry
+
 
 def s3_config(
     endpoint: str | None = None,
@@ -74,7 +76,7 @@ def s3_download(bucket: str, key: str, ext: str, client=None) -> str:
   size_mo = size / 1e6
   print(f"  ↳ Téléchargement {key} ({size_mo:.0f} Mo)...")
   t0 = time.monotonic()
-  client.download_file(bucket, key, tmp.name)
+  retry(lambda: client.download_file(bucket, key, tmp.name), label=f"téléchargement {key}")
   elapsed = time.monotonic() - t0
   speed = f", {size_mo / elapsed:.0f} Mo/s" if elapsed else ""
   print(f"  ↳ Téléchargement terminé en {elapsed:.1f}s{speed}")

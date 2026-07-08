@@ -3,7 +3,8 @@ import subprocess
 import time
 from typing import Optional
 from pipelines.helpers.duckdb import duckdb_client
-from pipelines.helpers.sql import create_schema, build_select
+from pipelines.helpers.sql import build_select
+from pipelines.helpers import pg
 
 GEO_EXTS = ("gpkg", "geojson", "shp")
 
@@ -14,49 +15,40 @@ def import_table(
   path: str,
   ext: str = "parquet",
   geo_layer: Optional[str] = None,
-  select: Optional[list[str | list[str]]] = None,
+  select: Optional[list] = None,
+  columns: Optional[list] = None,
   conn=None,
 ) -> int:
-  _conn = conn or duckdb_client()
-  create_schema(_conn, schema)
+  """Seed (Postgres via psycopg) : géo par ogr2ogr, tabulaire par COPY natif. Pas de DuckDB."""
+  own = conn is None
+  _conn = conn or pg.pg_connect()
+  pg.create_schema(_conn, schema)
 
   print(f"▶️  Import {path} → {schema}.{table}")
   t0 = time.monotonic()
   try:
     if ext in GEO_EXTS:
-      rows = _import_geo(_conn, table, schema, path, geo_layer, select)
+      _import_geo(table, schema, path, geo_layer, select)
+      rows = pg.count_rows(_conn, schema, table)
+    elif ext == "csv":
+      rows = pg.load_csv(_conn, schema, table, path, columns=columns, select=select)
     else:
-      rows = _import_tabular(_conn, table, schema, path, ext, select)
+      raise ValueError(f"Extension non supportée pour le seed : {ext}")
   except Exception:
-    # postgres_execute : le drop passe même si ogr2ogr a créé la table hors du cache catalogue DuckDB.
-    _conn.execute(f"CALL postgres_execute('pg', 'DROP TABLE IF EXISTS {schema}.{table}')")  # pas de table à moitié remplie
+    pg.drop_table(_conn, schema, table)  # pas de table à moitié remplie
     raise
   elapsed = time.monotonic() - t0
 
   rows_fmt = f"{rows:_}".replace("_", " ")  # séparateur de milliers à la française
   print(f"✅ {schema}.{table} — {rows_fmt} lignes en {elapsed:.1f}s")
 
-  if not conn:
+  if own:
     _conn.close()
 
   return rows
 
 
-def _import_tabular(conn, table, schema, path, ext, select) -> int:
-  select_clause = build_select(select)
-  if ext == "csv":
-    source_sql = f"read_csv_auto('{path}')"
-  elif ext in ("xlsx", "xls"):
-    source_sql = f"read_excel('{path}')"
-  elif ext == "parquet":
-    source_sql = f"read_parquet('{path}')"
-  else:
-    raise ValueError(f"Extension non supportée : {ext}")
-  # Une passe : CREATE TABLE AS streame vers Postgres et renvoie le nombre de lignes.
-  return conn.execute(f"CREATE TABLE pg.{schema}.{table} AS SELECT {select_clause} FROM {source_sql};").fetchone()[0]
-
-
-def _import_geo(conn, table, schema, path, geo_layer, select) -> int:
+def _import_geo(table, schema, path, geo_layer, select) -> None:
   """Charge une couche géo via ogr2ogr (streaming natif → PostGIS), plus stable que duckdb-spatial."""
   cmd = [
     "ogr2ogr", "-f", "PostgreSQL", "PG:", path,
@@ -68,7 +60,7 @@ def _import_geo(conn, table, schema, path, geo_layer, select) -> int:
   ]
   ogr_sql = _build_ogr_sql(select, geo_layer)
   if ogr_sql:
-    # OGRSQL : mêmes noms de champs que duckdb st_read (le dialecte SQLite natif du GPKG diffère).
+    # OGRSQL : mêmes noms de champs que la config (le dialecte SQLite natif du GPKG diffère).
     cmd += ["-dialect", "OGRSQL", "-sql", ogr_sql]
   elif geo_layer:
     cmd.append(geo_layer)  # couche entière, sans projection
@@ -83,12 +75,6 @@ def _import_geo(conn, table, schema, path, geo_layer, select) -> int:
   proc = subprocess.run(cmd, env=env, capture_output=True, text=True)
   if proc.returncode != 0:
     raise RuntimeError(f"ogr2ogr a échoué ({proc.returncode}) : {proc.stderr.strip()[:500]}")
-
-  # ogc_fid (PK serial ajoutée par ogr2ogr) est conservée : idiomatique, invisible en aval
-  # (les modèles lisent les colonnes par nom). postgres_query contourne le cache catalogue DuckDB.
-  return conn.execute(
-    f"SELECT n FROM postgres_query('pg', 'SELECT count(*)::bigint AS n FROM {schema}.{table}')"
-  ).fetchone()[0]
 
 
 def _geom_name(select) -> str:

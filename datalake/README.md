@@ -19,8 +19,9 @@ Remplace les projet legacy `sqlmesh/` et `dbt/`. Ingère les données brutes de 
 │  │  fraudcheck…)  │  │  depts, régions) │  │                       │    │
 │  └───────┬────────┘  └───────┬──────────┘  └──────────┬────────────┘    │
 └──────────┼───────────────────┼────────────────────────┼─────────────────┘
-           │ postgres_fdw      │ seed_perimeters.json   │ seed_datagouv.json
-           │ (dlk_import)      │ (S3 → DuckDB → PG)     │ (fetch live → PG)
+           │ postgres_fdw      │ mirror → notre S3      │ mirror → notre S3
+           │ (dlk_import)      │ seed_raw.json (lock)   │ seed_raw.json (lock)
+           │                   │ ogr2ogr / COPY → PG    │ ogr2ogr / COPY → PG
            │                   └────────────┬───────────┘
            │                                ▼
            │             ┌────────────────────────────────────────────────┐
@@ -237,7 +238,7 @@ Séquence à exécuter **une seule fois** pour peupler le datalake from scratch.
 just pipeline-raw
 ```
 
-Charge via DuckDB les données IGN 2025 (GPKG), CEREMA AOMs et mouvements INSEE depuis `<bucket>/seeds/` vers `zone_raw`. Chunk size : 10 000 lignes. Inclut géométries complètes, simplifiées et centroïdes pour les communes, EPCIs, départements et régions. Charge aussi les campagnes et aires de covoiturage **récupérées en direct** depuis data.gouv.fr / transport.data.gouv.fr : `get_last_url` interroge l'API à chaque run et lit la dernière ressource publiée (pas de copie dans le bucket).
+Charge les données IGN 2025 (GPKG), CEREMA AOMs, mouvements INSEE, campagnes et aires de covoiturage depuis `<bucket>/seeds/` vers `zone_raw`. **Toutes les sources vivent dans notre S3** : les jeux data.gouv.fr / transport.data.gouv.fr sont recopiés au préalable via `just mirror <url> <clé>` (l'amont data.gouv est peu fiable), puis traités comme les autres. Le géo passe par **ogr2ogr** (streaming natif → PostGIS, remplace duckdb-spatial qui segfaultait) et le tabulaire par **COPY psycopg** dans des tables typées explicitement en config. Inclut géométries complètes, simplifiées et centroïdes pour communes, EPCIs, départements et régions. Chaque source porte en config son empreinte (`sha256`), sa taille et sa date d'upload : **intégrité vérifiée par défaut** (`--skip-checksum` pour outrepasser). La config `seed_raw.json` fait office de lock.
 
 ### Étape 2 — Zone trusted géographique
 
@@ -393,7 +394,7 @@ dbt run-operation generate_model_yaml --args '{"model_names": ["interoperators_l
 
 ### Nouveau périmètre géographique
 
-1. Ajouter la couche source dans `pipelines/config/raw/seed_perimeters.json`
+1. Ajouter la couche source dans `pipelines/config/raw/seed_raw.json`
 2. Déclarer la table dans `models/sources/raw.yml`
 3. Ajouter le code dans `models/trusted/perimeters.sql` et `perimeters_agg.sql`
 4. Créer les fichiers modèles agrégés en appelant les macros existantes :

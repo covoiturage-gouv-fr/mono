@@ -1,5 +1,24 @@
+import tempfile
 import typing as t
 import requests
+
+from pipelines.helpers.retry import retry
+
+
+def download_url(url: str, ext: str) -> str:
+  """Télécharge une URL vers un fichier local temporaire (le loader lit un fichier, pas un flux)."""
+  tmp = tempfile.NamedTemporaryFile(suffix=f".{ext}", delete=False)
+  tmp.close()
+
+  def _fetch():
+    with requests.get(url, stream=True, timeout=60) as r:
+      r.raise_for_status()
+      with open(tmp.name, "wb") as f:
+        for chunk in r.iter_content(1 << 16):
+          f.write(chunk)
+
+  retry(_fetch, label=f"téléchargement {url}")
+  return tmp.name
 
 def find_in_json(data: t.Any, path: list[str]) -> t.Any:
   """
