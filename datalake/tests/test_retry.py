@@ -39,3 +39,11 @@ def test_retry_reraises_after_exhausting_attempts(monkeypatch):
     with pytest.raises(ValueError):
         retry(fn, attempts=3)
     assert calls["n"] == 3  # 3 essais puis abandon
+
+
+def test_retry_rejects_non_positive_attempts():
+    def fn():
+        return "ok"
+
+    with pytest.raises(ValueError):
+        retry(fn, attempts=0)

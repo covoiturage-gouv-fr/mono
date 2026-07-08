@@ -6,6 +6,8 @@ T = TypeVar("T")
 
 def retry(fn: Callable[[], T], attempts: int = 4, base_delay: float = 2.0, label: str = "") -> T:
   """Réessaie fn() avec backoff exponentiel ; relance la dernière exception si tout échoue."""
+  if attempts < 1:
+    raise ValueError(f"attempts doit être >= 1, reçu {attempts}")
   for i in range(attempts):
     try:
       return fn()
