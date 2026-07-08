@@ -20,7 +20,7 @@ import { useEffect, useRef, useState } from "react";
 // Désactive la création d'exports le temps de la migration vers le datalake.
 // Repasser à true (ou supprimer le garde-fou) une fois le worker déployé et le
 // cutover effectué. Les exports déjà générés restent téléchargeables.
-const EXPORT_CREATION_ENABLED: boolean = false;
+const EXPORT_CREATION_ENABLED = false;
 
 export default function TabExport() {
   const { user, simulate, simulatedRole } = useAuth();
