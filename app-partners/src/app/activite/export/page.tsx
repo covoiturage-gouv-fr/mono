@@ -17,6 +17,11 @@ import dayjs, { type Dayjs } from "dayjs";
 import "dayjs/locale/fr";
 import { useEffect, useRef, useState } from "react";
 
+// Désactive la création d'exports le temps de la migration vers le datalake.
+// Repasser à true (ou supprimer le garde-fou) une fois le worker déployé et le
+// cutover effectué. Les exports déjà générés restent téléchargeables.
+const EXPORT_CREATION_ENABLED: boolean = false;
+
 export default function TabExport() {
   const { user, simulate, simulatedRole } = useAuth();
   const [territoryId, setTerritoryId] = useState(user?.territory_id);
@@ -49,6 +54,28 @@ export default function TabExport() {
       scrollRef.current?.scrollIntoView({ behavior: "smooth" });
     }
   }, [error]);
+
+  // Feature temporairement désactivée : on affiche une note de maintenance et on
+  // conserve la liste des exports déjà produits (toujours téléchargeables).
+  if (!EXPORT_CREATION_ENABLED) {
+    return (
+      <>
+        <Alert
+          title="Génération d'exports momentanément indisponible"
+          severity="info"
+          description={
+            <>
+              La création d'exports est temporairement désactivée le temps d'une mise à jour technique. Pour obtenir un
+              export pendant cette période, écrivez à{" "}
+              <a href="mailto:technique@covoiturage.beta.gouv.fr">technique@covoiturage.beta.gouv.fr</a> en précisant le
+              périmètre et la période souhaités. Le service sera rétabli sous quelques jours.
+            </>
+          }
+        />
+        <ExportList refreshTrigger={refreshTrigger} days={30} pageSize={10} />
+      </>
+    );
+  }
 
   const handleExport = async () => {
     void sendEvent({
