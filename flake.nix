@@ -68,6 +68,7 @@
             cmake
             python313
             uv
+            gdal # ogr2ogr : import des seeds géo du datalake (gpkg -> PostGIS)
 
             # pre-commit hooks
             pre-commit

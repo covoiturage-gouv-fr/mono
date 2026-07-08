@@ -56,6 +56,14 @@ lint-fix *args:
 seed config schema *args:
   python -m pipelines.cmd.seed  pipelines/config/{{config}} {{schema}} {{args}}
 
+# Calcule le SHA256 des fichiers sources S3 (--write pour les inscrire en config)
+checksum config *args:
+  python -m pipelines.cmd.checksum pipelines/config/{{config}} {{args}}
+
+# Réconcilie les sources d'une config avec notre S3 : recopie les manquantes accessibles, signale les manuelles
+mirror config *args:
+  python -m pipelines.cmd.mirror pipelines/config/{{config}} {{args}}
+
 # Export data from Postgres to S3
 export config schema *args:
   python -m pipelines.cmd.export pipelines/config/{{config}} {{schema}} {{args}}
@@ -78,10 +86,10 @@ backfill-batch model period start end *args:
     current=$next
   done
 
-# Pipeline 1: Seed raw data from S3 to raw_zone (yearly)
+# Pipeline 1: Seed raw data from S3 to raw_zone (yearly). Toutes les sources sont dans notre S3
+# (data.gouv recopié via `just mirror`), empreintes vérifiées par défaut.
 pipeline-raw *args:
-  just seed raw/seed_perimeters.json zone_raw --folder seeds {{ if args =~ "--full-refresh" { "--overwrite" } else { "" } }}
-  just seed raw/seed_datagouv.json zone_raw {{ if args =~ "--full-refresh" { "--overwrite" } else { "" } }}
+  just seed raw/seed_raw.json zone_raw --folder seeds {{ if args =~ "--full-refresh" { "--overwrite" } else { "" } }}
 
 # Pipeline 2: trusted geo (yearly)
 pipeline-trusted-geo *args:
