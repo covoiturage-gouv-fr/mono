@@ -35,6 +35,7 @@ dbt/target
 dbt/edr_target
 .aider*
 .claude/settings.local.json
+.claude/scheduled_tasks.lock
 .claude/settings.json
 .claude/worktrees
 .claude/superpowers
