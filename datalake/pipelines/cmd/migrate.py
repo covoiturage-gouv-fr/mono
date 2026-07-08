@@ -12,10 +12,8 @@ Privileged / cross-DB plumbing (role creation, the FDW server + IMPORT FOREIGN
 SCHEMA) stays in the ops repo (OpenTofu) — this runner assumes those exist.
 """
 
-import os
-from pathlib import Path
-
 import re
+from pathlib import Path
 
 import psycopg
 import typer

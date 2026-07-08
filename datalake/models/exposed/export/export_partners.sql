@@ -37,33 +37,15 @@ SELECT
   c.anomaly_status,
   c.operator_id,
 
-  -- combined carpool status (port of castToStatusEnum precedence)
-  CASE
-    WHEN c.acquisition_status IS NULL                     THEN 'unknown'
-    WHEN c.acquisition_status = 'canceled'                THEN 'canceled'
-    WHEN c.acquisition_status IN ('expired', 'terms_violation_error')
-      THEN 'terms_violation_error'
-    WHEN c.acquisition_status = 'failed'                  THEN 'acquisition_error'
-    WHEN c.acquisition_status = 'processed'
-      AND c.anomaly_status = 'passed'
-      AND c.fraud_status = 'passed'                       THEN 'ok'
-    WHEN c.fraud_status = 'failed'                        THEN 'fraud_error'
-    WHEN c.anomaly_status = 'failed'                      THEN 'anomaly_error'
-    ELSE 'pending'
-  END
-    AS status,
-
   -- date filtering column (raw DATE in Europe/Paris)
   c.start_datetime_tz::date
     AS start_date_filter,
 
   -- raw timestamps for sargable filtering (not emitted in CSV)
-  c.start_datetime_tz
-    AS start_datetime_tz,
+  c.start_datetime_tz,
   c.start_datetime
     AS start_datetime_utc,
 
-  -- formatted dates (rounded to 10 min, Europe/Paris)
   c.start_geo_code
     AS start_insee,
   gps.arr
@@ -78,21 +60,21 @@ SELECT
     AS start_aom_code,
   gps.reg
     AS start_reg,
-
   gps.country
     AS start_country,
 
   c.end_geo_code
     AS end_insee,
+
   gpe.arr
     AS end_arr,
   gpe.com
     AS end_com,
   gpe.dep
     AS end_dep,
-
   gpe.epci
     AS end_epci_code,
+
   gpe.aom
     AS end_aom_code,
   gpe.reg
@@ -107,9 +89,9 @@ SELECT
     AS start_epci,
   gps.l_aom
     AS start_aom,
-
   gps.l_reg
     AS start_region,
+
   gps.l_country
     AS start_pays,
   gpe.l_arr
@@ -124,9 +106,9 @@ SELECT
     AS end_region,
   gpe.l_country
     AS end_pays,
-
   c.operator_name
     AS operator,
+
   sc.passenger_operator_user_id
     AS operator_passenger_id,
   sc.passenger_identity_key,
@@ -134,20 +116,39 @@ SELECT
     AS operator_driver_id,
   sc.driver_identity_key,
   c.passenger_seats,
-
   TRUE
     AS offer_public,
+
   c.start_datetime
     AS offer_accepted_at,
+  'normal'::text
+    AS incentive_type,
+
+  -- combined carpool status (port of castToStatusEnum precedence)
+  CASE
+    WHEN c.acquisition_status IS NULL THEN 'unknown'
+    WHEN c.acquisition_status = 'canceled' THEN 'canceled'
+    WHEN c.acquisition_status IN ('expired', 'terms_violation_error')
+      THEN 'terms_violation_error'
+    WHEN c.acquisition_status = 'failed' THEN 'acquisition_error'
+    WHEN
+      c.acquisition_status = 'processed'
+      AND c.anomaly_status = 'passed'
+      AND c.fraud_status = 'passed' THEN 'ok'
+    WHEN c.fraud_status = 'failed' THEN 'fraud_error'
+    WHEN c.anomaly_status = 'failed' THEN 'anomaly_error'
+    ELSE 'pending'
+  END
+    AS status,
   to_char(ts_ceil(c.start_datetime_tz, 600), 'YYYY-MM-DD HH24:MI:SS')
     AS start_datetime,
   to_char(ts_ceil(c.start_datetime_tz, 600), 'YYYY-MM-DD')
     AS start_date,
   to_char(ts_ceil(c.start_datetime_tz, 600), 'HH24:MI:SS')
     AS start_time,
+
   to_char(ts_ceil(c.end_datetime_tz, 600), 'YYYY-MM-DD HH24:MI:SS')
     AS end_datetime,
-
   to_char(ts_ceil(c.end_datetime_tz, 600), 'YYYY-MM-DD')
     AS end_date,
   to_char(ts_ceil(c.end_datetime_tz, 600), 'HH24:MI:SS')
@@ -157,28 +158,26 @@ SELECT
   c.distance::float
   / 1000
     AS distance,
+
   trunc(st_y(sc.start_position::geometry)::numeric, gps.precision)
     AS start_lat,
-
   trunc(st_x(sc.start_position::geometry)::numeric, gps.precision)
     AS start_lon,
   trunc(st_y(sc.end_position::geometry)::numeric, gpe.precision)
     AS end_lat,
+
   trunc(st_x(sc.end_position::geometry)::numeric, gpe.precision)
     AS end_lon,
 
+  -- operator incentives (spread from JSONB array)
   c.driver_revenue::float
   / 100
     AS driver_revenue,
-
-  -- operator incentives (spread from JSONB array)
   c.passenger_contribution::float
   / 100
     AS passenger_contribution,
   cee._id IS NOT NULL
     AS cee_application,
-  'normal'::text
-    AS incentive_type,
   c.oi_details[0]
   ->> 'siret'
     AS incentive_0_siret,

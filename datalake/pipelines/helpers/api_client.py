@@ -52,6 +52,8 @@ class ApiClient:
                 if attempt == retries - 1:
                     raise
                 time.sleep(2 ** attempt)
+        # unreachable: the last attempt either returns or re-raises above
+        raise requests.RequestException(f"POST {path} exhausted {retries} retries")
 
     def claim(self, targets):
         r = self._post("/exports/claim", {"targets": targets})
