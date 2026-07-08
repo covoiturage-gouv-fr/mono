@@ -1,3 +1,4 @@
+import time
 from typing import Optional
 from pipelines.helpers.duckdb import duckdb_client
 from pipelines.helpers.sql import create_schema, build_select
@@ -10,13 +11,12 @@ def import_table(
   ext: str = "parquet",
   geo_layer: Optional[str] = None,
   select: Optional[list[str | list[str]]] = None,
-  chunk_size: Optional[int] = None,
   conn=None,
-):
+) -> int:
   _conn = conn or duckdb_client()
   create_schema(_conn, schema)
 
-  print(f"▶️ Import {path} → {schema}.{table}")
+  print(f"▶️  Import {path} → {schema}.{table}")
   select_clause = build_select(select)
   if ext in ("gpkg", "geojson", "shp"):
     layer_clause = f", layer='{geo_layer}'" if geo_layer else ""
@@ -29,35 +29,23 @@ def import_table(
     source_sql = f"read_parquet('{path}')"
   else:
     raise ValueError(f"Extension non supportée : {ext}")
- 
-  if chunk_size:
-    print(f"  ↳ chunks de {chunk_size}")
-    offset = 0
-    chunk_n = 0
-    while True:
-      chunk_sql = f"SELECT {select_clause} FROM {source_sql} LIMIT {chunk_size} OFFSET {offset}"
-      rows = _conn.execute(chunk_sql).fetchall()
-      if not rows:
-        break
-      if chunk_n == 0:
-        _conn.execute(f"CREATE TABLE pg.{schema}.{table} AS {chunk_sql};")
-      else:
-        _conn.execute(f"INSERT INTO pg.{schema}.{table} {chunk_sql};")
-      offset += chunk_size
-      chunk_n += 1
-      print(f"  ↳ chunk {chunk_n} — {offset} features insérées")
-      if len(rows) < chunk_size:
-        break
-  else:
-    _conn.execute(f"""
-      CREATE TABLE pg.{schema}.{table} AS
-      SELECT {select_clause} FROM {source_sql};
-    """)
- 
-  print(f"✅ Import terminé : {schema}.{table}")
- 
+
+  # Lecture en une passe : LIMIT/OFFSET ré-ouvrait le GPKG à chaque chunk (scan O(n²) + segfault natif).
+  t0 = time.monotonic()
+  try:
+    rows = _conn.execute(f"CREATE TABLE pg.{schema}.{table} AS SELECT {select_clause} FROM {source_sql};").fetchone()[0]
+  except Exception:
+    _conn.execute(f"DROP TABLE IF EXISTS pg.{schema}.{table};")  # pas de table à moitié remplie
+    raise
+  elapsed = time.monotonic() - t0
+
+  rows_fmt = f"{rows:_}".replace("_", " ")  # séparateur de milliers à la française
+  print(f"✅ {schema}.{table} — {rows_fmt} lignes en {elapsed:.1f}s")
+
   if not conn:
     _conn.close()
+
+  return rows
 
 
 def export_table(
