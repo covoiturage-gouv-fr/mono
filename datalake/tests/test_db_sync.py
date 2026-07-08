@@ -42,4 +42,36 @@ def test_import_table_drops_partial_table_on_error():
     conn = FakeConn(fail_on="CREATE TABLE pg.s.t AS")
     with pytest.raises(RuntimeError):
         db_sync.import_table(table="t", schema="s", path="/x.parquet", ext="parquet", conn=conn)
-    assert any("DROP TABLE IF EXISTS pg.s.t" in c for c in conn.calls)  # pas de table à moitié remplie
+    # nettoyage via postgres_execute (marche même pour une table créée hors du cache DuckDB par ogr2ogr)
+    assert any("DROP TABLE IF EXISTS s.t" in c for c in conn.calls)
+
+
+def test_build_ogr_sql_renames_attrs_and_keeps_geometry_source():
+    select = [
+        ["nom_officiel", "varchar", "l_dep"],
+        ["code_insee", "varchar", "dep"],
+        ["geometrie", "geometry", "geom"],
+    ]
+    sql = db_sync._build_ogr_sql(select, "departement")
+    # géométrie reprise par son nom source (renommée en sortie via -lco GEOMETRY_NAME), pas de "AS geom" ici
+    assert sql == 'SELECT nom_officiel AS l_dep, code_insee AS dep, geometrie FROM "departement"'
+
+
+def test_build_ogr_sql_keeps_plain_string_columns():
+    select = ["year", "arr", "l_arr", ["geom", "geometry", "geom"]]
+    assert db_sync._build_ogr_sql(select, "full") == 'SELECT year, arr, l_arr, geom FROM "full"'
+
+
+def test_build_ogr_sql_none_when_no_select():
+    assert db_sync._build_ogr_sql(None, "simple") is None
+
+
+def test_geom_name_uses_geometry_alias_stripped():
+    # alias " geom" (coquille de la config avec espace) → "geom"
+    select = [["nom_officiel", "varchar", "l_arr"], ["geometrie", "geometry", " geom"]]
+    assert db_sync._geom_name(select) == "geom"
+
+
+def test_geom_name_defaults_to_geom():
+    assert db_sync._geom_name(None) == "geom"
+    assert db_sync._geom_name([["a", "varchar", "b"]]) == "geom"
