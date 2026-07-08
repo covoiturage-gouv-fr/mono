@@ -29,12 +29,6 @@ export const schemaV3 = {
       maxItems: 1024,
       items: { macro: "serial" },
     },
-    recipients: {
-      type: "array",
-      minItems: 0,
-      maxItems: 24,
-      items: { macro: "varchar" },
-    },
     geo_selector: territoryCodeSchema,
   },
 };

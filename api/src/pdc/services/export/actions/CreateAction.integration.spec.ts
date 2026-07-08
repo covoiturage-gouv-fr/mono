@@ -31,7 +31,6 @@ import {
 import { ExportServiceProvider as ExportSP } from "@/pdc/services/export/ExportServiceProvider.ts";
 import { Export, ExportStatus, ExportTarget } from "@/pdc/services/export/models/Export.ts";
 import { ExportParams } from "@/pdc/services/export/models/ExportParams.ts";
-import { faker } from "dep:faker";
 import { handlerConfig, ParamsInterface, ResultInterface } from "../contracts/create.contract.ts";
 
 const { before: kernelBefore, after: kernelAfter } = makeKernelBeforeAfter(ExportSP);
@@ -40,23 +39,13 @@ const { before: denoDbBefore, after: denoDbAfter } = makeDenoDbBeforeAfter();
 /**
  * Simple Export fetcher to get all records and cast their values
  */
-type FullExport = Export & {
-  recipients: Array<{ email: string; fullname: string; message: string }>;
-};
+type FullExport = Export;
 function fetcher(db: DenoDbContext) {
   return async (): Promise<FullExport[]> => {
     const rows = await db.connection.query<any>(sql`
-      SELECT
-        ee.*,
-        array_agg(json_build_object(
-          'email', er.email,
-          'fullname', er.fullname,
-          'message', er.message
-        )) as recipients
-      FROM export.exports ee
-      JOIN export.recipients er ON ee._id = er.export_id
-      GROUP BY ee._id
-      ORDER BY ee._id ASC
+      SELECT *
+      FROM export.exports
+      ORDER BY _id ASC
     `);
 
     return rows.length ? rows.map((r) => ({ ...r, params: ExportParams.fromJSON(r.params) })) : [];
@@ -118,7 +107,7 @@ describe("CreateAction V3", () => {
   // TESTS
   // ---------------------------------------------------------------------------
 
-  it("should create an export with a creator as recipient for admin", async () => {
+  it("should create an export for admin", async () => {
     const start_at = "2024-01-01T00:00:00+0100";
     const end_at = "2024-01-02T00:00:00+0100";
 
@@ -152,68 +141,9 @@ describe("CreateAction V3", () => {
         const last = (await fetchExports()).pop();
         assertEquals(last?.target, ExportTarget.TERRITORY);
         assertEquals(last?.status, ExportStatus.PENDING);
-        assertEquals(last?.progress, 0);
         assertEquals(last?.params.get().start_at, new Date(params.start_at));
         assertEquals(last?.error, null);
-        assertEquals(last?.recipients[0].email, adminUser.email);
-      },
-    );
-  });
-
-  it("should create an export with multiple recipients for admin", async () => {
-    const recipients: string[] = [
-      faker.internet.email(),
-      faker.internet.email(),
-      faker.internet.email(),
-    ];
-
-    const params: AJVParamsInterface<
-      ParamsInterface,
-      "start_at" | "end_at"
-    > = {
-      tz: "Europe/Paris",
-      start_at: "2024-01-01T00:00:00+0100",
-      end_at: "2024-01-02T00:00:00+0100",
-      created_by: adminUser._id,
-      recipients,
-    };
-
-    await assertHandler(
-      kc,
-      defaultContext,
-      handlerConfig,
-      params,
-      async () => {
-        const last = (await fetchExports()).pop();
-        assertEquals(last?.recipients[0].email, recipients[0]);
-        assertEquals(last?.recipients[1].email, recipients[1]);
-        assertEquals(last?.recipients[2].email, recipients[2]);
-      },
-    );
-  });
-
-  it("should fallback to created_by on empty recipients for admin", async () => {
-    const recipients: string[] = [];
-
-    const params: AJVParamsInterface<
-      ParamsInterface,
-      "start_at" | "end_at"
-    > = {
-      tz: "Europe/Paris",
-      start_at: "2024-01-01T00:00:00+0100",
-      end_at: "2024-01-02T00:00:00+0100",
-      created_by: adminUser._id,
-      recipients,
-    };
-
-    await assertHandler(
-      kc,
-      defaultContext,
-      handlerConfig,
-      params,
-      async () => {
-        const last = (await fetchExports()).pop();
-        assertEquals(last?.recipients[0].email, adminUser.email);
+        assertEquals(last?.created_by, adminUser._id);
       },
     );
   });

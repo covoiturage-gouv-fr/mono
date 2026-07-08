@@ -7,21 +7,26 @@ import { DataGouvMetadataProvider } from "@/pdc/providers/datagouv/DataGouvMetad
 import { defaultMiddlewareBindings } from "@/pdc/providers/middleware/index.ts";
 import { S3StorageProvider } from "@/pdc/providers/storage/index.ts";
 import { ValidatorExtension, ValidatorMiddleware } from "@/pdc/providers/validator/index.ts";
+import { ClaimAction } from "./actions/ClaimAction.ts";
+import { CompleteAction } from "./actions/CompleteAction.ts";
 import { CreateAction } from "./actions/CreateAction.ts";
+import { FailAction } from "./actions/FailAction.ts";
 import { GetDownloadLinkAction } from "./actions/GetDownloadLinkAction.ts";
 import { listAction } from "./actions/ListAction.ts";
 import { CreateCommand } from "./commands/CreateCommand.ts";
 import { DataGouvCommand } from "./commands/DataGouvCommand.ts";
 import { ProcessCommand } from "./commands/ProcessCommand.ts";
 import { config } from "./config/index.ts";
+import { binding as claimBinding } from "./contracts/claim.schema.ts";
+import { binding as completeBinding } from "./contracts/complete.schema.ts";
 import { bindingV3 as createBindingV3 } from "./contracts/create.schema.ts";
+import { binding as failBinding } from "./contracts/fail.schema.ts";
 import { binding as getDownloadLinkBinding } from "./contracts/getDownloadLink.schema.ts";
 import { binding as listBinding } from "./contracts/list.schema.ts";
 import { CampaignRepository } from "./repositories/CampaignRepository.ts";
 import { CarpoolRepository } from "./repositories/CarpoolRepository.ts";
 import { ExportRepository } from "./repositories/ExportRepository.ts";
 import { LogRepository } from "./repositories/LogRepository.ts";
-import { RecipientRepository } from "./repositories/RecipientRepository.ts";
 import { TerritoryRepository } from "./repositories/TerritoryRepository.ts";
 import { UserRepository } from "./repositories/UserRepository.ts";
 import { DataGouvFileCreatorService } from "./services/DataGouvFileCreatorService.ts";
@@ -29,7 +34,6 @@ import { FieldService } from "./services/FieldService.ts";
 import { FileCreatorService } from "./services/FileCreatorService.ts";
 import { LogService } from "./services/LogService.ts";
 import { NameService } from "./services/NameService.ts";
-import { RecipientService } from "./services/RecipientService.ts";
 import { TerritoryService } from "./services/TerritoryService.ts";
 
 // Services are from the ./services folder
@@ -41,7 +45,6 @@ const services = [
   DataGouvFileCreatorService,
   LogService,
   NameService,
-  RecipientService,
   TerritoryService,
 ];
 
@@ -52,7 +55,6 @@ const repositories = [
   CarpoolRepository,
   ExportRepository,
   LogRepository,
-  RecipientRepository,
   TerritoryRepository,
   UserRepository,
 ];
@@ -70,11 +72,18 @@ const commands = [CreateCommand, DataGouvCommand, ProcessCommand];
 
 // Handlers are from the ./actions folder
 // and are used to implement the API endpoints (also called actions).
-const handlers = [CreateAction, listAction, GetDownloadLinkAction];
+const handlers = [CreateAction, listAction, GetDownloadLinkAction, ClaimAction, CompleteAction, FailAction];
 
 // Validator bindings are from the @shared/export/*.schema.ts files
 // and are used to validate the input data using JSON Schema.
-const validators = [createBindingV3, listBinding, getDownloadLinkBinding];
+const validators = [
+  createBindingV3,
+  listBinding,
+  getDownloadLinkBinding,
+  claimBinding,
+  completeBinding,
+  failBinding,
+];
 
 @serviceProvider({
   config,

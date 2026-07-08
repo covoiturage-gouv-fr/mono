@@ -1,4 +1,4 @@
-import { ContextType, handler, InvalidParamsException } from "@/ilos/common/index.ts";
+import { ContextType, handler } from "@/ilos/common/index.ts";
 import { Action as AbstractAction } from "@/ilos/core/index.ts";
 import { DefaultTimezoneMiddleware } from "@/pdc/middlewares/DefaultTimezoneMiddleware.ts";
 import {
@@ -12,9 +12,7 @@ import { handlerConfig, ParamsInterface, ResultInterface } from "../contracts/cr
 import { aliasV3 } from "../contracts/create.schema.ts";
 import { Export } from "../models/Export.ts";
 import { ExportParams } from "../models/ExportParams.ts";
-import { ExportRecipient } from "../models/ExportRecipient.ts";
 import { ExportRepositoryInterfaceResolver } from "../repositories/ExportRepository.ts";
-import { RecipientServiceInterfaceResolver } from "../services/RecipientService.ts";
 import { TerritoryServiceInterfaceResolver } from "../services/TerritoryService.ts";
 
 @handler({
@@ -29,7 +27,7 @@ import { TerritoryServiceInterfaceResolver } from "../services/TerritoryService.
       "territory_id",
       undefined,
     ),
-    castToArrayMiddleware(["operator_id", "territory_id", "recipients"]),
+    castToArrayMiddleware(["operator_id", "territory_id"]),
     validateDateMiddleware({
       startPath: "start_at",
       endPath: "end_at",
@@ -48,7 +46,6 @@ export class CreateAction extends AbstractAction {
   constructor(
     protected exportRepository: ExportRepositoryInterfaceResolver,
     protected territoryService: TerritoryServiceInterfaceResolver,
-    protected recipientService: RecipientServiceInterfaceResolver,
   ) {
     super();
   }
@@ -59,16 +56,6 @@ export class CreateAction extends AbstractAction {
   ): Promise<ResultInterface> {
     const paramTarget = Export.target(context);
 
-    // make sure we have at least one recipient
-    const recipients = await this.recipientService.maybeAddCreator(
-      (params.recipients || []).map(ExportRecipient.fromEmail),
-      params.created_by,
-    );
-
-    if (!recipients.length) {
-      throw new InvalidParamsException('No recipient found! You must set "created_by" or "recipients"');
-    }
-
     // Create the export request
     const {
       uuid,
@@ -78,7 +65,6 @@ export class CreateAction extends AbstractAction {
     } = await this.exportRepository.create({
       created_by: params.created_by,
       target: paramTarget,
-      recipients: recipients,
       params: new ExportParams({
         tz: params.tz,
         start_at: params.start_at,

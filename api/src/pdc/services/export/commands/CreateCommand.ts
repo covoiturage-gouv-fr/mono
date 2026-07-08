@@ -4,16 +4,13 @@ import { logger } from "@/lib/logger/index.ts";
 import { Timezone } from "@/pdc/providers/validator/index.ts";
 import { ExportTarget } from "../models/Export.ts";
 import { ExportParams } from "../models/ExportParams.ts";
-import { ExportRecipient } from "../models/ExportRecipient.ts";
 import { ExportRepositoryInterfaceResolver } from "../repositories/ExportRepository.ts";
-import { RecipientServiceInterfaceResolver } from "../services/RecipientService.ts";
 import { TerritoryServiceInterfaceResolver } from "../services/TerritoryService.ts";
 
 export type Options = {
   created_by: number;
   operator_id: number[];
   territory_id: number[];
-  recipient: string[];
   target: ExportTarget;
   geo: string[];
   start: Date;
@@ -32,11 +29,6 @@ export type Options = {
       coerce(value: string): number {
         return parseInt(value, 10);
       },
-    },
-    {
-      signature: "-r, --recipient [recipient...]",
-      description: '[repeatable] Recipient email ("fullname <email>" or "email" format)',
-      default: [],
     },
     {
       signature: "-o, --operator_id [operator_id...]",
@@ -89,13 +81,11 @@ export class CreateCommand implements CommandInterface {
   constructor(
     protected exportRepository: ExportRepositoryInterfaceResolver,
     protected territoryService: TerritoryServiceInterfaceResolver,
-    protected recipientService: RecipientServiceInterfaceResolver,
   ) {}
 
   public async call(options: Options): Promise<void> {
     const {
       created_by,
-      recipient: recipients,
       operator_id,
       geo,
       start: start_at,
@@ -104,23 +94,12 @@ export class CreateCommand implements CommandInterface {
       target: optionTarget,
     } = options;
 
-    // make sure we have at least one recipient
-    const emails = await this.recipientService.maybeAddCreator(
-      recipients.map(ExportRecipient.fromEmail),
-      created_by,
-    );
-    if (!emails.length) {
-      logger.error('No recipient found! You must set "--created_by" or "--recipient"');
-      return;
-    }
-
     const geo_selector = this.territoryService.geoStringToObject(geo);
 
     const { uuid, target, status, params } = await this.exportRepository.create(
       {
         created_by,
         target: optionTarget,
-        recipients: emails,
         params: new ExportParams({
           start_at,
           end_at,

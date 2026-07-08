@@ -7,7 +7,6 @@ export type ParamsInterface = {
   start_at: Date;
   end_at: Date;
   created_by: number;
-  recipients?: string[];
   operator_id?: number[];
   geo_selector?: TerritorySelectorsInterface;
   territory_id?: number[];
