@@ -22,6 +22,8 @@ jobs:
   # ###########################################################################################
 
   api-lint:
+    needs: [changes]
+    if: ${{ needs.changes.outputs.api == 'true' }}
     name: (api) Lint
     runs-on: ubuntu-latest
     steps:
@@ -45,7 +47,8 @@ jobs:
         run: deno lint
 
   api-unit:
-    needs: [api-lint]
+    needs: [changes, api-lint]
+    if: ${{ needs.changes.outputs.api == 'true' }}
     name: (api) unit tests
     runs-on: ubuntu-latest
     steps:
@@ -73,7 +76,8 @@ jobs:
           APP_REDIS_URL: redis://
 
   api-integration:
-    needs: [api-unit]
+    needs: [changes, api-unit]
+    if: ${{ needs.changes.outputs.api == 'true' }}
     name: (api) integration tests
     runs-on: ubuntu-latest
     steps:
@@ -104,7 +108,8 @@ jobs:
           PRO_CONNECT_CLIENT_SECRET: ${{ secrets.PRO_CONNECT_CLIENT_SECRET }}
 
   api-e2e:
-    needs: [api-unit]
+    needs: [changes, api-unit]
+    if: ${{ needs.changes.outputs.api == 'true' }}
     name: (api) e2e tests
     runs-on: ubuntu-latest
     steps:
@@ -134,6 +139,8 @@ jobs:
   # ###########################################################################################
 
   partners-audit:
+    needs: [changes]
+    if: ${{ needs.changes.outputs.partners == 'true' }}
     name: (partners) audit
     runs-on: ubuntu-latest
     steps:
@@ -152,6 +159,8 @@ jobs:
         working-directory: app-partners
 
   partners-lint:
+    needs: [changes]
+    if: ${{ needs.changes.outputs.partners == 'true' }}
     name: (partners) lint
     runs-on: ubuntu-latest
     steps:
@@ -174,7 +183,8 @@ jobs:
         run: npm run lint
 
   partners-smoke:
-    needs: [partners-lint, partners-audit]
+    needs: [changes, partners-lint, partners-audit]
+    if: ${{ needs.changes.outputs.partners == 'true' }}
     name: (partners) smoke tests
     runs-on: ubuntu-latest
     environment: production
@@ -206,6 +216,8 @@ jobs:
   # ###########################################################################################
 
   observatory-audit:
+    needs: [changes]
+    if: ${{ needs.changes.outputs.observatory == 'true' }}
     name: (observatory) audit
     runs-on: ubuntu-latest
     steps:
@@ -224,6 +236,8 @@ jobs:
         working-directory: app-observatory
 
   observatory-lint:
+    needs: [changes]
+    if: ${{ needs.changes.outputs.observatory == 'true' }}
     name: (observatory) lint
     runs-on: ubuntu-latest
     steps:
@@ -246,7 +260,8 @@ jobs:
         run: npm run lint
 
   observatory-smoke:
-    needs: [observatory-lint, observatory-audit]
+    needs: [changes, observatory-lint, observatory-audit]
+    if: ${{ needs.changes.outputs.observatory == 'true' }}
     name: (observatory) smoke tests
     runs-on: ubuntu-latest
     environment: production
@@ -311,6 +326,9 @@ jobs:
       pull-requests: read
     outputs:
       app: ${{ steps.filter.outputs.app }}
+      api: ${{ steps.filter.outputs.api }}
+      partners: ${{ steps.filter.outputs.partners }}
+      observatory: ${{ steps.filter.outputs.observatory }}
     steps:
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -326,13 +344,27 @@ jobs:
               - 'app-partners/**'
               - 'app-observatory/**'
               - 'shared/**'
+            api:
+              - 'api/**'
+              - 'shared/**'
+            partners:
+              - 'app-partners/**'
+            observatory:
+              - 'app-observatory/**'
 
   release:
     name: (chore) release
     runs-on: ubuntu-latest
     # Only release when the app stack (api / front-ends) changed. Data-only
     # merges (dbt / sqlmesh / datalake / cms) must not cut an app version.
-    if: github.ref == 'refs/heads/main' && needs.changes.outputs.app == 'true'
+    # `always()` + no-failure so an app change that skips the api-scoped jobs
+    # (e.g. partners-only) still releases; a real failure in any need blocks it.
+    if: >-
+      ${{ always()
+      && github.ref == 'refs/heads/main'
+      && needs.changes.outputs.app == 'true'
+      && !contains(needs.*.result, 'failure')
+      && !contains(needs.*.result, 'cancelled') }}
     needs:
       - changes
       - api-lint
