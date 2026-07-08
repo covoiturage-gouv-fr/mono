@@ -22,6 +22,8 @@ jobs:
   # ###########################################################################################
 
   api-lint:
+    needs: [changes]
+    if: ${{ needs.changes.outputs.api == 'true' }}
     name: (api) Lint
     runs-on: ubuntu-latest
     steps:
@@ -45,7 +47,8 @@ jobs:
         run: deno lint
 
   api-unit:
-    needs: [api-lint]
+    needs: [changes, api-lint]
+    if: ${{ needs.changes.outputs.api == 'true' }}
     name: (api) unit tests
     runs-on: ubuntu-latest
     steps:
@@ -73,7 +76,8 @@ jobs:
           APP_REDIS_URL: redis://
 
   api-integration:
-    needs: [api-unit]
+    needs: [changes, api-unit]
+    if: ${{ needs.changes.outputs.api == 'true' }}
     name: (api) integration tests
     runs-on: ubuntu-latest
     steps:
@@ -104,7 +108,8 @@ jobs:
           PRO_CONNECT_CLIENT_SECRET: ${{ secrets.PRO_CONNECT_CLIENT_SECRET }}
 
   api-e2e:
-    needs: [api-unit]
+    needs: [changes, api-unit]
+    if: ${{ needs.changes.outputs.api == 'true' }}
     name: (api) e2e tests
     runs-on: ubuntu-latest
     steps:
@@ -311,6 +316,7 @@ jobs:
       pull-requests: read
     outputs:
       app: ${{ steps.filter.outputs.app }}
+      api: ${{ steps.filter.outputs.api }}
     steps:
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -326,13 +332,23 @@ jobs:
               - 'app-partners/**'
               - 'app-observatory/**'
               - 'shared/**'
+            api:
+              - 'api/**'
+              - 'shared/**'
 
   release:
     name: (chore) release
     runs-on: ubuntu-latest
     # Only release when the app stack (api / front-ends) changed. Data-only
     # merges (dbt / sqlmesh / datalake / cms) must not cut an app version.
-    if: github.ref == 'refs/heads/main' && needs.changes.outputs.app == 'true'
+    # `always()` + no-failure so an app change that skips the api-scoped jobs
+    # (e.g. partners-only) still releases; a real failure in any need blocks it.
+    if: >-
+      ${{ always()
+      && github.ref == 'refs/heads/main'
+      && needs.changes.outputs.app == 'true'
+      && !contains(needs.*.result, 'failure')
+      && !contains(needs.*.result, 'cancelled') }}
     needs:
       - changes
       - api-lint
