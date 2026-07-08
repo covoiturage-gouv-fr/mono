@@ -29,7 +29,7 @@ def test_verify_checksum_passes_on_match(tmp_path):
     p = tmp_path / "f.bin"
     p.write_bytes(b"data")
     verify_checksum(str(p), "sha256:" + hashlib.sha256(b"data").hexdigest(), "f")
-    verify_checksum(str(p), "sha1:" + hashlib.sha1(b"data").hexdigest(), "f")  # algo tiré du préfixe
+    verify_checksum(str(p), "sha512:" + hashlib.sha512(b"data").hexdigest(), "f")  # algo tiré du préfixe
 
 
 def test_verify_checksum_raises_on_mismatch(tmp_path):
@@ -44,3 +44,20 @@ def test_verify_checksum_raises_on_malformed(tmp_path):
     p.write_bytes(b"data")
     with pytest.raises(RuntimeError, match="mal formé"):
         verify_checksum(str(p), "deadbeef", "f")  # pas de préfixe d'algo
+
+
+def test_verify_checksum_rejects_weak_algo(tmp_path):
+    p = tmp_path / "f.bin"
+    p.write_bytes(b"data")
+    # md5/sha1 = collisions praticables : un algo faible ne doit pas pouvoir s'auto-autoriser via la config.
+    with pytest.raises(RuntimeError, match="algo"):
+        verify_checksum(str(p), "md5:" + hashlib.md5(b"data").hexdigest(), "f")
+    with pytest.raises(RuntimeError, match="algo"):
+        verify_checksum(str(p), "sha1:" + hashlib.sha1(b"data").hexdigest(), "f")
+
+
+def test_verify_checksum_rejects_unknown_algo(tmp_path):
+    p = tmp_path / "f.bin"
+    p.write_bytes(b"data")
+    with pytest.raises(RuntimeError, match="algo"):
+        verify_checksum(str(p), "sha42:deadbeef", "f")

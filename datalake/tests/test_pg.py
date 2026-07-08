@@ -1,8 +1,40 @@
+import pytest
+
 from pipelines.helpers import pg
 
 
 def test_ident_quotes_and_escapes():
     assert pg._ident("aom") == '"aom"'
+
+
+def test_check_type_accepts_known_types():
+    for typ in ["varchar", "TEXT", "bigint", "double precision", "geometry", "varchar(10)", "numeric(12, 2)"]:
+        pg._check_type(typ)  # ne lève pas
+
+
+def test_check_type_rejects_injection_and_unknown():
+    with pytest.raises(ValueError, match="type"):
+        pg._check_type("text); DROP SCHEMA zone_raw CASCADE; --")
+    with pytest.raises(ValueError, match="type"):
+        pg._check_type("jsonb")  # hors allowlist
+
+
+def test_load_csv_columns_rejects_untrusted_type(tmp_path):
+    csv = tmp_path / "x.csv"
+    csv.write_text("a\nx\n")
+    conn = FakePgConn()
+    with pytest.raises(ValueError, match="type"):
+        pg.load_csv(conn, "zone_raw", "t", str(csv),
+                    columns=[["a", "text); DROP TABLE u; --"]])
+
+
+def test_load_csv_select_rejects_untrusted_type(tmp_path):
+    csv = tmp_path / "x.csv"
+    csv.write_text("MOD\n1\n")
+    conn = FakePgConn()
+    with pytest.raises(ValueError, match="type"):
+        pg.load_csv(conn, "zone_raw", "t", str(csv),
+                    select=[["MOD", "integer); DROP TABLE u; --", "mod"]])
     assert pg._ident("Mise à jour") == '"Mise à jour"'
     assert pg._ident('a"b') == '"a""b"'
 

@@ -20,7 +20,6 @@ def seed(
   bucket: Optional[str] = typer.Option(default=None, envvar="S3_BUCKET"),
   folder: Optional[str] = None,
   overwrite: bool = False,
-  skip_checksum: bool = typer.Option(False, help="Autorise les sources sans empreinte (ex. data.gouv) ; celles qui en ont une restent vérifiées."),
 ):
   tables = load_config(config)
   conn = pg.pg_connect()
@@ -61,19 +60,18 @@ def seed(
         print(f"ℹ️  {step} — suppression pour overwrite")
         pg.drop_table(conn, schema, name)
 
-      # Intégrité exigée par défaut : pas d'empreinte = on refuse (--skip-checksum pour outrepasser).
-      if not expected and not skip_checksum:
-        raise RuntimeError(f"❌ {step} — aucune empreinte pour {filename} ; --skip-checksum pour outrepasser")
+      # Intégrité non négociable : pas d'empreinte committée = on refuse la source.
+      if not expected:
+        raise RuntimeError(f"❌ {step} — aucune empreinte committée pour {filename} ; ajoute-la en config (just checksum)")
 
       # Le loader lit un fichier local : on rapatrie la source S3 via boto3.
       cache_key = key
       if cache_key not in local_cache:
         print(f"▶️  {step} — téléchargement de {src}...")
         local_path = s3_download(bucket, key, ext, s3)
-        if expected:  # empreinte présente : toujours vérifiée, même avec --skip-checksum
-          if expected_size:
-            verify_size(local_path, expected_size, filename)
-          verify_checksum(local_path, expected, filename)
+        if expected_size:
+          verify_size(local_path, expected_size, filename)
+        verify_checksum(local_path, expected, filename)
         local_cache[cache_key] = local_path
       else:
         print(f"▶️  {step} — fichier déjà en cache local")

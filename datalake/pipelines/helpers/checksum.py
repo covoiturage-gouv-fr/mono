@@ -1,6 +1,10 @@
 import hashlib
 import os
 
+# Algos acceptés pour *vérifier* une empreinte : on refuse md5/sha1 (collisions praticables)
+# pour qu'un algo faible ne puisse pas s'auto-autoriser via le préfixe stocké en config.
+_ALLOWED_ALGOS = {"sha256", "sha512"}
+
 
 def verify_size(path: str, expected: int, label: str) -> None:
   """Échoue si la taille du fichier diffère (détection rapide de troncature, avant le hash)."""
@@ -23,6 +27,8 @@ def verify_checksum(path: str, expected: str, label: str) -> None:
   algo, _, want = expected.partition(":")
   if not want:
     raise RuntimeError(f"❌ Checksum {label} mal formé (attendu « <algo>:<hex> ») : {expected}")
+  if algo not in _ALLOWED_ALGOS:
+    raise RuntimeError(f"❌ Checksum {label} : algo « {algo} » non autorisé (attendu sha256 ou sha512)")
   actual = hash_file(path, algo)
   if actual != want:
     raise RuntimeError(f"❌ Checksum {label} ({algo}) invalide : attendu {want}, obtenu {actual}")

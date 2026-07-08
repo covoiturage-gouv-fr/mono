@@ -1,8 +1,23 @@
 import csv
 import os
+import re
 from typing import Optional
 
 import psycopg
+
+# Types Postgres autorisés dans le DDL de seed. Le champ `type` de la config n'est pas
+# paramétrable en SQL (il est interpolé brut) : cette allowlist est le seul rempart contre
+# une injection via un type forgé (CWE-89), même si la config est committée et revue.
+_ALLOWED_TYPES = {
+    "varchar", "text", "char", "bpchar",
+    "smallint", "integer", "int", "bigint",
+    "numeric", "decimal", "real", "double precision",
+    "boolean",
+    "date", "time", "timestamp", "timestamptz",
+    "geometry", "geography",
+}
+# base alpha (+ espaces pour « double precision »), longueur/précision optionnelle « (n) » / « (n, m) ».
+_TYPE_RE = re.compile(r"^[a-z][a-z ]*(\(\s*\d+\s*(,\s*\d+\s*)?\))?$")
 
 
 def pg_conninfo() -> str:
@@ -21,6 +36,15 @@ def pg_connect():
 
 def _ident(name: str) -> str:
     return '"' + name.replace('"', '""') + '"'
+
+
+def _check_type(typ: str) -> str:
+    """Valide un type de colonne avant de l'interpoler dans le DDL (non paramétrable). Lève sinon."""
+    norm = typ.strip().lower()
+    base = re.sub(r"\s*\(.*\)$", "", norm).strip()
+    if not _TYPE_RE.match(norm) or base not in _ALLOWED_TYPES:
+        raise ValueError(f"❌ type de colonne non autorisé : {typ!r}")
+    return typ
 
 
 def _qualified(schema: str, table: str) -> str:
@@ -60,7 +84,7 @@ def load_csv(conn, schema: str, table: str, path: str,
     if select:
         return _load_csv_transform(conn, schema, table, path, select)
 
-    coldefs = ", ".join(f"{_ident(n)} {t}" for n, t in columns)
+    coldefs = ", ".join(f"{_ident(n)} {_check_type(t)}" for n, t in columns)
     collist = ", ".join(_ident(n) for n, _ in columns)
     drop_table(conn, schema, table)
     conn.execute(f"CREATE TABLE {_qualified(schema, table)} ({coldefs})")
@@ -83,7 +107,7 @@ def _load_csv_transform(conn, schema: str, table: str, path: str, select: list) 
     _copy_file(conn, f"COPY {_ident(staging)} FROM STDIN WITH (FORMAT csv, HEADER true)", path)
 
     proj = ", ".join(
-        f"CAST(NULLIF({_ident(src)}, '') AS {typ}) AS {_ident(tgt)}" for src, typ, tgt in select
+        f"CAST(NULLIF({_ident(src)}, '') AS {_check_type(typ)}) AS {_ident(tgt)}" for src, typ, tgt in select
     )
     drop_table(conn, schema, table)
     conn.execute(f"CREATE TABLE {_qualified(schema, table)} AS SELECT {proj} FROM {_ident(staging)}")
