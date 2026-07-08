@@ -1,4 +1,5 @@
 import os
+import time
 import boto3
 import tempfile
 from typing import Optional
@@ -70,7 +71,11 @@ def s3_download(bucket: str, key: str, ext: str, client=None) -> str:
   tmp = tempfile.NamedTemporaryFile(suffix=f".{ext}", delete=False)
   tmp.close()
   size = client.head_object(Bucket=bucket, Key=key)["ContentLength"]
-  print(f"  ↳ Téléchargement {key} ({size / 1e6:.0f} Mo)...")
+  size_mo = size / 1e6
+  print(f"  ↳ Téléchargement {key} ({size_mo:.0f} Mo)...")
+  t0 = time.monotonic()
   client.download_file(bucket, key, tmp.name)
-  print(f"  ↳ Téléchargement terminé")
+  elapsed = time.monotonic() - t0
+  speed = f", {size_mo / elapsed:.0f} Mo/s" if elapsed else ""
+  print(f"  ↳ Téléchargement terminé en {elapsed:.1f}s{speed}")
   return tmp.name
