@@ -5,6 +5,7 @@ the export bucket -> report success/failure back to the API.
 """
 
 import os
+import tempfile
 import zipfile
 from datetime import datetime
 
@@ -48,14 +49,17 @@ def process_one(api, conn, s3, bucket) -> bool:
         params["end_at"] = _to_local_date(params["end_at"])
         inner = build_copy_sql(task["target"], params)
 
-        csv_path = f"./{uuid}.csv"
-        zip_path = f"./{uuid}.csv.zip"
-        stream_csv(conn, inner, csv_path)
-        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as z:
-            z.write(csv_path, arcname=f"{uuid}.csv")
+        # temp files vont dans un répertoire inscriptible (TMPDIR, défaut /tmp) :
+        # le workdir de l'image est monté en lecture seule. Auto-nettoyé en sortie.
+        with tempfile.TemporaryDirectory(prefix="export-") as tmp:
+            csv_path = os.path.join(tmp, f"{uuid}.csv")
+            zip_path = os.path.join(tmp, f"{uuid}.csv.zip")
+            stream_csv(conn, inner, csv_path)
+            with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as z:
+                z.write(csv_path, arcname=f"{uuid}.csv")
 
-        s3_upload(bucket, f"{uuid}.csv.zip", zip_path, client=s3)
-        api.complete(uuid, os.path.getsize(zip_path))
+            s3_upload(bucket, f"{uuid}.csv.zip", zip_path, client=s3)
+            api.complete(uuid, os.path.getsize(zip_path))
         return True
     except Exception as e:  # any failure -> report to API, don't crash the loop
         # Full detail stays worker-side (logs); the API/user only sees a generic
@@ -63,10 +67,6 @@ def process_one(api, conn, s3, bucket) -> bool:
         print(f"❌ export {uuid} failed: {e!r}")
         api.fail(uuid, "export generation failed")
         return True
-    finally:
-        for p in (f"./{uuid}.csv", f"./{uuid}.csv.zip"):
-            if os.path.exists(p):
-                os.unlink(p)
 
 
 @app.command()
