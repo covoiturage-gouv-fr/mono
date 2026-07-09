@@ -1,13 +1,14 @@
 import { Card } from "@codegouvfr/react-dsfr/Card";
 import { ButtonsGroup } from "@codegouvfr/react-dsfr/ButtonsGroup";
 import { RessourceCardProps } from "@/interfaces/ressources/componentsInterface";
+import { excerpt } from "@/helpers/text";
 
 export default function RessourceCard(props: RessourceCardProps) {
-    
+
   return(
     <Card
       title={props.title}
-      desc={props.content}
+      desc={excerpt(props.content)}
       detail={`Publié le ${props.date}`}
       imageAlt={''}
       imageUrl={props.img}
