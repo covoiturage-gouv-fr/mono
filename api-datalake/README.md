@@ -56,15 +56,22 @@ just test              # pytest
 
 ## État de la migration
 
+> **Règle d'architecture** : l'API ne lit **que la zone `zone_exposed`**. Les données de
+> référence dont elle a besoin (périmètres, campagnes) sont projetées dans l'exposé par des
+> modèles dbt dédiés (`zone_exposed.perimeters`, `zone_exposed.campaigns`) — ce sont ces
+> modèles qui lisent `zone_trusted`/`zone_raw`, jamais l'API.
+
 - [x] Squelette FastAPI + cache + fenêtre de publication
-- [x] Modèle dbt `zone_exposed.location` (binning H3 en SQL) — validé sur prod
+- [x] Modèles dbt `zone_exposed.{location, perimeters, campaigns}` — validés sur prod
 - [x] `GET /observatory/location` — heatmap H3, cache Redis gzip (SQL validé sur prod)
+- [x] `GET /observatory/campaigns` — campagnes d'incitation + géométrie (SQL validé sur prod)
 - [~] `GET /observatory/last-record` (canari) → `zone_exposed.od_month`
-      (**bloqué** : `zone_exposed`/`zone_aggregated` pas encore matérialisés en prod)
-- [ ] Endpoints `flux`, `incentive`, `distribution`, `occupation`,
-      `incentiveCampaigns`, `keyfigures`, `infra` (bloqués sur la matérialisation de l'exposé)
+      (**bloqué** : `zone_aggregated`/`zone_exposed.od_*` pas encore matérialisés en prod)
+- [ ] Endpoints `flux`, `incentive`, `distribution`, `occupation`, `keyfigures`, `infra`
+      (bloqués sur la matérialisation de l'agrégé/exposé)
 - [ ] Repointage `app-observatory` puis décommission du service Deno
 
 > **Note prod** : au moment du dev, seuls `dlk_import`/`zone_raw`/`zone_trusted` sont
-> construits en base. `location` lit `zone_trusted.carpools` (dispo), d'où sa validation
-> immédiate ; les autres endpoints attendent `dbt run --select aggregated exposed`.
+> construits en base. `location`, `perimeters` et `campaigns` dérivent de `zone_trusted`/
+> `zone_raw` (dispos), d'où leur validation immédiate ; les endpoints agrégés attendent
+> `dbt run --select aggregated exposed`.

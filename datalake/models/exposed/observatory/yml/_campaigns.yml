@@ -1,0 +1,25 @@
+version: 2
+models:
+  - name: campaigns
+    description: >
+      Campagnes d'incitation exposées à l'API (remplace la lecture directe de
+      raw_zone.campaigns + jointure perimeters_agg côté API Deno). Ne projette que les
+      colonnes du contrat public historique (les colonnes internes du seed brut — email,
+      collectivite, etc. — sont volontairement écartées). `lien` = ancien
+      `lien_page_collectivité`. Embarque la géométrie GeoJSON du territoire.
+    columns:
+      - name: type
+        data_type: text
+      - name: code
+        data_type: character varying
+      - name: date_debut
+        data_type: date
+      - name: date_fin
+        data_type: date
+      - name: operateurs
+        data_type: text
+      - name: lien
+        data_type: text
+      - name: geom
+        data_type: jsonb
+        description: Géométrie GeoJSON du territoire (périmètre au dernier millésime).

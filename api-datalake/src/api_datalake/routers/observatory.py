@@ -74,3 +74,31 @@ async def location(
     if redis is not None and key is not None:
         await redis.set(key, blob, ex=settings.cache_ttl_seconds)
     return _gzip_json(blob, "MISS")
+
+
+@router.get("/campaigns")
+async def campaigns(
+    type: str | None = Query(None),
+    code: str | None = Query(None),
+    year: int | None = Query(None, ge=2015, le=2100),
+    conn=Depends(get_conn),
+    redis=Depends(get_redis),
+):
+    """Campagnes d'incitation (avec géométrie du territoire). Réponse gzip cachée."""
+    cutoff = settings.app_observatory_published_until
+    params = {"type": check_territory_param(type) if type is not None else None,
+              "code": code, "year": year}
+
+    key = None
+    if redis is not None:
+        version = await publication_version(redis, cutoff)
+        key = build_cache_key(version, "/observatory/campaigns", params)
+        hit = await redis.get(key)
+        if hit is not None:
+            return _gzip_json(hit, "HIT")
+
+    data = await repo.get_campaigns(conn, type, code, year)
+    blob = gzip_payload(data)
+    if redis is not None and key is not None:
+        await redis.set(key, blob, ex=settings.cache_ttl_seconds)
+    return _gzip_json(blob, "MISS")

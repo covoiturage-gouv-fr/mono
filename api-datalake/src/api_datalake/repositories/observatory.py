@@ -6,8 +6,10 @@ sont liées (paramétrées) ; `type` est en plus validé par allowlist en amont.
 
 from ..helpers import check_territory_param
 
-# Source de la heatmap (vue dbt qui remplace observatoire_stats.view_location).
-LOCATION_TABLE = "zone_exposed.location"
+# Toutes les sources sont dans la zone exposée : l'API ne lit rien d'autre.
+LOCATION_TABLE = "zone_exposed.location"      # remplace observatoire_stats.view_location
+PERIMETERS_TABLE = "zone_exposed.perimeters"  # remplace geo.perimeters
+CAMPAIGNS_TABLE = "zone_exposed.campaigns"    # remplace raw_zone.campaigns + jointure geom
 
 # type de territoire -> colonne de périmètre. `com` = grain arrondissement (`arr`),
 # comme l'ancienne requête de l'API (SELECT arr AS com ...).
@@ -51,16 +53,16 @@ def build_location_query(type_: str, code: str, year: int, n: int,
     sql = f"""
         WITH millesime AS (
             SELECT year FROM (
-                SELECT max(year) AS year FROM zone_trusted.perimeters WHERE year = %(year)s
+                SELECT max(year) AS year FROM {PERIMETERS_TABLE} WHERE year = %(year)s
                 UNION ALL
-                SELECT max(year) AS year FROM zone_trusted.perimeters
+                SELECT max(year) AS year FROM {PERIMETERS_TABLE}
                 ORDER BY year
                 LIMIT 1
             ) m
         ),
         perims AS (
             SELECT arr AS com
-            FROM zone_trusted.perimeters
+            FROM {PERIMETERS_TABLE}
             WHERE year = (SELECT year FROM millesime)
               AND {col} = %(code)s
         ),
@@ -88,6 +90,45 @@ async def get_location(conn, type_: str, code: str, year: int, n: int,
         await cur.execute(sql, params)
         rows = await cur.fetchall()
     return [{"hex": r["hex"], "count": r["count"]} for r in rows]
+
+
+def build_campaigns_query(type_: str | None = None, code: str | None = None,
+                          year: int | None = None) -> tuple[str, dict]:
+    """Construit la requête des campagnes d'incitation + ses paramètres.
+
+    Porté de `IncentiveCampaignsRepositoryProvider` : la géométrie et la jointure
+    périmètre sont déjà matérialisées dans `zone_exposed.campaigns` ; il reste les
+    filtres temporels (dépendants de `now()`) et le filtrage type/code/année.
+    """
+    filters = ["geom IS NOT NULL"]
+    params: dict = {}
+    if code:
+        filters.append("left(code, 9) = %(code)s")
+        params["code"] = code
+    if year and not code:
+        filters.append("EXTRACT(YEAR FROM date_fin) = %(year)s")
+        filters.append("date_fin < now()")
+        params["year"] = year
+    if year and code:
+        filters.append("EXTRACT(YEAR FROM date_fin) = %(year)s")
+        params["year"] = year
+    if not year and not code:
+        filters.append("date_fin > now()")
+    if type_ is not None:
+        filters.append("type = %(type)s")
+        params["type"] = check_territory_param(type_)
+
+    sql = f"SELECT * FROM {CAMPAIGNS_TABLE} WHERE " + " AND ".join(filters)
+    return sql, params
+
+
+async def get_campaigns(conn, type_: str | None = None, code: str | None = None,
+                        year: int | None = None) -> list[dict]:
+    sql, params = build_campaigns_query(type_, code, year)
+    async with conn.cursor() as cur:
+        await cur.execute(sql, params)
+        rows = await cur.fetchall()
+    return list(rows)
 
 
 async def get_last_record(conn, type_: str, code: str,
