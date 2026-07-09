@@ -36,7 +36,7 @@ runs:
     - name: Validate context input
       shell: bash
       run: | # zizmor: ignore[template-injection]
-        ALLOWED=".,./cms,./sqlmesh,./dbt,./datalake"
+        ALLOWED=".,./cms,./sqlmesh,./dbt,./datalake,./api-datalake"
         if ! echo "$ALLOWED" | grep -qw "${{ inputs.context }}"; then
           echo "Disallowed context: ${{ inputs.context }}"
           exit 1
