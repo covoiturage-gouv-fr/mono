@@ -58,11 +58,11 @@ just test              # pytest
 
 > **Règle d'architecture** : l'API ne lit **que la zone `zone_exposed`**. Les données de
 > référence dont elle a besoin (périmètres, campagnes) sont projetées dans l'exposé par des
-> modèles dbt dédiés (`zone_exposed.perimeters`, `zone_exposed.campaigns`) — ce sont ces
+> modèles dbt dédiés (`zone_exposed.observatory_perimeters`, `zone_exposed.campaigns`) — ce sont ces
 > modèles qui lisent `zone_trusted`/`zone_raw`, jamais l'API.
 
 - [x] Squelette FastAPI + cache + fenêtre de publication
-- [x] Modèles dbt `zone_exposed.{location, perimeters, campaigns}` — validés sur prod
+- [x] Modèles dbt `zone_exposed.{location, observatory_perimeters, campaigns}` — validés sur prod
 - [x] `GET /observatory/location` — heatmap H3, cache Redis gzip (SQL validé sur prod)
 - [x] `GET /observatory/campaigns` — campagnes d'incitation + géométrie (SQL validé sur prod)
 - [~] `GET /observatory/last-record` (canari) → `zone_exposed.od_month`

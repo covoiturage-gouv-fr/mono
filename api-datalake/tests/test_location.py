@@ -3,6 +3,7 @@ import json
 
 from fastapi.testclient import TestClient
 
+import api_datalake.routers.observatory as router_mod
 from api_datalake.cache import get_redis
 from api_datalake.main import create_app
 from api_datalake.repositories.observatory import build_location_query
@@ -123,7 +124,6 @@ def test_location_out_of_range_params_return_422_not_500():
 
 
 def test_location_unpublished_period_is_bypassed_and_empty():
-    import api_datalake.routers.observatory as router_mod
     c = TestClient(make_client([{"hex": "x", "count": 9}]))
     router_mod.settings.app_observatory_published_until = "2022-01-01"
     try:

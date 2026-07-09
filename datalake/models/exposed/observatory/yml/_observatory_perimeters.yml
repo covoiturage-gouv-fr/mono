@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: perimeters
+  - name: observatory_perimeters
     description: >
       Périmètres géographiques exposés à l'API (remplace geo.perimeters côté API Deno).
       Projection de zone_trusted.perimeters pour la résolution territoire -> communes

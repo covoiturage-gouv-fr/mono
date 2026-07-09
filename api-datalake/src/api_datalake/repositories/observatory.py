@@ -8,7 +8,7 @@ from ..helpers import check_territory_param
 
 # Toutes les sources sont dans la zone exposée : l'API ne lit rien d'autre.
 LOCATION_TABLE = "zone_exposed.location"      # remplace observatoire_stats.view_location
-PERIMETERS_TABLE = "zone_exposed.perimeters"  # remplace geo.perimeters
+PERIMETERS_TABLE = "zone_exposed.observatory_perimeters"  # remplace geo.perimeters
 CAMPAIGNS_TABLE = "zone_exposed.campaigns"    # remplace raw_zone.campaigns + jointure geom
 
 # type de territoire -> colonne de périmètre. `com` = grain arrondissement (`arr`),
