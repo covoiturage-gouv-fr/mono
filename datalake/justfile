@@ -4,6 +4,12 @@ set shell := ["bash", "-uc"]
 # Backfill historique groupé : `just backfill all`, `just backfill trusted`, …
 mod backfill "backfill.justfile"
 
+# dbt écrit ses artefacts (target/) et ses logs (logs/) sous le répertoire projet. En pod,
+# ce répertoire est en lecture seule (/data appartient à root) => on redirige vers un chemin
+# inscriptible. Surchargé par l'env du pod si présent ; hérité par le module backfill.
+export DBT_TARGET_PATH := env_var_or_default("DBT_TARGET_PATH", "/tmp/dbt/target")
+export DBT_LOG_PATH := env_var_or_default("DBT_LOG_PATH", "/tmp/dbt/logs")
+
 default:
   @just --list
 
