@@ -1,5 +1,8 @@
 set dotenv-load
-set shell := ["bash", "-uc"] 
+set shell := ["bash", "-uc"]
+
+# Backfill historique groupé : `just backfill all`, `just backfill trusted`, …
+mod backfill "backfill.justfile"
 
 default:
   @just --list
@@ -72,12 +75,34 @@ export config schema *args:
 export-worker *args:
   python -m pipelines.cmd.export_worker {{args}}
 
-# Backfill par mois pour éviter les timeouts
+# Rafraîchit les stats locales des tables distantes (FDW, schema dlk_import).
+# Autovacuum n'analyse JAMAIS les foreign tables : sans ce pas, `reltuples = -1`
+# (aucune stat). À lancer avant un backfill lourd pour donner au planner de bonnes
+# estimations sur les fragments non délégués au serveur distant.
+analyze-sources:
+  #!/usr/bin/env bash
+  set -euo pipefail
+  PGPASSWORD="$DBT_PASSWORD" psql -h "$DBT_HOST" -p "$DBT_PORT" -U "$DBT_USER" -d "$DBT_DBNAME" \
+    -v ON_ERROR_STOP=1 <<'SQL'
+  \timing on
+  SELECT format('ANALYZE %I.%I;', foreign_table_schema, foreign_table_name)
+  FROM information_schema.foreign_tables
+  WHERE foreign_table_schema = 'dlk_import'
+  ORDER BY foreign_table_name
+  \gexec
+  SQL
 
+# Backfill par mois pour éviter les timeouts et borner la mémoire.
+# GUCs de session (via PGOPTIONS) : work_mem réduit + gather non parallèle bornent
+# le pic mémoire (sinon work_mem × workers parallèles × threads → OOM, backend tué =
+# « SSL SYSCALL error: EOF »). synchronous_commit=off : sans risque pour un backfill
+# rejouable. DBT_THREADS surchargeable (défaut 3 : concurrence sûre une fois bornée).
 backfill-batch model period start end *args:
   #!/usr/bin/env bash
   current="{{ start }}"
   period="{{ period }}"
+  export PGOPTIONS="${PGOPTIONS:--c work_mem=96MB -c max_parallel_workers_per_gather=1 -c synchronous_commit=off}"
+  export DBT_THREADS="${DBT_THREADS:-3}"
   while [[ "$current" < "{{ end }}" ]]; do
     next=$(date -d "$current +1 $period" +%Y-%m-%d)
     echo "▶️  Processing $current → $next"
@@ -85,6 +110,9 @@ backfill-batch model period start end *args:
     dbt run --profiles-dir profiles --select {{model}} --vars "{start: \"$current\", end: \"$next\"}" {{ args }}
     current=$next
   done
+
+# Backfill historique complet : module `backfill` (voir backfill.justfile) => `just backfill …`
+# (`just backfill all`, `backfill trusted`, `backfill aggregated`, `backfill exposed`).
 
 # Pipeline 1: Seed raw data from S3 to raw_zone (yearly). Toutes les sources sont dans notre S3
 # (data.gouv recopié via `just mirror`), empreintes vérifiées par défaut.
