@@ -4,6 +4,12 @@
 set dotenv-load
 set shell := ["bash", "-uc"]
 
+# dbt écrit ses artefacts (manifest, compiled) dans target/ et ses logs dans logs/, sous le
+# répertoire projet. En pod, ce répertoire est en lecture seule (ex. /data) => on redirige
+# vers un chemin inscriptible. Surchargeable si le pod monte un volume dédié.
+export DBT_TARGET_PATH := env_var_or_default("DBT_TARGET_PATH", "/tmp/dbt-target")
+export DBT_LOG_PATH := env_var_or_default("DBT_LOG_PATH", "/tmp/dbt-logs")
+
 # Profil mémoire borné repris par toutes les recettes : work_mem réduit + gather non
 # parallèle bornent le pic mémoire (sinon work_mem × workers × threads => OOM, backend
 # tué « SSL SYSCALL error: EOF »). use_remote_estimate + fetch_size sont posés côté
