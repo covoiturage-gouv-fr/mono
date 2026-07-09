@@ -1,0 +1,29 @@
+[project]
+name = "api-datalake"
+version = "0.1.0"
+description = "API de lecture de l'observatoire public, servie depuis le datalake (zone_exposed)"
+readme = "README.md"
+requires-python = ">=3.13"
+
+dependencies = [
+    "fastapi>=0.120",
+    "uvicorn[standard]>=0.38",
+    "psycopg[binary]>=3.2",
+    "psycopg-pool>=3.2",
+    "redis>=6",
+    "pydantic-settings>=2.6",
+    "h3>=4.1",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "httpx>=0.28",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[tool.uv]
+package = false

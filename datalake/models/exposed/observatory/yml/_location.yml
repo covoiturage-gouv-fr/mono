@@ -1,0 +1,21 @@
+version: 2
+models:
+  - name: location
+    description: >
+      Trajets pour la heatmap de densité de l'observatoire (remplace la vue legacy
+      observatoire_stats.view_location). Expose les index H3 résolution 8 pour un
+      binning en SQL côté api-datalake ; parité H3 exacte pour un zoom <= 8.
+    columns:
+      - name: carpool_id
+        data_type: integer
+      - name: start_geo_code
+        data_type: character varying
+      - name: end_geo_code
+        data_type: character varying
+      - name: start_datetime
+        data_type: timestamp without time zone
+        description: Datetime de départ en heure locale (timezoned_ts), stocké naïf.
+      - name: start_h3index_z8
+        data_type: h3index
+      - name: end_h3index_z8
+        data_type: h3index
