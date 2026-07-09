@@ -80,17 +80,7 @@ export-worker *args:
 # (aucune stat). À lancer avant un backfill lourd pour donner au planner de bonnes
 # estimations sur les fragments non délégués au serveur distant.
 analyze-sources:
-  #!/usr/bin/env bash
-  set -euo pipefail
-  PGPASSWORD="$DBT_PASSWORD" psql -h "$DBT_HOST" -p "$DBT_PORT" -U "$DBT_USER" -d "$DBT_DBNAME" \
-    -v ON_ERROR_STOP=1 <<'SQL'
-  \timing on
-  SELECT format('ANALYZE %I.%I;', foreign_table_schema, foreign_table_name)
-  FROM information_schema.foreign_tables
-  WHERE foreign_table_schema = 'dlk_import'
-  ORDER BY foreign_table_name
-  \gexec
-  SQL
+  python -m pipelines.cmd.analyze
 
 # Backfill par mois pour éviter les timeouts et borner la mémoire.
 # GUCs de session (via PGOPTIONS) : work_mem réduit + gather non parallèle bornent
