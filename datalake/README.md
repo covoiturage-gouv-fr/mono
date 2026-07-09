@@ -232,6 +232,23 @@ Injectées dans les SELECT via `{{ macro_name() }}`.
 
 Séquence à exécuter **une seule fois** pour peupler le datalake from scratch.
 
+> **Depuis un pod du cluster (recommandé pour un gros backfill)** : une fois `zone_raw`
+> semée (étape 1), tout l'enchaînement tient en une commande idempotente et rejouable —
+> ```bash
+> just backfill all            # ou : just backfill all 2019-01-01 2027-01-01
+> ```
+> Elle enchaîne migrations → stats FDW → geo → trusted → agrégé → exposé, avec le **profil
+> mémoire borné et les threads déjà réglés par couche** (rien à ajuster à la main). Les
+> étapes détaillées ci-dessous restent utiles pour rejouer une couche isolément.
+
+### Étape 0 — Migrations (fonctions + extensions)
+
+```bash
+just migrate
+```
+
+Applique les objets DB que dbt ne gère pas (idempotent, tracé dans `schema_migrations`) : la fonction `ts_ceil`, les **extensions `h3` / `h3_postgis`** (indispensables à `trusted.carpools`, qui indexe les positions en cellules H3 — sans elles l'étape 3 échoue) et le **tuning FDW** (`fetch_size`, `use_remote_estimate` sur le serveur `postgres_fdw` — scans cross-DB 10–100× plus rapides). Le serveur FDW lui-même reste créé par l'ops (OpenTofu).
+
 ### Étape 1 — Données géographiques de référence
 
 ```bash
@@ -248,29 +265,37 @@ just pipeline-trusted-geo
 
 Construit la hiérarchie géographique dans `zone_trusted` (`perimeters`, `perimeters_agg`, `com_evolution`). Base pour tous les JOINs géographiques des carpools.
 
-### Étape 3 — Backfill des carpools
+### Étape 2 bis — Stats des tables distantes (FDW)
 
 ```bash
-just backfill-batch trusted.carpools month 2020-01 2026-06
+just analyze-sources
 ```
 
-Rejoue mois par mois (delete + insert par fenêtre) pour éviter les "phantom rows" sur les grands volumes. Enrichit chaque fenêtre avec la correction géo, les labels fraude/anomalie, les incentives et les campagnes.
+`ANALYZE` les foreign tables `dlk_import.*`. Autovacuum ne les analyse jamais (elles n'ont pas de tuples locaux), donc sans ce pas leurs stats locales restent vides (`reltuples = -1`). À lancer une fois avant le backfill lourd : le planner s'appuie dessus pour les fragments de requête non délégués au serveur distant. Les stats côté serveur distant (base de l'API, ce que lit `use_remote_estimate`) sont, elles, entretenues par l'autovacuum de l'API.
+
+### Étape 3 — Backfill de la couche trusted (FDW)
+
+```bash
+just backfill trusted            # chunk annuel, 2019 → 2027 par défaut
+```
+
+Construit les 5 modèles incrémentaux lus via FDW (`carpools_geo_correction`, `cee`, `incentives`, `operator_incentives`, puis `carpools` qui indexe les positions en cellules H3). Chunk **annuel**, `delete + insert` par fenêtre (idempotent, pas de "phantom rows"). **Mono-thread volontaire** : la concurrence sur le remote prod partagé dégrade chaque modèle par contention et charge la prod. La mémoire est bornée par session (`BACKFILL_PGOPTIONS` : `work_mem` réduit + gather non parallèle) — sans quoi `work_mem` × workers × threads fait sauter le backend (OOM, « SSL SYSCALL error: EOF »). Le débit FDW vient de `fetch_size`/`use_remote_estimate` posés côté serveur à l'étape 0. Profil validé sur une année dense (2025) sans OOM.
 
 ### Étape 4 — Agrégations historiques complètes
 
 ```bash
-just backfill-batch aggregated.* month 2020-01 2026-06
+just backfill aggregated         # chunk annuel, 2019 → 2027 par défaut
 ```
 
-Lance les 469 modèles agrégés sur toute la période. Les macros `od_model` / `fraud_model` / `territory_model` tournent en parallèle (`DBT_THREADS=6` par défaut).
+Lance les ~470 modèles agrégés sur toute la période. Lectures **locales** (les modèles trusted sont désormais matérialisés localement, plus de FDW) → **multi-thread** (`DBT_THREADS=6`) sous le même profil mémoire borné. Même fenêtrage annuel : `filtered_carpools` → `time_filter` honore `--vars start/end`.
 
 ### Étape 5 — Zone exposed
 
 ```bash
-dbt run --select exposed.*
+just backfill exposed
 ```
 
-Matérialise les 22 tables observatory et export, disponibles pour `app-observatory` et les exports S3.
+Matérialise les ~23 tables observatory et export (lectures locales, multi-thread), disponibles pour `app-observatory` et les exports S3.
 
 ---
 
