@@ -41,7 +41,7 @@ export class TripsWorksheetWriter extends AbstractWorksheetWriter {
     workbookWriter: excel.stream.xlsx.WorkbookWriter,
   ): Promise<void> {
     // La colonne du déclaré (U) n'est ajoutée que pour les campagnes exposant le
-    // delta déclaré vs calculé (config extras.declared_incentives) — cf. GEN-643.
+    // montant déclaré par l'opérateur (config extras.declared_incentives) — cf. GEN-643.
     const columnKeys = config.extras?.declared_incentives
       ? [...this.BASE_COLUMN_KEYS, "operator_declared_incentive"]
       : this.BASE_COLUMN_KEYS;
