@@ -4,6 +4,7 @@ Réutilise les variables `DBT_*` du datalake pour pointer sur la même base
 `datalake_production` (lecture des modèles `zone_exposed`).
 """
 
+from psycopg.conninfo import make_conninfo
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -22,6 +23,8 @@ class Settings(BaseSettings):
     dbt_user: str = "postgres"
     dbt_password: str = ""
     dbt_dbname: str = "datalake"
+    # Plafond par requête : borne les scans H3 lourds, protège le pool (ms).
+    db_statement_timeout_ms: int = 5000
 
     # Cache
     redis_url: str | None = None
@@ -43,10 +46,22 @@ class Settings(BaseSettings):
         return str(v).strip().lower() in _TRUTHY
 
     def conninfo(self) -> str:
-        return (
-            f"host={self.dbt_host} port={self.dbt_port} "
-            f"user={self.dbt_user} password={self.dbt_password} "
-            f"dbname={self.dbt_dbname}"
+        # `default_transaction_read_only` : garde-fou en profondeur — même si le rôle
+        # PG a des droits d'écriture, aucune requête de l'API ne peut muter la base.
+        # `statement_timeout` : coupe les requêtes trop longues avant qu'elles ne
+        # saturent le pool. `make_conninfo` échappe correctement chaque valeur
+        # (mot de passe avec espace/quote inclus).
+        options = (
+            f"-c statement_timeout={self.db_statement_timeout_ms} "
+            "-c default_transaction_read_only=on"
+        )
+        return make_conninfo(
+            host=self.dbt_host,
+            port=self.dbt_port,
+            user=self.dbt_user,
+            password=self.dbt_password,
+            dbname=self.dbt_dbname,
+            options=options,
         )
 
 

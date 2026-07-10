@@ -59,7 +59,22 @@ def create_app() -> FastAPI:
 
     @app.get("/health")
     async def health():
+        """Liveness : le process répond. Toujours 200 (y compris en maintenance)."""
         return {"status": "ok"}
+
+    @app.get("/health/ready")
+    async def ready():
+        """Readiness : le pool PG répond (SELECT 1). 503 si la base est injoignable,
+        pour que k8s retire le pod du service. En maintenance, le middleware 503 avant."""
+        try:
+            async with open_pool().connection() as conn:
+                async with conn.cursor() as cur:
+                    await cur.execute("SELECT 1")
+                    await cur.fetchone()
+        except Exception:
+            logger.exception("readiness check failed")
+            return JSONResponse({"status": "unavailable"}, status_code=503)
+        return {"status": "ready"}
 
     app.include_router(observatory.router)
     return app

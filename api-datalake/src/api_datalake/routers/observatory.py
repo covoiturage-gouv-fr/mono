@@ -12,7 +12,7 @@ from ..cache import (
 )
 from ..config import settings
 from ..db import connection
-from ..helpers import check_territory_param
+from ..helpers import check_code_param, check_territory_param
 from ..period import is_published, last_record_cutoff
 from ..repositories import observatory as repo
 
@@ -61,6 +61,7 @@ async def last_record(
     conn=Depends(get_conn),
 ):
     """Dernier mois disponible pour un territoire, borné par le cutoff de publication."""
+    check_code_param(code)
     cutoff = last_record_cutoff(settings.app_observatory_published_until)
     max_ym = cutoff[0] * 100 + cutoff[1] if cutoff else None
     return await repo.get_last_record(conn, type, code, max_ym)
@@ -79,6 +80,7 @@ async def location(
     redis=Depends(get_redis),
 ):
     """Heatmap de densité (H3) d'un territoire. Binning en SQL, réponse gzip cachée."""
+    check_code_param(code)
     # Fenêtre de publication : période non publiée -> heatmap vide.
     if not is_published(settings.app_observatory_published_until, year, month, trimester, semester):
         return _gzip_json(gzip_payload([]), "BYPASS")
@@ -102,6 +104,8 @@ async def campaigns(
     redis=Depends(get_redis),
 ):
     """Campagnes d'incitation (avec géométrie du territoire). Réponse gzip cachée."""
+    if code is not None:
+        check_code_param(code)
     params = {"type": check_territory_param(type) if type is not None else None,
               "code": code, "year": year}
     return await _serve_cached(
