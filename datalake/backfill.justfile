@@ -37,23 +37,23 @@ trusted-geo *args:
 
 # Couche trusted incrémentale (5 modèles lus via FDW). MONO-THREAD volontaire : la
 # concurrence sur le remote prod partagé dégrade chaque modèle (contention) et charge la
-# prod. Chunk ANNUEL : la mémoire étant bornée, la taille de fenêtre ne joue plus que sur
-# la durée par requête et la granularité de reprise.
+# prod. Chunk MENSUEL toujours (quelles que soient start/end) : borne le pic mémoire du pod
+# (chunk annuel = OOM sur les années denses) et affine la granularité de reprise.
 trusted start="2019-01-01" end="2027-01-01" *args:
   #!/usr/bin/env bash
   set -euo pipefail
   export PGOPTIONS="{{PGOPTIONS_BOUNDED}}"
   export DBT_THREADS=1
-  just backfill-batch "models/trusted --exclude tag:geo" year {{start}} {{end}} {{args}}
+  just backfill-batch "models/trusted --exclude tag:geo" month {{start}} {{end}} {{args}}
 
 # Couche agrégée (~470 modèles) : lectures LOCALES (plus de FDW) => MULTI-THREAD sûr.
-# Même fenêtrage annuel (filtered_carpools -> time_filter honore --vars start/end).
+# Même fenêtrage MENSUEL (filtered_carpools -> time_filter honore --vars start/end).
 aggregated start="2019-01-01" end="2027-01-01" *args:
   #!/usr/bin/env bash
   set -euo pipefail
   export PGOPTIONS="{{PGOPTIONS_BOUNDED}}"
   export DBT_THREADS=6
-  just backfill-batch "models/aggregated" year {{start}} {{end}} {{args}}
+  just backfill-batch "models/aggregated" month {{start}} {{end}} {{args}}
 
 # Couche exposée (~23 modèles, lectures locales) : bâtie en une passe (multi-thread).
 exposed *args:

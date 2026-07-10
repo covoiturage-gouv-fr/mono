@@ -276,18 +276,18 @@ just analyze-sources
 ### Étape 3 — Backfill de la couche trusted (FDW)
 
 ```bash
-just backfill trusted            # chunk annuel, 2019 → 2027 par défaut
+just backfill trusted            # chunk mensuel, 2019 → 2027 par défaut
 ```
 
-Construit les 5 modèles incrémentaux lus via FDW (`carpools_geo_correction`, `cee`, `incentives`, `operator_incentives`, puis `carpools` qui indexe les positions en cellules H3). Chunk **annuel**, `delete + insert` par fenêtre (idempotent, pas de "phantom rows"). **Mono-thread volontaire** : la concurrence sur le remote prod partagé dégrade chaque modèle par contention et charge la prod. La mémoire est bornée par session (`BACKFILL_PGOPTIONS` : `work_mem` réduit + gather non parallèle) — sans quoi `work_mem` × workers × threads fait sauter le backend (OOM, « SSL SYSCALL error: EOF »). Le débit FDW vient de `fetch_size`/`use_remote_estimate` posés côté serveur à l'étape 0. Profil validé sur une année dense (2025) sans OOM.
+Construit les 5 modèles incrémentaux lus via FDW (`carpools_geo_correction`, `cee`, `incentives`, `operator_incentives`, puis `carpools` qui indexe les positions en cellules H3). Chunk **mensuel** (toujours, quelles que soient les dates passées), `delete + insert` par fenêtre (idempotent, pas de "phantom rows"). **Mono-thread volontaire** : la concurrence sur le remote prod partagé dégrade chaque modèle par contention et charge la prod. La mémoire est bornée par session (`BACKFILL_PGOPTIONS` : `work_mem` réduit + gather non parallèle) — sans quoi `work_mem` × workers × threads fait sauter le backend (OOM, « SSL SYSCALL error: EOF »). Le chunk mensuel borne en plus le pic mémoire du pod (le chunk annuel OOM sur les années denses). Le débit FDW vient de `fetch_size`/`use_remote_estimate` posés côté serveur à l'étape 0.
 
 ### Étape 4 — Agrégations historiques complètes
 
 ```bash
-just backfill aggregated         # chunk annuel, 2019 → 2027 par défaut
+just backfill aggregated         # chunk mensuel, 2019 → 2027 par défaut
 ```
 
-Lance les ~470 modèles agrégés sur toute la période. Lectures **locales** (les modèles trusted sont désormais matérialisés localement, plus de FDW) → **multi-thread** (`DBT_THREADS=6`) sous le même profil mémoire borné. Même fenêtrage annuel : `filtered_carpools` → `time_filter` honore `--vars start/end`.
+Lance les ~470 modèles agrégés sur toute la période. Lectures **locales** (les modèles trusted sont désormais matérialisés localement, plus de FDW) → **multi-thread** (`DBT_THREADS=6`) sous le même profil mémoire borné. Même fenêtrage mensuel : `filtered_carpools` → `time_filter` honore `--vars start/end`.
 
 ### Étape 5 — Zone exposed
 
