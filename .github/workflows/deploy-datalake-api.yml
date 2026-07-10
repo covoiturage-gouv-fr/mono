@@ -1,0 +1,51 @@
+name: "Deploy Datalake API"
+
+permissions:
+  contents: read
+  packages: write # zizmor: ignore[excessive-permissions]
+  id-token: write # zizmor: ignore[excessive-permissions]
+  attestations: write # zizmor: ignore[excessive-permissions]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      # staging: the `datalake` branch must be created on origin to activate this trigger
+      - datalake
+    paths:
+      - "api-datalake/**"
+      - "docker/datalake-api/**"
+
+jobs:
+  tag:
+    name: Set deployment tag
+    runs-on: ubuntu-latest
+    outputs:
+      value: ${{ steps.set_tag.outputs.value }}
+    steps:
+      - id: set_tag
+        shell: bash
+        run: echo "value=$(date +'%F.%H%M')" >> $GITHUB_OUTPUT
+
+  build:
+    name: Build and Push Datalake API Docker Image
+    needs: tag
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+      - name: Build and Push Datalake API Docker Image
+        uses: ./.github/actions/build-image
+        with:
+          name: datalake-api
+          context: ./api-datalake
+          tag: ${{ needs.tag.outputs.value }}
+          dockerfile: ./docker/datalake-api/prod/Dockerfile
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
