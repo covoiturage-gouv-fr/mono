@@ -32,7 +32,11 @@ all start="2019-01-01" end="2027-01-01":
 
 # Couche geo/référence de trusted (perimeters, perimeters_agg, com_evolution) : tables non
 # fenêtrées, bâties une fois. Prérequis de carpools et de toute la couche agrégée.
+# Charge d'abord le seed aom_region (-> zone_trusted.aom_region), référence statique lue par
+# la macro filtered_carpools (variantes AOM). Nécessaire car `dbt run` ne matérialise pas les
+# seeds : sans ce pas, les ~100 modèles agrégés aom/aomreg échouent (relation inexistante).
 trusted-geo *args:
+  just dbt seed --select aom_region
   DBT_THREADS=1 just dbt run --select "tag:trusted,tag:geo" {{args}}
 
 # Couche trusted incrémentale (5 modèles lus via FDW). MONO-THREAD volontaire : la
