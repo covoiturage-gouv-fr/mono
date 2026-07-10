@@ -80,6 +80,14 @@ class FakeRedis:
         self.store[k] = v
 
 
+class RaisingRedis:
+    async def get(self, *a, **k):
+        raise RuntimeError("redis down")
+
+    async def set(self, *a, **k):
+        raise RuntimeError("redis down")
+
+
 def make_client(rows, redis=None):
     app = create_app()
 
@@ -114,6 +122,16 @@ def test_location_cache_hit_served_from_redis():
     second = c.get("/observatory/location", params={"code": "75056", "type": "com", "year": 2022, "n": 8})
     assert second.headers["x-cache"] == "HIT"
     assert second.json() == cached
+
+
+def test_location_redis_failure_degrades_to_pg_not_500():
+    # Redis en panne (TLS/réseau) : on sert depuis PG en 200, X-Cache BYPASS, jamais 500.
+    rows = [{"hex": "881fb46461fffff", "count": 616}]
+    c = TestClient(make_client(rows, redis=RaisingRedis()))
+    r = c.get("/observatory/location", params={"code": "75056", "type": "com", "year": 2022, "month": 6, "n": 8})
+    assert r.status_code == 200
+    assert r.headers["x-cache"] == "BYPASS"
+    assert r.json() == rows
 
 
 def test_location_out_of_range_params_return_422_not_500():

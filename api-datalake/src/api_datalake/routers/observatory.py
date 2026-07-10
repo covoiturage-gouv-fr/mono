@@ -2,7 +2,14 @@
 
 from fastapi import APIRouter, Depends, Query, Response
 
-from ..cache import build_cache_key, get_redis, gzip_payload, publication_version
+from ..cache import (
+    build_cache_key,
+    cache_get,
+    cache_set,
+    get_redis,
+    gzip_payload,
+    publication_version,
+)
 from ..config import settings
 from ..db import connection
 from ..helpers import check_territory_param
@@ -24,6 +31,27 @@ def _gzip_json(blob: bytes, cache_state: str) -> Response:
         media_type="application/json",
         headers={"Content-Encoding": "gzip", "X-Cache": cache_state},
     )
+
+
+async def _serve_cached(redis, route: str, params: dict, produce) -> Response:
+    """Sert `produce()` (données PG) avec cache Redis best-effort.
+
+    Une panne Redis dégrade en cache-miss (`X-Cache: BYPASS`), jamais en 500.
+    """
+    cutoff = settings.app_observatory_published_until
+    key = None
+    if redis is not None:
+        version = await publication_version(redis, cutoff)
+        key = build_cache_key(version, route, params)
+
+    hit, ok = await cache_get(redis, key)
+    if hit is not None:
+        return _gzip_json(hit, "HIT")
+
+    blob = gzip_payload(await produce())
+    if ok:
+        await cache_set(redis, key, blob, settings.cache_ttl_seconds)
+    return _gzip_json(blob, "MISS" if ok else "BYPASS")
 
 
 @router.get("/last-record")
@@ -55,25 +83,14 @@ async def location(
     if not is_published(settings.app_observatory_published_until, year, month, trimester, semester):
         return _gzip_json(gzip_payload([]), "BYPASS")
 
-    cutoff = settings.app_observatory_published_until
     # `type` normalisé (allowlist) dans la clé pour éviter des entrées dupliquées
     # (type=com et type=inconnu -> même résultat via le fallback).
     params = {"code": code, "type": check_territory_param(type), "year": year,
               "month": month, "trimester": trimester, "semester": semester, "n": n}
-
-    key = None
-    if redis is not None:
-        version = await publication_version(redis, cutoff)
-        key = build_cache_key(version, "/observatory/location", params)
-        hit = await redis.get(key)
-        if hit is not None:
-            return _gzip_json(hit, "HIT")
-
-    data = await repo.get_location(conn, type, code, year, n, month, trimester, semester)
-    blob = gzip_payload(data)
-    if redis is not None and key is not None:
-        await redis.set(key, blob, ex=settings.cache_ttl_seconds)
-    return _gzip_json(blob, "MISS")
+    return await _serve_cached(
+        redis, "/observatory/location", params,
+        lambda: repo.get_location(conn, type, code, year, n, month, trimester, semester),
+    )
 
 
 @router.get("/campaigns")
@@ -85,20 +102,9 @@ async def campaigns(
     redis=Depends(get_redis),
 ):
     """Campagnes d'incitation (avec géométrie du territoire). Réponse gzip cachée."""
-    cutoff = settings.app_observatory_published_until
     params = {"type": check_territory_param(type) if type is not None else None,
               "code": code, "year": year}
-
-    key = None
-    if redis is not None:
-        version = await publication_version(redis, cutoff)
-        key = build_cache_key(version, "/observatory/campaigns", params)
-        hit = await redis.get(key)
-        if hit is not None:
-            return _gzip_json(hit, "HIT")
-
-    data = await repo.get_campaigns(conn, type, code, year)
-    blob = gzip_payload(data)
-    if redis is not None and key is not None:
-        await redis.set(key, blob, ex=settings.cache_ttl_seconds)
-    return _gzip_json(blob, "MISS")
+    return await _serve_cached(
+        redis, "/observatory/campaigns", params,
+        lambda: repo.get_campaigns(conn, type, code, year),
+    )

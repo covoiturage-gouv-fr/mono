@@ -25,6 +25,7 @@ class Settings(BaseSettings):
 
     # Cache
     redis_url: str | None = None
+    redis_ca: str | None = None  # CA privée (PEM) pour Redis TLS ; None en dev clair
     cache_ttl_seconds: int = 24 * 3600
 
     # Fenêtre de publication (borne supérieure exclusive, YYYY-MM-DD)
