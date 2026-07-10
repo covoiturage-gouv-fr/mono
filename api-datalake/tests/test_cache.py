@@ -3,35 +3,28 @@ import gzip
 import json
 
 import api_datalake.cache as cache_mod
-from api_datalake.cache import (
-    build_cache_key,
-    cache_get,
-    cache_set,
-    gzip_payload,
-    publication_version,
-)
 from api_datalake.config import settings
 
 
 def test_build_cache_key_is_stable_and_param_order_independent():
-    k1 = build_cache_key("v1", "/observatory/flux", {"code": "75", "type": "reg", "year": 2026})
-    k2 = build_cache_key("v1", "/observatory/flux", {"year": 2026, "type": "reg", "code": "75"})
+    k1 = cache_mod.build_cache_key("v1", "/observatory/flux", {"code": "75", "type": "reg", "year": 2026})
+    k2 = cache_mod.build_cache_key("v1", "/observatory/flux", {"year": 2026, "type": "reg", "code": "75"})
     assert k1 == k2  # l'ordre des params ne change pas la clé
 
 
 def test_build_cache_key_versioned():
     base = ("/observatory/flux", {"code": "75"})
-    assert build_cache_key("v1", *base) != build_cache_key("v2", *base)
+    assert cache_mod.build_cache_key("v1", *base) != cache_mod.build_cache_key("v2", *base)
 
 
 def test_build_cache_key_distinguishes_route_and_params():
-    assert build_cache_key("v1", "/a", {"x": 1}) != build_cache_key("v1", "/b", {"x": 1})
-    assert build_cache_key("v1", "/a", {"x": 1}) != build_cache_key("v1", "/a", {"x": 2})
+    assert cache_mod.build_cache_key("v1", "/a", {"x": 1}) != cache_mod.build_cache_key("v1", "/b", {"x": 1})
+    assert cache_mod.build_cache_key("v1", "/a", {"x": 1}) != cache_mod.build_cache_key("v1", "/a", {"x": 2})
 
 
 def test_gzip_payload_roundtrips():
     data = [{"hex": "8818", "count": 3}]
-    blob = gzip_payload(data)
+    blob = cache_mod.gzip_payload(data)
     assert isinstance(blob, bytes)
     assert json.loads(gzip.decompress(blob)) == data
 
@@ -94,17 +87,17 @@ class RaisingRedis:
 
 
 def test_cache_get_returns_not_ok_on_failure():
-    val, ok = asyncio.run(cache_get(RaisingRedis(), "k"))
+    val, ok = asyncio.run(cache_mod.cache_get(RaisingRedis(), "k"))
     assert val is None and ok is False
 
 
 def test_cache_get_off_is_not_a_failure():
-    assert asyncio.run(cache_get(None, None)) == (None, True)
+    assert asyncio.run(cache_mod.cache_get(None, None)) == (None, True)
 
 
 def test_cache_set_swallows_failure():
-    asyncio.run(cache_set(RaisingRedis(), "k", b"x", 10))  # ne lève pas
+    asyncio.run(cache_mod.cache_set(RaisingRedis(), "k", b"x", 10))  # ne lève pas
 
 
 def test_publication_version_resilient():
-    assert asyncio.run(publication_version(RaisingRedis(), "2026-03-01")) == "2026-03-01.0"
+    assert asyncio.run(cache_mod.publication_version(RaisingRedis(), "2026-03-01")) == "2026-03-01.0"
