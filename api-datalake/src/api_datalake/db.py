@@ -1,4 +1,8 @@
-"""Pool de connexions PostgreSQL (lecture seule sur la base datalake)."""
+"""Pool de connexions PostgreSQL (lecture seule sur la base datalake).
+
+Lecture seule imposée côté session via `default_transaction_read_only=on`
+(voir `Settings.conninfo`), indépendamment des droits du rôle PG.
+"""
 
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager

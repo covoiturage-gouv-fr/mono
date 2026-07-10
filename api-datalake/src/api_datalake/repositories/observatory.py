@@ -118,6 +118,10 @@ def build_campaigns_query(type_: str | None = None, code: str | None = None,
         filters.append("type = %(type)s")
         params["type"] = check_territory_param(type_)
 
+    # `SELECT *` assumé : la vue `zone_exposed.campaigns` EST la frontière du
+    # contrat public (projection curée qui écarte déjà les colonnes internes —
+    # email, siren…). Énumérer ici dupliquerait ce contrat et créerait un risque
+    # de dérive entre les deux couches.
     sql = f"SELECT * FROM {CAMPAIGNS_TABLE} WHERE " + " AND ".join(filters)
     return sql, params
 

@@ -41,6 +41,12 @@ def test_query_period_filters_by_grain():
     assert p_tri["trimester"] == 2
 
 
+def test_query_semester_maps_to_quarter_case():
+    sql_s, p_sem = build_location_query("com", "75056", 2022, 8, semester=2)
+    assert "CASE WHEN EXTRACT(QUARTER FROM start_datetime)::int > 3 THEN 2 ELSE 1 END" in sql_s
+    assert p_sem["semester"] == 2
+
+
 # --- endpoint /observatory/location ---
 
 
@@ -139,6 +145,18 @@ def test_location_out_of_range_params_return_422_not_500():
     # month=13 est hors bornes -> 422 de validation, pas un 500 (ValueError sur date())
     r = c.get("/observatory/location", params={"code": "75056", "type": "com", "year": 2022, "month": 13, "n": 8})
     assert r.status_code == 422
+
+
+def test_location_rejects_malformed_code_with_422():
+    c = TestClient(make_client([]))
+    # Code hors charset/longueur : rejeté avant tout accès PG (anti cache-flooding).
+    r = c.get("/observatory/location", params={"code": "75'; DROP--", "type": "com", "year": 2022, "n": 8})
+    assert r.status_code == 422
+    r_long = c.get("/observatory/location", params={"code": "x" * 20, "type": "com", "year": 2022, "n": 8})
+    assert r_long.status_code == 422
+    # `$` laisserait passer un newline final ; `fullmatch` le rejette.
+    r_nl = c.get("/observatory/location", params={"code": "75056\n", "type": "com", "year": 2022, "n": 8})
+    assert r_nl.status_code == 422
 
 
 def test_location_unpublished_period_is_bypassed_and_empty():
