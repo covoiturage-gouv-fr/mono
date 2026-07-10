@@ -52,4 +52,5 @@ ENV PATH="/app/.venv/bin:$PATH" \
 
 USER datalake
 EXPOSE 8081
-ENTRYPOINT ["uvicorn", "api_datalake.main:app", "--app-dir", "src", "--host", "0.0.0.0", "--port", "8081"]
+# --no-server-header : masque la bannière `Server: uvicorn` (durcissement API8/API9).
+ENTRYPOINT ["uvicorn", "api_datalake.main:app", "--app-dir", "src", "--host", "0.0.0.0", "--port", "8081", "--no-server-header"]

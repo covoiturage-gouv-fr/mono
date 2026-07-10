@@ -4,6 +4,7 @@ import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
@@ -47,8 +48,18 @@ async def lifespan(app: FastAPI):
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="api-datalake", lifespan=lifespan)
+    # openapi_url=None coupe /openapi.json ET, par voie de conséquence, /docs et /redoc
+    # (les UI dérivent du schéma) : on n'expose pas le schéma sur une API publique.
+    app = FastAPI(title="api-datalake", lifespan=lifespan, openapi_url=None)
     app.state.settings = settings  # source de vérité unique, surchargeable en test
+
+    @app.exception_handler(RequestValidationError)
+    async def _validation_handler(request, exc):
+        # Réponse laconique : ne pas renvoyer la valeur invalide ni la structure du champ.
+        # Trace d'observabilité sans la valeur brute (détection de scan/fuzzing).
+        logger.info("validation error on %s %s", request.method, request.url.path)
+        return JSONResponse({"detail": "invalid request parameters"}, status_code=422)
+
     app.add_middleware(MaintenanceMiddleware)
     app.add_middleware(
         CORSMiddleware,
