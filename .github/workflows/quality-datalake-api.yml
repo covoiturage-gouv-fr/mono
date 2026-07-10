@@ -1,0 +1,39 @@
+name: "Quality Datalake API"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+on:
+  pull_request:
+    branches:
+      - main
+      - datalake
+    paths:
+      - "api-datalake/**"
+      - "docker/datalake-api/**"
+
+jobs:
+  tests:
+    name: "(datalake-api) tests"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+      - name: Install uv
+        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
+        with:
+          python-version: "3.13"
+      # `--locked` échoue si uv.lock est désynchronisé de pyproject : double
+      # garde-fou (intégrité du lock + installation du groupe dev pour pytest).
+      - name: Install dependencies
+        working-directory: api-datalake
+        run: uv sync --locked
+      - name: Run tests
+        working-directory: api-datalake
+        run: uv run python -m pytest -q
