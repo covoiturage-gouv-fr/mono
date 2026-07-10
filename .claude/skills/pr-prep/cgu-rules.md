@@ -2,7 +2,7 @@
 name: cgu-rules
 description: Cached, machine-checkable distillation of the RPC CGU - read by the pr-preparer cgu-guard check.
 canonical_url: https://doc.covoiturage.beta.gouv.fr/nos-services/le-registre-de-preuve-de-covoiturage/cgu-conditions-generales-dutilisation-de-covoiturage.beta.gouv
-last_synced: 2026-07-02
+last_synced: 2026-07-10
 ttl_days: 7
 ---
 
@@ -37,10 +37,11 @@ The status of a trip becomes **final and immutable 48h after trip completion**
 terms_violation_error` ignoring this window; all were already definitive. This rule exists to
 catch that class of change before merge.
 
-## CGU-2 - Personal data retention limits  (CGU - données personnelles)  [severity: blocker]
+## CGU-2 - Personal data retention limits  (CGU 2.2.2 / 2.1.3)  [severity: blocker]
 
-Personal data is kept only for the retention period stated in the CGU; beyond it, data is
-deleted or anonymised.
+The CGU does not state explicit retention durations, but mandates informing users of the
+"durées de conservation des données" (2.2.2) and protecting personal data (2.1.3): personal
+data is kept only for a bounded retention period; beyond it, data is deleted or anonymised.
 
 **Flag the diff if it:**
 - extends or removes a retention / TTL / purge boundary on personal data
@@ -48,9 +49,12 @@ deleted or anonymised.
 - disables or weakens an anonymisation / purge job;
 - persists raw personal data into a store that has no retention enforcement.
 
-## CGU-3 - PII minimisation and exposure  (CGU - données personnelles)  [severity: high]
+## CGU-3 - PII minimisation and exposure  (CGU 2.1.4 / Annexe 2)  [severity: high]
 
-Personal and identifying data must not be exposed beyond what the CGU permits.
+Personal and identifying data must not be exposed beyond what the CGU permits. Per Annexe 2:
+full `phone` and `phone_trunc` are exposed to no one; `identity_key` may reach AOMs but never
+open data; open-data geo is INSEE codes / carroyage only, "sans réidentification possible"
+(2.1.4).
 
 **Flag the diff if it:**
 - logs, returns in an API response, or writes to an export raw `*_phone`, `*_identity_key`,
