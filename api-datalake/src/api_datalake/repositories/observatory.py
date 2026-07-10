@@ -11,6 +11,21 @@ LOCATION_TABLE = "zone_exposed.location"      # remplace observatoire_stats.view
 PERIMETERS_TABLE = "zone_exposed.observatory_perimeters"  # remplace geo.perimeters
 CAMPAIGNS_TABLE = "zone_exposed.campaigns"    # remplace raw_zone.campaigns + jointure geom
 
+# Contrat public de /observatory/campaigns : colonnes projetées explicitement.
+# `SELECT *` serait fragile — toute colonne ajoutée à la vue fuiterait sur l'API
+# publique. Un test fige cet ensemble (test_hardening).
+CAMPAIGNS_COLUMNS = (
+    "type", "code", "premiere_campagne", "budget_incitations", "date_debut",
+    "date_fin", "conducteur_montant_max_par_passager",
+    "conducteur_montant_max_par_mois", "conducteur_montant_min_par_passager",
+    "conducteur_trajets_max_par_mois", "passager_trajets_max_par_mois",
+    "passager_gratuite", "passager_eligible_gratuite", "passager_reduction_ticket",
+    "passager_eligibilite_reduction", "passager_montant_ticket",
+    "zone_sens_des_trajets", "zone_exclusion", "si_zone_exclue_liste",
+    "autre_exclusion", "trajet_longueur_min", "trajet_longueur_max",
+    "trajet_classe_de_preuve", "operateurs", "autres_informations", "lien", "geom",
+)
+
 # type de territoire -> colonne de périmètre. `com` = grain arrondissement (`arr`),
 # comme l'ancienne requête de l'API (SELECT arr AS com ...).
 _PERIM_COL = {
@@ -118,11 +133,10 @@ def build_campaigns_query(type_: str | None = None, code: str | None = None,
         filters.append("type = %(type)s")
         params["type"] = check_territory_param(type_)
 
-    # `SELECT *` assumé : la vue `zone_exposed.campaigns` EST la frontière du
-    # contrat public (projection curée qui écarte déjà les colonnes internes —
-    # email, siren…). Énumérer ici dupliquerait ce contrat et créerait un risque
-    # de dérive entre les deux couches.
-    sql = f"SELECT * FROM {CAMPAIGNS_TABLE} WHERE " + " AND ".join(filters)
+    # Projection explicite (pas de SELECT *) : défense en profondeur si une colonne
+    # est ajoutée à la vue, elle ne fuite pas automatiquement sur l'API publique.
+    cols = ", ".join(CAMPAIGNS_COLUMNS)
+    sql = f"SELECT {cols} FROM {CAMPAIGNS_TABLE} WHERE " + " AND ".join(filters)
     return sql, params
 
 
