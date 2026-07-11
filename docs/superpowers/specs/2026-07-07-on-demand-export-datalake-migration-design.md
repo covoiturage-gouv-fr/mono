@@ -135,6 +135,14 @@ Live queue targets are **operator** and **territory** only (`datagouv` is an unr
 8. **Do NOT delete `export_opendata_list` in this migration.** `datagouvListQuery.ts` still reads it and the monthly data.gouv publication stays on the API until the separate later spec. Task-8 deletion is limited to `export_carpool_list` (+ the count query, which dies with `progress`).
 9. **Pod ephemeral disk.** Large exports write CSV + zip to local pod disk before upload — size the ephemeral storage or stream to S3 multipart.
 
+## Contract diff — result (blocking task 2, resolved)
+
+Ran the three-way diff against `datalake_production` on settled ranges (2023-08-07 = jour avec CEE, 2026-06-15 = sans). All 64 `operator`-target columns resolve, order + header names match `config/export.ts` `fields`. After parsing the CSV (quotes removed), **one** material value drift:
+
+- **`cee_application`.** The API's `CSVWriter` casts the boolean via `csv-stringify` (default cast `value ? "1" : ""`) → **`1` / empty**. Raw `COPY … FORMAT CSV` renders a Postgres boolean as **`t` / `f`** — a real break for any partner parser matching on the value. **Fix:** `export_partners` now emits `CASE WHEN cee._id IS NOT NULL THEN '1' ELSE '' END` (column type `text`), guarded by `tests/exposed/export/export_partners_cee_application_format.sql`.
+- **False positive — coordinates.** An apparent `6.47` vs `6.470` drift was an artefact of the validation harness (JSON round-trip coerces `numeric` to a JS number, dropping the trailing zero). The old sqlmesh model uses the identical `TRUNC(…::numeric, precision)`; node-postgres returns `numeric` as a string, so the live output is `6.470` too. No drift.
+- **Accepted cosmetic delta — quoting.** `CSVWriter` sets `quoted_string: true` (every string cell + header name quoted); `COPY` quotes minimally. Both are valid RFC-4180 CSV with the same `;` delimiter, columns, order and values, so downstream CSV parsers are unaffected. Exact parity is not reproducible via `COPY` anyway (it never quotes the header). Left as-is; revisit with `FORCE_QUOTE` only if a partner needs byte-level quoting.
+
 ## Datalake DB migration runner (deploy-time)
 
 dbt manages models (tables/views) but **not** the prerequisite DB objects the models assume — custom functions (`ts_ceil`), grants, etc. Local setup proved these are unmanaged (a fresh DB can't build the export models). A lightweight runner owns that layer:
