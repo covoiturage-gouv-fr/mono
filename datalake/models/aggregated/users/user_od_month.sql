@@ -1,10 +1,15 @@
+{#
+  Index composite = clé du delete+insert. Sans lui, le DELETE incrémental (semi-jointure
+  sur les 5 colonnes) balaie toute la table (~23 M lignes) => très lent. Il sert aussi les
+  lookups par user_id (préfixe gauche) et remplace donc l'index ['user_id'] seul.
+#}
 {{
   config(
     materialized='incremental',
     incremental_strategy='delete+insert',
     unique_key=['user_id', 'incremental_date', 'role', 'start_code', 'end_code'],
     indexes=[
-      { 'columns': ['user_id'] },
+      { 'columns': ['user_id', 'incremental_date', 'role', 'start_code', 'end_code'] },
       { 'columns': ['incremental_date'] },
       { 'columns': ['start_code', 'end_code'] }
     ],
