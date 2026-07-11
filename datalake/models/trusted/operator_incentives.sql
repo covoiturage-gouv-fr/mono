@@ -1,9 +1,14 @@
+{#
+  Index composite (carpool_id, siret) = clé du delete+insert. Sur cette table volumineuse
+  (~54 M lignes, ~7 Go), il garantit une sonde par index plutôt qu'un Seq Scan et couvre
+  les lookups par carpool_id (préfixe), qu'il remplace.
+#}
 {{ config(
     materialized='incremental',
     incremental_strategy='delete+insert',
     unique_key=['carpool_id', 'siret'],
     indexes = [
-      { 'columns':['carpool_id'] },
+      { 'columns':['carpool_id', 'siret'] },
       { 'columns':['start_datetime'] },
     ],
     tags=['trusted', 'incentives', 'operator', 'daily'],

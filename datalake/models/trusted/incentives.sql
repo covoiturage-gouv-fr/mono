@@ -1,8 +1,14 @@
+{#
+  Index sur _id = clé du delete+insert. Sans lui, le DELETE incrémental balaie toute la
+  table (~32,6 M lignes, ~9,6 Go) à chaque exécution => Seq Scan complet. carpool_v2_id
+  reste indexé pour les jointures aval.
+#}
 {{ config(
     materialized='incremental',
     incremental_strategy='delete+insert',
     unique_key=['_id'],
     indexes = [
+      { 'columns':['_id'] },
       { 'columns':['carpool_v2_id'] },
     ],
     tags=['trusted', 'incentives', 'daily'],
