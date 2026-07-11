@@ -23,7 +23,6 @@ export class ClaimAction extends AbstractAction {
     _context: ContextType,
   ): Promise<ResultInterface> {
     // Opportunistic reaper: fail exports stuck 'running' past staleDelay.
-    // This replaces ProcessCommand as the reaper caller.
     await this.exportRepository.failStaleExports();
 
     const exp = await this.exportRepository.claim(params.targets);
