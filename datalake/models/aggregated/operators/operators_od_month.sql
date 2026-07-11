@@ -1,10 +1,16 @@
+{#
+  Index composite = clé du delete+insert. Sans lui, le DELETE incrémental (semi-jointure
+  sur les 4 colonnes) balaie toute la table (~2,9 M lignes) => très lent. operator_id seul
+  est peu sélectif ; le composite le remplace et couvre les lookups par operator_id (préfixe).
+  Même correctif que operators_od_day (#3272).
+#}
 {{
   config(
     materialized='incremental',
     incremental_strategy='delete+insert',
     unique_key=['operator_id', 'incremental_date', 'start_code', 'end_code'],
     indexes=[
-      { 'columns': ['operator_id'] },
+      { 'columns': ['operator_id', 'incremental_date', 'start_code', 'end_code'] },
       { 'columns': ['incremental_date'] },
       { 'columns': ['start_code', 'end_code'] }
     ],
