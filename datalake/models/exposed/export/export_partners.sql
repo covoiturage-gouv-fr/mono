@@ -176,7 +176,8 @@ SELECT
   c.passenger_contribution::float
   / 100
     AS passenger_contribution,
-  cee._id IS NOT NULL
+  -- '1'/'' reproduit le rendu csv-stringify de l'export API (cast booléen -> "1"/"")
+  CASE WHEN cee._id IS NOT NULL THEN '1' ELSE '' END
     AS cee_application,
   c.oi_details[0]
   ->> 'siret'

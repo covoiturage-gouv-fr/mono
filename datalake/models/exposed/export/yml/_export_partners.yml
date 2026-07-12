@@ -123,7 +123,7 @@ models:
       - name: passenger_seats
         data_type: smallint
       - name: cee_application
-        data_type: boolean
+        data_type: text
       - name: incentive_type
         data_type: text
       - name: incentive_0_siret
