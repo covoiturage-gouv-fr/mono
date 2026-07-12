@@ -74,12 +74,14 @@ terms_violation_error_labels AS (
 ),
 
 operators AS (
-    SELECT DISTINCT left(siret, 9) AS code, name AS libelle
+    -- classification par SIREN (le nom vient du registre entreprises)
+    SELECT DISTINCT left(siret, 9) AS code
     FROM {{ source('dlk_import', 'operator_operators') }}
 ),
 
 collectivites AS (
-    SELECT DISTINCT code, libelle
+    -- 1 libelle/code (millesimes homonymes) sinon le LEFT JOIN fanne oi_details
+    SELECT DISTINCT code
     FROM {{ ref('perimeters_agg') }}
     WHERE type IN ('epci', 'aom')
 ),
@@ -98,13 +100,15 @@ operator_incentives_agg AS (
             jsonb_build_object(
                 'siret', oi.siret,
                 'type', CASE WHEN c.code IS NOT NULL THEN 'collectivite' WHEN op.code IS NOT NULL THEN 'operator' ELSE 'other' END,
-                'name', CASE WHEN c.code IS NOT NULL THEN c.libelle WHEN op.code IS NOT NULL THEN op.libelle ELSE NULL END,
+                'name', comp.legal_name,
                 'amount', oi.amount
             )
+            ORDER BY oi.siret
         ) AS oi_details
     FROM {{ ref('operator_incentives') }} oi
     LEFT JOIN operators op ON op.code = left(oi.siret, 9)
     LEFT JOIN collectivites c ON c.code = left(oi.siret, 9)
+    LEFT JOIN {{ source('dlk_import', 'company_companies') }} comp ON comp.siret = oi.siret
     WHERE {{ time_filter('oi.start_datetime', 'start_datetime', lookback_nb=3) }}
         AND oi.amount > 0
     GROUP BY 1

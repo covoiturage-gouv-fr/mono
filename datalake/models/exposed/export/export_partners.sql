@@ -159,14 +159,15 @@ SELECT
   / 1000
     AS distance,
 
-  trunc(st_y(sc.start_position::geometry)::numeric, gps.precision)
+  -- ::float8 : rendu csv de l'API (numeric tronque -> float, sans zeros)
+  trunc(st_y(sc.start_position::geometry)::numeric, gps.precision)::float8
     AS start_lat,
-  trunc(st_x(sc.start_position::geometry)::numeric, gps.precision)
+  trunc(st_x(sc.start_position::geometry)::numeric, gps.precision)::float8
     AS start_lon,
-  trunc(st_y(sc.end_position::geometry)::numeric, gpe.precision)
+  trunc(st_y(sc.end_position::geometry)::numeric, gpe.precision)::float8
     AS end_lat,
 
-  trunc(st_x(sc.end_position::geometry)::numeric, gpe.precision)
+  trunc(st_x(sc.end_position::geometry)::numeric, gpe.precision)::float8
     AS end_lon,
 
   -- operator incentives (spread from JSONB array)
@@ -176,7 +177,7 @@ SELECT
   c.passenger_contribution::float
   / 100
     AS passenger_contribution,
-  -- '1'/'' reproduit le rendu csv-stringify de l'export API (cast booléen -> "1"/"")
+  -- '1'/'' reproduit le rendu csv-stringify de l'API (cast booleen -> "1"/"")
   CASE WHEN cee._id IS NOT NULL THEN '1' ELSE '' END
     AS cee_application,
   c.oi_details[0]
@@ -266,5 +267,7 @@ LEFT JOIN
   ON c._id = sc._id
 LEFT JOIN latest_perimeters AS gps ON c.start_geo_code = gps.arr
 LEFT JOIN latest_perimeters AS gpe ON c.end_geo_code = gpe.arr
-LEFT JOIN {{ ref('cee') }} AS cee ON c._id = cee.carpool_v2_id
+LEFT JOIN
+  {{ ref('cee') }} AS cee
+  ON c._id = cee.carpool_v2_id
 WHERE c.valid_acquisition_status = TRUE

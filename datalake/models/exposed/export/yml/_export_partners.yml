@@ -43,13 +43,13 @@ models:
       - name: distance
         data_type: double precision
       - name: start_lat
-        data_type: numeric
+        data_type: double precision
       - name: start_lon
-        data_type: numeric
+        data_type: double precision
       - name: end_lat
-        data_type: numeric
+        data_type: double precision
       - name: end_lon
-        data_type: numeric
+        data_type: double precision
       - name: start_insee
         data_type: character varying
       - name: start_arr
