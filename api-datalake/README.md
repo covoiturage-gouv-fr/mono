@@ -18,7 +18,7 @@ worker. On la déplace donc là où vivent les données — le datalake — pour
 
 ```
 app-observatory (Next.js)
-      │  GET /observatory/*
+      │  GET /v3/observatory/*
       ▼
 api-datalake (FastAPI)  ──►  Redis (cache gzip, clé versionnée sur la publication)
       │  lecture locale
@@ -32,6 +32,16 @@ datalake_production  ·  zone_exposed.{od,incentive,distribution,occupation,loca
   pipeline dbt incrémente à chaque publication).
 - **Fenêtre de publication** : `APP_OBSERVATORY_PUBLISHED_UNTIL` (borne supérieure
   exclusive, `YYYY-MM-DD`), portée depuis `helpers/publishedDate.ts`.
+
+## Versioning
+
+- **Contrat public = le préfixe d'URL `/v3`** (`API_VERSION` dans `main.py`). Toutes les
+  routes observatoire sont servies sous `/v3/observatory/...`. Les changements **additifs**
+  restent en `/v3` ; un changement **cassant** se fait en ajoutant `/v4` — on ne casse
+  jamais `/v3` en place. Les sondes `/health` et `/health/ready` sont **hors contrat** (ops),
+  non versionnées.
+- **Artefact = tag d'image Docker** `datalake-api:<horodatage>-<sha court>` (build → commit).
+  Pas de semver / release applicative (data-only, hors du gate semantic-release).
 
 ## Modules
 
@@ -63,7 +73,7 @@ just test              # pytest
 
 - [x] Squelette FastAPI + cache + fenêtre de publication
 - [x] Modèles dbt `zone_exposed.{location, observatory_perimeters, campaigns, aires_covoiturage}` — validés sur prod
-- [x] `GET /observatory/location`, `campaigns`, `last-record`
+- [x] `GET /v3/observatory/location`, `campaigns`, `last-record`
 - [x] **Endpoints agrégés** : `flux`, `best-flux`, `evol-flux`, `incentive`,
       `occupation`, `best-territories`, `evol-occupation`, `journeys-by-hours`,
       `journeys-by-distances`, `keyfigures`, `aires-covoiturage`

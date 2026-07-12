@@ -68,7 +68,7 @@ def test_openapi_and_docs_are_404():
 
 def test_validation_error_is_terse_and_does_not_echo_input():
     c = client()
-    r = c.get("/observatory/location", params={"code": "75056", "type": "com", "year": 2022, "month": 13, "n": 8})
+    r = c.get("/v3/observatory/location", params={"code": "75056", "type": "com", "year": 2022, "month": 13, "n": 8})
     assert r.status_code == 422
     assert r.json() == {"detail": "invalid request parameters"}
     assert "13" not in r.text  # la valeur invalide ne fuit pas
@@ -96,24 +96,24 @@ def test_campaigns_query_projects_explicit_allowlist():
 
 def test_invalid_code_charset_returns_422():
     c = client()
-    r = c.get("/observatory/location", params={"code": "75%56", "type": "com", "year": 2022, "n": 8})
+    r = c.get("/v3/observatory/location", params={"code": "75%56", "type": "com", "year": 2022, "n": 8})
     assert r.status_code == 422
 
 
 def test_too_long_code_returns_422():
     c = client()
-    r = c.get("/observatory/location", params={"code": "1234567890123456", "type": "com", "year": 2022, "n": 8})
+    r = c.get("/v3/observatory/location", params={"code": "1234567890123456", "type": "com", "year": 2022, "n": 8})
     assert r.status_code == 422
 
 
 def test_valid_corsican_code_accepted():
     # 2A004 (arrondissement corse) : alphanumérique valide, atteint la requête.
     c = client(rows=[{"hex": "abc", "count": 1}])
-    r = c.get("/observatory/location", params={"code": "2A004", "type": "com", "year": 2022, "n": 8})
+    r = c.get("/v3/observatory/location", params={"code": "2A004", "type": "com", "year": 2022, "n": 8})
     assert r.status_code == 200
 
 
 def test_campaigns_invalid_code_returns_422():
     c = client()
-    r = c.get("/observatory/campaigns", params={"code": "bad!", "year": 2024})
+    r = c.get("/v3/observatory/campaigns", params={"code": "bad!", "year": 2024})
     assert r.status_code == 422
