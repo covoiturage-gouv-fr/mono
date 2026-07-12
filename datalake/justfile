@@ -81,6 +81,10 @@ export config schema *args:
 export-worker *args:
   python -m pipelines.cmd.export_worker {{args}}
 
+# Publication open-data mensuelle sur data.gouv.fr (défaut : mois précédent).
+datagouv *args:
+  python -m pipelines.cmd.datagouv {{args}}
+
 # Rafraîchit les stats locales des tables distantes (FDW, schema dlk_import).
 # Autovacuum n'analyse JAMAIS les foreign tables : sans ce pas, `reltuples = -1`
 # (aucune stat). À lancer avant un backfill lourd pour donner au planner de bonnes
