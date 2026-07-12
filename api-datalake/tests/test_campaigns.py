@@ -88,7 +88,7 @@ def test_campaigns_endpoint_returns_gzipped_list():
     app.dependency_overrides[get_conn] = override_conn
     app.dependency_overrides[get_redis] = lambda: None
     c = TestClient(app)
-    r = c.get("/observatory/campaigns", params={"type": "aom", "code": "217500016", "year": 2024})
+    r = c.get("/v3/observatory/campaigns", params={"type": "aom", "code": "217500016", "year": 2024})
     assert r.status_code == 200
     assert r.headers["content-encoding"] == "gzip"
     assert r.json() == rows

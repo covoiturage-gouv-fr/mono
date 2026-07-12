@@ -16,7 +16,13 @@ from .routers import observatory
 
 logger = logging.getLogger("api_datalake")
 
-# Routes toujours servies, y compris en maintenance (sondes k8s liveness/readiness).
+# Version de contrat de l'API publique : le préfixe d'URL EST la version. Les
+# consommateurs (app-observatoire, réutilisateurs open-data) épinglent `/v3`. Un
+# changement cassant se fait en ajoutant `/v4` — on ne casse jamais `/v3` en place.
+API_VERSION = "v3"
+
+# Routes toujours servies, y compris en maintenance (sondes k8s liveness/readiness,
+# non versionnées : ce sont des sondes d'ops, pas du contrat public).
 HEALTH_PATHS = {"/health"}
 
 
@@ -87,7 +93,8 @@ def create_app() -> FastAPI:
             return JSONResponse({"status": "unavailable"}, status_code=503)
         return {"status": "ready"}
 
-    app.include_router(observatory.router)
+    # Monté sous /v3 : les routes publiques sont /v3/observatory/... (contrat préservé).
+    app.include_router(observatory.router, prefix=f"/{API_VERSION}")
     return app
 
 

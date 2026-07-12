@@ -42,12 +42,12 @@ def test_off_serves_routes_normally():
     # /health (exempt) + une vraie route observatoire servie depuis une DB factice.
     c = app_with_maintenance(False, fake_db=True)
     assert c.get("/health").status_code == 200
-    assert c.get("/observatory/campaigns", params={"year": 2024}).status_code == 200
+    assert c.get("/v3/observatory/campaigns", params={"year": 2024}).status_code == 200
 
 
 def test_on_returns_503_with_retry_after_and_body():
     c = app_with_maintenance(True)
-    r = c.get("/observatory/campaigns", params={"year": 2024})
+    r = c.get("/v3/observatory/campaigns", params={"year": 2024})
     assert r.status_code == 503
     assert r.headers["Retry-After"] == "3600"
     assert r.json() == {"status": "maintenance"}
@@ -57,7 +57,7 @@ def test_on_short_circuits_observatory_before_db():
     # Aucune dépendance DB surchargée : si la route s'exécutait, elle ouvrirait le pool.
     # Le 503 prouve le court-circuit avant tout accès PG/Redis.
     c = app_with_maintenance(True)
-    r = c.get("/observatory/campaigns", params={"year": 2024})
+    r = c.get("/v3/observatory/campaigns", params={"year": 2024})
     assert r.status_code == 503
 
 
