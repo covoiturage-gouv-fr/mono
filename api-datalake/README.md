@@ -62,16 +62,26 @@ just test              # pytest
 > modèles qui lisent `zone_trusted`/`zone_raw`, jamais l'API.
 
 - [x] Squelette FastAPI + cache + fenêtre de publication
-- [x] Modèles dbt `zone_exposed.{location, observatory_perimeters, campaigns}` — validés sur prod
-- [x] `GET /observatory/location` — heatmap H3, cache Redis gzip (SQL validé sur prod)
-- [x] `GET /observatory/campaigns` — campagnes d'incitation + géométrie (SQL validé sur prod)
-- [~] `GET /observatory/last-record` (canari) → `zone_exposed.od_month`
-      (**bloqué** : `zone_aggregated`/`zone_exposed.od_*` pas encore matérialisés en prod)
-- [ ] Endpoints `flux`, `incentive`, `distribution`, `occupation`, `keyfigures`, `infra`
-      (bloqués sur la matérialisation de l'agrégé/exposé)
+- [x] Modèles dbt `zone_exposed.{location, observatory_perimeters, campaigns, aires_covoiturage}` — validés sur prod
+- [x] `GET /observatory/location`, `campaigns`, `last-record`
+- [x] **Endpoints agrégés** : `flux`, `best-flux`, `evol-flux`, `incentive`,
+      `occupation`, `best-territories`, `evol-occupation`, `journeys-by-hours`,
+      `journeys-by-distances`, `keyfigures`, `aires-covoiturage`
+      (code + tests ; validation données au fil de la matérialisation de l'exposé)
 - [ ] Repointage `app-observatory` puis décommission du service Deno
 
-> **Note prod** : au moment du dev, seuls `dlk_import`/`zone_raw`/`zone_trusted` sont
-> construits en base. `location`, `perimeters` et `campaigns` dérivent de `zone_trusted`/
-> `zone_raw` (dispos), d'où leur validation immédiate ; les endpoints agrégés attendent
-> `dbt run --select aggregated exposed`.
+> **Note prod** : les endpoints agrégés lisent `zone_exposed.{od,occupation,distribution,
+> incentive,users}_*`, matérialisés par le pipeline dbt (`dbt run --select aggregated exposed`).
+> La parité des flux a été validée à ~91 % (région/dép) et 100 % (commune) contre l'API en
+> ligne au grain agrégé ; les endpoints reproduisent cette donnée.
+
+### Limites connues (endpoints agrégés)
+
+- **`direction`** : les modèles exposés `occupation`/`incentive`/`users` viennent de
+  `territory_month_*_both` → **direction `both` uniquement**. Le filtre `direction=from|to`
+  du legacy est ignoré (émis en dur `both`). `distribution` a bien la dimension direction.
+- **`keyfigures`** : recomposition (od + occupation + users), direction `both` — pas de
+  modèle exposé dédié.
+- **`evol-flux` indic `has_incentive`** : absent de `od_*` → retombe sur `journeys`.
+- **Libellés EPCI/AOM** : forme IGN 2025 abrégée, différente du legacy (décision équipe en
+  cours) — voir la tâche Notion dédiée.
