@@ -1,7 +1,11 @@
 {#
-  Index composite = clé du delete+insert. Sans lui, le DELETE incrémental (semi-jointure
-  sur les 5 colonnes) balaie toute la table (~57 M lignes) => très lent. Il sert aussi les
-  lookups par user_id (préfixe gauche) et remplace donc l'index ['user_id'] seul.
+  Composite réordonné, (start_code, end_code) en tête = clé du delete+insert. Sinon le
+  planificateur choisit l'index ['start_code', 'end_code'] seul, peu sélectif (une paire
+  origine-destination revient sur des milliers de lignes) : le DELETE incrémental balaie
+  cet index et devient catastrophique (> 1 h par fenêtre). Avec (start_code, end_code) en
+  tête, le composite sert le DELETE (sonde par ligne sur les 5 colonnes) ET les lookups par
+  (start_code, end_code) via son préfixe gauche ; l'index ['start_code', 'end_code'] seul
+  devient redondant et est retiré.
 #}
 {{
   config(
@@ -9,9 +13,8 @@
     incremental_strategy='delete+insert',
     unique_key=['user_id', 'incremental_date', 'role', 'start_code', 'end_code'],
     indexes=[
-      { 'columns': ['user_id', 'incremental_date', 'role', 'start_code', 'end_code'] },
-      { 'columns': ['incremental_date'] },
-      { 'columns': ['start_code', 'end_code'] }
+      { 'columns': ['start_code', 'end_code', 'user_id', 'incremental_date', 'role'] },
+      { 'columns': ['incremental_date'] }
     ],
     tags=['aggregated', 'users', 'od', 'daily']
   )
