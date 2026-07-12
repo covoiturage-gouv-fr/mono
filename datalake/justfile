@@ -126,3 +126,12 @@ pipeline-trusted-geo *args:
 # Pipeline 3 : daily update:
 pipeline-daily *args:
   just dbt run --select "tag:daily" {{args}}
+
+# Invalide le cache de l'API observatoire (INCR obs:cache:version). No-op sans REDIS_URL.
+cache-bump:
+  python -m pipelines.cmd.cache_bump
+
+# Pipeline 4 : zone exposée + invalidation du cache observatoire (appel unique côté ops).
+pipeline-exposed *args:
+  just dbt run --select "models/exposed" {{args}}
+  just cache-bump
