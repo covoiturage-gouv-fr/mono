@@ -1,5 +1,7 @@
 """Endpoints publics de l'observatoire."""
 
+from typing import Literal
+
 from fastapi import APIRouter, Depends, Query, Response
 
 from ..cache import (
@@ -15,8 +17,11 @@ from ..db import connection
 from ..helpers import check_code_param, check_territory_param
 from ..period import is_published, last_record_cutoff
 from ..repositories import observatory as repo
+from ..repositories import observatory_aggregated as agg
 
 router = APIRouter(prefix="/observatory", tags=["observatory"])
+
+Direction = Literal["from", "to", "both"]
 
 
 async def get_conn():
@@ -112,3 +117,236 @@ async def campaigns(
         redis, "/observatory/campaigns", params,
         lambda: repo.get_campaigns(conn, type, code, year),
     )
+
+
+# --------------------------------------------------------------------------- #
+# Endpoints agrégés (flux, occupation, distribution, incentive, keyfigures, infra)
+# Tous : GET public, réponse gzip cachée. Détail des requêtes dans
+# repositories/observatory_aggregated.py.
+# --------------------------------------------------------------------------- #
+
+
+def _serve_rows(redis, route: str, params: dict, sql: str, sql_params: dict, conn):
+    return _serve_cached(redis, route, params,
+                         lambda: agg.fetch(conn, sql, sql_params))
+
+
+@router.get("/flux")
+async def flux(
+    code: str = Query(..., min_length=1, max_length=15),
+    type: str = Query(...),
+    observe: str = Query(...),
+    year: int = Query(..., ge=2020, le=2100),
+    month: int | None = Query(None, ge=1, le=12),
+    trimester: int | None = Query(None, ge=1, le=4),
+    semester: int | None = Query(None, ge=1, le=2),
+    conn=Depends(get_conn),
+    redis=Depends(get_redis),
+):
+    """Flux OD entre territoires."""
+    check_code_param(code)
+    sql, sp = agg.build_flux(type, observe, code, year, month, trimester, semester)
+    params = {"code": code, "type": check_territory_param(type),
+              "observe": check_territory_param(observe), "year": year,
+              "month": month, "trimester": trimester, "semester": semester}
+    return await _serve_rows(redis, "/observatory/flux", params, sql, sp, conn)
+
+
+@router.get("/best-flux")
+async def best_flux(
+    code: str = Query(..., min_length=1, max_length=15),
+    type: str = Query(...),
+    year: int = Query(..., ge=2020, le=2100),
+    limit: int = Query(10, ge=5, le=100),
+    month: int | None = Query(None, ge=1, le=12),
+    trimester: int | None = Query(None, ge=1, le=4),
+    semester: int | None = Query(None, ge=1, le=2),
+    conn=Depends(get_conn),
+    redis=Depends(get_redis),
+):
+    """Meilleurs flux d'un territoire (top N par trajets)."""
+    check_code_param(code)
+    sql, sp = agg.build_best_flux(type, code, year, limit, month, trimester, semester)
+    params = {"code": code, "type": check_territory_param(type), "year": year,
+              "limit": limit, "month": month, "trimester": trimester, "semester": semester}
+    return await _serve_rows(redis, "/observatory/best-flux", params, sql, sp, conn)
+
+
+@router.get("/evol-flux")
+async def evol_flux(
+    code: str = Query(..., min_length=1, max_length=15),
+    type: str = Query(...),
+    indic: str = Query(..., min_length=1, max_length=32),
+    past: int = Query(2, ge=1, le=5),
+    month: int | None = Query(None, ge=1, le=12),
+    trimester: int | None = Query(None, ge=1, le=4),
+    semester: int | None = Query(None, ge=1, le=2),
+    conn=Depends(get_conn),
+    redis=Depends(get_redis),
+):
+    """Évolution temporelle d'un indicateur de flux."""
+    check_code_param(code)
+    sql, sp = agg.build_evol_flux(type, code, indic, past, month, trimester, semester)
+    params = {"code": code, "type": check_territory_param(type),
+              "indic": agg.normalize_flux_indic(indic),
+              "past": past, "month": month, "trimester": trimester, "semester": semester}
+    return await _serve_rows(redis, "/observatory/evol-flux", params, sql, sp, conn)
+
+
+@router.get("/incentive")
+async def incentive(
+    code: str = Query(..., min_length=1, max_length=15),
+    type: str = Query(...),
+    year: int = Query(..., ge=2020, le=2100),
+    month: int | None = Query(None, ge=1, le=12),
+    trimester: int | None = Query(None, ge=1, le=4),
+    semester: int | None = Query(None, ge=1, le=2),
+    conn=Depends(get_conn),
+    redis=Depends(get_redis),
+):
+    """Répartition des incitations par territoire."""
+    check_code_param(code)
+    sql, sp = agg.build_incentive(type, code, year, month, trimester, semester)
+    params = {"code": code, "type": check_territory_param(type), "year": year,
+              "month": month, "trimester": trimester, "semester": semester}
+    return await _serve_rows(redis, "/observatory/incentive", params, sql, sp, conn)
+
+
+@router.get("/occupation")
+async def occupation(
+    code: str = Query(..., min_length=1, max_length=15),
+    type: str = Query(...),
+    observe: str = Query(...),
+    year: int = Query(..., ge=2020, le=2100),
+    month: int | None = Query(None, ge=1, le=12),
+    trimester: int | None = Query(None, ge=1, le=4),
+    semester: int | None = Query(None, ge=1, le=2),
+    conn=Depends(get_conn),
+    redis=Depends(get_redis),
+):
+    """Taux d'occupation par territoire (avec géométrie)."""
+    check_code_param(code)
+    sql, sp = agg.build_occupation(type, observe, code, year, month, trimester, semester)
+    params = {"code": code, "type": check_territory_param(type),
+              "observe": check_territory_param(observe), "year": year,
+              "month": month, "trimester": trimester, "semester": semester}
+    return await _serve_rows(redis, "/observatory/occupation", params, sql, sp, conn)
+
+
+@router.get("/best-territories")
+async def best_territories(
+    code: str = Query(..., min_length=1, max_length=15),
+    type: str = Query(...),
+    observe: str = Query(...),
+    year: int = Query(..., ge=2020, le=2100),
+    limit: int = Query(10, ge=5, le=100),
+    month: int | None = Query(None, ge=1, le=12),
+    trimester: int | None = Query(None, ge=1, le=4),
+    semester: int | None = Query(None, ge=1, le=2),
+    conn=Depends(get_conn),
+    redis=Depends(get_redis),
+):
+    """Meilleurs territoires par nombre de trajets."""
+    check_code_param(code)
+    sql, sp = agg.build_best_territories(type, observe, code, year, limit,
+                                         month, trimester, semester)
+    params = {"code": code, "type": check_territory_param(type),
+              "observe": check_territory_param(observe), "year": year, "limit": limit,
+              "month": month, "trimester": trimester, "semester": semester}
+    return await _serve_rows(redis, "/observatory/best-territories", params, sql, sp, conn)
+
+
+@router.get("/evol-occupation")
+async def evol_occupation(
+    code: str = Query(..., min_length=1, max_length=15),
+    type: str = Query(...),
+    indic: str = Query(..., min_length=1, max_length=32),
+    past: int = Query(2, ge=1, le=5),
+    month: int | None = Query(None, ge=1, le=12),
+    trimester: int | None = Query(None, ge=1, le=4),
+    semester: int | None = Query(None, ge=1, le=2),
+    conn=Depends(get_conn),
+    redis=Depends(get_redis),
+):
+    """Évolution temporelle d'un indicateur d'occupation."""
+    check_code_param(code)
+    sql, sp = agg.build_evol_occupation(type, code, indic, past, month, trimester, semester)
+    params = {"code": code, "type": check_territory_param(type),
+              "indic": agg.normalize_occupation_indic(indic),
+              "past": past, "month": month, "trimester": trimester, "semester": semester}
+    return await _serve_rows(redis, "/observatory/evol-occupation", params, sql, sp, conn)
+
+
+@router.get("/journeys-by-hours")
+async def journeys_by_hours(
+    code: str = Query(..., min_length=1, max_length=15),
+    type: str = Query(...),
+    year: int = Query(..., ge=2020, le=2100),
+    month: int | None = Query(None, ge=1, le=12),
+    trimester: int | None = Query(None, ge=1, le=4),
+    semester: int | None = Query(None, ge=1, le=2),
+    conn=Depends(get_conn),
+    redis=Depends(get_redis),
+):
+    """Distribution horaire des trajets (toutes directions)."""
+    check_code_param(code)
+    sql, sp = agg.build_journeys_by_hours(type, code, year, month, trimester, semester)
+    params = {"code": code, "type": check_territory_param(type), "year": year,
+              "month": month, "trimester": trimester, "semester": semester}
+    return await _serve_rows(redis, "/observatory/journeys-by-hours", params, sql, sp, conn)
+
+
+@router.get("/journeys-by-distances")
+async def journeys_by_distances(
+    code: str = Query(..., min_length=1, max_length=15),
+    type: str = Query(...),
+    year: int = Query(..., ge=2020, le=2100),
+    direction: Direction = Query(...),
+    month: int | None = Query(None, ge=1, le=12),
+    trimester: int | None = Query(None, ge=1, le=4),
+    semester: int | None = Query(None, ge=1, le=2),
+    conn=Depends(get_conn),
+    redis=Depends(get_redis),
+):
+    """Distribution kilométrique des trajets (direction requise)."""
+    check_code_param(code)
+    sql, sp = agg.build_journeys_by_distances(type, code, year, direction,
+                                              month, trimester, semester)
+    params = {"code": code, "type": check_territory_param(type), "year": year,
+              "direction": direction, "month": month,
+              "trimester": trimester, "semester": semester}
+    return await _serve_rows(redis, "/observatory/journeys-by-distances", params, sql, sp, conn)
+
+
+@router.get("/keyfigures")
+async def keyfigures(
+    code: str = Query(..., min_length=1, max_length=15),
+    type: str = Query(...),
+    year: int = Query(..., ge=2020, le=2100),
+    month: int | None = Query(None, ge=1, le=12),
+    trimester: int | None = Query(None, ge=1, le=4),
+    semester: int | None = Query(None, ge=1, le=2),
+    conn=Depends(get_conn),
+    redis=Depends(get_redis),
+):
+    """Chiffres clés d'un territoire (recomposition ; direction both)."""
+    check_code_param(code)
+    sql, sp = agg.build_keyfigures(type, code, year, month, trimester, semester)
+    params = {"code": code, "type": check_territory_param(type), "year": year,
+              "month": month, "trimester": trimester, "semester": semester}
+    return await _serve_rows(redis, "/observatory/keyfigures", params, sql, sp, conn)
+
+
+@router.get("/aires-covoiturage")
+async def aires_covoiturage(
+    type: str = Query("com"),
+    code: str | None = Query(None, min_length=1, max_length=15),
+    conn=Depends(get_conn),
+    redis=Depends(get_redis),
+):
+    """Aires de covoiturage ouvertes (optionnellement filtrées par territoire)."""
+    if code is not None:
+        check_code_param(code)
+    sql, sp = agg.build_aires_covoiturage(type, code)
+    params = {"type": check_territory_param(type), "code": code}
+    return await _serve_rows(redis, "/observatory/aires-covoiturage", params, sql, sp, conn)
