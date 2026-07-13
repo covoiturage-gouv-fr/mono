@@ -15,9 +15,9 @@ models:
       - name: journey_start_time
         data_type: text
       - name: journey_start_lon
-        data_type: numeric
+        data_type: double precision
       - name: journey_start_lat
-        data_type: numeric
+        data_type: double precision
       - name: journey_start_insee
         data_type: character varying
       - name: journey_start_department
@@ -35,9 +35,9 @@ models:
       - name: journey_end_time
         data_type: text
       - name: journey_end_lon
-        data_type: numeric
+        data_type: double precision
       - name: journey_end_lat
-        data_type: numeric
+        data_type: double precision
       - name: journey_end_insee
         data_type: character varying
       - name: journey_end_department
@@ -57,7 +57,7 @@ models:
       - name: journey_duration
         data_type: numeric
       - name: has_incentive
-        data_type: boolean
+        data_type: character varying
       - name: start_insee_count
         data_type: bigint
       - name: end_insee_count
