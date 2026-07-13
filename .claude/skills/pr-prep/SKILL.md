@@ -153,8 +153,42 @@ checklist** rather than invoking the command.
   - `gh pr create --base main --title "<titre>" -F tmp/pr/pr-body.md`.
 - **Always confirm with the user before pushing and before opening the PR** (outward-facing).
 
+### 8. Post-push: monitor CI and fix feedback (loop until green)
+
+After every push (PR creation **and** any later push to the branch), **watch CI to completion
+and fix failures** — do not hand back a red PR.
+
+- **Watch**: `gh run watch <run-id> --exit-status` (or poll `gh pr checks <n>`). Read the
+  authoritative rollup: `gh pr view <n> --json statusCheckRollup,mergeStateStatus`. Trust the
+  **job conclusion** (`gh run view <run> --json jobs`), not a stale check-run row — a run can
+  show `success` overall while a non-required job failed, and the merge gate still blocks on it.
+- **On failure**: fetch the failing job log (`gh run view --job <id> --log`), diagnose, fix,
+  commit (signed), push (`--force-with-lease` after amend/rebase), and **re-watch**. Repeat
+  until all required checks are green or you hit a genuine blocker for the user.
+- **Rebase first when behind** (biggest gotcha): CI lints the **merge commit** (branch + current
+  `main`) and lints **only files changed vs the merge-base**. A branch behind `main` fails on
+  *main's* content (e.g. a long line another PR merged into a file you also touch) — invisible in
+  your local file. If a violation points at a line you never wrote, `git fetch origin main &&
+  git rebase origin/main`, then fix the offending line (it's now in your rebased file).
+- **Reproduce SQL lint locally** (`sqlfluff` uses the dbt templater; the nix venv's `yaml` is a
+  broken stub): spin up the CI's DB and run the pinned version —
+  `docker run -d --name sqlfluff-pg -e POSTGRES_DB=covoiturage_ci -e POSTGRES_USER=postgres
+  -e POSTGRES_PASSWORD=postgres -p 5432:5432 postgres:17`, then from `datalake/` with the CI env
+  (`DBT_DBNAME=covoiturage_ci DBT_SCHEMA=public DBT_HOST=localhost DBT_PORT=5432
+  DBT_USER=postgres DBT_PASSWORD=postgres DBT_PROFILES_DIR=profiles`):
+  `env -u PYTHONPATH uv run --isolated --with sqlfluff==<locked> --with
+  sqlfluff-templater-dbt==<locked> --with dbt-postgres sqlfluff lint <changed.sql>`
+  (match the version pinned in `datalake/uv.lock`; copy `dbt_packages/` in for `dbt deps`).
+  Clean up the container (`docker rm -f sqlfluff-pg`) when done. `env -u PYTHONPATH` is required —
+  nix injects a broken PyYAML on `PYTHONPATH` that shadows every env.
+- **GitHub "code quality" / CodeQL / Copilot review**: treat surfaced findings like a check —
+  address them (fix or a justified reply), push, re-watch.
+- **Never `--admin`** and never self-approve to get past branch protection. If the only thing left
+  is `REVIEW_REQUIRED`, the CI job is done: report that it's green and awaiting human approval.
+
 ## Output
 
 Report: branch, commit subject, each check's verdict (PASS/FAIL + count), the PR URL once
-created - or the blocking reason if halted at the gate - and the **release verdict** per step 2b
-(will this PR cut a version and deploy, or not, and why).
+created - or the blocking reason if halted at the gate - the **release verdict** per step 2b
+(will this PR cut a version and deploy, or not, and why), and the **final CI state** after
+step 8 (all green / still red with the fix applied / green and awaiting human approval).
