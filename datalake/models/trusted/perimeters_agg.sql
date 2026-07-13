@@ -14,7 +14,9 @@ SELECT
   'com'       AS type,  -- noqa: RF04
   l_arr       AS libelle,
   geom_simple AS geom,
-  centroid
+  -- le centroïde communal source est un MULTIPOINT ; on le réduit à un POINT unique
+  -- pour que st_x/st_y (exposed observatory od_*) fonctionnent (ST_X exige un POINT)
+  ST_CENTROID(centroid) AS centroid
 FROM {{ ref('perimeters') }}
 WHERE com IS NOT NULL
 UNION ALL
