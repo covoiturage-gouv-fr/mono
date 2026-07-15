@@ -44,7 +44,7 @@ describe("NotificationService", () => {
     const sent: { to: string }[] = [];
     const service = makeService(sent);
 
-    await service.success(makeExport(), "http://example.test/download");
+    await service.success(makeExport());
 
     assertEquals(sent.length, 1);
     assertEquals(sent[0].to, "U Ser <u@test.fr>");

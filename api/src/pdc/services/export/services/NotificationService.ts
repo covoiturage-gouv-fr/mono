@@ -12,13 +12,13 @@ import { ExportCSVNotification } from "../notifications/ExportCSVNotification.ts
 import { ExportCSVSupportNotification } from "../notifications/ExportCSVSupportNotification.ts";
 
 export type NotificationProvider = {
-  success(exp: Export, url: string): Promise<void>;
+  success(exp: Export): Promise<void>;
   error(exp: Export): Promise<void>;
   support(exp: Export): Promise<void>;
 };
 
 export abstract class NotificationProviderResolver implements NotificationProvider {
-  public async success(_exp: Export, _url: string): Promise<void> {
+  public async success(_exp: Export): Promise<void> {
     throw new Error("Not implemented");
   }
   public async error(_exp: Export): Promise<void> {
@@ -45,13 +45,13 @@ export class NotificationService {
   ) {}
 
   /**
-   * Send the download link to the export creator
+   * Tell the export creator their export is ready (listed on the partner space)
    */
-  public async success(exp: Export, url: string): Promise<void> {
+  public async success(exp: Export): Promise<void> {
     const { email, fullname } = await this.creator(exp);
     const notification = new ExportCSVNotification(
       `${fullname} <${email}>`,
-      { fullname, action_href: url },
+      { fullname },
     );
     await this.emailer.send(notification);
   }

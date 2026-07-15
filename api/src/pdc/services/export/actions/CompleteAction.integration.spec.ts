@@ -13,7 +13,6 @@ import {
 import { ExportServiceProvider as ExportSP } from "@/pdc/services/export/ExportServiceProvider.ts";
 import { Export } from "@/pdc/services/export/models/Export.ts";
 import { NotificationService } from "@/pdc/services/export/services/NotificationService.ts";
-import { StorageService } from "@/pdc/services/export/services/StorageService.ts";
 import { handlerConfig, ResultInterface } from "../contracts/complete.contract.ts";
 
 const { before: kernelBefore, after: kernelAfter } = makeKernelBeforeAfter(ExportSP);
@@ -23,7 +22,7 @@ describe("CompleteAction", () => {
   let db: DenoDbContext;
   let kc: KernelContext;
 
-  const successCalls: Array<{ exp: Export; url: string }> = [];
+  const successCalls: Array<{ exp: Export }> = [];
 
   const workerContext: ContextType = {
     call: { user: { permissions: ["datalake.export.process"] } },
@@ -74,16 +73,13 @@ describe("CompleteAction", () => {
       .rebind(LegacyPostgresConnection)
       .toConstantValue(new LegacyPostgresConnection({ connectionString }));
 
-    // spy the notification + storage so we exercise the transition, not real S3/email
+    // spy the notification so we exercise the transition, not real email
     forceBind(NotificationService, {
-      success: async (exp: Export, url: string) => {
-        successCalls.push({ exp, url });
+      success: async (exp: Export) => {
+        successCalls.push({ exp });
       },
       error: async () => {},
       support: async () => {},
-    });
-    forceBind(StorageService, {
-      getPublicUrl: async (filename: string) => `https://example.test/${filename}`,
     });
   });
 
@@ -109,7 +105,7 @@ describe("CompleteAction", () => {
         assertEquals(Number(row.file_size), 4096);
 
         assertEquals(successCalls.length, 1);
-        assertEquals(successCalls[0].url, `https://example.test/${uuid}.csv.zip`);
+        assertEquals(successCalls[0].exp.uuid, uuid);
       },
     );
 
