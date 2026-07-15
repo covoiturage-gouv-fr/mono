@@ -1,6 +1,9 @@
 import { Config } from "@/config";
 import { useDashboardContext } from "../context/DashboardProvider";
 
+// Base de l'API observatoire (datalake) ; le path /v3/observatory est fixé ici, pas dans la var d'env.
+export const OBSERVATORY_API_URL = `${Config.get<string>("next.public_datalake_base_url", "")}/v3/observatory`;
+
 export const GetApiUrl = (
   route: string,
   params: string[],
@@ -17,5 +20,5 @@ export const GetApiUrl = (
       params.push(`semester=${dashboard.params.semester}`);
       break;
   }
-  return `${Config.get<string>("next.public_api_url", "")}/${route}?${params.join("&")}`;
+  return `${OBSERVATORY_API_URL}/${route}?${params.join("&")}`;
 };

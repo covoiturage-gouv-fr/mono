@@ -1,5 +1,5 @@
 'use client'
-import { Config } from '@/config';
+import { OBSERVATORY_API_URL } from '@/helpers/api';
 import { useApi } from '@/hooks/useApi';
 import { PerimeterType } from '@/interfaces/observatoire/Perimeter';
 import { fr } from '@codegouvfr/react-dsfr';
@@ -21,8 +21,7 @@ export default function Dashboard() {
     type: searchParams.get('type') ? searchParams.get('type')! as PerimeterType : 'country',
     year: searchParams.get('year') ? searchParams.get('year') : null
   }
-  const apiUrl = Config.get<string>('next.public_api_url', '');
-  const url = `${apiUrl}/campaigns${params.code !== 'XXXXX' 
+  const url = `${OBSERVATORY_API_URL}/campaigns${params.code !== 'XXXXX' 
     ?`?code=${params.code}&type=${params.type}${params.year ? `&year=${params.year}` : ''}`
     : params.year ? `?year=${params.year}` : ''}`;
   const { data, error, loading } = useApi<any[]>(url);
