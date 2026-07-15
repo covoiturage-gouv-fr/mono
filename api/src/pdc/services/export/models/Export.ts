@@ -17,7 +17,6 @@ export enum ExportTarget {
 }
 
 export type ExportError = string;
-export type ExportStats = string;
 
 export class Export {
   public _id: number;
@@ -25,12 +24,10 @@ export class Export {
   public target: ExportTarget;
   public status: ExportStatus;
   public created_by: number;
-  public download_url_expire_at: Date;
   public filename: string;
   public file_size: number;
   public params: ExportParams;
   public error: ExportError; // JSON object
-  public stats: ExportStats; // JSON object
 
   public static fromJSON(data: any): Export {
     const export_ = new Export();
@@ -39,12 +36,10 @@ export class Export {
     export_.target = data.target;
     export_.status = data.status;
     export_.created_by = data.created_by;
-    export_.download_url_expire_at = data.download_url_expire_at;
     export_.filename = data.filename;
     export_.file_size = Number(data.file_size) || 0;
     export_.params = new ExportParams(data.params);
     export_.error = data.error;
-    export_.stats = data.stats;
     return export_;
   }
 
@@ -55,12 +50,10 @@ export class Export {
       target: export_.target,
       status: export_.status,
       created_by: export_.created_by,
-      download_url_expire_at: export_.download_url_expire_at,
       filename: export_.filename,
       file_size: export_.file_size,
       params: ExportParams.toJSON(export_.params),
       error: export_.error,
-      stats: export_.stats,
     };
   }
 
