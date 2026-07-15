@@ -7,8 +7,8 @@
     'day':      {'nb': 3, 'unit': 'day'},
     'month':    {'nb': 1, 'unit': 'month'},
     'quarter':  {'nb': 1, 'unit': 'quarter'},
-    'semester': {'nb': 0, 'unit': 'semester'},
-    'year':     {'nb': 0, 'unit': 'year'}
+    'semester': {'nb': 1, 'unit': 'semester'},
+    'year':     {'nb': 1, 'unit': 'year'}
   } %}
 
   {% if grain not in lookbacks %}
