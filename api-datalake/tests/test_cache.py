@@ -29,6 +29,20 @@ def test_gzip_payload_roundtrips():
     assert json.loads(gzip.decompress(blob)) == data
 
 
+def test_gzip_payload_uses_level_3():
+    # Payload assez gros/varié pour que l'heuristique deflate diverge d'un niveau à
+    # l'autre : sur un tout petit blob, niveaux 3 et 6 sortent des octets identiques
+    # (l'octet XFL de l'en-tête ne distingue que 1 et 9). On compare donc le corps à
+    # une référence niveau 3, après neutralisation du MTIME (octets 4-7, horloge).
+    data = [{"hex": format(i, "04x"), "count": (i * 7919) % 1000} for i in range(400)]
+    raw = json.dumps(data, separators=(",", ":"), default=str).encode()
+    got = bytearray(cache_mod.gzip_payload(data))
+    ref = bytearray(gzip.compress(raw, compresslevel=3))
+    got[4:8] = b"\x00\x00\x00\x00"  # neutralise MTIME (horloge)
+    ref[4:8] = b"\x00\x00\x00\x00"
+    assert bytes(got) == bytes(ref)  # corps deflate identique => même niveau
+
+
 # --- ouverture du client Redis : TLS + CA privée ---
 
 
