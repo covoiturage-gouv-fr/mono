@@ -24,9 +24,15 @@ router = APIRouter(prefix="/observatory", tags=["observatory"])
 Direction = Literal["from", "to", "both"]
 
 
-async def get_conn():
-    async with connection() as conn:
-        yield conn
+def get_conn():
+    """Fournit l'« acquéreur » de connexion (la fabrique `connection`), pas une
+    connexion ouverte.
+
+    Sur cache HIT, `acquire()` n'est jamais appelé : aucune connexion du pool n'est
+    mobilisée. Sur MISS, la connexion n'est ouverte que le temps de la requête SQL,
+    puis relâchée avant le gzip. Surchargeable en test.
+    """
+    return connection
 
 
 def _gzip_json(blob: bytes, cache_state: str) -> Response:
@@ -38,10 +44,12 @@ def _gzip_json(blob: bytes, cache_state: str) -> Response:
     )
 
 
-async def _serve_cached(redis, route: str, params: dict, produce) -> Response:
-    """Sert `produce()` (données PG) avec cache Redis best-effort.
+async def _serve_cached(redis, route: str, params: dict, produce, acquire) -> Response:
+    """Sert `produce(conn)` (données PG) avec cache Redis best-effort.
 
-    Une panne Redis dégrade en cache-miss (`X-Cache: BYPASS`), jamais en 500.
+    La connexion n'est ouverte (`acquire()`) que sur cache MISS, et relâchée dès la
+    requête terminée — avant la sérialisation/gzip. Une panne Redis dégrade en
+    cache-miss (`X-Cache: BYPASS`), jamais en 500.
     """
     cutoff = settings.app_observatory_published_until
     key = None
@@ -53,7 +61,9 @@ async def _serve_cached(redis, route: str, params: dict, produce) -> Response:
     if hit is not None:
         return _gzip_json(hit, "HIT")
 
-    blob = gzip_payload(await produce())
+    async with acquire() as conn:
+        data = await produce(conn)
+    blob = gzip_payload(data)
     if ok:
         await cache_set(redis, key, blob, settings.cache_ttl_seconds)
     return _gzip_json(blob, "MISS" if ok else "BYPASS")
@@ -63,13 +73,14 @@ async def _serve_cached(redis, route: str, params: dict, produce) -> Response:
 async def last_record(
     code: str = Query(...),
     type: str = Query("com"),
-    conn=Depends(get_conn),
+    acquire=Depends(get_conn),
 ):
     """Dernier mois disponible pour un territoire, borné par le cutoff de publication."""
     check_code_param(code)
     cutoff = last_record_cutoff(settings.app_observatory_published_until)
     max_ym = cutoff[0] * 100 + cutoff[1] if cutoff else None
-    return await repo.get_last_record(conn, type, code, max_ym)
+    async with acquire() as conn:
+        return await repo.get_last_record(conn, type, code, max_ym)
 
 
 @router.get("/location")
@@ -81,7 +92,7 @@ async def location(
     trimester: int | None = Query(None, ge=1, le=4),
     semester: int | None = Query(None, ge=1, le=2),
     n: int = Query(5, ge=0, le=8),
-    conn=Depends(get_conn),
+    acquire=Depends(get_conn),
     redis=Depends(get_redis),
 ):
     """Heatmap de densité (H3) d'un territoire. Binning en SQL, réponse gzip cachée."""
@@ -96,7 +107,8 @@ async def location(
               "month": month, "trimester": trimester, "semester": semester, "n": n}
     return await _serve_cached(
         redis, "/observatory/location", params,
-        lambda: repo.get_location(conn, type, code, year, n, month, trimester, semester),
+        lambda conn: repo.get_location(conn, type, code, year, n, month, trimester, semester),
+        acquire,
     )
 
 
@@ -105,7 +117,7 @@ async def campaigns(
     type: str | None = Query(None),
     code: str | None = Query(None),
     year: int | None = Query(None, ge=2015, le=2100),
-    conn=Depends(get_conn),
+    acquire=Depends(get_conn),
     redis=Depends(get_redis),
 ):
     """Campagnes d'incitation (avec géométrie du territoire). Réponse gzip cachée."""
@@ -115,7 +127,8 @@ async def campaigns(
               "code": code, "year": year}
     return await _serve_cached(
         redis, "/observatory/campaigns", params,
-        lambda: repo.get_campaigns(conn, type, code, year),
+        lambda conn: repo.get_campaigns(conn, type, code, year),
+        acquire,
     )
 
 
@@ -126,9 +139,9 @@ async def campaigns(
 # --------------------------------------------------------------------------- #
 
 
-def _serve_rows(redis, route: str, params: dict, sql: str, sql_params: dict, conn):
+def _serve_rows(redis, route: str, params: dict, sql: str, sql_params: dict, acquire):
     return _serve_cached(redis, route, params,
-                         lambda: agg.fetch(conn, sql, sql_params))
+                         lambda conn: agg.fetch(conn, sql, sql_params), acquire)
 
 
 @router.get("/flux")
@@ -140,7 +153,7 @@ async def flux(
     month: int | None = Query(None, ge=1, le=12),
     trimester: int | None = Query(None, ge=1, le=4),
     semester: int | None = Query(None, ge=1, le=2),
-    conn=Depends(get_conn),
+    acquire=Depends(get_conn),
     redis=Depends(get_redis),
 ):
     """Flux OD entre territoires."""
@@ -149,7 +162,7 @@ async def flux(
     params = {"code": code, "type": check_territory_param(type),
               "observe": check_territory_param(observe), "year": year,
               "month": month, "trimester": trimester, "semester": semester}
-    return await _serve_rows(redis, "/observatory/flux", params, sql, sp, conn)
+    return await _serve_rows(redis, "/observatory/flux", params, sql, sp, acquire)
 
 
 @router.get("/best-flux")
@@ -161,7 +174,7 @@ async def best_flux(
     month: int | None = Query(None, ge=1, le=12),
     trimester: int | None = Query(None, ge=1, le=4),
     semester: int | None = Query(None, ge=1, le=2),
-    conn=Depends(get_conn),
+    acquire=Depends(get_conn),
     redis=Depends(get_redis),
 ):
     """Meilleurs flux d'un territoire (top N par trajets)."""
@@ -169,7 +182,7 @@ async def best_flux(
     sql, sp = agg.build_best_flux(type, code, year, limit, month, trimester, semester)
     params = {"code": code, "type": check_territory_param(type), "year": year,
               "limit": limit, "month": month, "trimester": trimester, "semester": semester}
-    return await _serve_rows(redis, "/observatory/best-flux", params, sql, sp, conn)
+    return await _serve_rows(redis, "/observatory/best-flux", params, sql, sp, acquire)
 
 
 @router.get("/evol-flux")
@@ -181,7 +194,7 @@ async def evol_flux(
     month: int | None = Query(None, ge=1, le=12),
     trimester: int | None = Query(None, ge=1, le=4),
     semester: int | None = Query(None, ge=1, le=2),
-    conn=Depends(get_conn),
+    acquire=Depends(get_conn),
     redis=Depends(get_redis),
 ):
     """Évolution temporelle d'un indicateur de flux."""
@@ -190,7 +203,7 @@ async def evol_flux(
     params = {"code": code, "type": check_territory_param(type),
               "indic": agg.normalize_flux_indic(indic),
               "past": past, "month": month, "trimester": trimester, "semester": semester}
-    return await _serve_rows(redis, "/observatory/evol-flux", params, sql, sp, conn)
+    return await _serve_rows(redis, "/observatory/evol-flux", params, sql, sp, acquire)
 
 
 @router.get("/incentive")
@@ -201,7 +214,7 @@ async def incentive(
     month: int | None = Query(None, ge=1, le=12),
     trimester: int | None = Query(None, ge=1, le=4),
     semester: int | None = Query(None, ge=1, le=2),
-    conn=Depends(get_conn),
+    acquire=Depends(get_conn),
     redis=Depends(get_redis),
 ):
     """Répartition des incitations par territoire."""
@@ -209,7 +222,7 @@ async def incentive(
     sql, sp = agg.build_incentive(type, code, year, month, trimester, semester)
     params = {"code": code, "type": check_territory_param(type), "year": year,
               "month": month, "trimester": trimester, "semester": semester}
-    return await _serve_rows(redis, "/observatory/incentive", params, sql, sp, conn)
+    return await _serve_rows(redis, "/observatory/incentive", params, sql, sp, acquire)
 
 
 @router.get("/occupation")
@@ -221,7 +234,7 @@ async def occupation(
     month: int | None = Query(None, ge=1, le=12),
     trimester: int | None = Query(None, ge=1, le=4),
     semester: int | None = Query(None, ge=1, le=2),
-    conn=Depends(get_conn),
+    acquire=Depends(get_conn),
     redis=Depends(get_redis),
 ):
     """Taux d'occupation par territoire (avec géométrie)."""
@@ -230,7 +243,7 @@ async def occupation(
     params = {"code": code, "type": check_territory_param(type),
               "observe": check_territory_param(observe), "year": year,
               "month": month, "trimester": trimester, "semester": semester}
-    return await _serve_rows(redis, "/observatory/occupation", params, sql, sp, conn)
+    return await _serve_rows(redis, "/observatory/occupation", params, sql, sp, acquire)
 
 
 @router.get("/best-territories")
@@ -243,7 +256,7 @@ async def best_territories(
     month: int | None = Query(None, ge=1, le=12),
     trimester: int | None = Query(None, ge=1, le=4),
     semester: int | None = Query(None, ge=1, le=2),
-    conn=Depends(get_conn),
+    acquire=Depends(get_conn),
     redis=Depends(get_redis),
 ):
     """Meilleurs territoires par nombre de trajets."""
@@ -253,7 +266,7 @@ async def best_territories(
     params = {"code": code, "type": check_territory_param(type),
               "observe": check_territory_param(observe), "year": year, "limit": limit,
               "month": month, "trimester": trimester, "semester": semester}
-    return await _serve_rows(redis, "/observatory/best-territories", params, sql, sp, conn)
+    return await _serve_rows(redis, "/observatory/best-territories", params, sql, sp, acquire)
 
 
 @router.get("/evol-occupation")
@@ -265,7 +278,7 @@ async def evol_occupation(
     month: int | None = Query(None, ge=1, le=12),
     trimester: int | None = Query(None, ge=1, le=4),
     semester: int | None = Query(None, ge=1, le=2),
-    conn=Depends(get_conn),
+    acquire=Depends(get_conn),
     redis=Depends(get_redis),
 ):
     """Évolution temporelle d'un indicateur d'occupation."""
@@ -274,7 +287,7 @@ async def evol_occupation(
     params = {"code": code, "type": check_territory_param(type),
               "indic": agg.normalize_occupation_indic(indic),
               "past": past, "month": month, "trimester": trimester, "semester": semester}
-    return await _serve_rows(redis, "/observatory/evol-occupation", params, sql, sp, conn)
+    return await _serve_rows(redis, "/observatory/evol-occupation", params, sql, sp, acquire)
 
 
 @router.get("/journeys-by-hours")
@@ -285,7 +298,7 @@ async def journeys_by_hours(
     month: int | None = Query(None, ge=1, le=12),
     trimester: int | None = Query(None, ge=1, le=4),
     semester: int | None = Query(None, ge=1, le=2),
-    conn=Depends(get_conn),
+    acquire=Depends(get_conn),
     redis=Depends(get_redis),
 ):
     """Distribution horaire des trajets (toutes directions)."""
@@ -293,7 +306,7 @@ async def journeys_by_hours(
     sql, sp = agg.build_journeys_by_hours(type, code, year, month, trimester, semester)
     params = {"code": code, "type": check_territory_param(type), "year": year,
               "month": month, "trimester": trimester, "semester": semester}
-    return await _serve_rows(redis, "/observatory/journeys-by-hours", params, sql, sp, conn)
+    return await _serve_rows(redis, "/observatory/journeys-by-hours", params, sql, sp, acquire)
 
 
 @router.get("/journeys-by-distances")
@@ -305,7 +318,7 @@ async def journeys_by_distances(
     month: int | None = Query(None, ge=1, le=12),
     trimester: int | None = Query(None, ge=1, le=4),
     semester: int | None = Query(None, ge=1, le=2),
-    conn=Depends(get_conn),
+    acquire=Depends(get_conn),
     redis=Depends(get_redis),
 ):
     """Distribution kilométrique des trajets (direction requise)."""
@@ -315,7 +328,7 @@ async def journeys_by_distances(
     params = {"code": code, "type": check_territory_param(type), "year": year,
               "direction": direction, "month": month,
               "trimester": trimester, "semester": semester}
-    return await _serve_rows(redis, "/observatory/journeys-by-distances", params, sql, sp, conn)
+    return await _serve_rows(redis, "/observatory/journeys-by-distances", params, sql, sp, acquire)
 
 
 @router.get("/keyfigures")
@@ -326,7 +339,7 @@ async def keyfigures(
     month: int | None = Query(None, ge=1, le=12),
     trimester: int | None = Query(None, ge=1, le=4),
     semester: int | None = Query(None, ge=1, le=2),
-    conn=Depends(get_conn),
+    acquire=Depends(get_conn),
     redis=Depends(get_redis),
 ):
     """Chiffres clés d'un territoire (recomposition ; direction both)."""
@@ -334,14 +347,14 @@ async def keyfigures(
     sql, sp = agg.build_keyfigures(type, code, year, month, trimester, semester)
     params = {"code": code, "type": check_territory_param(type), "year": year,
               "month": month, "trimester": trimester, "semester": semester}
-    return await _serve_rows(redis, "/observatory/keyfigures", params, sql, sp, conn)
+    return await _serve_rows(redis, "/observatory/keyfigures", params, sql, sp, acquire)
 
 
 @router.get("/aires-covoiturage")
 async def aires_covoiturage(
     type: str = Query("com"),
     code: str | None = Query(None, min_length=1, max_length=15),
-    conn=Depends(get_conn),
+    acquire=Depends(get_conn),
     redis=Depends(get_redis),
 ):
     """Aires de covoiturage ouvertes (optionnellement filtrées par territoire)."""
@@ -349,4 +362,4 @@ async def aires_covoiturage(
         check_code_param(code)
     sql, sp = agg.build_aires_covoiturage(type, code)
     params = {"type": check_territory_param(type), "code": code}
-    return await _serve_rows(redis, "/observatory/aires-covoiturage", params, sql, sp, conn)
+    return await _serve_rows(redis, "/observatory/aires-covoiturage", params, sql, sp, acquire)

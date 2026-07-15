@@ -1,3 +1,5 @@
+from contextlib import asynccontextmanager
+
 from fastapi.testclient import TestClient
 
 from api_datalake.cache import get_redis
@@ -82,8 +84,11 @@ def test_campaigns_endpoint_returns_gzipped_list():
     rows = [{"type": "aom", "code": "217500016", "lien": "https://x", "geom": {"type": "Polygon"}}]
     app = create_app()
 
-    async def override_conn():
-        yield FakeConn(rows)
+    def override_conn():
+        @asynccontextmanager
+        async def _acquire():
+            yield FakeConn(rows)
+        return _acquire
 
     app.dependency_overrides[get_conn] = override_conn
     app.dependency_overrides[get_redis] = lambda: None

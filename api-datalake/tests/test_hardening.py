@@ -1,4 +1,5 @@
 import asyncio
+from contextlib import asynccontextmanager
 
 from fastapi.testclient import TestClient
 
@@ -45,8 +46,11 @@ class FakeConn:
 def client(rows=None, delay=0.0):
     app = create_app()
 
-    async def override_conn():
-        yield FakeConn(rows, delay)
+    def override_conn():
+        @asynccontextmanager
+        async def _acquire():
+            yield FakeConn(rows, delay)
+        return _acquire
 
     app.dependency_overrides[get_conn] = override_conn
     app.dependency_overrides[get_redis] = lambda: None

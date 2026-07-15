@@ -1,5 +1,6 @@
 import gzip
 import json
+from contextlib import asynccontextmanager
 
 from fastapi.testclient import TestClient
 
@@ -145,8 +146,11 @@ class FakeConn:
 def client(rows):
     app = create_app()
 
-    async def override():
-        yield FakeConn(rows)
+    def override():
+        @asynccontextmanager
+        async def _acquire():
+            yield FakeConn(rows)
+        return _acquire
 
     app.dependency_overrides[get_conn] = override
     app.dependency_overrides[get_redis] = lambda: None

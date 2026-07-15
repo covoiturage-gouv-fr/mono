@@ -1,5 +1,6 @@
 import gzip
 import json
+from contextlib import asynccontextmanager
 
 from fastapi.testclient import TestClient
 
@@ -99,8 +100,11 @@ class RaisingRedis:
 def make_client(rows, redis=None):
     app = create_app()
 
-    async def override_conn():
-        yield FakeConn(rows)
+    def override_conn():
+        @asynccontextmanager
+        async def _acquire():
+            yield FakeConn(rows)
+        return _acquire
 
     app.dependency_overrides[get_conn] = override_conn
     app.dependency_overrides[get_redis] = lambda: redis
@@ -159,6 +163,31 @@ def test_location_rejects_malformed_code_with_422():
     # `$` laisserait passer un newline final ; `fullmatch` le rejette.
     r_nl = c.get("/observatory/location", params={"code": "75056\n", "type": "com", "year": 2022, "n": 8})
     assert r_nl.status_code == 422
+
+
+def test_location_cache_hit_opens_no_connection():
+    # 1er appel : MISS, remplit le cache. 2e : HIT — l'acquéreur ne doit jamais
+    # être ouvert. On le remplace alors par un acquéreur qui lève à l'ouverture.
+    redis = FakeRedis()
+    app = make_client([{"hex": "a", "count": 1}], redis=redis)
+    c = TestClient(app)
+    p = {"code": "75056", "type": "com", "year": 2022, "month": 6, "n": 8}
+
+    first = c.get("/observatory/location", params=p)
+    assert first.headers["x-cache"] == "MISS"
+
+    def exploding():
+        @asynccontextmanager
+        async def _acquire():
+            raise AssertionError("pool sollicité sur un cache HIT")
+            yield  # pragma: no cover
+        return _acquire
+    app.dependency_overrides[get_conn] = exploding
+
+    second = c.get("/observatory/location", params=p)
+    assert second.status_code == 200
+    assert second.headers["x-cache"] == "HIT"
+    assert second.json() == [{"hex": "a", "count": 1}]
 
 
 def test_location_unpublished_period_is_bypassed_and_empty():

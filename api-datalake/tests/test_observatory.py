@@ -1,3 +1,5 @@
+from contextlib import asynccontextmanager
+
 from fastapi.testclient import TestClient
 
 from api_datalake.main import create_app
@@ -33,8 +35,11 @@ class FakeConn:
 def client_with_row(row):
     app = create_app()
 
-    async def override():
-        yield FakeConn(row)
+    def override():
+        @asynccontextmanager
+        async def _acquire():
+            yield FakeConn(row)
+        return _acquire
 
     app.dependency_overrides[get_conn] = override
     return TestClient(app)
