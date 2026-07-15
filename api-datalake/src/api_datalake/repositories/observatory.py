@@ -4,13 +4,9 @@ Porté depuis `api/src/pdc/services/observatory/providers/*`. Toutes les valeurs
 sont liées (paramétrées) ; `type` est en plus validé par allowlist en amont.
 """
 
-from datetime import date
-
 from ..helpers import check_territory_param
 
 # Toutes les sources sont dans la zone exposée : l'API ne lit rien d'autre.
-LOCATION_TABLE = "zone_exposed.location"      # remplace observatoire_stats.view_location
-PERIMETERS_TABLE = "zone_exposed.observatory_perimeters"  # remplace geo.perimeters
 CAMPAIGNS_TABLE = "zone_exposed.campaigns"    # remplace raw_zone.campaigns + jointure geom
 
 # Contrat public de /observatory/campaigns : colonnes projetées explicitement.
@@ -28,87 +24,45 @@ CAMPAIGNS_COLUMNS = (
     "trajet_classe_de_preuve", "operateurs", "autres_informations", "lien", "geom",
 )
 
-# type de territoire -> colonne de périmètre. `com` = grain arrondissement (`arr`),
-# comme l'ancienne requête de l'API (SELECT arr AS com ...).
-_PERIM_COL = {
-    "com": "arr", "epci": "epci", "aom": "aom",
-    "dep": "dep", "reg": "reg", "country": "country",
-}
-
-
-def _add_months(year: int, month: int, delta: int) -> date:
-    idx = year * 12 + (month - 1) + delta
-    return date(idx // 12, idx % 12 + 1, 1)
-
-
-def _period_bounds(year: int, month: int | None, trimester: int | None,
-                   semester: int | None) -> tuple[str, str]:
-    """Bornes [début, fin) de la période en dates ISO, pour un filtre sargable
-    sur start_datetime (index start_datetime_tz). Un seul grain à la fois."""
+# Grain de période -> (suffixe de table exposée, colonne de filtre, valeur). Un seul
+# grain à la fois ; sans grain -> année. Les valeurs sont figées (pas d'entrée
+# utilisateur) : interpolables sans risque dans le nom de table / la colonne.
+def _grain(month: int | None, trimester: int | None,
+           semester: int | None) -> tuple[str, str | None, int | None]:
     if month is not None:
-        start, end = date(year, month, 1), _add_months(year, month, 1)
-    elif trimester is not None:
-        sm = (trimester - 1) * 3 + 1
-        start, end = date(year, sm, 1), _add_months(year, sm, 3)
-    elif semester is not None:
-        sm = 1 if semester == 1 else 7
-        start, end = date(year, sm, 1), _add_months(year, sm, 6)
-    else:
-        start, end = date(year, 1, 1), date(year + 1, 1, 1)
-    return start.isoformat(), end.isoformat()
+        return "month", "month", month
+    if trimester is not None:
+        return "quarter", "quarter", trimester
+    if semester is not None:
+        return "semester", "semester", semester
+    return "year", None, None
 
 
 def build_location_query(type_: str, code: str, year: int, n: int,
                          month: int | None = None, trimester: int | None = None,
                          semester: int | None = None) -> tuple[str, dict]:
-    """Construit la requête de heatmap (binning H3 en SQL) + ses paramètres.
+    """Construit la requête de heatmap (histogramme H3) + ses paramètres.
 
-    Porté de `LocationRepositoryProvider` : résolution du périmètre au millésime,
-    filtre temporel, puis binning des points de départ ET d'arrivée à la résolution
-    `n` (h3_cell_to_parent sur l'index z8 pré-calculé) et comptage par hexagone.
+    Lecture directe de l'agrégat exposé `zone_exposed.location_<grain>` (pré-agrégé
+    par territoire / période / hexagone z8), filtré sur (type, code, période). Le
+    binning au zoom demandé se fait via `h3_cell_to_parent(hex_z8, n)` sur ce petit
+    ensemble — plus aucun scan de `carpools` à la volée.
     """
     type_ = check_territory_param(type_)
-    col = _PERIM_COL[type_]
+    grain, grain_col, grain_val = _grain(month, trimester, semester)
 
-    dt_start, dt_end = _period_bounds(year, month, trimester, semester)
-    params: dict = {"code": code, "year": year, "n": n,
-                    "dt_start": dt_start, "dt_end": dt_end}
-    # Filtre temporel sargable : plage [dt_start, dt_end) sur start_datetime, qui
-    # utilise l'index start_datetime_tz. EXTRACT(...) forçait un Seq Scan de carpools
-    # (~60 s -> statement_timeout). Un seul grain (mois/trimestre/semestre) à la fois.
-    period_sql = "start_datetime >= %(dt_start)s AND start_datetime < %(dt_end)s"
-
-    geo = ("(start_geo_code IN (SELECT com FROM perims) "
-           "OR end_geo_code IN (SELECT com FROM perims))")
+    params: dict = {"type": type_, "code": code, "year": year, "n": n}
+    where = ["type = %(type)s", "code = %(code)s", "year = %(year)s"]
+    if grain_col is not None:
+        where.append(f"{grain_col} = %(grain_val)s")
+        params["grain_val"] = grain_val
 
     sql = f"""
-        WITH millesime AS (
-            SELECT year FROM (
-                SELECT max(year) AS year FROM {PERIMETERS_TABLE} WHERE year = %(year)s
-                UNION ALL
-                SELECT max(year) AS year FROM {PERIMETERS_TABLE}
-                ORDER BY year
-                LIMIT 1
-            ) m
-        ),
-        perims AS (
-            SELECT arr AS com
-            FROM {PERIMETERS_TABLE}
-            WHERE year = (SELECT year FROM millesime)
-              AND {col} = %(code)s
-        ),
-        pts AS (
-            SELECT h3_cell_to_parent(start_h3index_z8, %(n)s) AS hex
-            FROM {LOCATION_TABLE}
-            WHERE {period_sql} AND {geo}
-            UNION ALL
-            SELECT h3_cell_to_parent(end_h3index_z8, %(n)s) AS hex
-            FROM {LOCATION_TABLE}
-            WHERE {period_sql} AND {geo}
-        )
-        SELECT hex::text AS hex, count(*)::int AS count
-        FROM pts
-        GROUP BY hex
+        SELECT h3_cell_to_parent(hex_z8, %(n)s)::text AS hex,
+               sum(count)::int AS count
+        FROM zone_exposed.location_{grain}
+        WHERE {" AND ".join(where)}
+        GROUP BY 1
     """
     return sql, params
 
