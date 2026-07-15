@@ -60,7 +60,9 @@ class ApiClient:
 
     def claim(self, targets):
         r = self._post("/exports/claim", {"targets": targets})
-        if r.status_code == 204:
+        # Empty queue: the API returns 200 with an empty body (null result ->
+        # res.end()), so an empty body means "no task", not decodable JSON.
+        if r.status_code == 204 or not r.content:
             return None
         return r.json()
 

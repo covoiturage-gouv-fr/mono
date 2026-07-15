@@ -42,3 +42,16 @@ def test_claim_targets_versioned_path(rq):
     ]
     _client().claim(["operator"])
     assert rq.post.call_args_list[1].args[0] == "https://api.test/v3/exports/claim"
+
+
+# Empty queue: the API returns 200 with an empty body (null result -> res.end()),
+# not 204, so claim must treat an empty body as "no task" rather than r.json().
+@patch("pipelines.helpers.api_client.requests")
+def test_claim_returns_none_on_empty_200_body(rq):
+    empty = MagicMock(status_code=200, content=b"")
+    empty.json.side_effect = ValueError("Expecting value: line 1 column 1 (char 0)")
+    rq.post.side_effect = [
+        MagicMock(status_code=201, json=lambda: {"access_token": "t"}),  # token
+        empty,                                                           # empty claim
+    ]
+    assert _client().claim(["operator"]) is None
