@@ -156,7 +156,7 @@ def client(rows):
 def test_flux_endpoint_gzipped_rows():
     rows = [{"ter_1": "Île-de-France", "passengers": 1198}]
     c = client(rows)
-    r = c.get("/v3/observatory/flux", params={"code": "11", "type": "reg", "observe": "reg", "year": 2022, "month": 6})
+    r = c.get("/observatory/flux", params={"code": "11", "type": "reg", "observe": "reg", "year": 2022, "month": 6})
     assert r.status_code == 200
     assert r.headers["content-encoding"] == "gzip"
     assert r.json() == rows
@@ -165,7 +165,7 @@ def test_flux_endpoint_gzipped_rows():
 def test_keyfigures_endpoint():
     rows = [{"code": "11", "journeys": 5, "intra_journeys": 2}]
     c = client(rows)
-    r = c.get("/v3/observatory/keyfigures", params={"code": "11", "type": "reg", "year": 2022, "month": 6})
+    r = c.get("/observatory/keyfigures", params={"code": "11", "type": "reg", "year": 2022, "month": 6})
     assert r.status_code == 200
     assert r.json() == rows
 
@@ -173,18 +173,18 @@ def test_keyfigures_endpoint():
 def test_aires_endpoint_without_code():
     rows = [{"id_lieu": "A1", "nom_lieu": "Aire test", "geom": {"type": "Point"}}]
     c = client(rows)
-    r = c.get("/v3/observatory/aires-covoiturage", params={"type": "com"})
+    r = c.get("/observatory/aires-covoiturage", params={"type": "com"})
     assert r.status_code == 200
     assert r.json() == rows
 
 
 def test_journeys_by_distances_requires_direction():
     c = client([])
-    r = c.get("/v3/observatory/journeys-by-distances", params={"code": "11", "type": "reg", "year": 2022, "month": 6})
+    r = c.get("/observatory/journeys-by-distances", params={"code": "11", "type": "reg", "year": 2022, "month": 6})
     assert r.status_code == 422  # direction manquante
 
 
 def test_invalid_code_returns_422():
     c = client([])
-    r = c.get("/v3/observatory/flux", params={"code": "bad!code", "type": "reg", "observe": "reg", "year": 2022})
+    r = c.get("/observatory/flux", params={"code": "bad!code", "type": "reg", "observe": "reg", "year": 2022})
     assert r.status_code == 422
