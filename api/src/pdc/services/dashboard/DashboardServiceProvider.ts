@@ -1,6 +1,7 @@
 import { serviceProvider } from "../../../ilos/common/index.ts";
 import { ServiceProvider as AbstractServiceProvider } from "../../../ilos/core/index.ts";
 import { defaultMiddlewareBindings } from "../../providers/middleware/index.ts";
+import { defaultNotificationBindings } from "../../providers/notification/index.ts";
 import { S3StorageProvider } from "../../providers/storage/index.ts";
 import { ValidatorMiddleware } from "../../providers/superstruct/ValidatorMiddleware.ts";
 import { CampaignApdfAction } from "./actions/CampaignApdfAction.ts";
@@ -19,6 +20,7 @@ import { DeleteUserAction } from "./actions/users/DeleteUserAction.ts";
 import { UpdateUserAction } from "./actions/users/UpdateUserAction.ts";
 import { UserAction } from "./actions/users/UserAction.ts";
 import { UsersAction } from "./actions/users/UsersAction.ts";
+import { PurgeInactiveUsersCommand } from "./commands/PurgeInactiveUsersCommand.ts";
 import { config } from "./config/index.ts";
 import { BrevoProvider } from "./providers/BrevoProvider.ts";
 import { CampaignsRepository } from "./providers/CampaignsRepository.ts";
@@ -29,7 +31,7 @@ import { UsersRepository } from "./providers/UsersRepository.ts";
 
 @serviceProvider({
   config,
-  commands: [],
+  commands: [PurgeInactiveUsersCommand],
   providers: [
     S3StorageProvider,
     BrevoProvider,
@@ -38,6 +40,7 @@ import { UsersRepository } from "./providers/UsersRepository.ts";
     JourneysRepository,
     CampaignsRepository,
     UsersRepository,
+    ...defaultNotificationBindings,
   ],
   handlers: [
     JourneysOperatorsByMonthAction,

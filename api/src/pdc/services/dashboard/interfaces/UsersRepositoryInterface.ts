@@ -20,6 +20,13 @@ export type {
   UsersResultInterface,
 };
 
+export type InactiveUserToWarn = {
+  _id: number;
+  email: string;
+  firstname: string | null;
+  lastname: string | null;
+};
+
 export interface UsersRepositoryInterface {
   getUsers(
     params: UsersParamsInterface,
@@ -35,6 +42,11 @@ export interface UsersRepositoryInterface {
   updateUser(
     data: UpdateUserDataInterface,
   ): Promise<UpdateUserResultInterface>;
+
+  findUsersToWarn(inactivity: string): Promise<InactiveUserToWarn[]>;
+  markUserWarned(id: number): Promise<void>;
+  findUsersToDelete(grace: string): Promise<Array<{ _id: number }>>;
+  deleteInactiveUsers(grace: string): Promise<Array<{ _id: number }>>;
 }
 
 export abstract class UsersRepositoryInterfaceResolver implements UsersRepositoryInterface {
@@ -59,6 +71,22 @@ export abstract class UsersRepositoryInterfaceResolver implements UsersRepositor
   async updateUser(
     data: UpdateUserDataInterface,
   ): Promise<UpdateUserResultInterface> {
+    throw new Error();
+  }
+
+  async findUsersToWarn(_inactivity: string): Promise<InactiveUserToWarn[]> {
+    throw new Error();
+  }
+
+  async markUserWarned(_id: number): Promise<void> {
+    throw new Error();
+  }
+
+  async findUsersToDelete(_grace: string): Promise<Array<{ _id: number }>> {
+    throw new Error();
+  }
+
+  async deleteInactiveUsers(_grace: string): Promise<Array<{ _id: number }>> {
     throw new Error();
   }
 }
