@@ -138,6 +138,8 @@ SELECT
   c.distance,
   c.duration,
   c.dist_class,
+  c.start_h3index_z8,
+  c.end_h3index_z8,
   {{ cfg.start_col }} AS start_code,
   {{ cfg.end_col }} AS end_code,
   -- Nouveaux utilisateurs
