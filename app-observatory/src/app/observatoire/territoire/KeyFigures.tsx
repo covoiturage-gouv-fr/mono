@@ -1,5 +1,5 @@
 import Rows from "@/components/observatoire/indicators/Rows";
-import { Config } from "@/config";
+import { OBSERVATORY_API_URL } from "@/helpers/api";
 import { useApi } from "@/hooks/useApi";
 import { IndicatorProps } from "@/interfaces/observatoire/componentsInterfaces";
 import { KeyFiguresDataInterface } from "@/interfaces/observatoire/dataInterfaces";
@@ -8,7 +8,6 @@ import { useDashboardContext } from "../../../context/DashboardProvider";
 
 export default function KeyFigures() {
   const { dashboard } = useDashboardContext();
-  const apiUrl = Config.get<string>("next.public_api_url", "");
   const url = () => {
     const params = [
       `code=${dashboard.params.code}`,
@@ -27,7 +26,7 @@ export default function KeyFigures() {
         params.push(`semester=${dashboard.params.semester}`);
         break;
     }
-    return `${apiUrl}/keyfigures?${params.join("&")}`;
+    return `${OBSERVATORY_API_URL}/keyfigures?${params.join("&")}`;
   };
   const { data, error, loading } = useApi<KeyFiguresDataInterface[]>(url());
   const row1 =

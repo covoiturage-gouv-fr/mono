@@ -286,6 +286,7 @@ jobs:
         env:
           DEPLOY_ENV: production
           NEXT_PUBLIC_API_URL: ${{ vars.API_URL }}
+          NEXT_PUBLIC_DATALAKE_BASE_URL: ${{ vars.DATALAKE_BASE_URL }}
           NEXT_PUBLIC_CMS_URL: ${{ vars.CMS_URL }}
           NEXT_PUBLIC_CMS_TOKEN: ${{ secrets.CMS_API_KEY }}
           NEXT_PUBLIC_SEARCH_URL: ${{ vars.API_SEARCH_URL }}

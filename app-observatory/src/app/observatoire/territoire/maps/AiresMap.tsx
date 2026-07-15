@@ -1,6 +1,7 @@
 import DownloadButton from '@/components/observatoire/DownloadButton';
 import AppMap from '@/components/observatoire/maps/Map';
 import { Config } from '@/config';
+import { OBSERVATORY_API_URL } from '@/helpers/api';
 import { useApi } from '@/hooks/useApi';
 import { useSwitchFilters } from '@/hooks/useSwitchFilters';
 import { ClasseInterface } from '@/interfaces/observatoire/componentsInterfaces';
@@ -19,8 +20,7 @@ import { useDashboardContext } from '../../../../context/DashboardProvider';
 export default function AiresCovoiturageMap({ title }: { title: string }) {
   const { dashboard } = useDashboardContext();
   const mapTitle = title;
-  const apiUrl = Config.get<string>('next.public_api_url', '');
-  const url = `${apiUrl}/aires-covoiturage?code=${dashboard.params.code}&type=${dashboard.params.type}`;
+  const url = `${OBSERVATORY_API_URL}/aires-covoiturage?code=${dashboard.params.code}&type=${dashboard.params.type}`;
   
   const defaultFilters: SwitchFilterInterface[] = [
     {name:'Supermarché', active:true},
