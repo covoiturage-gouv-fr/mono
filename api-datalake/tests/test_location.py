@@ -108,7 +108,7 @@ def make_client(rows, redis=None):
 def test_location_returns_gzipped_heatmap():
     rows = [{"hex": "881fb46461fffff", "count": 616}]
     c = TestClient(make_client(rows))
-    r = c.get("/v3/observatory/location", params={"code": "75056", "type": "com", "year": 2022, "month": 6, "n": 8})
+    r = c.get("/observatory/location", params={"code": "75056", "type": "com", "year": 2022, "month": 6, "n": 8})
     assert r.status_code == 200
     assert r.headers["content-encoding"] == "gzip"
     assert r.headers["x-cache"] == "MISS"
@@ -120,12 +120,12 @@ def test_location_cache_hit_served_from_redis():
     cached = [{"hex": "abc", "count": 1}]
     c = TestClient(make_client([], redis=redis))
     # 1er appel : MISS, remplit le cache (data = [] côté DB)
-    first = c.get("/v3/observatory/location", params={"code": "75056", "type": "com", "year": 2022, "n": 8})
+    first = c.get("/observatory/location", params={"code": "75056", "type": "com", "year": 2022, "n": 8})
     assert first.headers["x-cache"] == "MISS"
     # on force une entrée pré-existante et on rappelle : HIT
     (only_key,) = redis.store.keys()
     redis.store[only_key] = gzip.compress(json.dumps(cached).encode())
-    second = c.get("/v3/observatory/location", params={"code": "75056", "type": "com", "year": 2022, "n": 8})
+    second = c.get("/observatory/location", params={"code": "75056", "type": "com", "year": 2022, "n": 8})
     assert second.headers["x-cache"] == "HIT"
     assert second.json() == cached
 
@@ -134,7 +134,7 @@ def test_location_redis_failure_degrades_to_pg_not_500():
     # Redis en panne (TLS/réseau) : on sert depuis PG en 200, X-Cache BYPASS, jamais 500.
     rows = [{"hex": "881fb46461fffff", "count": 616}]
     c = TestClient(make_client(rows, redis=RaisingRedis()))
-    r = c.get("/v3/observatory/location", params={"code": "75056", "type": "com", "year": 2022, "month": 6, "n": 8})
+    r = c.get("/observatory/location", params={"code": "75056", "type": "com", "year": 2022, "month": 6, "n": 8})
     assert r.status_code == 200
     assert r.headers["x-cache"] == "BYPASS"
     assert r.json() == rows
@@ -143,19 +143,19 @@ def test_location_redis_failure_degrades_to_pg_not_500():
 def test_location_out_of_range_params_return_422_not_500():
     c = TestClient(make_client([]))
     # month=13 est hors bornes -> 422 de validation, pas un 500 (ValueError sur date())
-    r = c.get("/v3/observatory/location", params={"code": "75056", "type": "com", "year": 2022, "month": 13, "n": 8})
+    r = c.get("/observatory/location", params={"code": "75056", "type": "com", "year": 2022, "month": 13, "n": 8})
     assert r.status_code == 422
 
 
 def test_location_rejects_malformed_code_with_422():
     c = TestClient(make_client([]))
     # Code hors charset/longueur : rejeté avant tout accès PG (anti cache-flooding).
-    r = c.get("/v3/observatory/location", params={"code": "75'; DROP--", "type": "com", "year": 2022, "n": 8})
+    r = c.get("/observatory/location", params={"code": "75'; DROP--", "type": "com", "year": 2022, "n": 8})
     assert r.status_code == 422
-    r_long = c.get("/v3/observatory/location", params={"code": "x" * 20, "type": "com", "year": 2022, "n": 8})
+    r_long = c.get("/observatory/location", params={"code": "x" * 20, "type": "com", "year": 2022, "n": 8})
     assert r_long.status_code == 422
     # `$` laisserait passer un newline final ; `fullmatch` le rejette.
-    r_nl = c.get("/v3/observatory/location", params={"code": "75056\n", "type": "com", "year": 2022, "n": 8})
+    r_nl = c.get("/observatory/location", params={"code": "75056\n", "type": "com", "year": 2022, "n": 8})
     assert r_nl.status_code == 422
 
 
@@ -163,7 +163,7 @@ def test_location_unpublished_period_is_bypassed_and_empty():
     c = TestClient(make_client([{"hex": "x", "count": 9}]))
     settings.app_observatory_published_until = "2022-01-01"
     try:
-        r = c.get("/v3/observatory/location", params={"code": "75056", "type": "com", "year": 2022, "month": 6, "n": 8})
+        r = c.get("/observatory/location", params={"code": "75056", "type": "com", "year": 2022, "month": 6, "n": 8})
         assert r.headers["x-cache"] == "BYPASS"
         assert r.json() == []
     finally:

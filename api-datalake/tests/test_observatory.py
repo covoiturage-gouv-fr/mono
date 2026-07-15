@@ -42,14 +42,14 @@ def client_with_row(row):
 
 def test_last_record_returns_year_month():
     c = client_with_row({"year": 2026, "month": 2})
-    r = c.get("/v3/observatory/last-record", params={"code": "75", "type": "reg"})
+    r = c.get("/observatory/last-record", params={"code": "75", "type": "reg"})
     assert r.status_code == 200
     assert r.json() == {"year": 2026, "month": 2}
 
 
 def test_last_record_returns_null_when_no_data():
     c = client_with_row(None)
-    r = c.get("/v3/observatory/last-record", params={"code": "00000", "type": "com"})
+    r = c.get("/observatory/last-record", params={"code": "00000", "type": "com"})
     assert r.status_code == 200
     assert r.json() is None
 
