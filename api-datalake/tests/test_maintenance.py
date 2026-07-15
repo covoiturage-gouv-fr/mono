@@ -1,3 +1,5 @@
+from contextlib import asynccontextmanager
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -30,8 +32,11 @@ def app_with_maintenance(on, fake_db=False):
     app = create_app()
     app.state.settings = Settings(maintenance_mode=on)  # isolé du singleton
     if fake_db:
-        async def override_conn():
-            yield _FakeConn()
+        def override_conn():
+            @asynccontextmanager
+            async def _acquire():
+                yield _FakeConn()
+            return _acquire
 
         app.dependency_overrides[get_conn] = override_conn
         app.dependency_overrides[get_redis] = lambda: None

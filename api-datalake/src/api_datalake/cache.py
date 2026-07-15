@@ -62,9 +62,14 @@ def build_cache_key(version: str, route: str, params: dict) -> str:
 
 
 def gzip_payload(data) -> bytes:
-    """Sérialise en JSON compact puis gzip. Renvoie les octets à stocker/servir."""
+    """Sérialise en JSON compact puis gzip (niveau 3).
+
+    La compression n'a lieu que sur cache MISS ; sur un event-loop unique borné à
+    0,5 CPU, le niveau 6 alourdissait la boucle sur les gros payloads. Niveau 3 :
+    nettement moins de CPU, ratio quasi équivalent (compromis, cf. plan §Notes).
+    """
     raw = json.dumps(data, separators=(",", ":"), default=str).encode()
-    return gzip.compress(raw, compresslevel=6)
+    return gzip.compress(raw, compresslevel=3)
 
 
 async def publication_version(redis, cutoff: str | None) -> str:
