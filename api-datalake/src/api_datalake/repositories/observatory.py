@@ -4,6 +4,8 @@ Porté depuis `api/src/pdc/services/observatory/providers/*`. Toutes les valeurs
 sont liées (paramétrées) ; `type` est en plus validé par allowlist en amont.
 """
 
+from datetime import date
+
 from ..helpers import check_territory_param
 
 # Toutes les sources sont dans la zone exposée : l'API ne lit rien d'autre.
@@ -34,6 +36,28 @@ _PERIM_COL = {
 }
 
 
+def _add_months(year: int, month: int, delta: int) -> date:
+    idx = year * 12 + (month - 1) + delta
+    return date(idx // 12, idx % 12 + 1, 1)
+
+
+def _period_bounds(year: int, month: int | None, trimester: int | None,
+                   semester: int | None) -> tuple[str, str]:
+    """Bornes [début, fin) de la période en dates ISO, pour un filtre sargable
+    sur start_datetime (index start_datetime_tz). Un seul grain à la fois."""
+    if month is not None:
+        start, end = date(year, month, 1), _add_months(year, month, 1)
+    elif trimester is not None:
+        sm = (trimester - 1) * 3 + 1
+        start, end = date(year, sm, 1), _add_months(year, sm, 3)
+    elif semester is not None:
+        sm = 1 if semester == 1 else 7
+        start, end = date(year, sm, 1), _add_months(year, sm, 6)
+    else:
+        start, end = date(year, 1, 1), date(year + 1, 1, 1)
+    return start.isoformat(), end.isoformat()
+
+
 def build_location_query(type_: str, code: str, year: int, n: int,
                          month: int | None = None, trimester: int | None = None,
                          semester: int | None = None) -> tuple[str, dict]:
@@ -46,21 +70,13 @@ def build_location_query(type_: str, code: str, year: int, n: int,
     type_ = check_territory_param(type_)
     col = _PERIM_COL[type_]
 
-    params: dict = {"code": code, "year": year, "n": n}
-    period = ["EXTRACT(YEAR FROM start_datetime) = %(year)s"]
-    if month is not None:
-        period.append("EXTRACT(MONTH FROM start_datetime) = %(month)s")
-        params["month"] = month
-    if trimester is not None:
-        period.append("EXTRACT(QUARTER FROM start_datetime) = %(trimester)s")
-        params["trimester"] = trimester
-    if semester is not None:
-        # Réplique à l'identique la logique de l'API (Q4 -> S2, sinon S1).
-        period.append(
-            "(CASE WHEN EXTRACT(QUARTER FROM start_datetime)::int > 3 THEN 2 ELSE 1 END) = %(semester)s"
-        )
-        params["semester"] = semester
-    period_sql = " AND ".join(period)
+    dt_start, dt_end = _period_bounds(year, month, trimester, semester)
+    params: dict = {"code": code, "year": year, "n": n,
+                    "dt_start": dt_start, "dt_end": dt_end}
+    # Filtre temporel sargable : plage [dt_start, dt_end) sur start_datetime, qui
+    # utilise l'index start_datetime_tz. EXTRACT(...) forçait un Seq Scan de carpools
+    # (~60 s -> statement_timeout). Un seul grain (mois/trimestre/semestre) à la fois.
+    period_sql = "start_datetime >= %(dt_start)s AND start_datetime < %(dt_end)s"
 
     geo = ("(start_geo_code IN (SELECT com FROM perims) "
            "OR end_geo_code IN (SELECT com FROM perims))")

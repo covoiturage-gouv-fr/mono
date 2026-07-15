@@ -24,7 +24,8 @@ class Settings(BaseSettings):
     dbt_password: str = ""
     dbt_dbname: str = "datalake"
     # Plafond par requête : borne les scans H3 lourds, protège le pool (ms).
-    db_statement_timeout_ms: int = 5000
+    # 30s (stopgap) : location scanne carpools à la volée ; à réduire après pré-agrégation.
+    db_statement_timeout_ms: int = 30000
 
     # Cache
     redis_url: str | None = None

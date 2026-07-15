@@ -33,18 +33,20 @@ def test_query_unknown_type_falls_back_to_arr():
 
 
 def test_query_period_filters_by_grain():
-    _, p_month = build_location_query("com", "75056", 2022, 8, month=6)
-    assert p_month["month"] == 6 and "trimester" not in p_month
+    sql_m, p_month = build_location_query("com", "75056", 2022, 8, month=6)
+    assert "start_datetime >= %(dt_start)s AND start_datetime < %(dt_end)s" in sql_m
+    assert p_month["dt_start"] == "2022-06-01" and p_month["dt_end"] == "2022-07-01"
 
-    sql_t, p_tri = build_location_query("com", "75056", 2022, 8, trimester=2)
-    assert "EXTRACT(QUARTER FROM start_datetime) = %(trimester)s" in sql_t
-    assert p_tri["trimester"] == 2
+    _, p_tri = build_location_query("com", "75056", 2022, 8, trimester=2)  # T2 -> avr..juin
+    assert p_tri["dt_start"] == "2022-04-01" and p_tri["dt_end"] == "2022-07-01"
+
+    _, p_year = build_location_query("com", "75056", 2022, 8)  # année pleine
+    assert p_year["dt_start"] == "2022-01-01" and p_year["dt_end"] == "2023-01-01"
 
 
-def test_query_semester_maps_to_quarter_case():
-    sql_s, p_sem = build_location_query("com", "75056", 2022, 8, semester=2)
-    assert "CASE WHEN EXTRACT(QUARTER FROM start_datetime)::int > 3 THEN 2 ELSE 1 END" in sql_s
-    assert p_sem["semester"] == 2
+def test_query_semester_bounds():
+    _, p_sem = build_location_query("com", "75056", 2022, 8, semester=2)  # S2 -> juil..déc
+    assert p_sem["dt_start"] == "2022-07-01" and p_sem["dt_end"] == "2023-01-01"
 
 
 # --- endpoint /observatory/location ---
