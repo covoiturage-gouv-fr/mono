@@ -123,15 +123,17 @@ pipeline-raw *args:
 pipeline-trusted-geo *args:
   just dbt run --select "tag:trusted,tag:geo" {{args}}
 
-# Pipeline 3 : daily update:
+# Pipeline 3 : daily update (agrégés taggés daily + zone exposée + invalidation du cache).
+# Un seul `dbt run` sur l'union => dbt ordonne le DAG (agrégés frais avant l'exposé).
 pipeline-daily *args:
-  just dbt run --select "tag:daily" {{args}}
+  just dbt run --select "tag:daily" "models/exposed" {{args}}
+  just cache-bump
 
 # Invalide le cache de l'API observatoire (INCR obs:cache:version). No-op sans REDIS_URL.
 cache-bump:
   python -m pipelines.cmd.cache_bump
 
-# Pipeline 4 : zone exposée + invalidation du cache observatoire (appel unique côté ops).
+# Zone exposée seule + invalidation du cache (usage manuel/backfill ; le cron ops appelle pipeline-daily).
 pipeline-exposed *args:
   just dbt run --select "models/exposed" {{args}}
   just cache-bump
