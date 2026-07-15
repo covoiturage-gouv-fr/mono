@@ -42,7 +42,6 @@ export class listAction extends AbstractAction {
         start_date: exp.params.get().start_at,
         end_date: exp.params.get().end_at,
         geo_selector: await this.territoryService.getTerritoryNames(exp.params.get().geo_selector),
-        download_url: exp.download_url,
         filename: exp.filename,
         file_size: exp.file_size,
         status: exp.status,

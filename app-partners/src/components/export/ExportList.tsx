@@ -13,7 +13,6 @@ interface ExportListItemInterface {
   start_date: Date;
   end_date: Date;
   geo_selector: string[];
-  download_url: string;
   filename: string;
   file_size: number;
   status: string;
@@ -92,7 +91,7 @@ export default function ExportList({ refreshTrigger, days = 30, pageSize = 25 }:
         formatBoundStart(d.start_date),
         formatBoundEnd(d.end_date),
         d.geo_selector?.length > 0 ? d.geo_selector.join(", ") : "-",
-        d.download_url && d.filename ? (
+        d.status === "success" && d.filename ? (
           <Download
             label={d.filename}
             details={`${d.filename.split(".").pop()?.toUpperCase()} • ${formatFileSize(d.file_size)}`}

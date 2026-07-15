@@ -6,7 +6,6 @@ export type ResultItemInterface = {
   start_date: Date;
   end_date: Date;
   geo_selector: string[];
-  download_url: string;
   filename: string;
   file_size: number;
   status: string;

@@ -7,7 +7,7 @@ import { LogServiceInterfaceResolver } from "../services/LogService.ts";
 
 export type ExportCreateData = Pick<Export, "created_by" | "target" | "params">;
 export type ExportUpdateData = Partial<
-  Pick<Export, "status" | "download_url" | "filename" | "file_size" | "error" | "stats">
+  Pick<Export, "status" | "filename" | "file_size" | "error">
 >;
 
 export abstract class ExportRepositoryInterfaceResolver {
@@ -179,7 +179,7 @@ export class ExportRepository {
   }
 
   private static readonly UPDATABLE_COLUMNS: ReadonlySet<string> = new Set([
-    "status", "download_url", "filename", "file_size", "error", "stats",
+    "status", "filename", "file_size", "error",
   ]);
 
   public async update(id: number, data: ExportUpdateData): Promise<void> {
