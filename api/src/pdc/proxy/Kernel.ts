@@ -15,7 +15,6 @@ import { DashboardServiceProvider } from "../services/dashboard/DashboardService
 import { ExportServiceProvider } from "../services/export/ExportServiceProvider.ts";
 import { GeoServiceProvider } from "../services/geo/GeoServiceProvider.ts";
 import { HonorServiceProvider } from "../services/honor/HonorServiceProvider.ts";
-import { ObservatoryServiceProvider } from "../services/observatory/ObservatoryServiceProvider.ts";
 import { OperatorServiceProvider } from "../services/operator/OperatorServiceProvider.ts";
 import { PolicyServiceProvider } from "../services/policy/PolicyServiceProvider.ts";
 import { TerritoryServiceProvider } from "../services/territory/TerritoryServiceProvider.ts";
@@ -34,7 +33,6 @@ import { config } from "./config/index.ts";
     OperatorServiceProvider,
     PolicyServiceProvider,
     TerritoryServiceProvider,
-    ObservatoryServiceProvider,
     DashboardServiceProvider,
     GeoServiceProvider,
   ],

@@ -149,7 +149,7 @@ export class HttpTransport implements TransportInterface {
 
     // apply CORS to all routes except the following ones
     this.app.use(
-      /\/((?!honor|v3\/observatory|geo\/search).)*/,
+      /\/((?!honor|geo\/search).)*/,
       cors({
         origin: [this.config.get("proxy.cors"), this.config.get("proxy.dashboardV2Cors")],
         optionsSuccessStatus: 200,
@@ -159,7 +159,7 @@ export class HttpTransport implements TransportInterface {
     );
 
     this.app.use(
-      /\/(v3\/observatory|geo\/search)/i,
+      /\/(geo\/search)/i,
       cors({
         origin: this.config.get("proxy.observatoryCors"),
         optionsSuccessStatus: 200,
