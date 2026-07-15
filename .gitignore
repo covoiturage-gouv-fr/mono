@@ -39,6 +39,7 @@ dbt/edr_target
 .claude/settings.json
 .claude/worktrees
 .claude/superpowers
+.claude/mcp/
 .mcp.json
 .worktrees
 
