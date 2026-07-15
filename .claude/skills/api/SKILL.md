@@ -104,7 +104,6 @@ Located in `api/src/pdc/services/`:
 | `apdf` | APDF reporting |
 | `cee` | Mobility tax incentive (CEE) |
 | `honor` | PDF certificate generation |
-| `observatory` | Public statistics APIs |
 | `geo` | Geolocation services |
 | `company` | Company lookup (INSEE API) |
 
