@@ -1,21 +1,64 @@
 version: 2
 models:
-  - name: location
+  - name: location_month
     description: >
-      Trajets pour la heatmap de densité de l'observatoire (remplace la vue legacy
-      observatoire_stats.view_location). Expose les index H3 résolution 8 pour un
-      binning en SQL côté api-datalake ; parité H3 exacte pour un zoom <= 8.
+      Heatmap de densité pré-agrégée (histogramme H3 résolution 8) par territoire et
+      par mois. Remplace la vue brute `location` qui scannait `carpools` à la volée.
+      Lue par api-datalake sur (type, code, year, month) ; binning au zoom via
+      h3_cell_to_parent(hex_z8, n).
     columns:
-      - name: carpool_id
+      - name: type
+        data_type: text
+      - name: code
+        data_type: text
+      - name: year
         data_type: integer
-      - name: start_geo_code
-        data_type: character varying
-      - name: end_geo_code
-        data_type: character varying
-      - name: start_datetime
-        data_type: timestamp without time zone
-        description: Datetime de départ en heure locale (timezoned_ts), stocké naïf.
-      - name: start_h3index_z8
+      - name: month
+        data_type: integer
+      - name: hex_z8
         data_type: h3index
-      - name: end_h3index_z8
+      - name: count
+        data_type: bigint
+  - name: location_quarter
+    description: Heatmap de densité pré-agrégée (H3 z8) par territoire et par trimestre.
+    columns:
+      - name: type
+        data_type: text
+      - name: code
+        data_type: text
+      - name: year
+        data_type: integer
+      - name: quarter
+        data_type: integer
+      - name: hex_z8
         data_type: h3index
+      - name: count
+        data_type: bigint
+  - name: location_semester
+    description: Heatmap de densité pré-agrégée (H3 z8) par territoire et par semestre.
+    columns:
+      - name: type
+        data_type: text
+      - name: code
+        data_type: text
+      - name: year
+        data_type: integer
+      - name: semester
+        data_type: integer
+      - name: hex_z8
+        data_type: h3index
+      - name: count
+        data_type: bigint
+  - name: location_year
+    description: Heatmap de densité pré-agrégée (H3 z8) par territoire et par année.
+    columns:
+      - name: type
+        data_type: text
+      - name: code
+        data_type: text
+      - name: year
+        data_type: integer
+      - name: hex_z8
+        data_type: h3index
+      - name: count
+        data_type: bigint
