@@ -26,7 +26,6 @@ export class Export {
   public status: ExportStatus;
   public created_by: number;
   public download_url_expire_at: Date;
-  public download_url: string;
   public filename: string;
   public file_size: number;
   public params: ExportParams;
@@ -41,7 +40,6 @@ export class Export {
     export_.status = data.status;
     export_.created_by = data.created_by;
     export_.download_url_expire_at = data.download_url_expire_at;
-    export_.download_url = data.download_url;
     export_.filename = data.filename;
     export_.file_size = Number(data.file_size) || 0;
     export_.params = new ExportParams(data.params);
@@ -58,7 +56,6 @@ export class Export {
       status: export_.status,
       created_by: export_.created_by,
       download_url_expire_at: export_.download_url_expire_at,
-      download_url: export_.download_url,
       filename: export_.filename,
       file_size: export_.file_size,
       params: ExportParams.toJSON(export_.params),
