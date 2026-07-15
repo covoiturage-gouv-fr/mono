@@ -16,7 +16,10 @@ import requests
 
 class ApiClient:
     def __init__(self, base_url, access_key, secret_key):
-        self.base_url = base_url.rstrip("/")
+        # The API mounts apiRoute handlers under a /:api_version/ prefix
+        # (registerExpressRoute), so every path must carry /v3 — the bare root
+        # 404s. v3 satisfies the supported range (3.3.0–3.4.0).
+        self.base_url = f"{base_url.rstrip('/')}/v3"
         self.access_key = access_key
         self.secret_key = secret_key
         self._token = None
