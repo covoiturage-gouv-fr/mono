@@ -268,7 +268,7 @@ Exemples :
 
 ```shell
 sqlmesh fetchdf "SELECT * FROM raw_zone__dev.journeys"
-sqlmesh fetchdf "SELECT * FROM refined_zone.export_opendata_list"
+sqlmesh fetchdf "SELECT * FROM trusted_zone.perimeters"
 ```
 
 ### Débug / réparation
