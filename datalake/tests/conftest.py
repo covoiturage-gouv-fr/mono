@@ -21,4 +21,6 @@ def pg():
         try:
             conn.close()
         except Exception:
+            # Fermeture best-effort au démontage : une connexion déjà coupée
+            # (base tombée, timeout) ne doit pas faire échouer le test.
             pass
