@@ -30,7 +30,10 @@ jobs:
     steps:
       - id: set_tag
         shell: bash
-        run: echo "value=$(date +'%F.%H%M')" >> $GITHUB_OUTPUT
+        # Tag = horodatage (ordre lisible) + SHA court (traçabilité build -> commit).
+        # GITHUB_SHA est une variable d'environnement intégrée (40 hex), non
+        # interpolée depuis le contexte : pas de surface d'injection.
+        run: echo "value=$(date +'%F.%H%M')-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
 
   build:
     name: Build and Push Datalake Docker Image
