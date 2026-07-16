@@ -1,9 +1,9 @@
 """Per-target export query builder.
 
-Verbatim port of the API's `config/export.ts` (fields + filters) and
-`ExportParams.geoToSQL` / `.operatorToSQL`. The datalake worker uses these
-pure functions to build the `COPY (SELECT ...) TO STDOUT` inner query against
-`zone_exposed.export_partners`.
+Ported from the API's `config/export.ts` (fields + filters); the geo/operator
+SQL builders formerly in the API's `ExportParams` now live here as the canonical
+implementation. The datalake worker uses these pure functions to build the
+`COPY (SELECT ...) TO STDOUT` inner query against `zone_exposed.export_partners`.
 
 Geo codes and dates originate from a user's export request, so every
 interpolated value is validated against a strict allowlist / regex before it
@@ -53,7 +53,7 @@ EXCLUSIONS = {
     "territory": ["has_incentive"],
 }
 
-# Port of ExportParams.geoToSQL `columnMap`.
+# geo_selector keys -> SQL column suffixes (canonical; formerly ExportParams.geoToSQL).
 COLUMN_MAP = {"epci": "epci_code", "aom": "aom_code"}
 
 
