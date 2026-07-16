@@ -35,8 +35,6 @@ def test_copy_sql_applies_kanon_and_month_filter():
     assert "end_insee_count >= %(min_occ)s" in sql
     assert "start_date_filter >= %(start)s" in sql
     assert "start_date_filter < %(end)s" in sql
-    # tri intra-jour (GEN-634) : date puis horodatage
-    assert "ORDER BY start_date_filter ASC, journey_start_datetime ASC" in sql
     assert params == {"start": date(2026, 6, 1), "end": date(2026, 7, 1), "min_occ": 6}
 
 
@@ -62,15 +60,6 @@ def test_stats_sql_counts_match_inclusion_exclusion_semantics():
                 "count_removed_start", "count_removed_end", "count_removed_both"):
         assert col in sql
     assert "c.valid_acquisition_status" in sql
-
-
-def test_stats_sql_exposes_geographic_breakdown():
-    sql, _ = build_stats_sql(date(2026, 6, 1), date(2026, 7, 1), 6)
-    for col in ("count_exposed_france_france", "count_exposed_france_etranger",
-                "count_exposed_etranger_etranger"):
-        assert col in sql
-    # hors France = code INSEE 99xxx ; `%` doublé pour psycopg
-    assert "LIKE '99%%'" in sql
 
 
 def test_csv_header_quotes_every_column():

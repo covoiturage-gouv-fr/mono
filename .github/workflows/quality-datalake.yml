@@ -33,6 +33,46 @@ jobs:
         working-directory: datalake
         run: uv lock --check
 
+  tests:
+    name: "(datalake) tests"
+    runs-on: ubuntu-latest
+    env:
+      DBT_HOST: localhost
+      DBT_PORT: "5432"
+      DBT_USER: postgres
+      DBT_PASSWORD: postgres
+      DBT_DBNAME: covoiturage_ci
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: covoiturage_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+      - name: Install uv
+        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
+        with:
+          python-version: "3.13"
+      # groupe dev inclus (pytest) ; --locked garde-fou d'intégrité du lock.
+      - name: Install dependencies
+        working-directory: datalake
+        run: uv sync --locked
+      - name: Run tests
+        working-directory: datalake
+        run: uv run python -m pytest -q
+
   dockerfile-smoke:
     name: "(datalake) dockerfile build"
     runs-on: ubuntu-latest
