@@ -56,16 +56,19 @@ besoin) :
 
 - Invoquer le skill `french`.
 - Récupérer la date du jour : `date -I`.
-- Calculer la fenêtre **lundi → dimanche de la semaine en cours** (semaine ISO).
-  Bash : `lundi=$(date -I -d "monday this week")` /
-  `dimanche=$(date -I -d "sunday this week")`. Vérifier sur le calendrier que la
-  fenêtre est cohérente (si on est un lundi très tôt, demander à l'utilisateur
-  si on cible la semaine qui démarre ou celle qui finit).
+- **Le stand-up a lieu tous les jeudis.** La date du stand-up (`Stand up`) est le
+  jeudi de la semaine — le jeudi courant si on prépare un jeudi, sinon le jeudi le
+  plus proche (demander en cas d'ambiguïté).
+- Calculer la fenêtre **jeudi précédent → jeudi du stand-up, inclus** (7 jours
+  glissants). Bash : `fin=<date du jeudi du stand-up>` puis
+  `debut=$(date -I -d "$fin -7 days")`. Ne pas se fier à `date -d "... this week"`
+  (le calcul GNU du lundi/jeudi « this week » est ambigu selon le jour courant) :
+  vérifier la fenêtre sur le calendrier.
 
 ### 2. Identifier les tâches Done de la semaine
 
 But : lister les tâches avec **`État = Done`** + **`Date fermeture tâche` dans
-[lundi, dimanche]** + **`Personne` = utilisateur courant**.
+[jeudi précédent, jeudi du stand-up]** + **`Personne` = utilisateur courant**.
 
 - L'API `notion-search` ne filtre pas sur les propriétés métier ; faire une
   recherche large sur la data source des tâches (mots-clés génériques :
@@ -131,8 +134,9 @@ Annoncer explicitement la cible (« je vais ajouter une ligne dans la table
 Si l'utilisateur demande des corrections, il pointera la puce par sa
 numérotation (« corrige 2.1 »).
 
-Demander aussi la **date du stand-up** si elle n'est pas le jour courant
-(souvent le mardi ou mercredi, pas forcément le jour où on prépare).
+La **date du stand-up** est le **jeudi** de la semaine. Si on prépare un jeudi,
+c'est le jour courant ; sinon, prendre le jeudi le plus proche et confirmer avec
+l'utilisateur.
 
 ### 6. Écrire dans le tableau hebdo
 
