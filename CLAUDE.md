@@ -17,7 +17,6 @@ RPC (Registre de Preuve de Covoiturage) - beta.gouv.fr. Certifies carpooling jou
 | `cms/` | CMS | Strapi 4 |
 | `shared/` | Shared TS types | (deprecated) |
 | `dbt/` | Analytics | DBT, Python (deprecated) |
-| `sqlmesh/` | SQL transforms | SQLMesh, Python |
 | `docker/` | Containers | Docker |
 
 Each dir has `README.md`. Skills in `.claude/skills/`.
@@ -44,7 +43,6 @@ Sub-agents:
 Notion = internal technical docs.
 `api/specs` published at <https://tech.covoiturage.beta.gouv.fr> via bump.sh CI.
 README.md = entrypoints, update alongside code.
-`sqlmesh/README.md` = data warehouse reference, keep in sync.
 
 ### Skills
 
