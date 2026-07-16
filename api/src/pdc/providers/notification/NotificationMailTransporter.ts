@@ -87,17 +87,19 @@ export class NotificationMailTransporter
   }
 
   async send(mail: MailTemplateNotificationInterface, options = {}): Promise<void> {
+    if (!this.transporter) {
+      throw new Error("NotificationMailTransporter: transporter not initialized — mail not configured");
+    }
     const mailCtor = mail.constructor as StaticMailTemplateNotificationInterface;
 
     if ("message_html" in mail.data && typeof mail.data.message_html === "string") {
       mail.data.message_html = this.moustache(mail.data.message_html, mail.data);
     }
-
     if ("message_text" in mail.data && typeof mail.data.message_text === "string") {
       mail.data.message_text = this.moustache(mail.data.message_text, mail.data);
     }
 
-    this.transporter && await this.transporter.sendMail({
+    await this.transporter.sendMail({
       ...options,
       from: this.options.from,
       to: this.options.debug ? this.options.debugToOverride : mail.to,

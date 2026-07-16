@@ -47,7 +47,7 @@ export class UserRepository {
     if (!rows.length) return null;
 
     // Update last_login_at and other data if provided
-    const fields = fromObject({ ...data, last_login_at: "NOW()" });
+    const fields = fromObject({ ...data, last_login_at: "NOW()", deletion_warned_at: raw("NULL") });
     await this.denoConnection.query<{ role: string }>(sql`
       UPDATE ${raw(this.table)}
       SET ${fields}

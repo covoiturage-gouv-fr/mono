@@ -7,6 +7,7 @@ import {
   CreateUserResultInterface,
   DeleteUserParamsInterface,
   DeleteUserResultInterface,
+  InactiveUserToWarn,
   UpdateUserDataInterface,
   UpdateUserResultInterface,
   UsersParamsInterface,
@@ -116,7 +117,9 @@ export class UsersRepository implements UsersRepositoryInterface {
     };
   }
 
-  async deleteUser(params: DeleteUserParamsInterface & { operator_id?: number; territory_id?: number }): Promise<DeleteUserResultInterface> {
+  async deleteUser(
+    params: DeleteUserParamsInterface & { operator_id?: number; territory_id?: number },
+  ): Promise<DeleteUserResultInterface> {
     const filters = [sql`_id = ${params.id}`];
     if (params.operator_id) {
       filters.push(sql`operator_id = ${params.operator_id}`);
@@ -159,5 +162,44 @@ export class UsersRepository implements UsersRepositoryInterface {
       success: true,
       message: `User ${JSON.stringify(rows[0])} updated`,
     };
+  }
+
+  async findUsersToWarn(inactivity: string): Promise<InactiveUserToWarn[]> {
+    return await this.pgConnection.query<InactiveUserToWarn>(sql`
+      SELECT _id, email, firstname, lastname
+      FROM ${raw(this.table)}
+      WHERE last_login_at < now() - ${inactivity}::interval
+        AND deletion_warned_at IS NULL
+        AND role NOT LIKE 'registry.%'
+    `);
+  }
+
+  async markUserWarned(id: number): Promise<void> {
+    await this.pgConnection.query(sql`
+      UPDATE ${raw(this.table)} SET deletion_warned_at = now() WHERE _id = ${id}
+    `);
+  }
+
+  async findUsersToDelete(grace: string): Promise<Array<{ _id: number }>> {
+    return await this.pgConnection.query<{ _id: number }>(sql`
+      SELECT _id
+      FROM ${raw(this.table)}
+      WHERE deletion_warned_at < now() - ${grace}::interval
+        AND last_login_at < deletion_warned_at
+        AND role NOT LIKE 'registry.%'
+    `);
+  }
+
+  // Suppression atomique : le DELETE ré-applique les mêmes filtres que la sélection,
+  // pour ne pas supprimer un compte reconnecté (deletion_warned_at remis à NULL) entre
+  // un SELECT et un DELETE séparés.
+  async deleteInactiveUsers(grace: string): Promise<Array<{ _id: number }>> {
+    return await this.pgConnection.query<{ _id: number }>(sql`
+      DELETE FROM ${raw(this.table)}
+      WHERE deletion_warned_at < now() - ${grace}::interval
+        AND last_login_at < deletion_warned_at
+        AND role NOT LIKE 'registry.%'
+      RETURNING _id
+    `);
   }
 }
