@@ -45,7 +45,10 @@ services:
       - 9000:9000
 
   wait:
-    image: busybox:1.33
+    # busybox 1.33's musl resolver ne résout plus le DNS embarqué de Docker récent
+    # (nc: bad address '<service>'), ce qui fait boucler le wait à l'infini et bloque
+    # l'étape « Build stack » de la CI. 1.37 résout correctement.
+    image: busybox:1.37
     environment:
       DOMAIN: ${WAIT_DOMAIN:-api}
       PORT: ${WAIT_PORT:-8080}
