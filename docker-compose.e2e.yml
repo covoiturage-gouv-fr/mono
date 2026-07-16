@@ -53,6 +53,9 @@ services:
       DOMAIN: ${WAIT_DOMAIN:-api}
       PORT: ${WAIT_PORT:-8080}
     working_dir: /app/api
-    command: ['/bin/sh', '-c', 'until nc -zv $$DOMAIN $$PORT -w1; do echo " Waiting for $$DOMAIN..."; sleep 1; done']
+    # Attente bornée (~60 essais ≈ 2 min) : sur panne (service qui ne monte pas,
+    # DNS cassé...) on échoue vite avec un message clair au lieu de boucler à
+    # l'infini et bloquer « Build stack » jusqu'à annulation du job.
+    command: ['/bin/sh', '-c', 'i=0; until nc -zv $$DOMAIN $$PORT -w1; do i=$$((i+1)); [ "$$i" -ge 60 ] && { echo "timeout: $$DOMAIN:$$PORT injoignable après $$i essais"; exit 1; }; echo " Waiting for $$DOMAIN..."; sleep 1; done']
     networks:
       - back
