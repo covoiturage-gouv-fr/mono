@@ -13,41 +13,36 @@ from api_datalake.routers.observatory import get_conn
 # --- build_location_query (pur, sans DB) ---
 
 
-def test_query_maps_com_to_arr_column():
+def test_query_reads_exposed_aggregate_and_bins():
+    sql, params = build_location_query("reg", "11", 2022, 7, month=6)
+    assert "FROM zone_exposed.location_month" in sql
+    assert "h3_cell_to_parent(hex_z8, %(n)s)" in sql
+    assert params["type"] == "reg" and params["code"] == "11" and params["n"] == 7
+
+
+def test_query_filters_type_code_year():
     sql, params = build_location_query("com", "75056", 2022, 8, month=6)
-    assert "arr = %(code)s" in sql
-    assert params["code"] == "75056"
+    assert "type = %(type)s" in sql and "code = %(code)s" in sql and "year = %(year)s" in sql
+    assert params["type"] == "com" and params["code"] == "75056"
 
 
-def test_query_maps_region_column_and_binning_resolution():
-    sql, params = build_location_query("reg", "11", 2022, 7)
-    assert "reg = %(code)s" in sql
-    # binning des points de départ ET d'arrivée à la résolution n
-    assert "h3_cell_to_parent(start_h3index_z8, %(n)s)" in sql
-    assert "h3_cell_to_parent(end_h3index_z8, %(n)s)" in sql
-    assert params["n"] == 7
+def test_query_unknown_type_falls_back_to_com():
+    _, params = build_location_query("pays_imaginaire", "x", 2022, 8, month=6)
+    assert params["type"] == "com"  # check_territory_param -> com
 
 
-def test_query_unknown_type_falls_back_to_arr():
-    sql, _ = build_location_query("pays_imaginaire", "x", 2022, 8)
-    assert "arr = %(code)s" in sql  # check_territory_param -> com -> arr
+def test_query_grain_selects_table_and_filter():
+    sql_m, p_m = build_location_query("com", "75056", 2022, 8, month=6)
+    assert "location_month" in sql_m and "month = %(grain_val)s" in sql_m and p_m["grain_val"] == 6
 
+    sql_t, p_t = build_location_query("com", "75056", 2022, 8, trimester=2)
+    assert "location_quarter" in sql_t and "quarter = %(grain_val)s" in sql_t and p_t["grain_val"] == 2
 
-def test_query_period_filters_by_grain():
-    sql_m, p_month = build_location_query("com", "75056", 2022, 8, month=6)
-    assert "start_datetime >= %(dt_start)s AND start_datetime < %(dt_end)s" in sql_m
-    assert p_month["dt_start"] == "2022-06-01" and p_month["dt_end"] == "2022-07-01"
+    sql_s, p_s = build_location_query("com", "75056", 2022, 8, semester=1)
+    assert "location_semester" in sql_s and "semester = %(grain_val)s" in sql_s and p_s["grain_val"] == 1
 
-    _, p_tri = build_location_query("com", "75056", 2022, 8, trimester=2)  # T2 -> avr..juin
-    assert p_tri["dt_start"] == "2022-04-01" and p_tri["dt_end"] == "2022-07-01"
-
-    _, p_year = build_location_query("com", "75056", 2022, 8)  # année pleine
-    assert p_year["dt_start"] == "2022-01-01" and p_year["dt_end"] == "2023-01-01"
-
-
-def test_query_semester_bounds():
-    _, p_sem = build_location_query("com", "75056", 2022, 8, semester=2)  # S2 -> juil..déc
-    assert p_sem["dt_start"] == "2022-07-01" and p_sem["dt_end"] == "2023-01-01"
+    sql_y, p_y = build_location_query("com", "75056", 2022, 8)  # sans grain -> année
+    assert "location_year" in sql_y and "grain_val" not in p_y
 
 
 # --- endpoint /observatory/location ---
