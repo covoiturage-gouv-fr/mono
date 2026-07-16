@@ -53,6 +53,25 @@ DATAGOUV_FIELDS = [
     "has_incentive",
 ]
 
+# Colonnes numériques du contrat (non entourées de guillemets dans le CSV publié).
+# Toutes les autres sont du texte et sont quotées via FORCE_QUOTE pour l'ISO legacy.
+NUMERIC_FIELDS = {
+    "journey_id",
+    "journey_start_lon", "journey_start_lat",
+    "journey_end_lon", "journey_end_lat",
+    "passenger_seats", "journey_distance", "journey_duration",
+}
+TEXT_FIELDS = [f for f in DATAGOUV_FIELDS if f not in NUMERIC_FIELDS]
+
+
+def csv_header() -> str:
+    """En-tête CSV : toutes les colonnes entre guillemets (contrat legacy).
+
+    Émis à la main car `COPY ... HEADER` ne quote pas les noms des colonnes
+    numériques, alors que le fichier legacy quote tout l'en-tête.
+    """
+    return ";".join(f'"{c}"' for c in DATAGOUV_FIELDS)
+
 
 def default_window(today: date) -> tuple[date, date]:
     """Fenêtre par défaut = le mois précédent.
@@ -81,7 +100,7 @@ def build_opendata_copy_sql(start: date, end: date, min_occurrences: int) -> tup
       AND start_date_filter < %(end)s
       AND start_insee_count >= %(min_occ)s
       AND end_insee_count >= %(min_occ)s
-    ORDER BY start_date_filter ASC
+    ORDER BY start_date_filter ASC, journey_start_datetime ASC
     """
     return sql, {"start": start, "end": end, "min_occ": min_occurrences}
 
@@ -91,6 +110,8 @@ def build_stats_sql(start: date, end: date, min_occurrences: int) -> tuple[str, 
 
     Sémantique identique à l'ancien `datagouvStatsQuery` (insee_counters) :
     `count_removed = count_removed_start + count_removed_end - count_removed_both`.
+    Ajoute la ventilation géographique des exposés (France↔France, France↔Étranger,
+    Étranger↔Étranger), dont la somme = `count_exposed`.
     """
     sql = f"""
     SELECT
@@ -105,7 +126,21 @@ def build_stats_sql(start: date, end: date, min_occurrences: int) -> tuple[str, 
       count(*) FILTER (WHERE te.carpools < %(min_occ)s) AS count_removed_end,
       count(*) FILTER (
         WHERE ts.carpools < %(min_occ)s AND te.carpools < %(min_occ)s
-      ) AS count_removed_both
+      ) AS count_removed_both,
+      -- Ventilation géographique des trajets exposés : un point hors France a un
+      -- code INSEE 99xxx (pays étranger), sinon France (métropole + DROM 97/98).
+      count(*) FILTER (
+        WHERE ts.carpools >= %(min_occ)s AND te.carpools >= %(min_occ)s
+          AND c.start_geo_code NOT LIKE '99%%' AND c.end_geo_code NOT LIKE '99%%'
+      ) AS count_exposed_france_france,
+      count(*) FILTER (
+        WHERE ts.carpools >= %(min_occ)s AND te.carpools >= %(min_occ)s
+          AND (c.start_geo_code LIKE '99%%') <> (c.end_geo_code LIKE '99%%')
+      ) AS count_exposed_france_etranger,
+      count(*) FILTER (
+        WHERE ts.carpools >= %(min_occ)s AND te.carpools >= %(min_occ)s
+          AND c.start_geo_code LIKE '99%%' AND c.end_geo_code LIKE '99%%'
+      ) AS count_exposed_etranger_etranger
     FROM {CARPOOLS_TABLE} AS c
     LEFT JOIN {TERRITORY_FROM} AS ts
       ON c.start_geo_code = ts.code

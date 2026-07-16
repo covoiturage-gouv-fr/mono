@@ -20,8 +20,10 @@ from dotenv import load_dotenv
 
 from pipelines.helpers.datagouv_client import DataGouvClient
 from pipelines.helpers.datagouv_query import (
+    TEXT_FIELDS,
     build_opendata_copy_sql,
     build_stats_sql,
+    csv_header,
     default_window,
 )
 from pipelines.helpers.datagouv_report import build_description, build_report
@@ -49,9 +51,16 @@ def fetch_stats(conn, start: date, end: date, min_occ: int) -> dict:
 
 def stream_csv(conn, start: date, end: date, min_occ: int, csv_path: str) -> None:
     inner, params = build_opendata_copy_sql(start, end, min_occ)
-    # `;` + header, NON compressé (contrat data.gouv actuel).
-    copy_sql = f"COPY ({inner}) TO STDOUT (FORMAT CSV, DELIMITER ';', HEADER)"
+    # `;`, NON compressé (contrat data.gouv actuel). En-tête tout-quoté émis à la main
+    # (COPY HEADER ne quote pas les colonnes numériques) ; FORCE_QUOTE entoure les
+    # valeurs texte de guillemets comme le fichier legacy (NULL restant vide non quoté).
+    force_quote = ", ".join(TEXT_FIELDS)
+    copy_sql = (
+        f"COPY ({inner}) TO STDOUT "
+        f"(FORMAT CSV, DELIMITER ';', FORCE_QUOTE ({force_quote}))"
+    )
     with open(csv_path, "wb") as f, conn.cursor() as cur:
+        f.write((csv_header() + "\n").encode("utf-8"))
         with cur.copy(copy_sql, params) as copy:
             for chunk in copy:
                 f.write(chunk)

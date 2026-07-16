@@ -30,6 +30,11 @@ Les données concernent également les trajets dont le point de départ OU d'arr
   - Nombre de trajets dont l'occurrence du code INSEE de départ est < 6 : {stats['count_removed_start']}
   - Nombre de trajets dont l'occurrence du code INSEE d'arrivée est < 6 : {stats['count_removed_end']}
   - Nombre de trajets dont l'occurrence du code INSEE de départ ET d'arrivée est < 6 : {stats['count_removed_both']}
+
+Répartition géographique des trajets exposés (un point hors territoire français = code INSEE 99xxx) :
+- Trajets France ↔ France : {stats['count_exposed_france_france']}
+- Trajets France ↔ Étranger : {stats['count_exposed_france_etranger']}
+- Trajets Étranger ↔ Étranger : {stats['count_exposed_etranger_etranger']}
     """.strip()
 
 
