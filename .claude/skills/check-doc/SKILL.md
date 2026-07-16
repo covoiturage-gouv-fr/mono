@@ -23,7 +23,7 @@ Review changes from: `!git diff --name-only HEAD~1` or files specified in $ARGUM
 | `.claude/CLAUDE-API.md` | API instructions | Backend changes |
 | `.claude/CLAUDE-APP-PARTNERS.md` | Partners app guide | Frontend changes |
 | `.claude/CLAUDE-OBSERVATORY.md` | Observatory guide | Observatory changes |
-| `.claude/CLAUDE-DATALAKE.md` | SQLMesh guide | Data pipeline changes |
+| `.claude/CLAUDE-DATALAKE.md` | Datalake (dbt) guide | Data pipeline changes |
 | `README.md` | Project overview | Major changes |
 | `api/justfile` | Command reference | New commands |
 
@@ -68,7 +68,7 @@ Review changes from: `!git diff --name-only HEAD~1` or files specified in $ARGUM
 - [ ] **New tables/columns**: Update database section in docs
 - [ ] **Index changes**: Note performance implications
 
-### 7. SQLMesh/Datalake
+### 7. Datalake
 
 - [ ] **New models**: Document in CLAUDE-DATALAKE.md
 - [ ] **New macros**: Add macro documentation

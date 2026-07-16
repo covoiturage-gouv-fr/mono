@@ -357,7 +357,7 @@ jobs:
     name: (chore) release
     runs-on: ubuntu-latest
     # Only release when the app stack (api / front-ends) changed. Data-only
-    # merges (dbt / sqlmesh / datalake / cms) must not cut an app version.
+    # merges (dbt / datalake / cms) must not cut an app version.
     # `always()` + no-failure so an app change that skips the api-scoped jobs
     # (e.g. partners-only) still releases; a real failure in any need blocks it.
     if: >-

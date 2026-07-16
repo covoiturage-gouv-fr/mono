@@ -9,7 +9,7 @@ Custom PostgreSQL 16 image based on `postgis/postgis:16-3.5-alpine` with the [h3
 
 ## Performance Tuning (local dev)
 
-The default PostgreSQL configuration is very conservative. For local development (especially SQLMesh plans), performance settings are applied via `ALTER SYSTEM SET` and persisted in `postgresql.auto.conf` on the data volume (`./db/postgres`).
+The default PostgreSQL configuration is very conservative. For local development (especially heavy data transforms), performance settings are applied via `ALTER SYSTEM SET` and persisted in `postgresql.auto.conf` on the data volume (`./db/postgres`).
 
 ### Applied settings
 

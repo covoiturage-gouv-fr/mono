@@ -7,7 +7,6 @@
         "preset": "conventionalcommits",
         "releaseRules": [
           { "scope": "dbt", "release": false },
-          { "scope": "sqlmesh", "release": false },
           { "scope": "datalake", "release": false },
           { "scope": "cms", "release": false }
         ]

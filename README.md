@@ -22,14 +22,13 @@ Politique de sécurité et contact : [SECURITY.md](SECURITY.md)
 - **Nix** avec la fonctionnalité flakes activée -- fournit l'environnement de dev partagé via `nix develop` (voir `flake.nix`).
 - **direnv** + **nix-direnv** installés au niveau utilisateur (recommandé : module home-manager `programs.direnv.enable = true; programs.direnv.nix-direnv.enable = true;`). direnv active automatiquement :
   - le devShell Nix à la racine (outils communs : `deno`, `node`, `uv`, `python3.13`, `postgresql`, `just`, `gh`...)
-  - un venv Python dédié dans `sqlmesh/`, `dbt/` et `datalake/` à chaque `cd`.
+  - un venv Python dédié dans `dbt/` et `datalake/` à chaque `cd`.
 - **Docker** pour la stack applicative (API, base, Traefik...).
 
 Pour activer les venvs Python à la première utilisation :
 
 ```shell
 direnv allow .            # à la racine
-direnv allow sqlmesh
 direnv allow dbt
 direnv allow datalake
 ```
