@@ -137,10 +137,10 @@ export default function Dashboard() {
           </div>
           <div className={fr.cx('fr-grid-row', 'fr-grid-row--gutters')}>
             <div className={fr.cx('fr-col-12')}>
-              {dashboard.params.map == 1 && <FluxMap title={mapList[0].name} />}
-              {dashboard.params.map == 2 && <DensiteMap title={mapList[1].name} />}
-              {dashboard.params.map == 3 && <OccupationMap title={mapList[2].name} />}
-              {dashboard.params.map == 4 && <AiresCovoiturageMap title={mapList[3].name} />}
+              {dashboard.params.map == 1 && <FluxMap title={mapList.find((m) => m.id === 1)?.name ?? ''} />}
+              {dashboard.params.map == 2 && <DensiteMap title={mapList.find((m) => m.id === 2)?.name ?? ''} />}
+              {dashboard.params.map == 3 && <OccupationMap title={mapList.find((m) => m.id === 3)?.name ?? ''} />}
+              {dashboard.params.map == 4 && <AiresCovoiturageMap title={mapList.find((m) => m.id === 4)?.name ?? ''} />}
             </div>
           </div>
         </>
