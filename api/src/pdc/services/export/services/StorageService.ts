@@ -12,9 +12,6 @@ export abstract class StorageServiceInterfaceResolver {
   public async upload(filepath: string): Promise<string> {
     throw new Error("Not implemented");
   }
-  public async getPublicUrl(filename: string): Promise<string> {
-    throw new Error("Not implemented");
-  }
   public async cleanup(filepath: string): Promise<void> {
     throw new Error("Not implemented");
   }
@@ -41,10 +38,6 @@ export class StorageService {
 
   public async upload(filepath: string): Promise<string> {
     return await this.s3StorageProvider.upload(this.bucket, filepath);
-  }
-
-  public async getPublicUrl(filename: string): Promise<string> {
-    return await this.s3StorageProvider.getPublicUrl(this.bucket, filename);
   }
 
   public async getOneTimeSignedUrl(filename: string): Promise<string> {

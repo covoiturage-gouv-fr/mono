@@ -70,56 +70,6 @@ export class ExportParams {
   }
 
   /**
-   * Convert geo_selector to SQL WHERE clause
-   *
-   * Using AND or OR to join start and end positions.
-   * Default is OR.
-   *
-   * @param {string} mode
-   * @returns {string}
-   */
-  public geoToSQL(mode: "AND" | "OR" = "OR"): string {
-    const { geo_selector } = this.params;
-    if (!geo_selector) return "";
-
-    // map territory selector keys to SQL column suffixes
-    const columnMap: Record<string, string> = { epci: "epci_code", aom: "aom_code" };
-
-    const start = Object.keys(geo_selector)
-      .filter((key) => {
-        const type = key as keyof TerritorySelectorsInterface;
-        return geo_selector[type] && geo_selector[type].length > 0;
-      })
-      .reduce((p, key) => {
-        // join all codes per type
-        const type = key as keyof TerritorySelectorsInterface;
-        const col = columnMap[type] || type;
-        const local: string[] = [];
-        (geo_selector[type] || []).forEach((code: string) => {
-          local.push(`start_${col} = '${code}'`);
-        });
-
-        if (local.length) {
-          p.push(local.join(" OR "));
-        }
-
-        return p;
-      }, [] as string[]).join(" OR ");
-
-    return start.length ? `AND ((${start}) ${mode} (${start.replace(/start_/g, "end_")}))` : "";
-  }
-
-  /**
-   * convert operator_id to SQL WHERE clause
-   *
-   * @returns {string}
-   */
-  public operatorToSQL(): string {
-    const { operator_id } = this.params;
-    return operator_id.length ? `AND operator_id IN (${operator_id.join(",")})` : "";
-  }
-
-  /**
    * Validate params
    *
    * @todo to AbstractParams class

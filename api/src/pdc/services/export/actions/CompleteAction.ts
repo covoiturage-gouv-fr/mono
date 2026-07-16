@@ -8,7 +8,6 @@ import { alias } from "../contracts/complete.schema.ts";
 import { ExportStatus } from "../models/Export.ts";
 import { ExportRepositoryInterfaceResolver } from "../repositories/ExportRepository.ts";
 import { NotificationService } from "../services/NotificationService.ts";
-import { StorageService } from "../services/StorageService.ts";
 
 @handler({
   ...handlerConfig,
@@ -22,7 +21,6 @@ export class CompleteAction extends AbstractAction {
   constructor(
     protected exportRepository: ExportRepositoryInterfaceResolver,
     protected notification: NotificationService,
-    protected storage: StorageService,
   ) {
     super();
   }
@@ -40,11 +38,10 @@ export class CompleteAction extends AbstractAction {
     await this.exportRepository.update(exp._id, { filename, file_size: params.file_size });
     await this.exportRepository.status(exp._id, ExportStatus.SUCCESS);
 
-    // email the export creator with the download link — best-effort: the file exists
-    // and the row is SUCCESS, so a missing creator must not block/undo completion
+    // notify the export creator it is ready — best-effort: the file exists and the
+    // row is SUCCESS, so a missing creator must not block/undo completion
     try {
-      const url = await this.storage.getPublicUrl(filename);
-      await this.notification.success(exp, url);
+      await this.notification.success(exp);
     } catch (e) {
       logger.error(`Export ${exp.uuid} completed but notification failed: ${(e as Error).message}`);
     }

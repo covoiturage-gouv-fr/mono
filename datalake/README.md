@@ -51,7 +51,7 @@ Remplace les projet legacy `sqlmesh/` et `dbt/`. Ingère les données brutes de 
                                 │  dbt run --select aggregated.*
                                 ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
-│  ZONE AGGREGATED  (zone_aggregated)  — 469 modèles générés par macros   │
+│  ZONE AGGREGATED  (zone_aggregated)  — 467 modèles générés par macros   │
 │                                                                         │
 │  Grains temporels : day · month · quarter · semester · year             │
 │  Périmètres géo   : arr · com · plm · epci · aom · dep · reg · pays     │
@@ -101,12 +101,11 @@ Remplace les projet legacy `sqlmesh/` et `dbt/`. Ingère les données brutes de 
 │  └────────────────────────────────────────────────────────────────┘     │
 │                                                                         │
 │  ┌────────────────────────────────────────────────────────────────┐     │
-│  │  Users · 4 modèles                                             │     │
+│  │  Users · 2 modèles                                             │     │
 │  │  users            user_id · 1re/dernière date conducteur       │     │
 │  │                   et passager · geo_code de 1re activité       │     │
-│  │  user_od_day/month  activité journalière/mensuelle par rôle    │     │
+│  │  user_od_day        activité journalière par rôle              │     │
 │  │                   avec métriques OD (distance, revenus, CI…)   │     │
-│  │  user_cee_new_drivers  conducteurs éligibles CEE (1er trajet)  │     │
 │  └────────────────────────────────────────────────────────────────┘     │
 └───────────────────────────────┬─────────────────────────────────────────┘
                                 │  dbt run --select exposed.*
@@ -174,7 +173,7 @@ Les modèles `aggregated` et `exposed` sont déclinés selon **trois directions*
 
 ## Macros
 
-Toute la génération de code des 469 modèles agrégés repose sur des macros Jinja organisées en trois familles.
+Toute la génération de code des 467 modèles agrégés repose sur des macros Jinja organisées en trois familles.
 
 ### Macros de génération de modèles
 
@@ -410,7 +409,7 @@ dbt run-operation generate_model_yaml --args '{"model_names": ["interoperators_l
 | **H3 z8 / z9**                    | Indexation géospatiale hexagonale (bibliothèque H3 d'Uber). z9 ≈ maille de ~0,1 km², z8 ≈ 0,7 km². Utilisée pour les agrégats fraude et la détection de patterns géographiques.                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | **arr / com / plm**               | Trois vues du niveau communal. `arr` = maille la plus fine : arrondissement municipal pour Paris (75101…), Lyon (69381…) et Marseille (13201…), commune IGN pour tout le reste. `plm` = Paris, Lyon et Marseille vus comme une **commune entière** (75056, 69123, 13055), agrégation de leurs arrondissements. `com` = UNION de `arr` + `plm` : toutes les communes de France, avec les 3 villes PLM présentes **deux fois** (une fois découpées en arrondissements via `arr`, une fois en tant que ville entière via `plm`).                                                                                                                            |
 | **epci / aom / aomreg**           | `epci` = Établissement Public de Coopération Intercommunale. `aom` = Autorité Organisatrice de la Mobilité (source CEREMA) — **exclut les 14 AOMs régionales** (filtrées via `aom_region`). `aomreg` = ces 14 AOMs régionales uniquement (régions qui exercent elles-mêmes la compétence mobilité : Bretagne, Occitanie, Normandie…), avec les **trajets intra-AOM exclus** : à l'échelle d'une région entière, comptabiliser les trajets dont le départ et l'arrivée sont dans la même AOM noierait les flux inter-territoires. Les deux niveaux sont complémentaires et couvrent ensemble toutes les AOMs. Défini dans `seeds/trusted/aom_region.csv`. |
-| **CEE**                           | _Certificat d'Économie d'Énergie_ — dispositif réglementaire pour lequel certains trajets sont éligibles. `user_cee_new_drivers` liste les conducteurs effectuant leur premier trajet éligible CEE.                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| **CEE**                           | _Certificat d'Économie d'Énergie_ — dispositif réglementaire pour lequel certains trajets sont éligibles.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | **Lookback**                      | Fenêtre temporelle sur laquelle un modèle incrémental supprime et reinsère les données à chaque run, pour absorber les corrections tardives de l'API.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 
 ---
