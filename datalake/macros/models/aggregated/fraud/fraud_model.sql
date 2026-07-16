@@ -28,7 +28,7 @@
 
 {{ config(
   materialized='view',
-  tags=['aggregated', 'fraud', grain, 'com', direction]
+  tags=['aggregated', 'fraud', grain, 'com', direction, 'daily']
 ) }}
 
 SELECT * FROM {{ ref('fraud_' ~ grain ~ '_arr_' ~ direction) }}

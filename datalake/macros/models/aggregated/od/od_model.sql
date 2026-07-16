@@ -24,7 +24,7 @@
 
 {{ config(
   materialized='view',
-  tags=['aggregated', 'od', grain, 'com']
+  tags=['aggregated', 'od', grain, 'com', 'daily']
 ) }}
 
 SELECT * FROM {{ ref('od_' ~ grain ~ '_arr') }}
