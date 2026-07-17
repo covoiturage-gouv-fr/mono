@@ -60,8 +60,9 @@ SELECT
   t.has_incentive,
   round(
     (t.carpools + t.passenger_seats)::numeric / nullif(t.carpools, 0), 2
-  )                             AS occupation_rate,
-  st_asgeojson(p.geom, 6)::json AS geom
+  )                                 AS occupation_rate,
+  -- centroïde (point) : la carte trace un cercle par zone, pas le contour
+  st_asgeojson(p.centroid, 6)::json AS geom
 FROM territory AS t
 LEFT JOIN {{ ref('perimeters_agg') }} AS p
   ON
