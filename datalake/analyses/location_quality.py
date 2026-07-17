@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 """Contrôles qualité de la heatmap `location` pré-agrégée (PR modèles).
 
-À lancer APRÈS le backfill des modèles `location_*`, avant la bascule de l'API.
-Complète le harnais de parité (`location_parity.py`, qui compare à l'ancienne
-requête) par des invariants internes qui ne dépendent PAS de l'ancienne vue —
-donc encore valables après sa suppression.
+À lancer APRÈS le backfill des modèles `location_*`. Vérifie des invariants
+internes qui ne dépendent PAS de l'ancienne vue `zone_exposed.location`
+(supprimée depuis la bascule de l'API) — donc toujours valables.
 
 Contrôle central : **cohérence des grains grossiers vs mois**. Les agrégats
 `*_{quarter,semester,year}` sont construits en `delete+insert` sur un bucket de
