@@ -32,7 +32,7 @@ def _read_csv(csv_path: str) -> tuple[str, list[list[str]]]:
     """Renvoie (ligne d'en-tête brute, lignes de données parsées)."""
     with open(csv_path, newline="") as f:
         content = f.read()
-    lines = content.split("\n")
+    lines = content.splitlines()
     header = lines[0] if lines else ""
     data_lines = [ln for ln in lines[1:] if ln != ""]
     rows = list(csv.reader(data_lines, delimiter=";"))

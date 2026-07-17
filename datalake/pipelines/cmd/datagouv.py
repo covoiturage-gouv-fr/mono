@@ -179,6 +179,7 @@ def run(
             stats=stats, filename=filename, status="failure",
             started_at=started_at, finished_at=_now_iso(),
             error="publication data.gouv échouée",
+            mode="debug" if debug else "live",
         )
         try:
             write_report(s3, bucket, report_key(month, ts), report)
