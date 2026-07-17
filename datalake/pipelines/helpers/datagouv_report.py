@@ -2,6 +2,21 @@
 
 from datetime import date, timedelta
 
+_LOGS_PREFIX = "datagouv/logs"
+
+
+def report_key(month: str, ts: str) -> str:
+    return f"{_LOGS_PREFIX}/{month}-{ts}.json"
+
+
+def debug_csv_key(month: str, ts: str) -> str:
+    return f"{_LOGS_PREFIX}/{month}-{ts}-debug.csv"
+
+
+def debug_md_key(month: str, ts: str) -> str:
+    return f"{_LOGS_PREFIX}/{month}-{ts}-debug.md"
+
+
 _FR_MONTHS = [
     "janvier", "février", "mars", "avril", "mai", "juin",
     "juillet", "août", "septembre", "octobre", "novembre", "décembre",
@@ -51,8 +66,10 @@ def build_report(
     finished_at: str,
     resource: dict | None = None,
     error: str | None = None,
+    mode: str = "live",
+    checks: list | None = None,
 ) -> dict:
-    """Rapport d'exécution, écrit en JSON sous `datagouv/logs/<mois>.json`."""
+    """Rapport d'exécution, écrit en JSON sous `datagouv/logs/<mois>-<ts>.json`."""
     return {
         "month": month,
         "start": start.isoformat(),
@@ -60,9 +77,11 @@ def build_report(
         "min_occurrences": min_occurrences,
         "filename": filename,
         "status": status,
+        "mode": mode,
         "started_at": started_at,
         "finished_at": finished_at,
         "stats": stats,
+        "checks": checks,
         "resource": {"id": resource.get("id"), "url": resource.get("url")} if resource else None,
         "error": error,
     }

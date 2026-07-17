@@ -1,6 +1,8 @@
 from datetime import date
 
-from pipelines.helpers.datagouv_report import build_description, build_report
+from pipelines.helpers.datagouv_report import (
+    report_key, debug_csv_key, debug_md_key, build_description, build_report,
+)
 
 STATS = {
     "count_total": 1025610,
@@ -60,3 +62,30 @@ def test_report_failure_shape():
     assert r["status"] == "failure"
     assert r["resource"] is None
     assert r["error"] == "upload failed"
+
+
+def test_artifact_keys_are_timestamped():
+    assert report_key("2026-07", "20260717T101500Z") == "datagouv/logs/2026-07-20260717T101500Z.json"
+    assert debug_csv_key("2026-07", "20260717T101500Z") == "datagouv/logs/2026-07-20260717T101500Z-debug.csv"
+    assert debug_md_key("2026-07", "20260717T101500Z") == "datagouv/logs/2026-07-20260717T101500Z-debug.md"
+
+
+def test_build_report_defaults_to_live_mode_without_checks():
+    r = build_report(
+        month="2026-07", start=date(2026, 7, 1), end=date(2026, 8, 1), min_occurrences=6,
+        stats={}, filename="2026-07.csv", status="success",
+        started_at="t0", finished_at="t1",
+    )
+    assert r["mode"] == "live"
+    assert r["checks"] is None
+
+
+def test_build_report_carries_debug_mode_and_checks():
+    checks = [{"name": "total = exposés + retirés", "level": "FAIL", "ok": True, "detail": "..."}]
+    r = build_report(
+        month="2026-07", start=date(2026, 7, 1), end=date(2026, 8, 1), min_occurrences=6,
+        stats={}, filename="2026-07.csv", status="success",
+        started_at="t0", finished_at="t1", mode="debug", checks=checks,
+    )
+    assert r["mode"] == "debug"
+    assert r["checks"] == checks
