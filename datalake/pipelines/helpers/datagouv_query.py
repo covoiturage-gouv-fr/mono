@@ -112,44 +112,56 @@ def build_stats_sql(start: date, end: date, min_occurrences: int) -> tuple[str, 
     `count_removed = count_removed_start + count_removed_end - count_removed_both`.
     Ajoute la ventilation géographique des exposés (France↔France, France↔Étranger,
     Étranger↔Étranger), dont la somme = `count_exposed`.
+
+    Un geo_code absent de l'agrégat (jointure NULL) est ramené à 0 via `coalesce` :
+    exposé et retiré partitionnent alors exactement le total (pas de trou ternaire).
     """
     sql = f"""
+    WITH joined AS (
+      SELECT
+        c.start_geo_code,
+        c.end_geo_code,
+        -- occurrence INSEE absente de l'agrégat = 0 (trajet non vérifiable -> retiré)
+        coalesce(ts.carpools, 0) AS start_count,
+        coalesce(te.carpools, 0) AS end_count
+      FROM {CARPOOLS_TABLE} AS c
+      LEFT JOIN {TERRITORY_FROM} AS ts
+        ON c.start_geo_code = ts.code
+        AND date_trunc('month', c.start_datetime) = ts.incremental_date
+      LEFT JOIN {TERRITORY_TO} AS te
+        ON c.end_geo_code = te.code
+        AND date_trunc('month', c.start_datetime) = te.incremental_date
+      WHERE c.valid_acquisition_status
+        AND (c.start_datetime AT TIME ZONE 'Europe/Paris')::date >= %(start)s
+        AND (c.start_datetime AT TIME ZONE 'Europe/Paris')::date < %(end)s
+    )
     SELECT
       count(*) AS count_total,
       count(*) FILTER (
-        WHERE ts.carpools >= %(min_occ)s AND te.carpools >= %(min_occ)s
+        WHERE start_count >= %(min_occ)s AND end_count >= %(min_occ)s
       ) AS count_exposed,
       count(*) FILTER (
-        WHERE ts.carpools < %(min_occ)s OR te.carpools < %(min_occ)s
+        WHERE start_count < %(min_occ)s OR end_count < %(min_occ)s
       ) AS count_removed,
-      count(*) FILTER (WHERE ts.carpools < %(min_occ)s) AS count_removed_start,
-      count(*) FILTER (WHERE te.carpools < %(min_occ)s) AS count_removed_end,
+      count(*) FILTER (WHERE start_count < %(min_occ)s) AS count_removed_start,
+      count(*) FILTER (WHERE end_count < %(min_occ)s) AS count_removed_end,
       count(*) FILTER (
-        WHERE ts.carpools < %(min_occ)s AND te.carpools < %(min_occ)s
+        WHERE start_count < %(min_occ)s AND end_count < %(min_occ)s
       ) AS count_removed_both,
       -- Ventilation géographique des trajets exposés : un point hors France a un
       -- code INSEE 99xxx (pays étranger), sinon France (métropole + DROM 97/98).
       count(*) FILTER (
-        WHERE ts.carpools >= %(min_occ)s AND te.carpools >= %(min_occ)s
-          AND c.start_geo_code NOT LIKE '99%%' AND c.end_geo_code NOT LIKE '99%%'
+        WHERE start_count >= %(min_occ)s AND end_count >= %(min_occ)s
+          AND start_geo_code NOT LIKE '99%%' AND end_geo_code NOT LIKE '99%%'
       ) AS count_exposed_france_france,
       count(*) FILTER (
-        WHERE ts.carpools >= %(min_occ)s AND te.carpools >= %(min_occ)s
-          AND (c.start_geo_code LIKE '99%%') <> (c.end_geo_code LIKE '99%%')
+        WHERE start_count >= %(min_occ)s AND end_count >= %(min_occ)s
+          AND (start_geo_code LIKE '99%%') <> (end_geo_code LIKE '99%%')
       ) AS count_exposed_france_etranger,
       count(*) FILTER (
-        WHERE ts.carpools >= %(min_occ)s AND te.carpools >= %(min_occ)s
-          AND c.start_geo_code LIKE '99%%' AND c.end_geo_code LIKE '99%%'
+        WHERE start_count >= %(min_occ)s AND end_count >= %(min_occ)s
+          AND start_geo_code LIKE '99%%' AND end_geo_code LIKE '99%%'
       ) AS count_exposed_etranger_etranger
-    FROM {CARPOOLS_TABLE} AS c
-    LEFT JOIN {TERRITORY_FROM} AS ts
-      ON c.start_geo_code = ts.code
-      AND date_trunc('month', c.start_datetime) = ts.incremental_date
-    LEFT JOIN {TERRITORY_TO} AS te
-      ON c.end_geo_code = te.code
-      AND date_trunc('month', c.start_datetime) = te.incremental_date
-    WHERE c.valid_acquisition_status
-      AND (c.start_datetime AT TIME ZONE 'Europe/Paris')::date >= %(start)s
-      AND (c.start_datetime AT TIME ZONE 'Europe/Paris')::date < %(end)s
+    FROM joined
     """
     return sql, {"start": start, "end": end, "min_occ": min_occurrences}

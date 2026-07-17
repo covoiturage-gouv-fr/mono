@@ -178,3 +178,26 @@ def test_stats_geographic_breakdown(pg):
         + stats["count_exposed_etranger_etranger"]
         == stats["count_exposed"]
     )
+
+
+def test_stats_counts_missing_aggregate_as_removed(pg):
+    # Un geo_code absent de l'agrégat territorial (jointure NULL) est non vérifiable
+    # -> retiré, jamais perdu : total = exposés + retirés doit rester vrai.
+    m = "2026-05-15 10:00:00+00"
+    month = "2026-05-01 00:00:00+00"
+    carpools = [
+        ("35238", "35047", m, True),   # exposé (les deux >= 6)
+        ("45308", "35047", m, True),   # départ absent de l'agrégat -> ts NULL
+    ]
+    agg_from = [("35238", month, 10)]  # 45308 volontairement absent
+    agg_to = [("35047", month, 8)]
+    _seed_stats(pg, carpools, agg_from, agg_to)
+
+    stats = fetch_stats(pg, date(2026, 5, 1), date(2026, 6, 1), 6)
+
+    assert stats["count_total"] == 2
+    assert stats["count_exposed"] == 1
+    assert stats["count_removed"] == 1
+    assert stats["count_removed_start"] == 1
+    assert stats["count_removed_end"] == 0
+    assert stats["count_total"] == stats["count_exposed"] + stats["count_removed"]
