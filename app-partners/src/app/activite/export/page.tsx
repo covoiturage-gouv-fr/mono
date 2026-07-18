@@ -1,4 +1,5 @@
 "use client";
+import { ActiveScopeBadge } from "@/components/common/ActiveScopeBadge";
 import SelectGeo from "@/components/common/SelectGeo";
 import SelectTerritory from "@/components/common/SelectTerritory";
 import ExportList from "@/components/export/ExportList";
@@ -97,6 +98,9 @@ export default function TabExport() {
 
   return (
     <>
+      <div className={fr.cx("fr-mb-2w")}>
+        <ActiveScopeBadge />
+      </div>
       <Alert
         title={"Important"}
         severity="info"
@@ -218,6 +222,8 @@ export default function TabExport() {
                       title="Succès"
                       description={
                         <>
+                          <ActiveScopeBadge />
+                          <br />
                           Vous allez recevoir un email avec le lien de téléchargement d'ici maximum 2h.
                           <br />
                           Un rafraîchissement de la page sera nécessaire pour mettre à jour le statut de traitement de

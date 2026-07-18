@@ -1,4 +1,5 @@
 "use client";
+import { ActiveScopeBadge } from "@/components/common/ActiveScopeBadge";
 import Loading from "@/components/layout/Loading";
 import { useCampaignList, useTerritoriesList } from "@/hooks/api";
 import { useUrlSearch } from "@/hooks/useUrlSearch";
@@ -106,6 +107,9 @@ export default function TabCampaigns() {
 
   return (
     <>
+      <div className={fr.cx("fr-mb-2w")}>
+        <ActiveScopeBadge />
+      </div>
       {!campaignId && !user?.territory_id && (
         <div
           style={{
