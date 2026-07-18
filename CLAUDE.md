@@ -25,6 +25,8 @@ Each dir has `README.md`. Skills in `.claude/skills/`.
 
 TDD. Simple, testable, readable. Repeat twice then refactor. No over-engineering.
 
+Comments: only for quirks. No narration of what the code already says.
+
 ### Tests
 
 Unit: specific calcs, edge cases. Integration: DB repositories.
@@ -58,6 +60,7 @@ Use MCP tools when available:
 
 ### Git
 
-Never commit on main. Always worktree + PR (skill /prep-pr)
+Never code or commit on a branch directly. Always work in a worktree + PR (skill /prep-pr); the main working dir must always stay on `main`.
 Always rebase onto main before pushing PR
 Claude cannot commit. Human review required before commit.
+PRs are concise. Context, debrief, analysis go on Notion only — not in the PR.
