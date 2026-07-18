@@ -1,0 +1,25 @@
+version: 2
+models:
+  - name: mb_occupation_year
+    description: >
+      Vue app_metabase du taux d'occupation par territoire et par année.
+      Projette zone_exposed.occupation_year pour Metabase (source datalake).
+    columns:
+      - name: year
+        data_type: integer
+      - name: type
+        data_type: text
+      - name: code
+        data_type: character varying
+      - name: libelle
+        data_type: character varying
+      - name: journeys
+        data_type: bigint
+      - name: trips
+        data_type: bigint
+      - name: has_incentive
+        data_type: bigint
+      - name: occupation_rate
+        data_type: numeric
+      - name: geom
+        data_type: json
