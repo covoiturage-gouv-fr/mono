@@ -1,10 +1,13 @@
 import { Config } from "@/config";
 import {
+  ADMIN_SCOPE_LABEL,
   type AuthContextProps,
   type Role,
   type RoleKind,
   type RoleLevel,
   roles,
+  type UserInterface,
+  type UserScope,
 } from "@/interfaces/auth";
 import crypto from "crypto";
 
@@ -84,6 +87,36 @@ export const getUserSession = async () => {
     credentials: "include",
   });
   return (await response.json()) as AuthContextProps["user"];
+};
+
+// Bascule le périmètre actif côté serveur ; renvoie le contexte confirmé.
+export const postAuthContext = async (territory_id: number) => {
+  const response = await fetch(`${Config.get<string>("auth.domain")}/auth/context`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ territory_id }),
+  });
+  if (!response.ok) {
+    throw new Error(response.status === 403 ? "Périmètre non autorisé" : "Bascule de périmètre impossible");
+  }
+  return (await response.json()) as { territory_id: number; label: string };
+};
+
+// Périmètre actif = scope dont l'id correspond au tuple actif de session.
+export const getActiveScope = (user?: UserInterface): UserScope | undefined => {
+  if (!user?.scopes?.length) return undefined;
+  return user.scopes.find((s) =>
+    user.operator_id ? s.operator_id === user.operator_id : s.territory_id === user.territory_id,
+  );
+};
+
+// Libellé affichable du périmètre actif (jamais l'ID brut).
+export const activeScopeLabel = (user?: UserInterface): string => {
+  const scope = getActiveScope(user);
+  if (scope) return scope.label;
+  if (user?.role === "registry.admin") return ADMIN_SCOPE_LABEL;
+  return user?.organisation ?? user?.name ?? "";
 };
 
 export function splitRole(role: unknown): [RoleKind, RoleLevel] {

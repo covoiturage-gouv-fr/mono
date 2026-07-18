@@ -13,7 +13,16 @@ export interface UsersInterface {
     territory_id?: number;
     phone?: string;
     role: string;
+    login_siren?: string | null;
+    scopes?: UserScopeInput[];
   }[];
+}
+
+// Périmètre édité dans le formulaire user (réservé registry.admin côté API).
+export interface UserScopeInput {
+  operator_id?: number;
+  territory_id?: number;
+  is_default?: boolean;
 }
 
 export interface Company {
