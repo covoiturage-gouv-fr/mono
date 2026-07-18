@@ -4,17 +4,19 @@ from pipelines.helpers.datagouv_report import (
     report_key, debug_csv_key, debug_md_key, build_description, build_report,
 )
 
+# Valeurs synthétiques (dépôt public : pas de volumétrie réelle) respectant les invariants :
+# total = exposés + retirés ; retirés = start + end - both ; FF + FE + EE = exposés.
 STATS = {
-    "count_total": 1025610,
-    "count_exposed": 998086,
-    "count_removed": 27524,
-    "count_removed_start": 14958,
-    "count_removed_end": 15373,
-    "count_removed_both": 2807,
+    "count_total": 1060,
+    "count_exposed": 1000,
+    "count_removed": 60,
+    "count_removed_start": 40,
+    "count_removed_end": 30,
+    "count_removed_both": 10,
     # ventilation géographique des exposés (somme = count_exposed)
-    "count_exposed_france_france": 900000,
-    "count_exposed_france_etranger": 70000,
-    "count_exposed_etranger_etranger": 28086,
+    "count_exposed_france_france": 700,
+    "count_exposed_france_etranger": 200,
+    "count_exposed_etranger_etranger": 100,
 }
 
 
@@ -22,15 +24,15 @@ def test_description_french_dates_and_counts():
     d = build_description(date(2026, 6, 1), date(2026, 7, 1), STATS)
     # end exclusif -> dernier jour décrit = 30 juin
     assert "entre le 1 juin 2026 et le 30 juin 2026" in d
-    assert "998086" in d
-    assert "27524 = 14958 + 15373 - 2807" in d
+    assert "1000" in d
+    assert "60 = 40 + 30 - 10" in d
 
 
 def test_description_geographic_breakdown():
     d = build_description(date(2026, 6, 1), date(2026, 7, 1), STATS)
-    assert "France ↔ France : 900000" in d
-    assert "France ↔ Étranger : 70000" in d
-    assert "Étranger ↔ Étranger : 28086" in d
+    assert "France ↔ France : 700" in d
+    assert "France ↔ Étranger : 200" in d
+    assert "Étranger ↔ Étranger : 100" in d
 
 
 def test_description_year_rollover_last_day():
@@ -49,7 +51,7 @@ def test_report_success_shape():
     assert r["status"] == "success"
     assert r["resource"] == {"id": "abc", "url": "https://data.gouv/x"}
     assert r["error"] is None
-    assert r["stats"]["count_exposed"] == 998086
+    assert r["stats"]["count_exposed"] == 1000
 
 
 def test_report_failure_shape():
