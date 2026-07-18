@@ -1,50 +1,55 @@
 import { provider } from "@/ilos/common/index.ts";
 import { DenoPostgresConnection } from "@/ilos/connection-postgres/index.ts";
 import sql, { fromObject, raw, RawValue } from "@/lib/pg/sql.ts";
+import { UserScope, UserScopeRepository } from "@/pdc/services/auth/providers/UserScopeRepository.ts";
 
 export type LocalSiretUser = {
   email: string;
   role: string;
+  login_siren: string | null;
   operator_id: number | null;
   territory_id: number | null;
   siret: string | null;
   _id: number;
   analytics_id: string;
   organisation: string | null;
+  scopes: UserScope[];
+};
+
+// Identité de base lue sur auth.users ; les périmètres viennent de user_scopes.
+type UserIdentityRow = {
+  email: string;
+  role: string;
+  login_siren: string | null;
+  _id: number;
+  analytics_id: string;
 };
 
 @provider()
 export class UserRepository {
   public readonly table = "auth.users";
-  public readonly territoryTable = "territory.territory_group";
-  public readonly operatorTable = "operator.operators";
-  public readonly companyTable = "company.companies";
 
-  constructor(protected denoConnection: DenoPostgresConnection) {}
+  constructor(
+    protected denoConnection: DenoPostgresConnection,
+    protected userScopeRepository: UserScopeRepository,
+  ) {}
 
   async authenticateByEmail(email: string, data: Record<string, RawValue> = {}): Promise<LocalSiretUser | null> {
     if (!email) return null;
-    const rows = await this.denoConnection.query<LocalSiretUser>(sql`
+    const rows = await this.denoConnection.query<UserIdentityRow>(sql`
       SELECT
         u.email,
         u.role,
-        u.operator_id,
-        u.territory_id,
-        COALESCE(o.siret, c.siret) as siret,
+        u.login_siren,
         u._id,
-        u.analytics_id,
-        COALESCE(o.name, t.name) as organisation
+        u.analytics_id
       FROM ${raw(this.table)} u
-      LEFT JOIN ${raw(this.territoryTable)} t
-        ON t._id = u.territory_id
-      LEFT JOIN ${raw(this.companyTable)} c on c._id = t.company_id
-      LEFT JOIN ${raw(this.operatorTable)} o
-        ON o._id = u.operator_id
       WHERE lower(u.email) = ${email.trim().toLowerCase()}
       LIMIT 1
     `);
 
     if (!rows.length) return null;
+    const identity = rows[0];
 
     // Update last_login_at and other data if provided
     const fields = fromObject({ ...data, last_login_at: "NOW()", deletion_warned_at: raw("NULL") });
@@ -54,6 +59,26 @@ export class UserRepository {
       WHERE email = ${email}
     `);
 
-    return rows[0];
+    // Périmètres : liste complète (dropdown) + défaut (contexte actif), fallback MIN(_id) porté par le repo.
+    const scopes = await this.userScopeRepository.findByUser(identity._id);
+    const def = await this.userScopeRepository.findDefault(identity._id);
+    const active = scopes.find((s) =>
+      def?.operator_id != null
+        ? s.operator_id === def.operator_id
+        : def?.territory_id != null && s.territory_id === def.territory_id
+    ) ?? scopes[0];
+
+    return {
+      email: identity.email,
+      role: identity.role,
+      login_siren: identity.login_siren,
+      _id: identity._id,
+      analytics_id: identity.analytics_id,
+      operator_id: def?.operator_id ?? null,
+      territory_id: def?.territory_id ?? null,
+      siret: active?.siret ?? null,
+      organisation: active?.label ?? null,
+      scopes,
+    };
   }
 }
