@@ -2,6 +2,7 @@ import { ConfigInterfaceResolver, inject, injectable, KernelInterfaceResolver, p
 import { logger } from "@/lib/logger/index.ts";
 import { asyncHandler } from "@/pdc/proxy/helpers/asyncHandler.ts";
 import { ProConnectOIDCProvider } from "@/pdc/services/auth/providers/ProConnectOIDCProvider.ts";
+import { UserScope, UserScopeRepository } from "@/pdc/services/auth/providers/UserScopeRepository.ts";
 import express, { NextFunction, Request, Response } from "dep:express";
 import { session } from "../../../config/proxy.ts";
 import { authGuard } from "../../proxy/middlewares/authGuard.ts";
@@ -15,6 +16,7 @@ export class AuthRouter {
     private kernel: KernelInterfaceResolver,
     private proConnectOIDCProvider: ProConnectOIDCProvider,
     private config: ConfigInterfaceResolver,
+    private userScopeRepository: UserScopeRepository,
   ) {
   }
 
@@ -115,6 +117,9 @@ export class AuthRouter {
       },
     );
 
+    // Bascule du contexte actif (users territoire) — revalidée en DB, cf. spec §6.
+    this.app.post("/auth/context", contextRoute(this.userScopeRepository));
+
     /**
      * Test-only login route to create a session without going through OIDC.
      * This route should only be available in test environments.
@@ -123,4 +128,50 @@ export class AuthRouter {
       this.app.post("/auth/test/callback", testCallbackRoute.bind(this)(this.config));
     }
   }
+}
+
+// Réponse d'erreur au format JSON-RPC (même forme que /auth/me).
+function jsonRpcError(res: Response, code: number, message: string) {
+  return res.status(code).json({ id: 1, jsonrpc: "2.0", error: { code, data: "Error", message } });
+}
+
+// Type opérateur : scope actif opérateur, ou présence d'au moins un scope opérateur.
+function isOperatorUser(user: { operator_id?: number | null; scopes?: UserScope[] }): boolean {
+  if (user.operator_id != null) return true;
+  return (user.scopes ?? []).some((s) => s.operator_id != null);
+}
+
+/**
+ * Bascule le contexte actif d'un user territoire vers un de ses territoires.
+ * La liste session.scopes[] ne sert qu'à l'affichage ; l'autorisation vient de la DB.
+ */
+export function contextRoute(userScopeRepository: UserScopeRepository) {
+  return asyncHandler(async (req: Request, res: Response) => {
+    // 401 : garde locale, ne dépend d'aucun middleware qui no-op sur le cookie.
+    if (!req.session?.user) return jsonRpcError(res, 401, "Unauthorized Error");
+    const user = req.session.user;
+
+    // Body : territory_id entier strictement positif requis.
+    const territoryId = req.body?.territory_id;
+    if (!Number.isInteger(territoryId) || territoryId <= 0) return jsonRpcError(res, 400, "Bad Request");
+
+    // Seul un user de type territoire bascule ; un opérateur n'a qu'un scope.
+    if (isOperatorUser(user)) return jsonRpcError(res, 403, "Forbidden Error");
+
+    // Revalidation DB : match strict sur territory_id (anti-IDOR par collision op/territoire).
+    if (!(await userScopeRepository.userHasTerritory(user._id, territoryId))) {
+      return jsonRpcError(res, 403, "Forbidden Error");
+    }
+
+    // Réécrit tout le tuple actif : territoire ciblé, opérateur purgé.
+    user.territory_id = territoryId;
+    user.operator_id = null;
+    await new Promise<void>((resolve, reject) =>
+      req.session.save((err: Error) => err ? reject(err) : resolve())
+    );
+
+    // Libellé d'affichage depuis les scopes autorisés (fallback vide).
+    const label = (user.scopes ?? []).find((s: UserScope) => s.territory_id === territoryId)?.label ?? "";
+    return res.json({ territory_id: territoryId, label });
+  });
 }
