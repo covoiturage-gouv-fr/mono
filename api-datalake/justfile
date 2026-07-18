@@ -12,7 +12,6 @@ dev:
 serve port="8081":
     uv run uvicorn api_datalake.main:app --app-dir src --host 0.0.0.0 --port {{port}}
 
-# Tests. `env -u PYTHONPATH` : le dev-shell Nix injecte un pytest cassé dans
-# PYTHONPATH qui masque celui du venv (sortie muette). On le retire.
+# Tests
 test:
-    env -u PYTHONPATH uv run python -m pytest -q
+    uv run python -m pytest -q

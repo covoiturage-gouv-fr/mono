@@ -81,6 +81,11 @@
           ];
 
           shellHook = ''
+            # Les setup-hooks Python de Nix (python313, gdal, pre-commit) agrègent
+            # leurs site-packages dans PYTHONPATH, qui masque alors les venv uv
+            # per-folder et casse dbt/sqlfluff/pytest (ex : pyyaml sans SafeLoader).
+            # Les envs Python sont gérés par dossier via uv : on repart de zéro.
+            unset PYTHONPATH
             export PATH="$PWD/node_modules/.bin/:$PATH"
             export PRE_COMMIT_ALLOW_NO_CONFIG=1
             export GH_REPO=covoiturage-gouv-fr/mono
