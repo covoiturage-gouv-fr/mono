@@ -5,6 +5,9 @@ import { NextFunction, Request, Response } from "dep:express";
 import expressSession from "dep:express-session";
 import { Redis } from "dep:redis";
 
+// Préfixe des clés de session dans Redis (connect-redis). Source unique partagée avec SessionRepository.
+export const SESSION_KEY_PREFIX = "proxy:";
+
 export function sessionMiddleware(kernel: KernelInterface) {
   const config = kernel.get(ConfigInterfaceResolver);
   const sessionSecret = config.get("proxy.session.secret");
@@ -26,7 +29,7 @@ export function sessionMiddleware(kernel: KernelInterface) {
     secret: sessionSecret,
     resave: false,
     saveUninitialized: false,
-    store: new RedisStore({ client: redis, prefix: "proxy:" }),
+    store: new RedisStore({ client: redis, prefix: SESSION_KEY_PREFIX }),
   });
 
   return (req: Request, res: Response, next: NextFunction) => {

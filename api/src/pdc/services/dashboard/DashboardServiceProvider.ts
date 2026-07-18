@@ -4,6 +4,9 @@ import { defaultMiddlewareBindings } from "../../providers/middleware/index.ts";
 import { defaultNotificationBindings } from "../../providers/notification/index.ts";
 import { S3StorageProvider } from "../../providers/storage/index.ts";
 import { ValidatorMiddleware } from "../../providers/superstruct/ValidatorMiddleware.ts";
+import { SessionRepository } from "../auth/providers/SessionRepository.ts";
+import { UserScopeRepository } from "../auth/providers/UserScopeRepository.ts";
+import { userScopeGuardMiddlewareBinding } from "./middlewares/UserScopeGuardMiddleware.ts";
 import { CampaignApdfAction } from "./actions/CampaignApdfAction.ts";
 import { CampaignsAction } from "./actions/CampaignsAction.ts";
 import { JourneysIncentiveByDayAction } from "./actions/JourneysIncentiveByDayAction.ts";
@@ -40,6 +43,8 @@ import { UsersRepository } from "./providers/UsersRepository.ts";
     JourneysRepository,
     CampaignsRepository,
     UsersRepository,
+    UserScopeRepository,
+    SessionRepository,
     ...defaultNotificationBindings,
   ],
   handlers: [
@@ -63,6 +68,6 @@ import { UsersRepository } from "./providers/UsersRepository.ts";
   middlewares: [...defaultMiddlewareBindings, [
     "validate",
     ValidatorMiddleware,
-  ]],
+  ], userScopeGuardMiddlewareBinding],
 })
 export class DashboardServiceProvider extends AbstractServiceProvider {}

@@ -1,6 +1,8 @@
 import { handler } from "@/ilos/common/index.ts";
 import { Action as AbstractAction } from "@/ilos/core/index.ts";
 import { copyGroupIdAndApplyGroupPermissionMiddlewares } from "@/pdc/providers/middleware/index.ts";
+import { SessionRepository } from "@/pdc/services/auth/providers/SessionRepository.ts";
+import { userScopeGuardMiddleware } from "@/pdc/services/dashboard/middlewares/UserScopeGuardMiddleware.ts";
 import { UpdateUser } from "@/pdc/services/dashboard/dto/Users.ts";
 import { UsersRepositoryInterfaceResolver } from "@/pdc/services/dashboard/interfaces/UsersRepositoryInterface.ts";
 export type ResultInterface = {
@@ -18,6 +20,7 @@ export type ResultInterface = {
       territory: "territory.user.update",
       operator: "operator.user.update",
     }),
+    userScopeGuardMiddleware(),
   ],
   apiRoute: {
     path: "/dashboard/user",
@@ -26,11 +29,17 @@ export type ResultInterface = {
   },
 })
 export class UpdateUserAction extends AbstractAction {
-  constructor(private repository: UsersRepositoryInterfaceResolver) {
+  constructor(
+    private repository: UsersRepositoryInterfaceResolver,
+    private sessionRepository: SessionRepository,
+  ) {
     super();
   }
 
   public override async handle(data: UpdateUser): Promise<ResultInterface> {
-    return this.repository.updateUser(data);
+    const result = await this.repository.updateUser(data);
+    // Toute modification (rôle/périmètre) invalide les sessions : re-login avec des scopes frais.
+    await this.sessionRepository.destroyByUser(data.id);
+    return result;
   }
 }
