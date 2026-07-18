@@ -2,6 +2,7 @@ import { assertEquals } from "dep:assert";
 import { afterAll, beforeAll, describe, it } from "dep:testing-bdd";
 import sql from "@/lib/pg/sql.ts";
 import { DenoDbContext, makeDenoDbBeforeAfter } from "@/pdc/providers/test/index.ts";
+import { UserScopeRepository } from "@/pdc/services/auth/providers/UserScopeRepository.ts";
 import { UsersRepository } from "./UsersRepository.ts";
 
 describe("auth.users deletion_warned_at", () => {
@@ -31,7 +32,7 @@ describe("UsersRepository purge selection", () => {
 
   beforeAll(async () => {
     db = await before();
-    repository = new UsersRepository(db.connection);
+    repository = new UsersRepository(db.connection, new UserScopeRepository(db.connection));
     // A: à avertir (operator, inactif 13 mois, jamais averti)
     await db.connection.query(sql`INSERT INTO auth.users (email, firstname, lastname, role, last_login_at)
       VALUES ('warn@purge.test', 'A', 'A', 'operator.user', now() - '13 months'::interval)`);

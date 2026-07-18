@@ -17,4 +17,13 @@ describe("permissions", () => {
     const perms = getPermissions("operator.admin");
     assertEquals(perms.some((p) => p.startsWith("common.")), true);
   });
+
+  it("grants registry.user.manageScopes to registry.admin only", () => {
+    assertEquals(getPermissions("registry.admin").includes("registry.user.manageScopes"), true);
+  });
+
+  it("denies manageScopes to territory.admin and operator.admin", () => {
+    assertEquals(getPermissions("territory.admin").some((p) => p.endsWith("user.manageScopes")), false);
+    assertEquals(getPermissions("operator.admin").some((p) => p.endsWith("user.manageScopes")), false);
+  });
 });

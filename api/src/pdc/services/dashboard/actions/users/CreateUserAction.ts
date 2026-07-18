@@ -1,6 +1,7 @@
 import { handler } from "@/ilos/common/index.ts";
 import { Action as AbstractAction } from "@/ilos/core/index.ts";
 import { copyGroupIdAndApplyGroupPermissionMiddlewares } from "@/pdc/providers/middleware/index.ts";
+import { userScopeGuardMiddleware } from "@/pdc/services/dashboard/middlewares/UserScopeGuardMiddleware.ts";
 import { CreateUser } from "@/pdc/services/dashboard/dto/Users.ts";
 import { BrevoProviderInterfaceResolver } from "@/pdc/services/dashboard/interfaces/BrevoProviderInterface.ts";
 import { OperatorsRepositoryInterfaceResolver } from "@/pdc/services/dashboard/interfaces/OperatorsRepositoryInterface.ts";
@@ -22,6 +23,7 @@ export type ResultInterface = {
       territory: "territory.user.create",
       operator: "operator.user.create",
     }),
+    userScopeGuardMiddleware(),
   ],
   apiRoute: {
     path: "/dashboard/user",
