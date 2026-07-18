@@ -28,7 +28,12 @@ export async function migrateSQL(connectionString: string, path: string, verbose
       }
 
       const statements: string = await readTextFile(filepath);
-      const transaction = conn.createTransaction(`migration-${td.substring(1)}`);
+      // Connexion dédiée par migration : une migration en échec avortée laisse la
+      // connexion dans un état corrompu (deno-postgres) qui casse les migrations
+      // suivantes sur la connexion partagée. On isole donc chaque migration.
+      const migClient = new PgClient(connectionString);
+      await migClient.connect();
+      const transaction = migClient.createTransaction(`migration-${td.substring(1)}`);
       await transaction.begin();
 
       try {
@@ -37,7 +42,6 @@ export async function migrateSQL(connectionString: string, path: string, verbose
         await transaction.queryArray`INSERT INTO public.migrations (name, run_on) VALUES (${td}, NOW())`;
         await transaction.commit();
       } catch (e) {
-        // migration is rollbacked if an error occurs !
         // There's no way to catch the database error to log it.
         // Run the file with psql to debug...
         logger.error(`Error in migration: ${td}`);
@@ -46,6 +50,8 @@ export async function migrateSQL(connectionString: string, path: string, verbose
         } else {
           logger.error("An unknown error occurred");
         }
+      } finally {
+        await migClient.end();
       }
     }
   } catch (e) {
