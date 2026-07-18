@@ -53,6 +53,10 @@ models:
     exposed:
       +schema: "zone_exposed"
       +dbt-osmosis: "yml/_{model}.yml"
+    app_metabase:
+      +schema: "app_metabase"
+      +materialized: "view"
+      +dbt-osmosis: "yml/_{model}.yml"
 
   ## see docs: https://docs.elementary-data.com/
   elementary:
