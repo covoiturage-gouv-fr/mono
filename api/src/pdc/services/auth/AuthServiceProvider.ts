@@ -12,10 +12,12 @@ import { DexOIDCProvider } from "./providers/DexOIDCProvider.ts";
 import { OperatorRepository } from "./providers/OperatorRepository.ts";
 import { ProConnectOIDCProvider } from "./providers/ProConnectOIDCProvider.ts";
 import { UserRepository } from "./providers/UserRepository.ts";
+import { UserScopeRepository } from "./providers/UserScopeRepository.ts";
 
 @serviceProvider({
   config,
   providers: [
+    UserScopeRepository,
     UserRepository,
     OperatorRepository,
     DexOIDCProvider,

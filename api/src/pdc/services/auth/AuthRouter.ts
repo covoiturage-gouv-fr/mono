@@ -40,15 +40,22 @@ export class AuthRouter {
         const { state, nonce } = req.session?.auth || {};
 
         // Fetch tokens and user info from ProConnect OIDC Provider
+        // (état OIDC state/nonce lu ci-dessus, avant la régénération de session)
         const tokens = await this.proConnectOIDCProvider.getToken(url, nonce, state);
         const claims = tokens.claims();
         const user = await this.proConnectOIDCProvider.getUserInfo(tokens.access_token, claims!.sub);
 
-        // Store user and token information in the session
-        req.session = req.session || {};
-        req.session.auth = {};
-        req.session.auth.id_token = tokens.id_token;
+        // Anti-fixation : régénère la session avant d'attacher l'utilisateur authentifié.
+        await new Promise<void>((resolve, reject) =>
+          req.session.regenerate((err: Error) => err ? reject(err) : resolve())
+        );
+
+        // Store user and token information in the fresh session
+        req.session.auth = { id_token: tokens.id_token };
         req.session.user = user;
+        await new Promise<void>((resolve, reject) =>
+          req.session.save((err: Error) => err ? reject(err) : resolve())
+        );
 
         return res.redirect(this.config.get("app_url"));
       }),

@@ -1,9 +1,20 @@
 import { ConfigInterfaceResolver, InitHookInterface, provider } from "@/ilos/common/index.ts";
 import { logger } from "@/lib/logger/index.ts";
-import { LocalSiretUser, UserRepository } from "@/pdc/services/auth/providers/UserRepository.ts";
+import { UserRepository } from "@/pdc/services/auth/providers/UserRepository.ts";
 import { createRemoteJWKSet } from "dep:jose";
 import * as client from "dep:openid-client";
 import { getPermissions } from "../config/permissions.ts";
+
+// Gate ProConnect fail-closed : SIREN(ProConnect) doit égaler login_siren (registry.admin bypass).
+export function failsSirenCheck(
+  proconnect: { siren: string },
+  user: { login_siren?: string | null; role: string },
+): boolean {
+  if (user.role === "registry.admin") return false; // admin : bypass du gate
+  const loginSiren = user.login_siren?.trim();
+  if (!loginSiren) return true; // fail-closed explicite : pas de SIREN de connexion, jamais de String(null)
+  return proconnect.siren.substring(0, 9) !== loginSiren;
+}
 
 @provider()
 export class ProConnectOIDCProvider implements InitHookInterface {
@@ -104,7 +115,9 @@ export class ProConnectOIDCProvider implements InitHookInterface {
       const user = await this.userRepository.authenticateByEmail(email);
 
       if (!user) throw new Error(`User not found: ${email}`);
-      if (this.failsSirenCheck(user, siret)) throw new Error(`SIRET check failed: ${email} / ${siret}`);
+      if (failsSirenCheck({ siren: siret.substring(0, 9) }, user)) {
+        throw new Error(`SIRET check failed: ${email} / ${siret}`);
+      }
 
       return {
         ...user,
@@ -135,20 +148,5 @@ export class ProConnectOIDCProvider implements InitHookInterface {
       state,
     });
     return { state, redirectUrl };
-  }
-
-  private failsSirenCheck(user: LocalSiretUser, siret: string): boolean {
-    // admins bypass siret check
-    if (user.role === "registry.admin") return false;
-
-    const siren = siret.substring(0, 9);
-    const userSiren = String(user.siret).substring(0, 9);
-    const fails = siren !== userSiren;
-
-    if (fails) {
-      console.warn(`[ProConnectOIDCProvider] SIRET mismatch for user: expected SIREN ${siren}, got ${userSiren}`);
-    }
-
-    return fails;
   }
 }
