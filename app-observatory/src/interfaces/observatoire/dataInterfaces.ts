@@ -1,5 +1,12 @@
 import { Geometry } from "geojson";
-import { Direction, Distance, Hour, INSEECode, PerimeterLabel, PerimeterType } from "./Perimeter";
+import {
+  Direction,
+  Distance,
+  Hour,
+  INSEECode,
+  PerimeterLabel,
+  PerimeterType,
+} from "./Perimeter";
 
 export interface KeyFiguresDataInterface {
   territory: INSEECode;
@@ -38,10 +45,10 @@ export interface DensiteDataInterface {
 }
 
 export interface OccupationDataInterface {
-  territory: INSEECode;
-  l_territory: PerimeterLabel;
+  code: INSEECode;
+  libelle: PerimeterLabel;
   journeys: number;
-  has_incentive: number;
+  has_incentive?: number;
   occupation_rate: number;
   geom: Geometry;
 }
