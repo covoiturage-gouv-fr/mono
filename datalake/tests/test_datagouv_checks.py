@@ -1,6 +1,6 @@
 import csv
 from pipelines.helpers.datagouv_checks import (
-    CheckResult, run_checks, has_failure, render_markdown,
+    run_checks, has_failure, render_markdown,
 )
 from pipelines.helpers.datagouv_query import DATAGOUV_FIELDS, csv_header
 
