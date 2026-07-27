@@ -18,6 +18,7 @@ import psycopg
 import typer
 from dotenv import load_dotenv
 
+from pipelines.helpers.datagouv_checks import has_failure, render_markdown, run_checks
 from pipelines.helpers.datagouv_client import DataGouvClient
 from pipelines.helpers.datagouv_query import (
     TEXT_FIELDS,
@@ -26,18 +27,26 @@ from pipelines.helpers.datagouv_query import (
     csv_header,
     default_window,
 )
-from pipelines.helpers.datagouv_report import build_description, build_report
+from pipelines.helpers.datagouv_report import (
+    build_description,
+    build_report,
+    debug_csv_key,
+    debug_md_key,
+    report_key,
+)
 from pipelines.helpers.pg import pg_conninfo
 from pipelines.helpers.s3 import s3_client, s3_upload
 
 load_dotenv()
 app = typer.Typer()
 
-REPORT_PREFIX = "datagouv/logs"
-
 
 def _now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
+
+
+def _stamp() -> str:
+    return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 
 
 def fetch_stats(conn, start: date, end: date, min_occ: int) -> dict:
@@ -76,12 +85,12 @@ def assert_not_empty(stats: dict, filename: str) -> None:
         )
 
 
-def write_report(s3, bucket: str, month: str, report: dict) -> None:
+def write_report(s3, bucket: str, key: str, report: dict) -> None:
     with tempfile.TemporaryDirectory(prefix="datagouv-report-") as tmp:
-        path = os.path.join(tmp, f"{month}.json")
+        path = os.path.join(tmp, "report.json")
         with open(path, "w") as f:
             json.dump(report, f, ensure_ascii=False, indent=2)
-        s3_upload(bucket, f"{REPORT_PREFIX}/{month}.json", path, client=s3)
+        s3_upload(bucket, key, path, client=s3)
 
 
 @app.command()
@@ -89,6 +98,10 @@ def run(
     start: datetime = typer.Option(None, help="Début du mois (YYYY-MM-DD). Défaut : mois précédent."),
     end: datetime = typer.Option(None, help="Fin exclusive (YYYY-MM-DD). Défaut : mois courant."),
     min_occurrences: int = typer.Option(6, help="Seuil k-anonymat sur l'occurrence INSEE."),
+    debug: bool = typer.Option(
+        False, "--debug",
+        help="Ne publie pas ; dépose CSV/description/rapport horodatés sur S3 et imprime le verdict de cohérence.",
+    ),
 ):
     if not os.getenv("APP_DATAGOUV_ENABLED", "").lower() in ("1", "true", "yes", "on"):
         print("⚠️ data.gouv publication DISABLED (APP_DATAGOUV_ENABLED)")
@@ -101,12 +114,14 @@ def run(
     month = d_start.strftime("%Y-%m")
     filename = f"{month}.csv"
     started_at = _now_iso()
+    ts = _stamp()
 
     bucket = os.environ["S3_BUCKET"]
     s3 = s3_client()
 
     stats: dict = {}
     resource = None
+    results = None
     try:
         with psycopg.connect(pg_conninfo()) as conn:
             stats = fetch_stats(conn, d_start, d_end, min_occurrences)
@@ -116,7 +131,19 @@ def run(
                 csv_path = os.path.join(tmp, filename)
                 stream_csv(conn, d_start, d_end, min_occurrences, csv_path)
 
-                if os.getenv("APP_DATAGOUV_UPLOAD", "").lower() in ("1", "true", "yes", "on"):
+                if debug:
+                    description = build_description(d_start, d_end, stats)
+                    results = run_checks(stats, csv_path)
+                    verdict = render_markdown(results)
+                    print(verdict)
+
+                    s3_upload(bucket, debug_csv_key(month, ts), csv_path, client=s3)
+                    md = description + "\n\n## Verdict de cohérence\n\n" + verdict + "\n"
+                    with open(os.path.join(tmp, "desc.md"), "w") as f:
+                        f.write(md)
+                    s3_upload(bucket, debug_md_key(month, ts), os.path.join(tmp, "desc.md"), client=s3)
+                    print(f"🐞 debug : artefacts sur {debug_csv_key(month, ts)} (pas de publication data.gouv)")
+                elif os.getenv("APP_DATAGOUV_UPLOAD", "").lower() in ("1", "true", "yes", "on"):
                     client = DataGouvClient(
                         os.environ["APP_DATAGOUV_URL"],
                         os.environ["APP_DATAGOUV_KEY"],
@@ -132,9 +159,18 @@ def run(
             month=month, start=d_start, end=d_end, min_occurrences=min_occurrences,
             stats=stats, filename=filename, status="success",
             started_at=started_at, finished_at=_now_iso(), resource=resource,
+            mode="debug" if debug else "live",
+            checks=[vars(r) for r in results] if debug else None,
         )
-        write_report(s3, bucket, month, report)
+        write_report(s3, bucket, report_key(month, ts), report)
         print(f"✅ {filename} — {stats.get('count_exposed')} trajets exposés")
+
+        if debug and has_failure(results):
+            raise typer.Exit(code=1)
+    except typer.Exit:
+        # Sortie volontaire (verdict debug FAIL) : le rapport est déjà écrit ci-dessus,
+        # ne pas le faire passer pour une erreur de publication dans le except générique.
+        raise
     except Exception as e:
         # Détail complet côté logs k8s uniquement ; le rapport persisté sur S3 ne garde
         # qu'un message générique (une erreur de connexion PG peut porter host/port/user).
@@ -143,9 +179,10 @@ def run(
             stats=stats, filename=filename, status="failure",
             started_at=started_at, finished_at=_now_iso(),
             error="publication data.gouv échouée",
+            mode="debug" if debug else "live",
         )
         try:
-            write_report(s3, bucket, month, report)
+            write_report(s3, bucket, report_key(month, ts), report)
         except Exception as report_err:
             print(f"⚠️ échec écriture du rapport : {report_err!r}")
         print(f"❌ publication data.gouv échouée : {e!r}")

@@ -335,6 +335,12 @@ just pipeline-daily
 | Docs dbt en local                    | `just docs-serve`                                            |
 | Lint SQL                             | `just lint`                                                  |
 | Générer les YAMLs d'un layer         | `just osmosis-refactor trusted`                              |
+| Export data.gouv (debug, sans publier) | `just datagouv --debug --start 2026-07-01 --end 2026-08-01` |
+
+`just datagouv --debug [--start … --end …]` exécute l'export **sans publier** sur data.gouv :
+dépose CSV/description/rapport horodatés sous `datagouv/logs/` et imprime un verdict d'invariants
+de cohérence (exit 1 si un invariant dur est cassé). À lancer dans le pod datalake pour debugguer
+sur de vraies données.
 
 ---
 
