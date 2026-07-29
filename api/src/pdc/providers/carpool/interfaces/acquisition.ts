@@ -1,4 +1,12 @@
-import { ApiVersion, CancelCode, CancelMessage, Id, TermsViolationErrorLabels, Uuid } from "./common.ts";
+import {
+  ApiVersion,
+  CancelCode,
+  CancelMessage,
+  Id,
+  TermsViolationErrorDetails,
+  TermsViolationErrorLabels,
+  Uuid,
+} from "./common.ts";
 import { InsertableCarpool, UpdatableCarpool } from "./database/carpool.ts";
 
 interface ApiVersionObject {
@@ -9,6 +17,7 @@ export type RegisterRequest = InsertableCarpool & ApiVersionObject;
 export type RegisterResponse = {
   created_at: Date;
   terms_violation_error_labels: TermsViolationErrorLabels;
+  terms_violation_error_details: TermsViolationErrorDetails;
 };
 
 export interface PatchRequest extends UpdatableCarpool, ApiVersionObject {

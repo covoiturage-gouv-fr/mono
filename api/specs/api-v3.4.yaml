@@ -301,8 +301,11 @@ paths:
                         properties:
                           terms_violation_labels:
                             $ref: "#/components/schemas/terms_violation_label"
+                          terms_violation_error_details:
+                            $ref: "#/components/schemas/terms_violation_error_details"
                         required:
                           - terms_violation_labels
+                          - terms_violation_error_details
                       code:
                         type: integer
                         enum:
@@ -1322,6 +1325,31 @@ components:
       type: array
       items:
         $ref: "#/components/schemas/terms_violation_label"
+    terms_violation_error_details:
+      description: |
+        Détail par règle CGU ayant abouti au rejet du trajet : une entrée par étiquette.
+        `metas` n'est présent que pour `too_many_trips_by_day` (compteurs de trajets de la journée).
+      type: array
+      items:
+        type: object
+        properties:
+          label:
+            $ref: "#/components/schemas/terms_violation_label"
+          metas:
+            description: Présent uniquement pour `too_many_trips_by_day`.
+            type: object
+            properties:
+              driver:
+                description: Nombre de trajets du conducteur sur la journée retenus par la règle.
+                type: integer
+              passenger:
+                description: Nombre de trajets du passager sur la journée retenus par la règle.
+                type: integer
+              limit:
+                description: Limite de trajets par usager et par jour.
+                type: integer
+        required:
+          - label
     terms_violation_label:
       description: |
         Etiquette possible pour un cas de non respect des CGU au sein du même opérateur:

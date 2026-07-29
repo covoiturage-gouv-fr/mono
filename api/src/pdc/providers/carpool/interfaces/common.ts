@@ -79,6 +79,20 @@ export enum CarpoolAcquisitionStatusEnum {
 
 export type TermsViolationErrorLabels = Array<string>;
 
+export const MAX_TRIPS_PER_DAY = 4;
+
+export type TermsViolationLabel =
+  | "distance_too_short"
+  | "too_many_trips_by_day"
+  | "too_close_trips"
+  | "expired";
+
+export type TermsViolationErrorDetail =
+  | { label: "too_many_trips_by_day"; metas: { driver: number; passenger: number; limit: number } }
+  | { label: "distance_too_short" | "too_close_trips" | "expired" };
+
+export type TermsViolationErrorDetails = Array<TermsViolationErrorDetail>;
+
 export enum CarpoolFraudStatusEnum {
   Pending = "pending",
   Passed = "passed",
