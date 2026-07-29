@@ -93,6 +93,7 @@ export class CreateJourneyAction extends AbstractAction {
     if (result.terms_violation_error_labels.length) {
       throw new UnprocessableRequestException({
         terms_violation_labels: result.terms_violation_error_labels,
+        terms_violation_error_details: result.terms_violation_error_details,
       });
     }
   }

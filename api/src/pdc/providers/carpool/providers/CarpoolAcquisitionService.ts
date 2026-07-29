@@ -13,12 +13,13 @@ import { GeoProvider } from "@/pdc/providers/geo/index.ts";
 import {
   CancelRequest,
   CarpoolAcquisitionStatusEnum,
+  MAX_TRIPS_PER_DAY,
   PatchRequest,
   ProcessGeoParams,
   ProcessGeoResults,
   RegisterRequest,
   RegisterResponse,
-  TermsViolationErrorLabels,
+  TermsViolationErrorDetails,
 } from "../interfaces/index.ts";
 import { CarpoolGeoRepository } from "../repositories/CarpoolGeoRepository.ts";
 import { CarpoolLookupRepository } from "../repositories/CarpoolLookupRepository.ts";
@@ -49,31 +50,41 @@ export class CarpoolAcquisitionService {
     end_datetime: Date;
     operator_trip_id: string;
     start_position: Position;
-  }, client?: PoolClient): Promise<Array<string>> {
-    const result = [];
+  }, client?: PoolClient): Promise<TermsViolationErrorDetails> {
+    const result: TermsViolationErrorDetails = [];
     // The journey has been sent too late
     if (differenceInHours(data.created_at, data.start_datetime) > 24) {
-      result.push("expired");
+      result.push({ label: "expired" });
     }
 
     if (data.distance < 1_000) {
-      result.push("distance_too_short");
+      result.push({ label: "distance_too_short" });
     }
 
-    // This select all distinct operator_trip_id that started in the same day
-    // with the same identity key as any role
+    // Count each user's trips separately (not the union of both), otherwise two
+    // regular users each under the limit get flagged for their combined total.
     const tz = getTzFromLon(data.start_position.lon);
-    const journeyCount = await this.lookupRepository.countJourneyBy({
+    const start_date = {
+      min: startOfDay(data.start_datetime, tz),
+      max: endOfDay(data.start_datetime, tz),
+    };
+    const driverJourneyCount = await this.lookupRepository.countJourneyBy({
       operator_id: data.operator_id,
-      identity_key: [data.driver_identity_key, data.passenger_identity_key],
+      identity_key: [data.driver_identity_key],
       identity_key_or: true,
-      start_date: {
-        min: startOfDay(data.start_datetime, tz),
-        max: endOfDay(data.start_datetime, tz),
-      },
+      start_date,
     }, client);
-    if (journeyCount > 4) {
-      result.push("too_many_trips_by_day");
+    const passengerJourneyCount = await this.lookupRepository.countJourneyBy({
+      operator_id: data.operator_id,
+      identity_key: [data.passenger_identity_key],
+      identity_key_or: true,
+      start_date,
+    }, client);
+    if (Math.max(driverJourneyCount, passengerJourneyCount) > MAX_TRIPS_PER_DAY) {
+      result.push({
+        label: "too_many_trips_by_day",
+        metas: { driver: driverJourneyCount, passenger: passengerJourneyCount, limit: MAX_TRIPS_PER_DAY },
+      });
     }
 
     // This select all distinct operator_trip_id that started before
@@ -88,7 +99,7 @@ export class CarpoolAcquisitionService {
       operator_trip_id: data.operator_trip_id,
     }, client);
     if (journeyCloseCount >= 1) {
-      result.push("too_close_trips");
+      result.push({ label: "too_close_trips" });
     }
 
     return result;
@@ -113,7 +124,7 @@ export class CarpoolAcquisitionService {
       if (carpool.conflict) {
         throw new ConflictException(`Carpool already registered at ${carpool.created_at}`);
       }
-      let terms_violation_error_labels: TermsViolationErrorLabels = [];
+      let terms_violation_error_details: TermsViolationErrorDetails = [];
       if (env_or_false("APP_DISABLE_TERMS_VALIDATION")) {
         await this.statusRepository.saveAcquisitionStatus(
           new CarpoolAcquisitionStatus(
@@ -124,7 +135,7 @@ export class CarpoolAcquisitionService {
           conn,
         );
       } else {
-        terms_violation_error_labels = await this.verifyTermsViolation({
+        terms_violation_error_details = await this.verifyTermsViolation({
           operator_id: data.operator_id,
           created_at: carpool.created_at,
           distance: data.distance,
@@ -140,17 +151,17 @@ export class CarpoolAcquisitionService {
           new CarpoolAcquisitionStatus(
             carpool._id,
             request._id,
-            terms_violation_error_labels.length
+            terms_violation_error_details.length
               ? CarpoolAcquisitionStatusEnum.TermsViolationError
               : CarpoolAcquisitionStatusEnum.Received,
           ),
           conn,
         );
 
-        if (terms_violation_error_labels.length) {
+        if (terms_violation_error_details.length) {
           await this.statusRepository.setTermsViolationErrorLabels(
             carpool._id,
-            terms_violation_error_labels,
+            terms_violation_error_details.map((d) => d.label),
             conn,
           );
         }
@@ -158,7 +169,8 @@ export class CarpoolAcquisitionService {
 
       await conn.query("COMMIT");
       return {
-        terms_violation_error_labels,
+        terms_violation_error_labels: terms_violation_error_details.map((d) => d.label),
+        terms_violation_error_details,
         created_at: carpool.created_at,
       };
     } catch (e) {

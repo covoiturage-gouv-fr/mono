@@ -258,13 +258,25 @@ describe("CarpoolAcquisitionService", () => {
     };
 
     const errors = await service.verifyTermsViolation({ ...data, distance: 100 });
-    assertEquals(errors, ["distance_too_short"]);
+    assertEquals(errors, [{ label: "distance_too_short" }]);
     assertEquals(
       carpoolL.countJourneyBy.getCalls().map((c: any) => c.args),
       [
         [
           {
-            identity_key: ["key_driver", "key_passenger"],
+            identity_key: ["key_driver"],
+            identity_key_or: true,
+            start_date: {
+              max: new Date("2024-01-01T22:59:59.999Z"),
+              min: new Date("2023-12-31T23:00:00.000Z"),
+            },
+            operator_id: 1,
+          },
+          undefined,
+        ],
+        [
+          {
+            identity_key: ["key_passenger"],
             identity_key_or: true,
             start_date: {
               max: new Date("2024-01-01T22:59:59.999Z"),
@@ -314,16 +326,25 @@ describe("CarpoolAcquisitionService", () => {
     };
 
     const errors = await service.verifyTermsViolation(data);
-    assertEquals(errors, ["expired"]);
+    assertEquals(errors, [{ label: "expired" }]);
     assertEquals(
       carpoolL.countJourneyBy.getCalls().map((c: any) => c.args),
       [
         [
           {
-            identity_key: [
-              "key_driver",
-              "key_passenger",
-            ],
+            identity_key: ["key_driver"],
+            identity_key_or: true,
+            operator_id: 1,
+            start_date: {
+              max: new Date("2024-10-23T21:59:59.999Z"),
+              min: new Date("2024-10-22T22:00:00.000Z"),
+            },
+          },
+          undefined,
+        ],
+        [
+          {
+            identity_key: ["key_passenger"],
             identity_key_or: true,
             operator_id: 1,
             start_date: {
@@ -355,6 +376,106 @@ describe("CarpoolAcquisitionService", () => {
         ],
       ],
     );
+  });
+
+  describe("too_many_trips_by_day", () => {
+    const operator_id = insertableCarpool.operator_id;
+    // created_at is set by the DB to "now" on insert, so start_datetime must stay
+    // recent (< 24h) to avoid tripping the unrelated "expired" rule.
+    const day = new Date(Date.now() - 4 * 3_600_000);
+
+    function tripAt(minuteOffset: number, overrides: Partial<typeof insertableCarpool>) {
+      const start_datetime = new Date(day.valueOf() + minuteOffset * 60_000);
+      return {
+        ...insertableCarpool,
+        operator_id,
+        start_datetime,
+        end_datetime: new Date(start_datetime.valueOf() + 1_800_000),
+        ...overrides,
+      };
+    }
+
+    async function register(service: CarpoolAcquisitionService, data: ReturnType<typeof tripAt>) {
+      return service.registerRequest({ ...data, api_version: "3" });
+    }
+
+    it("Should not flag two regular users each having 4 trips a day meeting for a 5th trip together", async () => {
+      const service = getService({});
+      const driver_identity_key = "a".repeat(64);
+      const passenger_identity_key = "b".repeat(64);
+
+      // driver already did 4 trips today, each with a different passenger
+      for (let i = 0; i < 4; i++) {
+        await register(
+          service,
+          tripAt(i * 15, {
+            operator_journey_id: `too_many_driver_${i}`,
+            operator_trip_id: `too_many_driver_${i}`,
+            driver_identity_key,
+            passenger_identity_key: `driver_partner_${i}`.padEnd(64, "0"),
+          }),
+        );
+      }
+
+      // passenger already did 4 trips today, each with a different driver
+      for (let i = 0; i < 4; i++) {
+        await register(
+          service,
+          tripAt(60 + i * 15, {
+            operator_journey_id: `too_many_passenger_${i}`,
+            operator_trip_id: `too_many_passenger_${i}`,
+            driver_identity_key: `passenger_partner_${i}`.padEnd(64, "0"),
+            passenger_identity_key,
+          }),
+        );
+      }
+
+      // driver and passenger meet for a 5th trip each, together
+      const res = await register(
+        service,
+        tripAt(150, {
+          operator_journey_id: "too_many_together",
+          operator_trip_id: "too_many_together",
+          driver_identity_key,
+          passenger_identity_key,
+        }),
+      );
+
+      assert(!res.terms_violation_error_labels.includes("too_many_trips_by_day"));
+    });
+
+    it("Should flag a user having 5 trips a day", async () => {
+      const service = getService({});
+      const driver_identity_key = "c".repeat(64);
+
+      for (let i = 0; i < 5; i++) {
+        await register(
+          service,
+          tripAt(i * 15, {
+            operator_journey_id: `five_trips_${i}`,
+            operator_trip_id: `five_trips_${i}`,
+            driver_identity_key,
+            passenger_identity_key: `five_trips_partner_${i}`.padEnd(64, "0"),
+          }),
+        );
+      }
+
+      const res = await register(
+        service,
+        tripAt(150, {
+          operator_journey_id: "five_trips_new",
+          operator_trip_id: "five_trips_new",
+          driver_identity_key,
+          passenger_identity_key: "new_partner".padEnd(64, "0"),
+        }),
+      );
+
+      assert(res.terms_violation_error_labels.includes("too_many_trips_by_day"));
+
+      const detail = res.terms_violation_error_details.find((d) => d.label === "too_many_trips_by_day");
+      assert(detail && "metas" in detail);
+      assertEquals(detail.metas, { driver: 5, passenger: 0, limit: 4 });
+    });
   });
 
   it("Should keep terms_violation_error status when geo batch processes the carpool", async () => {
