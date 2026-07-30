@@ -1,0 +1,29 @@
+version: 2
+models:
+  - name: mb_too_many_trips_flagged
+    description: >
+      Vue app_metabase (GEN-647) sur zone_aggregated.too_many_trips_flagged.
+      Suivi des refus too_many_trips_by_day (à tort vs légitimes) pour Metabase.
+    columns:
+      - name: carpool_id
+        data_type: integer
+      - name: operator_id
+        data_type: integer
+      - name: operator_name
+        data_type: character varying
+      - name: trip_day
+        data_type: date
+      - name: refused_at
+        data_type: timestamp with time zone
+      - name: acquisition_status
+        data_type: character varying
+      - name: sole_reason
+        data_type: boolean
+      - name: driver_trips
+        data_type: bigint
+      - name: passenger_trips
+        data_type: bigint
+      - name: max_trips
+        data_type: bigint
+      - name: wrongly_flagged
+        data_type: boolean

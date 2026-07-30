@@ -1,0 +1,39 @@
+version: 2
+models:
+  - name: too_many_trips_flagged
+    description: >
+      GEN-647 — un trajet par refus `too_many_trips_by_day`, avec le nombre de
+      trajets réels du jour de chaque usager (conducteur / passager) et le drapeau
+      `wrongly_flagged` (aucun des deux n'a dépassé la limite). Sert le suivi du fix.
+    columns:
+      - name: carpool_id
+        description: identifiant du trajet refusé (carpool_v2)
+        data_type: integer
+      - name: operator_id
+        data_type: integer
+      - name: operator_name
+        data_type: character varying
+      - name: trip_day
+        description: jour de départ (fuseau local du point de départ)
+        data_type: date
+      - name: refused_at
+        description: date de décision du refus (created_at du trajet)
+        data_type: timestamp with time zone
+      - name: acquisition_status
+        description: statut d'acquisition courant du trajet
+        data_type: character varying
+      - name: sole_reason
+        description: vrai si too_many_trips_by_day est le seul motif de refus
+        data_type: boolean
+      - name: driver_trips
+        description: trajets distincts du conducteur ce jour-là (tous rôles)
+        data_type: bigint
+      - name: passenger_trips
+        description: trajets distincts du passager ce jour-là (tous rôles)
+        data_type: bigint
+      - name: max_trips
+        description: max(driver_trips, passenger_trips)
+        data_type: bigint
+      - name: wrongly_flagged
+        description: vrai si max_trips <= 4 (refus à tort)
+        data_type: boolean
