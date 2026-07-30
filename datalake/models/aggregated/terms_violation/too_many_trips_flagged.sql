@@ -10,15 +10,15 @@
 
 WITH refused AS (
   SELECT
-    _id                                                           AS carpool_id,
+    _id                                           AS carpool_id,
     operator_id,
     operator_name,
-    start_datetime_tz::date                                       AS trip_day,
-    created_at                                                    AS refused_at,
+    start_datetime_tz::date                       AS trip_day,
+    created_at                                    AS refused_at,
     driver_key,
     passenger_key,
     acquisition_status,
-    terms_violation_error_labels = ARRAY['too_many_trips_by_day'] AS sole_reason
+    CARDINALITY(terms_violation_error_labels) = 1 AS sole_reason
   FROM {{ ref('carpools') }}
   WHERE
     'too_many_trips_by_day' = ANY(terms_violation_error_labels)
