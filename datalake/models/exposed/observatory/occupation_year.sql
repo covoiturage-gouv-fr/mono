@@ -57,7 +57,7 @@ SELECT
   t.trips,
   t.has_incentive,
   round(
-    (t.carpools + t.passenger_seats)::numeric / nullif(t.carpools, 0), 2
+    (t.trips + t.passenger_seats)::numeric / nullif(t.trips, 0), 2
   )                                 AS occupation_rate,
   -- centroïde (point) : la carte trace un cercle par zone, pas le contour
   st_asgeojson(p.centroid, 6)::json AS geom
