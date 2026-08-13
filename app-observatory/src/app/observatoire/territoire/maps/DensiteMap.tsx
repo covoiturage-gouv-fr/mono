@@ -17,8 +17,27 @@ import { useDashboardContext } from '../../../../context/DashboardProvider';
 export default function DensiteMap({ title }: { title: string }) {
   const { dashboard } = useDashboardContext();
   const mapTitle = title;
-  const url = `${OBSERVATORY_API_URL}/location?code=${dashboard.params.code}&type=${dashboard.params.type}&year=${dashboard.params.year}&month=${dashboard.params.month}&n=8`;
-  const { data, error, loading } = useApi<DensiteDataInterface[]>(url);
+  const url = () => {
+    const params = [
+      `code=${dashboard.params.code}`,
+      `type=${dashboard.params.type}`,
+      `year=${dashboard.params.year}`,
+      `n=8`,
+    ];
+    switch (dashboard.params.period) {
+      case "month":
+        params.push(`month=${dashboard.params.month}`);
+        break;
+      case "trimester":
+        params.push(`trimester=${dashboard.params.trimester}`);
+        break;
+      case "semester":
+        params.push(`semester=${dashboard.params.semester}`);
+        break;
+    }
+    return `${OBSERVATORY_API_URL}/location?${params.join("&")}`;
+  };
+  const { data, error, loading } = useApi<DensiteDataInterface[]>(url());
   const mapStyle = Config.get<string>('observatoire.mapStyle');
 
   const analyse = useMemo(() => {
