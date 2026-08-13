@@ -37,10 +37,15 @@ export class GeoRepositoryProvider implements GeoRepositoryProviderInterface {
 
   async getAllGeo(): Promise<AllGeoResultInterface> {
     return await this.pgConnection.query<GeoResultInterface>(sql`
-      SELECT concat(territory, '_', type) as id, territory, l_territory, type
+      SELECT
+        concat(territory, '_', type, '_', year) as id,
+        territory,
+        l_territory,
+        type,
+        year,
+        year = geo.get_latest_millesime() as is_latest
       FROM ${raw(this.tableCentroid)}
-      WHERE year = geo.get_latest_millesime()
-      ORDER BY type, territory
+      ORDER BY type, territory, year
     `);
   }
 

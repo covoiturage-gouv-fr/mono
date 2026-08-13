@@ -72,6 +72,11 @@ export interface TerritoryListInterface {
   territory: INSEECode;
   l_territory: PerimeterLabel;
   type: PerimeterType;
+  // Présents sur les hits de l'index Meilisearch `geo` (plusieurs millésimes par
+  // territoire) ; absents pour les usages génériques de ce type (ex. routing par
+  // getUrl), d'où l'optionalité plutôt qu'un champ requis.
+  year?: number;
+  is_latest?: boolean;
 }
 
 export interface EvolDataInterface {

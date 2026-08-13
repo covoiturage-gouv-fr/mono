@@ -5,6 +5,8 @@ export interface SingleResultInterface {
   territory: PerimeterCode;
   l_territory: PerimeterLabel;
   type: PerimeterType;
+  year: number;
+  is_latest: boolean;
 }
 
 export type ResultInterface = SingleResultInterface[];

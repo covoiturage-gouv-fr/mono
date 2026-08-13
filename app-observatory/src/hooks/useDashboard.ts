@@ -112,6 +112,7 @@ export const useDashboard = () => {
     const query = {
       q: `${value.code}_${value.type}`,
       attributesToSearchOn: ["id"],
+      filter: "is_latest = true",
       limit: 1,
     };
     const response = await fetchSearchAPI("indexes/geo/search", {

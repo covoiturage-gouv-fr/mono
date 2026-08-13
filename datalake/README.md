@@ -262,7 +262,7 @@ Charge les données IGN 2025 (GPKG), CEREMA AOMs, mouvements INSEE, campagnes et
 just pipeline-trusted-geo
 ```
 
-Construit la hiérarchie géographique dans `zone_trusted` (`perimeters`, `perimeters_agg`, `com_evolution`). Base pour tous les JOINs géographiques des carpools.
+Construit la hiérarchie géographique dans `zone_trusted` (`perimeters`, `perimeters_agg`, `com_evolution`). Base pour tous les JOINs géographiques des carpools. Enchaîne automatiquement `just meilisearch-index` : réindexe l'index Meilisearch `geo` (recherche de territoires) sur **tous les millésimes chargés** — pendant côté datalake de la commande API `territory:index`. Chaque document porte `year` et `is_latest` (filtrables) : le dashboard observatoire filtre sur l'année sélectionnée, les consommateurs sans notion d'année (ex. export partenaires) filtrent sur `is_latest = true`. No-op si `APP_MEILISEARCH_HOST` est absent.
 
 ### Étape 2 bis — Stats des tables distantes (FDW)
 
@@ -332,6 +332,7 @@ just pipeline-daily
 | Pipeline du jour                     | `just pipeline-daily`                                        |
 | Backfill d'un modèle sur une période | `just backfill-batch trusted.carpools month 2024-01 2024-12` |
 | Recompute d'une fenêtre précise      | `just dbt-recompute trusted.carpools 2024-06-01 2024-06-30`  |
+| Réindexer la recherche de territoires (Meilisearch) | `just meilisearch-index`                       |
 | Docs dbt en local                    | `just docs-serve`                                            |
 | Lint SQL                             | `just lint`                                                  |
 | Générer les YAMLs d'un layer         | `just osmosis-refactor trusted`                              |

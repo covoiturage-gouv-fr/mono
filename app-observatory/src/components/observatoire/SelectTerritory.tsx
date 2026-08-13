@@ -20,7 +20,8 @@ export default function SelectTerritory(props: { url:string }) {
   const search =  async (v: string | null) => {
     const query = {
       q:v,
-      attributesToSearchOn:['territory','l_territory'], 
+      attributesToSearchOn:['territory','l_territory'],
+      filter:`year = ${dashboard.params.year}`,
       limit:20
     };
     const response = await fetchSearchAPI('indexes/geo/search',{method:'post',body: JSON.stringify(query)});
