@@ -270,7 +270,7 @@ def build_incentive(type_: str, code: str, year: int,
         where.append(f"{tcol} = %(tval)s")
         params["tval"] = tval
     sql = f"""
-      SELECT code, libelle, 'both'::text AS direction, collectivite, operateur, autres
+      SELECT code, libelle, 'both'::text AS direction, collectivite, operateur, autres, no_incentive
       FROM zone_exposed.incentive_{suffix}
       WHERE {' AND '.join(where)}
     """
