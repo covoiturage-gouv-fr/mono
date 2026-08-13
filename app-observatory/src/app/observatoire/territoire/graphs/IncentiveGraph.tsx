@@ -41,6 +41,7 @@ export default function IncentiveGraph({ title }: { title: string }) {
     data && data[0] ? data[0].collectivite : 0,
     data && data[0] ? data[0].operateur : 0,
     data && data[0] ? data[0].autres : 0,
+    data && data[0] ? data[0].no_incentive : 0,
   ];
   const datasetSum = (dataset: number[]) => {
     let sum = 0;
