@@ -1,108 +1,119 @@
-'use client'
-import SectionTitle from '@/components/common/SectionTitle';
-import SelectInList from '@/components/common/SelectInList';
-import SelectMonth from '@/components/observatoire/SelectMonth';
-import SelectObserve from '@/components/observatoire/SelectObserve';
-import SelectPeriod from '@/components/observatoire/SelectPeriod';
-import SelectSemester from '@/components/observatoire/SelectSemester';
-import SelectTerritory from '@/components/observatoire/SelectTerritory';
-import SelectTrimester from '@/components/observatoire/SelectTrimester';
-import SelectYear from '@/components/observatoire/SelectYear';
-import { useDashboardContext } from '@/context/DashboardProvider';
-import { graphList, mapList } from '@/helpers/lists';
-import { PerimeterType } from '@/interfaces/observatoire/Perimeter';
-import { fr } from '@codegouvfr/react-dsfr';
-import { GetPeriod } from '@/helpers/dashboard';
-import { DashboardContextType } from '@/interfaces/common/contextInterface';
-import CircularProgress from '@mui/material/CircularProgress';
-import { useSearchParams } from 'next/navigation';
-import { useEffect } from 'react';
-import DistanceGraph from './graphs/DistanceGraph';
-import FluxGraph from './graphs/FluxGraph';
-import IncentiveGraph from './graphs/IncentiveGraph';
-import OccupationGraph from './graphs/OccupationGraph';
-import RepartitionDistanceGraph from './graphs/RepartitionDistanceGraph';
-import RepartitionHoraireGraph from './graphs/RepartitionHoraireGraph';
-import KeyFigures from './KeyFigures';
-import AiresCovoiturageMap from './maps/AiresMap';
-import DensiteMap from './maps/DensiteMap';
-import FluxMap from './maps/FluxMap';
-import OccupationMap from './maps/OccupationMap';
-import BestFluxTable from './tables/BestFluxTable';
-import BestTerritoriesTable from './tables/BestTerritoriesTable';
+"use client";
+import SectionTitle from "@/components/common/SectionTitle";
+import SelectInList from "@/components/common/SelectInList";
+import SelectMonth from "@/components/observatoire/SelectMonth";
+import SelectObserve from "@/components/observatoire/SelectObserve";
+import SelectPeriod from "@/components/observatoire/SelectPeriod";
+import SelectSemester from "@/components/observatoire/SelectSemester";
+import SelectTerritory from "@/components/observatoire/SelectTerritory";
+import SelectTrimester from "@/components/observatoire/SelectTrimester";
+import SelectYear from "@/components/observatoire/SelectYear";
+import { useDashboardContext } from "@/context/DashboardProvider";
+import { GetPeriod } from "@/helpers/dashboard";
+import { graphList, mapList } from "@/helpers/lists";
+import { DashboardContextType } from "@/interfaces/common/contextInterface";
+import { PerimeterType } from "@/interfaces/observatoire/Perimeter";
+import { fr } from "@codegouvfr/react-dsfr";
+import CircularProgress from "@mui/material/CircularProgress";
+import { useSearchParams } from "next/navigation";
+import { useEffect } from "react";
+import DistanceGraph from "./graphs/DistanceGraph";
+import FluxGraph from "./graphs/FluxGraph";
+import IncentiveGraph from "./graphs/IncentiveGraph";
+import OccupationGraph from "./graphs/OccupationGraph";
+import RepartitionDistanceGraph from "./graphs/RepartitionDistanceGraph";
+import RepartitionHoraireGraph from "./graphs/RepartitionHoraireGraph";
+import KeyFigures from "./KeyFigures";
+import AiresCovoiturageMap from "./maps/AiresMap";
+import DensiteMap from "./maps/DensiteMap";
+import FluxMap from "./maps/FluxMap";
+import OccupationMap from "./maps/OccupationMap";
+import BestFluxTable from "./tables/BestFluxTable";
+import BestTerritoriesTable from "./tables/BestTerritoriesTable";
 
 export default function Dashboard() {
   const searchParams = useSearchParams();
   const { dashboard } = useDashboardContext();
   const period = GetPeriod();
-  const observeLabel = dashboard.params.map == 1 ? 'Flux entre:' : 'Territoires observés';
+  const observeLabel =
+    dashboard.params.map == 1 ? "Flux entre:" : "Territoires observés";
 
   useEffect(() => {
     const params = {
-      code: searchParams.get('code') ? searchParams.get('code')! : 'XXXXX',
-      type: searchParams.get('type') ? searchParams.get('type')! as PerimeterType : 'country'
-    }
+      code: searchParams.get("code") ? searchParams.get("code")! : "XXXXX",
+      type: searchParams.get("type")
+        ? (searchParams.get("type")! as PerimeterType)
+        : "country",
+    };
     dashboard.onLoadTerritory(params);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams.get('code'), searchParams.get('type')]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams.get("code"), searchParams.get("type")]);
 
-  function sectionTitle(dashboard: DashboardContextType["dashboard"] | undefined) {
+  function sectionTitle(
+    dashboard: DashboardContextType["dashboard"] | undefined,
+  ) {
     const name = dashboard && `${dashboard.params.name} du `;
     const start = new Date(period.start_date);
-    const end = new Date(Math.min(new Date(period.end_date).getTime(), new Date().getTime()));
+    const end = new Date(
+      Math.min(new Date(period.end_date).getTime(), new Date().getTime()),
+    );
     return `${name}${start.toLocaleDateString()} au ${end.toLocaleDateString()}`;
   }
 
-  return(
+  return (
     <>
-      <div className={fr.cx('fr-grid-row','fr-grid-row--gutters','fr-mt-5v')}>
-        <div className={fr.cx('fr-col-12','fr-col-md-6')}>
-          <SelectTerritory url={'territoire'} />
+      <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters", "fr-mt-5v")}>
+        <div className={fr.cx("fr-col-12", "fr-col-md-6")}>
+          <SelectTerritory url={"territoire"} />
         </div>
-        <div className={fr.cx('fr-col-12','fr-col-md-6')}>
-          <SelectPeriod id='period' label='Type de période' />
-          {dashboard.params.period === 'month' && <SelectMonth /> }
-          {dashboard.params.period === 'trimester' && <SelectTrimester /> }
-          {dashboard.params.period === 'semester' && <SelectSemester /> }
+        <div className={fr.cx("fr-col-12", "fr-col-md-6")}>
+          <SelectPeriod id="period" label="Type de période" />
+          {dashboard.params.period === "month" && <SelectMonth />}
+          {dashboard.params.period === "trimester" && <SelectTrimester />}
+          {dashboard.params.period === "semester" && <SelectSemester />}
           <SelectYear />
         </div>
       </div>
       {dashboard.loading ? (
-        <div className={fr.cx('fr-grid-row','fr-grid-row--gutters')}>
-          <div className={fr.cx('fr-mx-auto','fr-py-10w')}><CircularProgress /></div>
+        <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters")}>
+          <div className={fr.cx("fr-mx-auto", "fr-py-10w")}>
+            <CircularProgress />
+          </div>
         </div>
-      ) 
-      : (
+      ) : (
         <>
           <SectionTitle title={sectionTitle(dashboard)} />
           <KeyFigures />
-          <div className={fr.cx('fr-grid-row', 'fr-grid-row--gutters')}>
-            <div className={fr.cx('fr-col-12','fr-col-md-6')}>
-              <RepartitionHoraireGraph title='Trajets par horaire' />
+          <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters")}>
+            <div className={fr.cx("fr-col-12", "fr-col-md-6")}>
+              <RepartitionHoraireGraph title="Trajets par horaire" />
             </div>
-            <div className={fr.cx('fr-col-12','fr-col-md-6')}>
-              <RepartitionDistanceGraph title='Répartition des trajets par distance' />
-            </div>
-          </div>
-          <div className={fr.cx('fr-grid-row', 'fr-grid-row--gutters')}>
-            <div className={fr.cx('fr-col-12','fr-col-md-6')}>
-              <BestFluxTable title='Top 10 des trajets les plus covoiturés' limit={10} />
-            </div>
-            <div className={fr.cx('fr-col-12','fr-col-md-6')}>
-              <BestTerritoriesTable title='Top 10 des territoires' limit={10} />
+            <div className={fr.cx("fr-col-12", "fr-col-md-6")}>
+              <RepartitionDistanceGraph title="Répartition des trajets par distance" />
             </div>
           </div>
-          <div className={fr.cx('fr-grid-row', 'fr-grid-row--gutters')}>
-            <div className={fr.cx('fr-col-12','fr-col-md-6')}>
+          <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters")}>
+            <div className={fr.cx("fr-col-12", "fr-col-md-6")}>
+              <BestFluxTable
+                title="Top 10 des trajets les plus covoiturés"
+                limit={10}
+              />
+            </div>
+            <div className={fr.cx("fr-col-12", "fr-col-md-6")}>
+              <BestTerritoriesTable title="Top 10 des territoires" limit={10} />
+            </div>
+          </div>
+          <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters")}>
+            <div className={fr.cx("fr-col-12", "fr-col-md-6")}>
               <IncentiveGraph title="Répartition des incitations par types d'incitateurs" />
             </div>
           </div>
-          <SectionTitle title='Evolution' />
-          <div className={fr.cx('fr-grid-row', 'fr-grid-row--gutters')}>
-            <div className={fr.cx('fr-col-12')}>
+          <SectionTitle title="Evolution" />
+          <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters")}>
+            <div className={fr.cx("fr-col-12")}>
               <SelectInList
-                labelId='graph'
-                label='Sélectionner un graphique'
+                labelId="graph"
+                label="Sélectionner un graphique"
                 id={dashboard.params.graph}
                 list={graphList}
                 sx={{ minWidth: 300 }}
@@ -110,41 +121,64 @@ export default function Dashboard() {
               />
             </div>
           </div>
-          <div className={fr.cx('fr-grid-row', 'fr-grid-row--gutters')}>
-            <div className={fr.cx('fr-col-12')}>
-              {dashboard.params.graph == 1 && <FluxGraph title={graphList[0].name} indic="journeys"/>}
-              {dashboard.params.graph == 2 && <DistanceGraph title={graphList[1].name} />}
-              {dashboard.params.graph == 3 && <OccupationGraph title={graphList[2].name} indic="occupation_rate"/>}
+          <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters")}>
+            <div className={fr.cx("fr-col-12")}>
+              {dashboard.params.graph == 1 && (
+                <FluxGraph title={graphList[0].name} indic="journeys" />
+              )}
+              {dashboard.params.graph == 2 && (
+                <DistanceGraph title={graphList[1].name} />
+              )}
+              {dashboard.params.graph == 3 && (
+                <OccupationGraph
+                  title={graphList[2].name}
+                  indic="occupation_rate"
+                />
+              )}
             </div>
           </div>
-          <SectionTitle title='Cartographie' />
-          <div className={fr.cx('fr-grid-row', 'fr-grid-row--gutters')}>
-            <div className={fr.cx('fr-col-12','fr-col-md-6')}>
+          <SectionTitle title="Cartographie" />
+          <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters")}>
+            <div className={fr.cx("fr-col-12", "fr-col-md-6")}>
               <SelectInList
-                labelId='carte'
-                label='Sélectionner une carte'
+                labelId="carte"
+                label="Sélectionner une carte"
                 id={dashboard.params.map}
-                list={dashboard.params.code=='XXXXX' ? mapList.filter( m => m.id !== 2) : mapList}
+                list={mapList}
                 sx={{ minWidth: 300 }}
                 onChange={dashboard.onChangeMap}
               />
             </div>
-            {[1,3].includes(dashboard.params.map) && 
-              <div className={fr.cx('fr-col-12','fr-col-md-6')}>
-                <SelectObserve id='observe' label={observeLabel} />
+            {[1, 3].includes(dashboard.params.map) && (
+              <div className={fr.cx("fr-col-12", "fr-col-md-6")}>
+                <SelectObserve id="observe" label={observeLabel} />
               </div>
-            }
+            )}
           </div>
-          <div className={fr.cx('fr-grid-row', 'fr-grid-row--gutters')}>
-            <div className={fr.cx('fr-col-12')}>
-              {dashboard.params.map == 1 && <FluxMap title={mapList.find((m) => m.id === 1)?.name ?? ''} />}
-              {dashboard.params.map == 2 && <DensiteMap title={mapList.find((m) => m.id === 2)?.name ?? ''} />}
-              {dashboard.params.map == 3 && <OccupationMap title={mapList.find((m) => m.id === 3)?.name ?? ''} />}
-              {dashboard.params.map == 4 && <AiresCovoiturageMap title={mapList.find((m) => m.id === 4)?.name ?? ''} />}
+          <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters")}>
+            <div className={fr.cx("fr-col-12")}>
+              {dashboard.params.map == 1 && (
+                <FluxMap title={mapList.find((m) => m.id === 1)?.name ?? ""} />
+              )}
+              {dashboard.params.map == 2 && (
+                <DensiteMap
+                  title={mapList.find((m) => m.id === 2)?.name ?? ""}
+                />
+              )}
+              {dashboard.params.map == 3 && (
+                <OccupationMap
+                  title={mapList.find((m) => m.id === 3)?.name ?? ""}
+                />
+              )}
+              {dashboard.params.map == 4 && (
+                <AiresCovoiturageMap
+                  title={mapList.find((m) => m.id === 4)?.name ?? ""}
+                />
+              )}
             </div>
           </div>
         </>
-      )} 
+      )}
     </>
   );
 }
