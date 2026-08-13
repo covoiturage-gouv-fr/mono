@@ -129,4 +129,5 @@ export interface IncentiveDataInterface {
   collectivite: number;
   operateur: number;
   autres: number;
+  no_incentive: number;
 }
