@@ -63,5 +63,5 @@ export const graphList = [
   { id: 1, name: "Evolution du nombre de trajets" },
   { id: 2, name: "Evolution de la distance moyenne des trajets (en km)" },
   { id: 3, name: "Evolution du taux d'occupation" },
-  { id: 4, name: "Evolution du nombre de véhicules partagés" },
+  //{ id: 4, name: "Evolution du nombre de véhicules partagés" },
 ];
