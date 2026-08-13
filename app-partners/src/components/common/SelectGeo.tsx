@@ -30,6 +30,7 @@ export default function SelectGeo(props: {
     const query = {
       q: v,
       attributesToSearchOn: ["territory", "l_territory"],
+      filter: "is_latest = true",
       limit: 20,
     };
     const response = await fetchSearchAPI<{ hits: (typeof defaultOption)[] }>("indexes/geo/search", {

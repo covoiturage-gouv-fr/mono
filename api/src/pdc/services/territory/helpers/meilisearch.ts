@@ -16,6 +16,11 @@ export async function indexData<T>(
     // Selection de l'index. Un index est créé s'il n'existe pas
     const index = client.index(indexName);
 
+    // L'index porte désormais plusieurs millésimes par territoire (year, is_latest) :
+    // les recherches doivent pouvoir filtrer dessus (dashboard = année sélectionnée,
+    // export = dernier millésime). Idempotent, sans effet si déjà configuré.
+    await index.updateFilterableAttributes(["year", "is_latest"]);
+
     // On supprime les documents de l'index
     await index.deleteAllDocuments();
 
