@@ -19,7 +19,7 @@ SELECT
     WHEN mod = 41 THEN 'Changement de code dû à un changement de département'
     WHEN mod = 50 THEN 'Changement de code dû à un transfert de chef-lieu'
   END::varchar                           AS l_mod
-FROM {{ source('raw', 'insee_mvt_com_2025') }}
+FROM {{ source('raw', 'insee_mvt_com_2026') }}
 WHERE
   date_eff::date >= '2020-01-01'
   AND mod IN (20, 21, 30, 31, 32, 33, 41, 50)

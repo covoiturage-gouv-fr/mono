@@ -2,8 +2,6 @@ import os
 import subprocess
 import time
 from typing import Optional
-from pipelines.helpers.duckdb import duckdb_client
-from pipelines.helpers.sql import build_select
 from pipelines.helpers import pg
 
 GEO_EXTS = ("gpkg", "geojson", "shp")
@@ -77,6 +75,33 @@ def _import_geo(table, schema, path, geo_layer, select) -> None:
     raise RuntimeError(f"ogr2ogr a échoué ({proc.returncode}) : {proc.stderr.strip()[:500]}")
 
 
+def export_geo(table: str, schema: str, layer: str, select: list[str], path: str, update: bool = False) -> None:
+  """Exporte une table PostGIS vers un layer GPKG via ogr2ogr (sens inverse de `_import_geo`).
+
+  `update` ajoute le layer à un GPKG existant au lieu d'en créer un nouveau (2e/3e layer d'un même fichier).
+  """
+  cmd = [
+    "ogr2ogr", "-f", "GPKG", path, "PG:",
+    "-sql", f'SELECT {", ".join(select)} FROM "{schema}"."{table}"',
+    "-nln", layer,
+    "-nlt", "PROMOTE_TO_MULTI",  # cohérence avec l'import (mix Polygon/MultiPolygon)
+    "-lco", "GEOMETRY_NAME=geom",
+  ]
+  if update:
+    cmd.append("-update")
+
+  # Mot de passe passé par l'environnement libpq (jamais dans argv/ps).
+  env = {
+    **os.environ,
+    "PGHOST": os.getenv("DBT_HOST", ""), "PGPORT": os.getenv("DBT_PORT", ""),
+    "PGUSER": os.getenv("DBT_USER", ""), "PGPASSWORD": os.getenv("DBT_PASSWORD", ""),
+    "PGDATABASE": os.getenv("DBT_DBNAME", ""),
+  }
+  proc = subprocess.run(cmd, env=env, capture_output=True, text=True)
+  if proc.returncode != 0:
+    raise RuntimeError(f"ogr2ogr (export {schema}.{table} → {layer}) a échoué ({proc.returncode}) : {proc.stderr.strip()[:500]}")
+
+
 def _geom_name(select) -> str:
   """Nom de la colonne géométrie en sortie (alias du champ geometry de la config, défaut « geom »)."""
   for item in select or []:
@@ -110,6 +135,9 @@ def export_table(
     partition_by: Optional[list[str]] = None,
     conn=None,
 ):
+    from pipelines.helpers.duckdb import duckdb_client
+    from pipelines.helpers.sql import build_select
+
     _conn = conn or duckdb_client()
 
     print(f"▶️ Export {schema}.{table} → {path}")
