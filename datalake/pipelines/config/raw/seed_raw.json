@@ -1,41 +1,45 @@
 [
   {
     "name": "old_perimeters_full",
-    "filename": "old_perimeters.20260703T224007Z",
+    "filename": "old_perimeters.20260818T093524Z",
     "ext": "gpkg",
     "geo_layer": "full",
     "select": ["year", "arr", "l_arr", ["geom", "geometry", "geom"]],
-    "sha256": "sha256:e76268afb884b3efcb8f5f68a15b0a36c55e5c8d4277e0b82b2b941b5699a17e",
-    "size": 1258790912,
+    "sha256": "sha256:cab16d53bfaafb23f57f7bd1a2174ec4f7ee3544e3a3ddb363272df2153aacb2",
+    "size": 1826607104,
     "uploaded_at": "2026-07-03T22:40:07+00:00",
     "origin": ""
   },
   {
     "name": "old_perimeters_simple",
-    "filename": "old_perimeters.20260703T224007Z",
+    "filename": "old_perimeters.20260818T093524Z",
     "ext": "gpkg",
     "geo_layer": "simple"
   },
   {
     "name": "old_perimeters_centroid",
-    "filename": "old_perimeters.20260703T224007Z",
+    "filename": "old_perimeters.20260818T093524Z",
     "ext": "gpkg",
     "geo_layer": "centroid",
     "select": ["year", "arr", "l_arr", ["geom", "geometry", "geom"]]
   },
   {
-    "name": "cerema_aom_2025",
-    "filename": "cerema_aom_2025.20260703T223502Z",
+    "name": "cerema_aom_2026",
+    "filename": "cerema_aom_2026.20260818T145654Z",
     "ext": "csv",
-    "columns": [["code_insee", "varchar"], ["l_aom", "varchar"], ["aom", "varchar"]],
-    "sha256": "sha256:a8b9b449e2e25557bd0306274e4443486ac9e8c1736b01e10fdd9eec108617ad",
-    "size": 1381467,
+    "columns": [
+      ["code_insee", "varchar"],
+      ["l_aom", "varchar"],
+      ["aom", "varchar"]
+    ],
+    "sha256": "sha256:3ba7b4885ad4d84357757c7177998d052becd0d49323fa03a3a4811c3d405adf",
+    "size": 1374287,
     "uploaded_at": "2026-07-03T22:35:02+00:00",
     "origin": ""
   },
   {
-    "name": "ign_ae_arr_2025",
-    "filename": "ADE-COG_4-0_GPKG_WGS84G_FRA-ED2025-01-01.20260703T223745Z",
+    "name": "ign_ae_arr_2026",
+    "filename": "ADE-COG_4-0_GPKG_WGS84G_FRA-ED2026-01-01.20260818T145656Z",
     "ext": "gpkg",
     "geo_layer": "arrondissement_municipal",
     "select": [
@@ -45,14 +49,14 @@
       "population",
       ["geometrie", "geometry", " geom"]
     ],
-    "sha256": "sha256:9a72bdc674f59919a328ccc235dda9cb7143149b3dd02e4c67db75577e50f595",
-    "size": 1139765248,
+    "sha256": "sha256:cf18f0ef2c45b08e4967af92bc9950d9414386013e08123fa35da31ba40d47f5",
+    "size": 1139625984,
     "uploaded_at": "2026-07-03T22:37:45+00:00",
     "origin": ""
   },
   {
-    "name": "ign_ae_com_2025",
-    "filename": "ADE-COG_4-0_GPKG_WGS84G_FRA-ED2025-01-01.20260703T223745Z",
+    "name": "ign_ae_com_2026",
+    "filename": "ADE-COG_4-0_GPKG_WGS84G_FRA-ED2026-01-01.20260818T145656Z",
     "ext": "gpkg",
     "geo_layer": "commune",
     "select": [
@@ -66,8 +70,8 @@
     ]
   },
   {
-    "name": "ign_ae_dep_2025",
-    "filename": "ADE-COG_4-0_GPKG_WGS84G_FRA-ED2025-01-01.20260703T223745Z",
+    "name": "ign_ae_dep_2026",
+    "filename": "ADE-COG_4-0_GPKG_WGS84G_FRA-ED2026-01-01.20260818T145656Z",
     "ext": "gpkg",
     "geo_layer": "departement",
     "select": [
@@ -77,8 +81,8 @@
     ]
   },
   {
-    "name": "ign_ae_epci_2025",
-    "filename": "ADE-COG_4-0_GPKG_WGS84G_FRA-ED2025-01-01.20260703T223745Z",
+    "name": "ign_ae_epci_2026",
+    "filename": "ADE-COG_4-0_GPKG_WGS84G_FRA-ED2026-01-01.20260818T145656Z",
     "ext": "gpkg",
     "geo_layer": "epci",
     "select": [
@@ -88,8 +92,8 @@
     ]
   },
   {
-    "name": "ign_ae_reg_2025",
-    "filename": "ADE-COG_4-0_GPKG_WGS84G_FRA-ED2025-01-01.20260703T223745Z",
+    "name": "ign_ae_reg_2026",
+    "filename": "ADE-COG_4-0_GPKG_WGS84G_FRA-ED2026-01-01.20260818T145656Z",
     "ext": "gpkg",
     "geo_layer": "region",
     "select": [
@@ -99,11 +103,11 @@
     ]
   },
   {
-    "name": "ign_aecarto_arr_2025",
-    "filename": "ADE-COG-CARTO-PE_4-0_GPKG_WGS84G_FRA-ED2025-01-01.20260703T223746Z",
+    "name": "ign_aecarto_arr_2026",
+    "filename": "ADE-COG-CARTO-PE_4-0_GPKG_WGS84G_FRA-ED2026-01-01.20260818T145657Z",
     "ext": "gpkg",
-    "sha256": "sha256:8a3d47e9e0c40a46874c593dafb4250cd1dd1e850911362123e185533efc1991",
-    "size": 52441088,
+    "sha256": "sha256:132803b59ae5ce8d91d5c93c322c3a30cabe86e22027e701fe9428898f1a407f",
+    "size": 53702656,
     "uploaded_at": "2026-07-03T22:37:46+00:00",
     "origin": "",
     "geo_layer": "arrondissement_municipal",
@@ -116,8 +120,8 @@
     ]
   },
   {
-    "name": "ign_aecarto_com_2025",
-    "filename": "ADE-COG-CARTO-PE_4-0_GPKG_WGS84G_FRA-ED2025-01-01.20260703T223746Z",
+    "name": "ign_aecarto_com_2026",
+    "filename": "ADE-COG-CARTO-PE_4-0_GPKG_WGS84G_FRA-ED2026-01-01.20260818T145657Z",
     "ext": "gpkg",
     "geo_layer": "commune",
     "select": [
@@ -131,8 +135,8 @@
     ]
   },
   {
-    "name": "ign_aecarto_dep_2025",
-    "filename": "ADE-COG-CARTO-PE_4-0_GPKG_WGS84G_FRA-ED2025-01-01.20260703T223746Z",
+    "name": "ign_aecarto_dep_2026",
+    "filename": "ADE-COG-CARTO-PE_4-0_GPKG_WGS84G_FRA-ED2026-01-01.20260818T145657Z",
     "ext": "gpkg",
     "geo_layer": "departement",
     "select": [
@@ -142,8 +146,8 @@
     ]
   },
   {
-    "name": "ign_aecarto_epci_2025",
-    "filename": "ADE-COG-CARTO-PE_4-0_GPKG_WGS84G_FRA-ED2025-01-01.20260703T223746Z",
+    "name": "ign_aecarto_epci_2026",
+    "filename": "ADE-COG-CARTO-PE_4-0_GPKG_WGS84G_FRA-ED2026-01-01.20260818T145657Z",
     "ext": "gpkg",
     "geo_layer": "epci",
     "select": [
@@ -153,8 +157,8 @@
     ]
   },
   {
-    "name": "ign_aecarto_reg_2025",
-    "filename": "ADE-COG-CARTO-PE_4-0_GPKG_WGS84G_FRA-ED2025-01-01.20260703T223746Z",
+    "name": "ign_aecarto_reg_2026",
+    "filename": "ADE-COG-CARTO-PE_4-0_GPKG_WGS84G_FRA-ED2026-01-01.20260818T145657Z",
     "ext": "gpkg",
     "geo_layer": "region",
     "select": [
@@ -164,35 +168,35 @@
     ]
   },
   {
-    "name": "ign_aecentroid_arr_2025",
-    "filename": "ADE-COG-CARTO-PE_4-0_GPKG_WGS84G_FRA-ED2025-01-01.20260703T223746Z",
+    "name": "ign_aecentroid_arr_2026",
+    "filename": "ADE-COG-CARTO-PE_4-0_GPKG_WGS84G_FRA-ED2026-01-01.20260818T145657Z",
     "ext": "gpkg",
     "geo_layer": "chef_lieu_d_arrondissement_municipal",
     "select": [
       ["nom_officiel", "varchar", "l_arr"],
-      ["code_insee", "varchar", "arr"],
+      ["code_insee_de_l_arrondissement_municipal", "varchar", "arr"],
       ["code_insee_de_la_commune_de_rattach", "varchar", "com"],
       ["geometrie", "geometry", "geom"]
     ]
   },
   {
-    "name": "ign_aecentroid_com_2025",
-    "filename": "ADE-COG-CARTO-PE_4-0_GPKG_WGS84G_FRA-ED2025-01-01.20260703T223746Z",
+    "name": "ign_aecentroid_com_2026",
+    "filename": "ADE-COG-CARTO-PE_4-0_GPKG_WGS84G_FRA-ED2026-01-01.20260818T145657Z",
     "ext": "gpkg",
     "geo_layer": "chef_lieu_de_commune",
     "select": [
       ["nom_officiel", "varchar", "l_com"],
-      ["code_insee", "varchar", "com"],
+      ["code_insee_de_la_commune", "varchar", "com"],
       ["geometrie", "geometry", "geom"]
     ]
   },
   {
-    "name": "insee_mvt_com_2025",
-    "filename": "insee_mvt_com_2025.20260703T223507Z",
+    "name": "insee_mvt_com_2026",
+    "filename": "insee_mvt_com_2026.20260818T145655Z",
     "ext": "csv",
-    "sha256": "sha256:731fca6b9d330b70d654c3c019f43048df376a90dcb93414641526adc21d8c84",
-    "size": 2053190,
-    "uploaded_at": "2026-07-03T22:35:07+00:00",
+    "sha256": "sha256:8b339fad8232e97233af3fd9468715af845e2cf8b14cb67b24d9a301ef8645f1",
+    "size": 2076555,
+    "uploaded_at": "2026-08-18T14:56:55+00:00",
     "origin": "",
     "select": [
       ["MOD", "integer", "mod"],
@@ -208,22 +212,42 @@
     "filename": "campaigns.20260708T200045Z",
     "ext": "csv",
     "columns": [
-      ["column00", "varchar"], ["collectivite", "varchar"], ["operateurs", "varchar"],
-      ["Mise à jour", "date"], ["email", "varchar"], ["type", "varchar"], ["code", "varchar"],
-      ["premiere_campagne", "varchar"], ["budget_incitations", "varchar"],
-      ["date_debut", "date"], ["date_fin", "date"],
-      ["conducteur_montant_max_par_passager", "varchar"], ["conducteur_montant_max_par_mois", "bigint"],
-      ["conducteur_montant_min_par_passager", "varchar"], ["conducteur_trajets_max_par_mois", "bigint"],
-      ["passager_trajets_max_par_mois", "bigint"], ["passager_gratuite", "varchar"],
-      ["passager_eligible_gratuite", "varchar"], ["passager_reduction_ticket", "varchar"],
-      ["passager_eligibilite_reduction", "varchar"], ["passager_montant_ticket", "varchar"],
-      ["zone_sens_des_trajets", "varchar"], ["zone_exclusion", "varchar"],
-      ["si_zone_exclue_liste", "varchar"], ["autre_exclusion", "varchar"],
-      ["trajet_longueur_min", "bigint"], ["trajet_longueur_max", "bigint"],
-      ["trajet_classe_de_preuve", "varchar"], ["autres_informations", "varchar"],
-      ["zone_sens_des_trajets_litteral", "varchar"], ["lien_page_collectivité", "varchar"],
-      ["nom_plateforme", "varchar"], ["nom_région", "varchar"], ["siren_et_code_région", "varchar"],
-      ["conducteur_trajets_max_par_jour", "bigint"], ["passager_trajets_max_par_jour", "bigint"],
+      ["column00", "varchar"],
+      ["collectivite", "varchar"],
+      ["operateurs", "varchar"],
+      ["Mise à jour", "date"],
+      ["email", "varchar"],
+      ["type", "varchar"],
+      ["code", "varchar"],
+      ["premiere_campagne", "varchar"],
+      ["budget_incitations", "varchar"],
+      ["date_debut", "date"],
+      ["date_fin", "date"],
+      ["conducteur_montant_max_par_passager", "varchar"],
+      ["conducteur_montant_max_par_mois", "bigint"],
+      ["conducteur_montant_min_par_passager", "varchar"],
+      ["conducteur_trajets_max_par_mois", "bigint"],
+      ["passager_trajets_max_par_mois", "bigint"],
+      ["passager_gratuite", "varchar"],
+      ["passager_eligible_gratuite", "varchar"],
+      ["passager_reduction_ticket", "varchar"],
+      ["passager_eligibilite_reduction", "varchar"],
+      ["passager_montant_ticket", "varchar"],
+      ["zone_sens_des_trajets", "varchar"],
+      ["zone_exclusion", "varchar"],
+      ["si_zone_exclue_liste", "varchar"],
+      ["autre_exclusion", "varchar"],
+      ["trajet_longueur_min", "bigint"],
+      ["trajet_longueur_max", "bigint"],
+      ["trajet_classe_de_preuve", "varchar"],
+      ["autres_informations", "varchar"],
+      ["zone_sens_des_trajets_litteral", "varchar"],
+      ["lien_page_collectivité", "varchar"],
+      ["nom_plateforme", "varchar"],
+      ["nom_région", "varchar"],
+      ["siren_et_code_région", "varchar"],
+      ["conducteur_trajets_max_par_jour", "bigint"],
+      ["passager_trajets_max_par_jour", "bigint"],
       ["politique_incitative_aom", "varchar"]
     ],
     "sha256": "sha256:b464d586e234ce175aff263a5e18afb606ab020d50fd408bdc5c6f94d1bae676",
@@ -236,11 +260,25 @@
     "filename": "aires_covoiturage.20260708T200046Z",
     "ext": "csv",
     "columns": [
-      ["id_lieu", "varchar"], ["id_local", "varchar"], ["nom_lieu", "varchar"], ["ad_lieu", "varchar"],
-      ["com_lieu", "varchar"], ["insee", "varchar"], ["type", "varchar"], ["date_maj", "date"],
-      ["ouvert", "boolean"], ["source", "bigint"], ["Xlong", "double precision"], ["Ylat", "double precision"],
-      ["nbre_pl", "bigint"], ["nbre_pmr", "bigint"], ["duree", "bigint"], ["horaires", "varchar"],
-      ["proprio", "varchar"], ["lumiere", "boolean"], ["comm", "varchar"]
+      ["id_lieu", "varchar"],
+      ["id_local", "varchar"],
+      ["nom_lieu", "varchar"],
+      ["ad_lieu", "varchar"],
+      ["com_lieu", "varchar"],
+      ["insee", "varchar"],
+      ["type", "varchar"],
+      ["date_maj", "date"],
+      ["ouvert", "boolean"],
+      ["source", "bigint"],
+      ["Xlong", "double precision"],
+      ["Ylat", "double precision"],
+      ["nbre_pl", "bigint"],
+      ["nbre_pmr", "bigint"],
+      ["duree", "bigint"],
+      ["horaires", "varchar"],
+      ["proprio", "varchar"],
+      ["lumiere", "boolean"],
+      ["comm", "varchar"]
     ],
     "sha256": "sha256:53af1d61b4f1194d61c9182a1e8240bbb7badf14da19bc7a74926bcab8309a69",
     "size": 421987,

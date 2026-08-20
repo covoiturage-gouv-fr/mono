@@ -69,6 +69,11 @@ seed config schema *args:
 checksum config *args:
   python -m pipelines.cmd.checksum pipelines/config/{{config}} {{args}}
 
+# Régénère le GPKG old_perimeters (archive) depuis zone_trusted.perimeters et l'upload sur S3.
+# Étape suivante : `just checksum raw/seed_raw.json --folder seeds --write`
+archive-old-perimeters *args:
+  python -m pipelines.cmd.archive_perimeters {{args}}
+
 # Réconcilie les sources d'une config avec notre S3 : recopie les manquantes accessibles, signale les manuelles
 mirror config *args:
   python -m pipelines.cmd.mirror pipelines/config/{{config}} {{args}}
