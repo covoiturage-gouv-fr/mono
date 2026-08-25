@@ -22,7 +22,7 @@ primo_passengers_by_month as (
 )
 
 select
-  coalesce(d.ym, p.ym)            as ym,
+  coalesce(d.ym, p.ym)            as mois,
   coalesce(d.primo_drivers, 0)    as primo_drivers,
   coalesce(p.primo_passengers, 0) as primo_passengers
 from primo_drivers_by_month as d

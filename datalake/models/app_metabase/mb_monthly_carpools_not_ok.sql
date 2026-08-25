@@ -5,7 +5,7 @@
 
 SELECT
   date_trunc('month', start_datetime_tz)::date
-    AS incremental_date,
+    AS mois,
   count(*) FILTER (WHERE acquisition_status = 'failed')
     AS acquisition_failed,
   count(*) FILTER (WHERE acquisition_status = 'canceled')

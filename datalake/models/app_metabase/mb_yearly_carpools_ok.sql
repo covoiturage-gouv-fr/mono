@@ -4,7 +4,7 @@
 ) }}
 
 SELECT
-  year,
+  year                AS annee,
   SUM(carpools_valid) AS count
 FROM {{ ref('fraud_year_country_from') }}
 GROUP BY year

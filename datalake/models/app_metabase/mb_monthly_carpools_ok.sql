@@ -4,7 +4,7 @@
 ) }}
 
 SELECT
-  incremental_date,
+  incremental_date    AS mois,
   SUM(carpools_valid) AS count
 FROM {{ ref('fraud_month_country_from') }}
 GROUP BY incremental_date
