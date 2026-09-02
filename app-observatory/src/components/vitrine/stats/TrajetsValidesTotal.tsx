@@ -1,25 +1,27 @@
 "use client";
 
-import { TRAJETS_VALIDES_TOTAL } from "@/app/startup-etat/stats/data";
+import { TRAJETS_VALIDES_INDICATEUR } from "@/app/startup-etat/stats/data";
+import Rows from "@/components/observatoire/indicators/Rows";
 import { OBSERVATORY_API_URL } from "@/helpers/api";
 import { useApi } from "@/hooks/useApi";
-import StatFigure from "./StatFigure";
 
 type EvolFluxRow = { year: number; journeys: number | string };
 
 // Total des trajets « passager » validés = somme de la série annuelle nationale
-// (API observatoire), avec repli sur la valeur figée (src/app/stats/data.ts).
+// d'evol-flux (2019 → année en cours). Rien n'est rendu tant que l'API n'a pas
+// répondu : pas de valeur de repli figée.
 export default function TrajetsValidesTotal() {
-  const url = `${OBSERVATORY_API_URL}/evol-flux?code=XXXXX&type=country&indic=journeys&past=7`;
+  const url = `${OBSERVATORY_API_URL}/evol-flux?code=XXXXX&type=country&indic=journeys`;
   const { data } = useApi<EvolFluxRow[]>(url);
-  const sum = (data ?? []).reduce((total, r) => total + Number(r.journeys), 0);
-  const total = sum > 0 ? sum : TRAJETS_VALIDES_TOTAL;
+  if (!data || data.length === 0) return null;
+
+  const total = data.reduce((sum, r) => sum + Number(r.journeys), 0);
 
   return (
-    <StatFigure
-      value={total.toLocaleString("fr-FR")}
-      label={'trajets « passager » validés depuis 2019'}
-      note="Trajets courte distance transmis par les plateformes de covoiturage partenaires et validés par les services de normalisation et de contrôle de covoiturage.beta.gouv.fr."
+    <Rows
+      data={[
+        { ...TRAJETS_VALIDES_INDICATEUR, value: total.toLocaleString("fr-FR") },
+      ]}
     />
   );
 }

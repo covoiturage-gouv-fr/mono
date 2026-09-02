@@ -1,6 +1,6 @@
 import PageTitle from "@/components/common/PageTitle";
-import StatChart from "@/components/vitrine/stats/StatChart";
-import StatFigure from "@/components/vitrine/stats/StatFigure";
+import Chart from "@/components/observatoire/charts/Chart";
+import Rows from "@/components/observatoire/indicators/Rows";
 import TrajetsChart from "@/components/vitrine/stats/TrajetsChart";
 import TrajetsValidesTotal from "@/components/vitrine/stats/TrajetsValidesTotal";
 import { fr } from "@codegouvfr/react-dsfr";
@@ -21,16 +21,8 @@ export const metadata: Metadata = {
     "Mesures d'impact de la Startup d'État covoiturage.beta.gouv.fr : accompagnement des collectivités, qualité de la donnée, déploiement des dispositifs du plan national covoiturage.",
 };
 
-const COL = {
-  3: "fr-col-md-3",
-  4: "fr-col-md-4",
-  6: "fr-col-md-6",
-} as const;
-
 const DOC =
   "https://doc.covoiturage.beta.gouv.fr/bienvenue/manifeste/politiques-publiques-en-faveur-du-covoiturage";
-
-const fig = (id: keyof typeof INDICATEURS) => INDICATEURS[id];
 
 function Section({
   title,
@@ -50,16 +42,6 @@ function Section({
   );
 }
 
-function Col({
-  children,
-  md = 4,
-}: {
-  children: React.ReactNode;
-  md?: keyof typeof COL;
-}) {
-  return <div className={fr.cx("fr-col-12", COL[md])}>{children}</div>;
-}
-
 export default function StatsPage() {
   return (
     <div id="content">
@@ -75,32 +57,14 @@ export default function StatsPage() {
         title="Impact n°1 — Animer et accompagner un écosystème au cœur duquel se trouvent les collectivités"
         intro="covoiturage.beta.gouv.fr fédère les plateformes de covoiturage et outille les collectivités qui déploient des politiques publiques en faveur du covoiturage du quotidien."
       >
-        <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters")}>
-          <Col>
-            <StatFigure
-              value={fig("plateformes_actives").valeur}
-              label="plateformes de covoiturage partenaires actives"
-              note={fig("plateformes_actives").note}
-            />
-          </Col>
-          <Col>
-            <StatFigure
-              value={fig("collectivites_accompagnees").valeur}
-              label="collectivités accompagnées"
-              note={fig("collectivites_accompagnees").note}
-            />
-          </Col>
-          <Col>
-            <StatFigure
-              value={fig("pct_collectivites_reduiraient_incitations").valeur}
-              label="des collectivités réduiraient leurs incitations financières au covoiturage en cas d'arrêt du service"
-              note={fig("pct_collectivites_reduiraient_incitations").note}
-            />
-          </Col>
-        </div>
+        <Rows
+          data={[
+            INDICATEURS.plateformes_actives,
+            INDICATEURS.collectivites_accompagnees,
+            INDICATEURS.pct_collectivites_reduiraient_incitations,
+          ]}
+        />
         <p className={fr.cx("fr-text--sm", "fr-mt-2w")}>
-          4 webinaires et 24 démonstrations par an, une journée nationale du
-          covoiturage, des rendez-vous individuels.{" "}
           <Link
             href="https://us02web.zoom.us/webinar/register/WN_Ww5g-l7wQHOBbN9CNeCaZA#/registration"
             target="_blank"
@@ -116,11 +80,7 @@ export default function StatsPage() {
         title="Impact n°2 — Être tiers de confiance sur la qualité de la donnée pour planifier, suivre et mesurer les politiques publiques covoiturage"
         intro="covoiturage.beta.gouv.fr normalise et contrôle les trajets transmis par les plateformes, puis diffuse la donnée en open data pour piloter les politiques publiques."
       >
-        <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters")}>
-          <Col md={6}>
-            <TrajetsValidesTotal />
-          </Col>
-        </div>
+        <TrajetsValidesTotal />
 
         <TrajetsChart granularity="month" />
         <p className={fr.cx("fr-hint-text", "fr-mb-4w")}>
@@ -133,12 +93,13 @@ export default function StatsPage() {
 
         <TrajetsChart granularity="year" />
 
-        <StatChart
+        <Chart
           title="Coût unitaire d'un trajet validé par covoiturage.beta.gouv.fr"
           kind="line"
           unit="€"
           labels={COUT_UNITAIRE_TRAJET.map((p) => p.x)}
-          values={COUT_UNITAIRE_TRAJET.map((p) => p.y)}
+          data={COUT_UNITAIRE_TRAJET.map((p) => p.y)}
+          download={{ data: COUT_UNITAIRE_TRAJET, filename: "cout-unitaire-trajet" }}
         />
         <p className={fr.cx("fr-hint-text", "fr-mb-4w")}>
           Coût de fonctionnement annuel total de covoiturage.beta.gouv.fr divisé
@@ -146,22 +107,12 @@ export default function StatsPage() {
           progression de l’efficience du service dans le temps.
         </p>
 
-        <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters")}>
-          <Col md={6}>
-            <StatFigure
-              value={fig("note_satisfaction_observatoire").valeur}
-              label="note de satisfaction des collectivités sur l'utilité de l'Observatoire national du covoiturage"
-              note={fig("note_satisfaction_observatoire").note}
-            />
-          </Col>
-          <Col md={6}>
-            <StatFigure
-              value={fig("telechargements_datagouv").valeur}
-              label="téléchargements du jeu de données ouvert sur data.gouv.fr"
-              note={fig("telechargements_datagouv").note}
-            />
-          </Col>
-        </div>
+        <Rows
+          data={[
+            INDICATEURS.note_satisfaction_observatoire,
+            INDICATEURS.telechargements_datagouv,
+          ]}
+        />
         <p className={fr.cx("fr-text--sm", "fr-mt-2w")}>
           <Link
             href="https://observatoire.covoiturage.gouv.fr/observatoire/territoire"
@@ -197,15 +148,7 @@ export default function StatsPage() {
           </Link>
           .
         </p>
-        <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters")}>
-          <Col md={6}>
-            <StatFigure
-              value={fig("attestations_honneur_fmd_total").valeur}
-              label="attestations sur l'honneur (FMD) éditées depuis octobre 2020"
-              note={`dont ${fig("attestations_honneur_fmd_2025").valeur} en 2025 — ${fig("attestations_honneur_fmd_2025").note}`}
-            />
-          </Col>
-        </div>
+        <Rows data={[INDICATEURS.attestations_honneur_fmd_total]} />
 
         <h3 className={fr.cx("fr-h6", "fr-mt-4w")}>Le Fonds vert</h3>
         <p className={fr.cx("fr-text--sm")}>
@@ -221,29 +164,13 @@ export default function StatsPage() {
           </Link>
           .
         </p>
-        <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters")}>
-          <Col>
-            <StatFigure
-              value={fig("campagnes_incitation_2024").valeur}
-              label="nouvelles campagnes d'incitations financières déployées en 2024"
-              note={fig("campagnes_incitation_2024").note}
-            />
-          </Col>
-          <Col>
-            <StatFigure
-              value={fig("lignes_covoiturage_2024").valeur}
-              label="projets de lignes de covoiturage déployés pour les périphéries en 2024"
-              note={fig("lignes_covoiturage_2024").note}
-            />
-          </Col>
-          <Col>
-            <StatFigure
-              value={fig("aires_covoiturage_2024").valeur}
-              label="créations d'aires de covoiturage en 2024"
-              note={fig("aires_covoiturage_2024").note}
-            />
-          </Col>
-        </div>
+        <Rows
+          data={[
+            INDICATEURS.campagnes_incitation_2024,
+            INDICATEURS.lignes_covoiturage_2024,
+            INDICATEURS.aires_covoiturage_2024,
+          ]}
+        />
 
         <h3 className={fr.cx("fr-h6", "fr-mt-4w")}>
           Les primes de 100 € — covoiturage courte distance
@@ -260,10 +187,11 @@ export default function StatsPage() {
           </Link>
           .
         </p>
-        <StatChart
+        <Chart
           title="Demandes de CEE enregistrées mensuellement par le RPC — covoiturage courte distance"
           labels={CEE_COURTE_DISTANCE.map((p) => frMonthLabel(p.x))}
-          values={CEE_COURTE_DISTANCE.map((p) => p.y)}
+          data={CEE_COURTE_DISTANCE.map((p) => p.y)}
+          download={{ data: CEE_COURTE_DISTANCE, filename: "cee-courte-distance" }}
         />
 
         <h3 className={fr.cx("fr-h6", "fr-mt-4w")}>
@@ -281,10 +209,11 @@ export default function StatsPage() {
           </Link>
           .
         </p>
-        <StatChart
+        <Chart
           title="Demandes de CEE enregistrées mensuellement par le RPC — covoiturage longue distance"
           labels={CEE_LONGUE_DISTANCE.map((p) => frMonthLabel(p.x))}
-          values={CEE_LONGUE_DISTANCE.map((p) => p.y)}
+          data={CEE_LONGUE_DISTANCE.map((p) => p.y)}
+          download={{ data: CEE_LONGUE_DISTANCE, filename: "cee-longue-distance" }}
         />
       </Section>
 

@@ -1,54 +1,112 @@
 // Données figées de la page /stats (mesures d'impact de la Startup d'État).
 // Relevées à la main depuis le dashboard Metabase 111 — public :
 // https://stats.covoiturage.beta.gouv.fr/public/dashboard/2084d346-8e3b-495e-9b10-b4870a35632a
-// Voir src/app/stats/README.md pour la procédure de rafraîchissement.
+// Voir src/app/startup-etat/stats/README.md pour la procédure de rafraîchissement.
 // Dernier relevé : 2026-09-02.
+
+import { IndicatorProps } from "@/interfaces/observatoire/componentsInterfaces";
 
 export interface SeriePoint {
   x: string;
   y: number;
 }
 
-export interface Indicateur {
-  valeur: string;
-  note: string;
-}
-
 // Objectif national : 3 millions de trajets quotidiens en covoiturage d'ici 2027,
 // soit ~3 M de « trajets passager » validés par mois (repère du graphe mensuel).
 export const TRAJETS_GOAL_2027 = 3_000_000;
 
-// Total des trajets « passager » validés depuis 2019. Sert de repli quand la somme
-// de la série annuelle de l'API n'est pas disponible.
-export const TRAJETS_VALIDES_TOTAL = 49_933_442;
-
+// Indicateurs chiffrés du dashboard, au format du composant <Indicator> (via <Rows>).
+// `text` = libellé, `note` = sous-texte gris, `items` = puces, `md` = largeur de colonne.
 export const INDICATEURS = {
-  plateformes_actives: { valeur: "10", note: "vs 23 actives fin 2024" },
-  collectivites_accompagnees: { valeur: "150+", note: "" },
+  // carte Metabase 441
+  plateformes_actives: {
+    __component: "row.indicator",
+    value: "10",
+    unit: "",
+    md: 4,
+    text: "plateformes de covoiturage partenaires actives",
+    note: "vs 23 actives fin 2024",
+  },
+  collectivites_accompagnees: {
+    __component: "row.indicator",
+    value: "150+",
+    unit: "",
+    md: 4,
+    text: "collectivités accompagnées",
+    items: [
+      "4 webinaires d'information par an",
+      "24 démonstrations de l'outil par an",
+      "une journée nationale du covoiturage",
+      "des rendez-vous individuels",
+    ],
+  },
   pct_collectivites_reduiraient_incitations: {
-    valeur: "48 %",
+    __component: "row.indicator",
+    value: "48 %",
+    unit: "",
+    md: 4,
+    text: "des collectivités réduiraient leurs incitations financières au covoiturage en cas d'arrêt du service",
     note: "vs 43 % qui déclaraient réduire ou arrêter à la même question en 2024 (répondants de l'étude d'impact 2025 auprès des collectivités)",
   },
   note_satisfaction_observatoire: {
-    valeur: "8,31/10",
+    __component: "row.indicator",
+    value: "8,31/10",
+    unit: "",
+    md: 6,
+    text: "note de satisfaction des collectivités sur l'utilité de l'Observatoire national du covoiturage",
     note: "vs 8,49/10 en 2024",
   },
   telechargements_datagouv: {
-    valeur: "8 480",
+    __component: "row.indicator",
+    value: "8 480",
+    unit: "",
+    md: 6,
+    text: "téléchargements du jeu de données ouvert sur data.gouv.fr",
     note: "téléchargements comptabilisés en 2025",
   },
-  attestations_honneur_fmd_total: { valeur: "337 014", note: "" },
-  attestations_honneur_fmd_2025: {
-    valeur: "110 231",
-    note: "vs 93 587 en 2024",
+  // carte Metabase 417
+  attestations_honneur_fmd_total: {
+    __component: "row.indicator",
+    value: "337 014",
+    unit: "",
+    md: 6,
+    text: "attestations sur l'honneur (FMD) éditées depuis octobre 2020",
+    note: "dont 110 231 en 2025 (vs 93 587 en 2024)",
   },
   campagnes_incitation_2024: {
-    valeur: "137",
+    __component: "row.indicator",
+    value: "137",
+    unit: "",
+    md: 4,
+    text: "nouvelles campagnes d'incitations financières déployées en 2024",
     note: "+55 % par rapport à 2023",
   },
-  lignes_covoiturage_2024: { valeur: "77", note: "pour les périphéries" },
-  aires_covoiturage_2024: { valeur: "123", note: "" },
-} satisfies Record<string, Indicateur>;
+  lignes_covoiturage_2024: {
+    __component: "row.indicator",
+    value: "77",
+    unit: "",
+    md: 4,
+    text: "projets de lignes de covoiturage déployés en 2024",
+    note: "pour les périphéries",
+  },
+  aires_covoiturage_2024: {
+    __component: "row.indicator",
+    value: "123",
+    unit: "",
+    md: 4,
+    text: "créations d'aires de covoiturage en 2024",
+  },
+} satisfies Record<string, IndicatorProps>;
+
+// Indicateur « trajets validés depuis 2019 » : `value` calculée au runtime dans
+// <TrajetsValidesTotal> (somme de la série annuelle evol-flux, sans repli).
+export const TRAJETS_VALIDES_INDICATEUR = {
+  __component: "row.indicator",
+  unit: "",
+  md: 6,
+  text: 'trajets « passager » validés depuis 2019',
+  note: "Trajets courte distance transmis par les plateformes de covoiturage partenaires et validés par les services de normalisation et de contrôle de covoiturage.beta.gouv.fr.",
+} satisfies Omit<IndicatorProps, "value">;
 
 // Repli du graphe mensuel des trajets « passager » validés (carte Metabase 413).
 // L'API observatoire ne remonte que ~7 ans glissants : ce repli garde l'historique
@@ -228,8 +286,18 @@ export const CEE_LONGUE_DISTANCE: SeriePoint[] = [
 ];
 
 const MONTHS_FR = [
-  "janv.", "févr.", "mars", "avr.", "mai", "juin",
-  "juil.", "août", "sept.", "oct.", "nov.", "déc.",
+  "janv.",
+  "févr.",
+  "mars",
+  "avr.",
+  "mai",
+  "juin",
+  "juil.",
+  "août",
+  "sept.",
+  "oct.",
+  "nov.",
+  "déc.",
 ];
 
 // "2023-01" -> "janv. 2023" ; toute autre valeur est renvoyée telle quelle.

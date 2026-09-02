@@ -78,9 +78,12 @@ export interface IndicatorProps {
   value: string;
   unit: string;
   text: string;
+  note?: string;
+  items?: string[];
   info?: string;
   icon?: FrCxArg;
   link?: string;
+  md?: 3 | 4 | 6;
 }
 
 export interface AnalyseProps {
