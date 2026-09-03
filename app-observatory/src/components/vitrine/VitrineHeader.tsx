@@ -43,8 +43,7 @@ export function VitrineHeader() {
         {
           iconId: "fr-icon-car-line",
           linkProps: {
-            href: "https://covoiturage.beta.gouv.fr/statistiques",
-            target: "_blank",
+            href: "/stats",
           },
           text: "Notre impact",
         },

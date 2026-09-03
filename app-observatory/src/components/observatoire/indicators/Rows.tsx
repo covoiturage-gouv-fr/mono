@@ -28,8 +28,11 @@ export default function Rows(props: RowsProps) {
                     unit={r.unit}
                     info={r.info}
                     text={r.text}
+                    note={r.note}
+                    items={r.items}
                     icon={r.icon}
                     link={r.link}
+                    md={r.md}
                   />
                 );
               case "row.analyse":
