@@ -73,10 +73,17 @@ export type ChartProps = {
   error?: unknown;
 };
 
-const toSeries = (data: number[] | ChartSeries[]): ChartSeries[] =>
-  Array.isArray(data) && typeof data[0] === "number"
-    ? [{ label: "", data: data as number[] }]
-    : (data as ChartSeries[]);
+const toSeries = (data: number[] | ChartSeries[]): ChartSeries[] => {
+  if (data.length === 0) return [];
+  const first = data[0] as ChartSeries;
+  const isSeriesArray =
+    typeof first === "object" && first !== null && Array.isArray(first.data);
+  const raw = isSeriesArray
+    ? (data as ChartSeries[])
+    : [{ label: "", data: data as number[] }];
+  // L'API renvoie certaines valeurs en chaîne ("7111807") : on force le nombre.
+  return raw.map((s) => ({ ...s, data: s.data.map(Number) }));
+};
 
 export default function Chart({
   title,
