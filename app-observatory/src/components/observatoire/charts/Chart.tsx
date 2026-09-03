@@ -147,7 +147,8 @@ export default function Chart({
     return {
       label: s.label,
       data: s.data,
-      borderColor: color,
+      // Doughnut : liseré blanc entre les parts (défaut Chart.js), pas la couleur de série.
+      borderColor: kind === "doughnut" ? "#fff" : color,
       backgroundColor:
         kind === "doughnut"
           ? (s.colors ?? s.data.map((_, j) => PALETTE[j % PALETTE.length]))
