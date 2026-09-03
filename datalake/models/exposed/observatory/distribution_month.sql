@@ -35,7 +35,7 @@
 WITH
 {% if is_incremental() %}
   lookback AS (
-    SELECT max(year * 100 + month) - 1 AS min_ym FROM {{ this }}
+    SELECT max(year * 12 + month) - 1 AS min_ym FROM {{ this }}
   ),
 {% endif %}
 
@@ -55,7 +55,7 @@ distribution AS (
       dist_distribution
     FROM {{ ref('territory_month_' ~ model_type ~ '_' ~ direction) }}
     {% if is_incremental() %}
-      WHERE year * 100 + month >= (SELECT lookback.min_ym FROM lookback)
+      WHERE year * 12 + month >= (SELECT lookback.min_ym FROM lookback)
     {% endif %}
     {% if not loop.last %}UNION ALL{% endif %}
   {% endfor %}
