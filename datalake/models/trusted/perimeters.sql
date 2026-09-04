@@ -41,11 +41,13 @@ WITH old_perimeters AS (
     ST_SETSRID(c.geom, 4326)  AS centroid,
     MAKE_DATE(a.year, 1, 1)   AS valid_from,
     MAKE_DATE(a.year, 12, 31) AS valid_until
+  -- (year, arr) non unique sur l'étranger 2021-2023 (XXXXX = 7 territoires),
+  -- la clé est (year, arr, l_arr)
   FROM {{ source('raw', 'old_perimeters_simple') }} AS a
   LEFT JOIN {{ source('raw', 'old_perimeters_full') }} AS b
-    ON a.year = b.year AND a.arr = b.arr
+    ON a.year = b.year AND a.arr = b.arr AND a.l_arr = b.l_arr
   LEFT JOIN {{ source('raw', 'old_perimeters_centroid') }} AS c
-    ON a.year = c.year AND a.arr = c.arr
+    ON a.year = c.year AND a.arr = c.arr AND a.l_arr = c.l_arr
 ),
 
 new_com AS (
