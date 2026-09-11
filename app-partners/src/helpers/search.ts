@@ -1,30 +1,4 @@
-import { Config } from "@/config";
-import { search } from "@/config/search";
-import type { PerimeterType, TerritoryListInterface } from "@/interfaces/searchInterface";
-
-export const searchHost = Config.get<string>("search.host");
-
-export const fetchSearchAPI = async <T>(
-  path: string,
-  options = {},
-): Promise<T> => {
-  try {
-    const mergedOptions = {
-      headers: search.headers,
-      ...options,
-    };
-    // Build request URL
-    const requestUrl = `${searchHost}/${path}`;
-    const response = await fetch(requestUrl, mergedOptions);
-    const data = (await response.json()) as T;
-    return data;
-  } catch (e) {
-    console.error(e);
-    throw new Error(
-      `Please check if your server is running and you set all the required tokens.`,
-    );
-  }
-};
+import type { PerimeterType } from "@/interfaces/searchInterface";
 
 export const castPerimeterType = (value: PerimeterType) => {
   switch (value) {
@@ -41,8 +15,4 @@ export const castPerimeterType = (value: PerimeterType) => {
     case "country":
       return "Pays";
   }
-};
-
-export const getUrl = (url: string, option?: TerritoryListInterface) => {
-  return `/observatoire/${url}${option ? `?code=${option.territory.slice(0, 9)}&type=${option.type}` : ""}`;
 };

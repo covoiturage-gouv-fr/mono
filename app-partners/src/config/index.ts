@@ -4,7 +4,6 @@
  */
 import { analytics } from "./analytics";
 import { auth } from "./auth";
-import { search } from "./search";
 
 const objectToMap = (obj: ConfigObject): Map<string, ConfigObject> => {
   const map = new Map<string, ConfigObject>();
@@ -26,7 +25,6 @@ const objectToMap = (obj: ConfigObject): Map<string, ConfigObject> => {
 
 const _configuration = objectToMap({
   analytics,
-  search,
   auth,
   // Turbopack n'inline que les accès statiques à process.env.NEXT_PUBLIC_*
   next: { public_api_url: process.env.NEXT_PUBLIC_API_URL },
