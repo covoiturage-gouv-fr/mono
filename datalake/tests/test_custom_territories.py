@@ -18,32 +18,32 @@ from pipelines.cmd.custom_territories import (
 # --------------------------------------------------------------------------- #
 # validate_slug
 # --------------------------------------------------------------------------- #
-@pytest.mark.parametrize("code", ["pole-metropolitain", "abc", "a1-b2-c3", "x" * 32])
-def test_validate_slug_accepts(code):
-    validate_slug(code)
+@pytest.mark.parametrize("value", ["pole-metropolitain", "abc", "a1-b2-c3", "x" * 32])
+def test_validate_slug_accepts(value):
+    validate_slug(value)
 
 
 @pytest.mark.parametrize(
-    "code",
+    "value",
     ["ab", "x" * 33, "Pole", "pole_metro", "pôle", "12345", "with space", ""],
 )
-def test_validate_slug_rejects(code):
+def test_validate_slug_rejects(value):
     with pytest.raises(ValueError):
-        validate_slug(code)
+        validate_slug(value)
 
 
 # --------------------------------------------------------------------------- #
 # parse_declaration
 # --------------------------------------------------------------------------- #
 def _raw(**over):
-    base = {"code": "pole-x", "libelle": "Pôle X", "active": True, "members": {"epci": [123]}}
+    base = {"id": "pole-x", "libelle": "Pôle X", "active": True, "members": {"epci": [123]}}
     base.update(over)
     return base
 
 
 def test_parse_declaration_ok():
     d = parse_declaration(_raw(members={"epci": [123, " 456 "], "aom": [], "arr": ["2A004"]}), "pole-x.yml")
-    assert d.code == "pole-x"
+    assert d.id == "pole-x"
     assert d.members == {"epci": ["123", "456"], "arr": ["2A004"]}
     assert d.active is True
 
@@ -72,15 +72,15 @@ def test_parse_declaration_rejects_non_bool_active():
 # load_declarations
 # --------------------------------------------------------------------------- #
 def test_load_declarations_reads_only_yml_and_detects_dupes(tmp_path):
-    (tmp_path / "a.yml").write_text("code: pole-a\nlibelle: A\nmembers:\n  aom: [1]\n")
-    (tmp_path / "b.yml.example").write_text("code: pole-a\nlibelle: dupe ignoree\nmembers:\n  aom: [2]\n")
+    (tmp_path / "a.yml").write_text("id: pole-a\nlibelle: A\nmembers:\n  aom: [1]\n")
+    (tmp_path / "b.yml.example").write_text("id: pole-a\nlibelle: dupe ignoree\nmembers:\n  aom: [2]\n")
     decls = load_declarations(tmp_path)
-    assert [d.code for d in decls] == ["pole-a"]
+    assert [d.id for d in decls] == ["pole-a"]
 
 
-def test_load_declarations_raises_on_duplicate_code(tmp_path):
-    (tmp_path / "a.yml").write_text("code: pole-a\nlibelle: A\nmembers:\n  aom: [1]\n")
-    (tmp_path / "b.yml").write_text("code: pole-a\nlibelle: B\nmembers:\n  aom: [2]\n")
+def test_load_declarations_raises_on_duplicate_id(tmp_path):
+    (tmp_path / "a.yml").write_text("id: pole-a\nlibelle: A\nmembers:\n  aom: [1]\n")
+    (tmp_path / "b.yml").write_text("id: pole-a\nlibelle: B\nmembers:\n  aom: [2]\n")
     with pytest.raises(ValueError, match="dupliqué"):
         load_declarations(tmp_path)
 
@@ -90,11 +90,11 @@ def test_load_declarations_raises_on_duplicate_code(tmp_path):
 # --------------------------------------------------------------------------- #
 def test_serialize_members_sorts_and_dedupes():
     out = serialize_members([("pole-b", "75056"), ("pole-a", "38240"), ("pole-a", "38240")])
-    assert out == "code,arr\npole-a,38240\npole-b,75056\n"
+    assert out == "id,arr\npole-a,38240\npole-b,75056\n"
 
 
 def test_serialize_members_header_only_when_empty():
-    assert serialize_members([]) == "code,arr\n"
+    assert serialize_members([]) == "id,arr\n"
 
 
 def test_serialize_meta_formats_bool_and_date_and_quotes():
@@ -105,7 +105,7 @@ def test_serialize_meta_formats_bool_and_date_and_quotes():
         ]
     )
     assert out == (
-        "code,libelle,active,earliest_safe_start\n"
+        "id,libelle,active,earliest_safe_start\n"
         'pole-a,"Avec, virgule",false,2021-03-04\n'
         "pole-b,Sans virgule,true,2019-01-01\n"
     )
@@ -141,7 +141,7 @@ class FakeConn:
 
 
 def test_resolve_members_dedupes_overlap():
-    decl = Declaration(code="pole-x", libelle="X", active=True, members={"epci": ["1"], "aom": ["9"]})
+    decl = Declaration(id="pole-x", libelle="X", active=True, members={"epci": ["1"], "aom": ["9"]})
     conn = FakeConn(
         {
             "epci = ANY": [("1", "38001"), ("1", "38002")],
@@ -153,20 +153,20 @@ def test_resolve_members_dedupes_overlap():
 
 def test_resolve_members_com_resolves_via_column():
     # une commune "chef-lieu" (ex. Marseille) porte plusieurs arrondissements
-    decl = Declaration(code="pole-x", libelle="X", active=True, members={"com": ["13055"]})
+    decl = Declaration(id="pole-x", libelle="X", active=True, members={"com": ["13055"]})
     conn = FakeConn({"com = ANY": [("13055", "13201"), ("13055", "13202")]})
     assert resolve_members(conn, "zone_trusted", 2026, decl) == {"13201", "13202"}
 
 
 def test_resolve_members_fails_on_unknown_commune():
-    decl = Declaration(code="pole-x", libelle="X", active=True, members={"arr": ["99999"]})
+    decl = Declaration(id="pole-x", libelle="X", active=True, members={"arr": ["99999"]})
     conn = FakeConn({"arr = ANY": []})
     with pytest.raises(ValueError, match="introuvable"):
         resolve_members(conn, "zone_trusted", 2026, decl)
 
 
 def test_resolve_members_fails_on_epci_without_communes():
-    decl = Declaration(code="pole-x", libelle="X", active=True, members={"epci": ["1", "2"]})
+    decl = Declaration(id="pole-x", libelle="X", active=True, members={"epci": ["1", "2"]})
     conn = FakeConn({"epci = ANY": [("1", "38001")]})
     with pytest.raises(ValueError, match="sans commune"):
         resolve_members(conn, "zone_trusted", 2026, decl)

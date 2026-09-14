@@ -1,6 +1,6 @@
 # Exemple de déclaration. Renommer en `<slug>.yml` (retirer `.example`) pour l'activer,
 # puis `just custom-territories-compile`. Le script n'ingère que les fichiers `*.yml`.
-code: example-pole
+id: example-pole
 libelle: Exemple — pôle de trois EPCI
 active: false
 members:

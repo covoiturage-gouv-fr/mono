@@ -3,9 +3,9 @@
 -- Une commune ne doit se résoudre qu'à UN seul arr par composite (sinon double comptage
 -- du recouvrement). Le script de résolution dédoublonne : ce test verrouille l'invariant.
 SELECT
-  code,
+  id,
   arr,
   COUNT(*) AS n
 FROM {{ ref('custom_territories') }}
-GROUP BY code, arr
+GROUP BY id, arr
 HAVING COUNT(*) > 1

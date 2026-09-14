@@ -93,16 +93,16 @@ UNION ALL
 -- Rattachés au dernier millésime disponible.
 SELECT
   (SELECT MAX(py.year) FROM {{ ref('perimeters') }} AS py) AS year,
-  ct.code,
+  ct.id                                                    AS code,
   'custom'                                                 AS type,
   m.libelle,
   ST_MULTI(ST_UNION(p.geom_simple))                        AS geom,
   ST_POINTONSURFACE(ST_UNION(p.geom_simple))               AS centroid
 FROM {{ ref('custom_territories') }} AS ct
 INNER JOIN {{ ref('custom_territories_meta') }} AS m
-  ON ct.code = m.code AND m.active
+  ON ct.id = m.id AND m.active
 INNER JOIN {{ ref('perimeters') }} AS p
   ON
     ct.arr = p.arr
     AND p.year = (SELECT MAX(py.year) FROM {{ ref('perimeters') }} AS py)
-GROUP BY ct.code, m.libelle
+GROUP BY ct.id, m.libelle

@@ -20,7 +20,7 @@ commités divergent (garde-fou).
 ## Format
 
 ```yaml
-code: pole-metropolitain      # slug ^[a-z0-9-]{3,32}$, jamais purement numérique
+id: pole-metropolitain        # slug ^[a-z0-9-]{3,32}$, jamais purement numérique
 libelle: Pôle métropolitain XYZ
 active: true                  # false = présent dans les seeds mais absent de perimeters_agg
 members:                      # au moins un membre non vide

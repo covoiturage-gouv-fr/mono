@@ -1,0 +1,7 @@
+id: savoie-haute-savoie
+libelle: Savoie et Haute-Savoie
+active: true
+members:
+  dep:
+    - "73"
+    - "74"

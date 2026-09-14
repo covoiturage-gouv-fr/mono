@@ -5,8 +5,8 @@ composite), interroge `perimeters` au dernier millésime disponible pour résoud
 membre (AOM / EPCI / dép / rég / commune) en liste de communes (`arr`), dédoublonne, et
 écrit deux seeds figés et versionnés :
 
-- `seeds/trusted/custom_territories.csv`      : (code, arr) — composition résolue.
-- `seeds/trusted/custom_territories_meta.csv` : (code, libelle, active, earliest_safe_start).
+- `seeds/trusted/custom_territories.csv`      : (id, arr) — composition résolue.
+- `seeds/trusted/custom_territories_meta.csv` : (id, libelle, active, earliest_safe_start).
 
 Pourquoi one-shot et pas une résolution vivante dans un modèle dbt : le millésime est
 figé au moment de la compilation, chaque évolution de composition est un diff Git
@@ -39,7 +39,8 @@ SEED_DIR = _ROOT / "seeds" / "trusted"
 MEMBERS_CSV = SEED_DIR / "custom_territories.csv"
 META_CSV = SEED_DIR / "custom_territories_meta.csv"
 
-# Types de membres acceptés dans un YAML. `arr` = identité (le code EST une commune) ;
+# Types de membres acceptés dans un YAML. `arr` = identité (la valeur donnée EST déjà
+# un code commune/arrondissement) ;
 # les autres = colonne de `perimeters` filtrée, résolue vers ses communes (`arr`).
 # `com` passe par la colonne car une commune peut porter plusieurs arrondissements
 # (Paris/Lyon/Marseille). PERIMETER_COLUMNS sert d'allowlist : aucune valeur hors de là
@@ -57,13 +58,13 @@ DEFAULT_START = date(2019, 1, 1)
 # mod INSEE : 31 fusion simple, 32 création de commune nouvelle, 33 fusion association.
 FUSION_MODS = (31, 32, 33)
 
-MEMBERS_HEADER = "code,arr"
-META_HEADER = "code,libelle,active,earliest_safe_start"
+MEMBERS_HEADER = "id,arr"
+META_HEADER = "id,libelle,active,earliest_safe_start"
 
 
 @dataclass
 class Declaration:
-    code: str
+    id: str
     libelle: str
     active: bool
     members: dict[str, list[str]] = field(default_factory=dict)
@@ -73,18 +74,18 @@ class Declaration:
 # --------------------------------------------------------------------------- #
 # Fonctions pures (testables sans DB)
 # --------------------------------------------------------------------------- #
-def validate_slug(code: str) -> None:
-    if not SLUG_RE.match(code):
-        raise ValueError(f"code invalide {code!r} : attendu ^[a-z0-9-]{{3,32}}$")
-    if code.isdigit():
-        raise ValueError(f"code invalide {code!r} : ne doit jamais être purement numérique")
+def validate_slug(value: str) -> None:
+    if not SLUG_RE.match(value):
+        raise ValueError(f"id invalide {value!r} : attendu ^[a-z0-9-]{{3,32}}$")
+    if value.isdigit():
+        raise ValueError(f"id invalide {value!r} : ne doit jamais être purement numérique")
 
 
 def parse_declaration(raw: dict, source: str) -> Declaration:
     if not isinstance(raw, dict):
         raise ValueError(f"{source} : contenu YAML attendu = objet")
-    code = str(raw.get("code", "")).strip()
-    validate_slug(code)
+    territory_id = str(raw.get("id", "")).strip()
+    validate_slug(territory_id)
 
     libelle = str(raw.get("libelle", "")).strip()
     if not libelle:
@@ -114,7 +115,7 @@ def parse_declaration(raw: dict, source: str) -> Declaration:
     if not members:
         raise ValueError(f"{source} : au moins un membre est requis")
 
-    return Declaration(code=code, libelle=libelle, active=active, members=members, source=source)
+    return Declaration(id=territory_id, libelle=libelle, active=active, members=members, source=source)
 
 
 def load_declarations(decl_dir: Path) -> list[Declaration]:
@@ -125,21 +126,21 @@ def load_declarations(decl_dir: Path) -> list[Declaration]:
 
     seen: dict[str, str] = {}
     for d in decls:
-        if d.code in seen:
-            raise ValueError(f"code dupliqué {d.code!r} : {seen[d.code]} et {d.source}")
-        seen[d.code] = d.source
+        if d.id in seen:
+            raise ValueError(f"id dupliqué {d.id!r} : {seen[d.id]} et {d.source}")
+        seen[d.id] = d.source
     return decls
 
 
 def serialize_members(rows: list[tuple[str, str]]) -> str:
     ordered = sorted(set(rows))
-    return "\n".join([MEMBERS_HEADER, *[f"{c},{a}" for c, a in ordered]]) + "\n"
+    return "\n".join([MEMBERS_HEADER, *[f"{i},{a}" for i, a in ordered]]) + "\n"
 
 
 def serialize_meta(rows: list[tuple[str, str, bool, date]]) -> str:
     lines = [META_HEADER]
-    for code, libelle, active, start in sorted(rows, key=lambda r: r[0]):
-        lines.append(f"{code},{_csv_field(libelle)},{str(active).lower()},{start.isoformat()}")
+    for territory_id, libelle, active, start in sorted(rows, key=lambda r: r[0]):
+        lines.append(f"{territory_id},{_csv_field(libelle)},{str(active).lower()},{start.isoformat()}")
     return "\n".join(lines) + "\n"
 
 
@@ -180,7 +181,7 @@ def resolve_members(conn, schema: str, year: int, decl: Declaration) -> set[str]
             }
             missing = set(codes) - found
             if missing:
-                raise ValueError(f"{decl.code} : commune(s) {mtype} introuvable(s) au millésime {year} : {sorted(missing)}")
+                raise ValueError(f"{decl.id} : commune(s) {mtype} introuvable(s) au millésime {year} : {sorted(missing)}")
             arrs |= found
         else:
             # mtype vient de PERIMETER_COLUMNS (allowlist) — jamais de la saisie libre.
@@ -194,7 +195,7 @@ def resolve_members(conn, schema: str, year: int, decl: Declaration) -> set[str]
                 by_member.setdefault(str(member), set()).add(arr)
             unresolved = set(codes) - set(by_member)
             if unresolved:
-                raise ValueError(f"{decl.code} : {mtype} sans commune rattachée au millésime {year} : {sorted(unresolved)}")
+                raise ValueError(f"{decl.id} : {mtype} sans commune rattachée au millésime {year} : {sorted(unresolved)}")
             for found in by_member.values():
                 arrs |= found
     return arrs
@@ -221,9 +222,9 @@ def compile_seeds(conn) -> tuple[str, str]:
     for decl in decls:
         arrs = resolve_members(conn, schema, year, decl)
         if not arrs:
-            raise ValueError(f"{decl.code} : aucune commune résolue")
-        member_rows.extend((decl.code, arr) for arr in arrs)
-        meta_rows.append((decl.code, decl.libelle, decl.active, earliest_safe_start(conn, schema, arrs)))
+            raise ValueError(f"{decl.id} : aucune commune résolue")
+        member_rows.extend((decl.id, arr) for arr in arrs)
+        meta_rows.append((decl.id, decl.libelle, decl.active, earliest_safe_start(conn, schema, arrs)))
 
     return serialize_members(member_rows), serialize_meta(meta_rows)
 
