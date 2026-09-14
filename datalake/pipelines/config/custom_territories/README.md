@@ -36,3 +36,8 @@ members:                      # au moins un membre non vide
 - Recouvrement de membres : chaque commune n'est comptée **qu'une fois** par composite.
 - `earliest_safe_start` (dans le seed `_meta`) : borne de backfill sûre, calculée depuis
   `com_evolution` (fusions de communes) ; plancher `2019-01-01`.
+
+L'association d'un SIRET (agence/entreprise) à un territoire pour l'autorisation ProConnect
+n'est **pas** portée ici : ce n'est pas un besoin de composition géographique. Ne créez pas
+de territoire custom pour un périmètre qui existe déjà (ex. un département seul) juste pour
+lui attacher un SIRET.

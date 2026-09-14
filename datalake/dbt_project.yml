@@ -76,13 +76,13 @@ seeds:
         +schema: "zone_trusted"
         +tags: ["trusted", "geo", "custom_territories"]
         +column_types:
-          code: varchar
+          id: varchar
           arr: varchar
       custom_territories_meta:
         +schema: "zone_trusted"
         +tags: ["trusted", "geo", "custom_territories"]
         +column_types:
-          code: varchar
+          id: varchar
           libelle: varchar
           active: boolean
           earliest_safe_start: date
