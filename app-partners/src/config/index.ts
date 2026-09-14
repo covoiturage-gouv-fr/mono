@@ -4,7 +4,6 @@
  */
 import { analytics } from "./analytics";
 import { auth } from "./auth";
-import { search } from "./search";
 
 const objectToMap = (obj: ConfigObject): Map<string, ConfigObject> => {
   const map = new Map<string, ConfigObject>();
@@ -40,7 +39,6 @@ const nextEnvironmentVariables = (): ConfigObject => {
 
 const _configuration = objectToMap({
   analytics,
-  search,
   auth,
   next: nextEnvironmentVariables(),
 });

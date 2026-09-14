@@ -7,9 +7,3 @@ export const perimeterTypes = [
   "country",
 ] as const;
 export type PerimeterType = (typeof perimeterTypes)[number];
-
-export interface TerritoryListInterface {
-  territory: string;
-  l_territory: string;
-  type: PerimeterType;
-}
