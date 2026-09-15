@@ -40,5 +40,6 @@ function makeCompany(
 }
 
 export const dinum = makeCompany(1, "13002526500013", "dinum");
+export const metropoleLyon = makeCompany(2, "20004697700019", "metropole de lyon");
 
-export const companies: Company[] = [dinum];
+export const companies: Company[] = [dinum, metropoleLyon];

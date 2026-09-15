@@ -19,3 +19,9 @@ export const OPERATOR_EMAIL = env("APIE2E_AUTH_OPERATOR_EMAIL", "operator@exampl
 export const OPERATOR_PASSWORD = env("APIE2E_AUTH_OPERATOR_PASSWORD", "admin1234");
 export const TERRITORY_EMAIL = env("APIE2E_AUTH_TERRITORY_EMAIL", "territory@example.com");
 export const TERRITORY_PASSWORD = env("APIE2E_AUTH_TERRITORY_PASSWORD", "admin1234");
+export const MULTI_EMAIL = env("APIE2E_AUTH_MULTI_EMAIL", "multi-territory@example.com");
+export const MULTI_PASSWORD = env("APIE2E_AUTH_MULTI_PASSWORD", "admin1234");
+
+// Territoires seedés (seeds/territories.ts) : le compte multi porte les deux.
+export const TERRITORY_IDFM_ID = 1;
+export const TERRITORY_LYON_ID = 2;

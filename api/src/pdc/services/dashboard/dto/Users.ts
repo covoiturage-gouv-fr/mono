@@ -1,9 +1,16 @@
 import { array, Infer, object, optional } from "@/lib/superstruct/index.ts";
-import { nullable, pattern, string } from "@/lib/superstruct/index.ts";
+import { boolean, nullable, pattern, string } from "@/lib/superstruct/index.ts";
 import { Email, Id, NullableId, Role, Varchar } from "@/pdc/providers/superstruct/shared/index.ts";
 
 // SIREN de connexion ProConnect : 9 chiffres, distinct du SIRET du territoire.
 export const LoginSiren = nullable(pattern(string(), /^\d{9}$/));
+
+// Périmètre soumis par le formulaire. scopes[] est la liste complète et fait autorité ;
+// territory_id ne sert de repli que si scopes est absent (appels API hors dashboard).
+export const UserScopeInput = object({
+  territory_id: Id,
+  is_default: optional(boolean()),
+});
 
 export const Users = object({
   id: optional(Id),
@@ -22,7 +29,7 @@ export const CreateUser = object({
   operator_id: optional(NullableId),
   territory_id: optional(NullableId),
   login_siren: optional(LoginSiren),
-  scopes: optional(array(Id)),
+  scopes: optional(array(UserScopeInput)),
 });
 
 export const DeleteUser = object({
@@ -38,9 +45,10 @@ export const UpdateUser = object({
   operator_id: optional(NullableId),
   territory_id: optional(NullableId),
   login_siren: optional(LoginSiren),
-  scopes: optional(array(Id)),
+  scopes: optional(array(UserScopeInput)),
 });
 
+export type UserScopeInput = Infer<typeof UserScopeInput>;
 export type Users = Infer<typeof Users>;
 export type DeleteUser = Infer<typeof DeleteUser>;
 export type CreateUser = Infer<typeof CreateUser>;

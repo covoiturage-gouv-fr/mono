@@ -1,4 +1,4 @@
-import { CreateTerritoryGroupInterface, idfm } from "./territories.ts";
+import { CreateTerritoryGroupInterface, idfm, lyon } from "./territories.ts";
 import { maxiCovoit, Operator } from "./operators.ts";
 
 export const defaultStatus = "active";
@@ -14,6 +14,8 @@ export interface User {
   role: string;
   password: string;
   territory?: CreateTerritoryGroupInterface;
+  // Périmètres additionnels (non défaut) : fixture multi-territoire.
+  extraTerritories?: CreateTerritoryGroupInterface[];
   operator?: Operator;
 }
 
@@ -57,6 +59,11 @@ export const userMaxiCovoit = makeUser(
   { operator: maxiCovoit },
 );
 export const userRegistry = makeUser("user@example.com", "registry.user");
+export const multiTerritory = makeUser(
+  "multi-territory@example.com",
+  "territory.admin",
+  { territory: idfm, extraTerritories: [lyon] },
+);
 export const userTerritory = makeUser(
   "territory-user@example.com",
   "territory.user",
@@ -71,4 +78,5 @@ export const users: User[] = [
   userMaxiCovoit,
   userTerritory,
   userRegistry,
+  multiTerritory,
 ];
