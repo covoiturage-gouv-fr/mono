@@ -151,6 +151,7 @@ SELECT
   false AS is_new_passenger,
   {% endif %}
   -- incitations operateurs
+  c.oi_details,
   c.oi_amount_collectivite,
   c.oi_amount_operator,
   c.oi_amount_other,
