@@ -35,9 +35,21 @@
   on_schema_change='append_new_columns'
 ) }}
 
-SELECT * FROM {{ ref('territory_' ~ grain ~ '_arr_' ~ direction) }}
+{# arr et plm sont full-refreshés/altérés indépendamment : leur ordre physique de colonnes
+   peut diverger. On énumère les colonnes par nom pour que le UNION ALL apparie par nom,
+   pas par position (cf. territory_agg_column_names). #}
+{% set incremental_col_names = {
+  'day':      ['incremental_date'],
+  'month':    ['incremental_date', 'year', 'month'],
+  'quarter':  ['incremental_date', 'year', 'quarter'],
+  'semester': ['incremental_date', 'year', 'semester'],
+  'year':     ['incremental_date', 'year']
+} %}
+{% set com_columns = ['code'] + incremental_col_names[grain] + territory_agg_column_names() %}
+
+SELECT {{ com_columns | join(', ') }} FROM {{ ref('territory_' ~ grain ~ '_arr_' ~ direction) }}
 UNION ALL
-SELECT * FROM {{ ref('territory_' ~ grain ~ '_plm_' ~ direction) }}
+SELECT {{ com_columns | join(', ') }} FROM {{ ref('territory_' ~ grain ~ '_plm_' ~ direction) }}
 
 {% else %}
 
@@ -69,7 +81,7 @@ WITH filtered_carpools AS (
   SELECT
     start_code AS code,
     {{ incremental_columns('carpool_datetime', grain) }},
-    {{ territory_agg_columns() }}
+    {{ territory_agg_columns(with_incentive_split) }}
     {% if with_incentive_split %}
     ,
     {{ territory_incentive_split_columns('start_code') }}
@@ -91,7 +103,7 @@ WITH filtered_carpools AS (
   SELECT
     end_code AS code,
     {{ incremental_columns('carpool_datetime', grain) }},
-    {{ territory_agg_columns() }}
+    {{ territory_agg_columns(with_incentive_split) }}
     {% if with_incentive_split %}
     ,
     {{ territory_incentive_split_columns('end_code') }}
@@ -122,7 +134,7 @@ WITH filtered_carpools AS (
   SELECT
     code,
     {{ incremental_columns('carpool_datetime', grain) }},
-    {{ territory_agg_columns() }}
+    {{ territory_agg_columns(with_incentive_split) }}
     {% if with_incentive_split %}
     ,
     {{ territory_incentive_split_columns('code') }}
