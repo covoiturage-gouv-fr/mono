@@ -1,5 +1,8 @@
 {#
   Cohortes hebdo pour l'attrition depuis l'acquisition, par aom.
+  - role = 'driver' / 'passenger' : 1re semaine dans CE rôle (un ancien conducteur
+    qui devient passager a sa propre first_week côté passager).
+  - role = 'any'                  : 1re semaine tout court, tous rôles confondus.
 #}
 {{ config(
   materialized='view',
@@ -22,4 +25,16 @@ SELECT
   MIN(date_trunc('week', incremental_date))::date AS first_week
 FROM daily
 GROUP BY perim, code, role, user_id
+
+UNION ALL
+
+SELECT
+  perim,
+  code,
+  'any' AS role,  -- noqa: RF04
+  user_id,
+  MIN(date_trunc('week', incremental_date))::date AS first_week
+FROM daily
+GROUP BY perim, code, user_id
+
 ORDER BY perim, code, role, user_id
