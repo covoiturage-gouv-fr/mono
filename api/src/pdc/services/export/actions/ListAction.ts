@@ -1,10 +1,23 @@
-import { ContextType, handler } from "../../../../ilos/common/index.ts";
+import { ContextType, ForbiddenException, handler } from "../../../../ilos/common/index.ts";
 import { Action as AbstractAction } from "../../../../ilos/core/index.ts";
 import { hasPermissionMiddleware } from "../../../providers/middleware/middlewares.ts";
 import { handlerConfig, ParamsInterface, ResultInterface } from "../contracts/list.contract.ts";
 import { alias } from "../contracts/list.schema.ts";
 import { ExportRepositoryInterfaceResolver } from "../repositories/ExportRepository.ts";
 import { TerritoryServiceInterfaceResolver } from "../services/TerritoryService.ts";
+
+/**
+ * Propriétaire obligatoire : le filtre `created_by` du dépôt est conditionnel, un identifiant
+ * absent renverrait donc **tous** les exports. Or un jeton Bearer (credentials opérateur) porte
+ * un rôle et un opérateur, mais aucun identifiant utilisateur : on refuse au lieu de tout exposer.
+ */
+export function requireUserId(context: ContextType): number {
+  const userId = context.call?.user?._id;
+  if (typeof userId !== "number") {
+    throw new ForbiddenException("Export listing requires a user session");
+  }
+  return userId;
+}
 
 @handler({
   ...handlerConfig,
@@ -29,7 +42,7 @@ export class listAction extends AbstractAction {
     params: ParamsInterface,
     context: ContextType,
   ): Promise<ResultInterface> {
-    const userId = context.call?.user?._id;
+    const userId = requireUserId(context);
 
     const exports = await this.exportRepository.list({
       created_by: userId,

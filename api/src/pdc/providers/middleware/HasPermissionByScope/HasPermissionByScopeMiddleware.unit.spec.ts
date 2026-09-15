@@ -181,6 +181,49 @@ describe("has permission by scope middleware", () => {
     assertEquals(result, "next() called");
   });
 
+  // Fail-closed : « rien à comparer » ne doit jamais valoir « correspondance ».
+  it("Middleware Scopetoself: refuse quand le paramètre de périmètre est absent", async () => {
+    const config: HasPermissionByScopeMiddlewareParams = [
+      "registry.trip.stats",
+      [["territory.trip.stats", "call.user.territory_id", "territory_id"]],
+    ];
+
+    await assertRejects(
+      () => middleware.process({}, contextFactory(mockTerritoryAdmin), async () => "next() called", config),
+      Error,
+    );
+  });
+
+  it("Middleware Scopetoself: refuse quand paramètre et contexte sont tous deux absents", async () => {
+    const config: HasPermissionByScopeMiddlewareParams = [
+      "registry.trip.stats",
+      [["territory.trip.stats", "call.user.unknown_id", "unknown_id"]],
+    ];
+
+    await assertRejects(
+      () => middleware.process({}, contextFactory(mockTerritoryAdmin), async () => "next() called", config),
+      Error,
+    );
+  });
+
+  it("Middleware Scopetoself: refuse un tableau de périmètres vide", async () => {
+    const config: HasPermissionByScopeMiddlewareParams = [
+      "registry.trip.stats",
+      [["territory.trip.stats", "call.user.territory_id", "territory_id"]],
+    ];
+
+    await assertRejects(
+      () =>
+        middleware.process(
+          { territory_id: [] },
+          contextFactory(mockTerritoryAdmin),
+          async () => "next() called",
+          config,
+        ),
+      Error,
+    );
+  });
+
   it("Middleware Scopetoself: territory-admin can trip.stats w/ town filter", async () => {
     // mock territory_id being added by copy.from_context middleware
     const params = mockTownStatsParams;
