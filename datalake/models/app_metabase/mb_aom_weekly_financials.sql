@@ -81,8 +81,10 @@ weekly AS (
     sum(oi_amount_total_intra)                 AS oi_amount_total_intra,
     sum(oi_amount_total_inter)                 AS oi_amount_total_inter,
     sum(oi_amount_collectivite_self)           AS oi_amount_collectivite_self,
-    sum(oi_amount_collectivite_self_intra)     AS oi_amount_collectivite_self_intra,
-    sum(oi_amount_collectivite_self_inter)     AS oi_amount_collectivite_self_inter,
+    sum(oi_amount_collectivite_self_intra)
+      AS oi_amount_collectivite_self_intra,
+    sum(oi_amount_collectivite_self_inter)
+      AS oi_amount_collectivite_self_inter,
     sum(oi_amount_collectivite_other)          AS oi_amount_collectivite_other,
     sum(oi_amount_operator)                    AS oi_amount_operator,
     sum(oi_amount_operator_intra)              AS oi_amount_operator_intra,
@@ -102,6 +104,12 @@ SELECT
   carpools,
   intra_carpools,
   inter_carpools,
+  oi_amount_collectivite_self,
+  oi_amount_collectivite_other,
+  ci_amount_total_self,
+  ci_amount_total_other,
+  ci_result_total_self,
+  ci_result_total_other,
   round(driver_revenue::numeric / nullif(carpools, 0), 2)
     AS avg_driver_revenue,
   round(driver_revenue_intra::numeric / nullif(intra_carpools, 0), 2)
@@ -132,17 +140,12 @@ SELECT
     AS avg_incentive_operator_intra,
   round(oi_amount_operator_inter / nullif(inter_carpools, 0), 2)
     AS avg_incentive_operator_inter,
-  oi_amount_collectivite_self,
-  oi_amount_collectivite_other,
-  ci_amount_total_self,
-  ci_amount_total_other,
-  ci_result_total_self,
-  ci_result_total_other,
   oi_amount_collectivite_self - ci_result_total_self
     AS diff_op_rpc,
   round(
     100.0 * (oi_amount_collectivite_self - ci_result_total_self)
     / nullif(ci_result_total_self, 0), 1
-  ) AS diff_op_rpc_pct
+  )
+    AS diff_op_rpc_pct
 FROM weekly
 ORDER BY week, perim, code
