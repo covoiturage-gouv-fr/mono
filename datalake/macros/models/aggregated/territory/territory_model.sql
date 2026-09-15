@@ -21,6 +21,9 @@
 
   {% set lb = lookbacks[grain] %}
 
+  {# cas ou le perim est une aom(r) ; on regarde si les incitations sont portées par l aom du perim ou alors une autre aom. #}
+  {% set with_incentive_split = perim in ['aom', 'aomreg'] %}
+
 {# --------------------------------------------------------
    Cas 'com' : vue UNION ALL des models arr + plm déjà calculés
 -------------------------------------------------------- #}
@@ -28,12 +31,25 @@
 
 {{ config(
   materialized='view',
-  tags=['aggregated', 'territory', grain, 'com', direction, 'daily']
+  tags=['aggregated', 'territory', grain, 'com', direction, 'daily'],
+  on_schema_change='append_new_columns'
 ) }}
 
-SELECT * FROM {{ ref('territory_' ~ grain ~ '_arr_' ~ direction) }}
+{# arr et plm sont full-refreshés/altérés indépendamment : leur ordre physique de colonnes
+   peut diverger. On énumère les colonnes par nom pour que le UNION ALL apparie par nom,
+   pas par position (cf. territory_agg_column_names). #}
+{% set incremental_col_names = {
+  'day':      ['incremental_date'],
+  'month':    ['incremental_date', 'year', 'month'],
+  'quarter':  ['incremental_date', 'year', 'quarter'],
+  'semester': ['incremental_date', 'year', 'semester'],
+  'year':     ['incremental_date', 'year']
+} %}
+{% set com_columns = ['code'] + incremental_col_names[grain] + territory_agg_column_names() %}
+
+SELECT {{ com_columns | join(', ') }} FROM {{ ref('territory_' ~ grain ~ '_arr_' ~ direction) }}
 UNION ALL
-SELECT * FROM {{ ref('territory_' ~ grain ~ '_plm_' ~ direction) }}
+SELECT {{ com_columns | join(', ') }} FROM {{ ref('territory_' ~ grain ~ '_plm_' ~ direction) }}
 
 {% else %}
 
@@ -41,6 +57,7 @@ SELECT * FROM {{ ref('territory_' ~ grain ~ '_plm_' ~ direction) }}
   materialized='incremental',
   incremental_strategy='delete+insert',
   unique_key=['code', 'incremental_date'],
+  on_schema_change='append_new_columns',
   indexes=[
     {'columns': ['code', 'incremental_date'], 'unique': true}
   ],
@@ -53,21 +70,45 @@ WITH filtered_carpools AS (
 
 {% if direction == 'from' %}
 
+  {% if with_incentive_split %}
+  , split AS (
+    SELECT *,
+      {{ territory_oi_collectivite_amount('start_code', true) }} AS oi_collectivite_self_amount,
+      {{ territory_oi_collectivite_amount('start_code', false) }} AS oi_collectivite_other_amount
+    FROM filtered_carpools
+  )
+  {% endif %}
   SELECT
     start_code AS code,
     {{ incremental_columns('carpool_datetime', grain) }},
-    {{ territory_agg_columns() }}
-  FROM filtered_carpools
+    {{ territory_agg_columns(with_incentive_split) }}
+    {% if with_incentive_split %}
+    ,
+    {{ territory_incentive_split_columns('start_code') }}
+    {% endif %}
+  FROM {{ 'split' if with_incentive_split else 'filtered_carpools' }}
   WHERE start_code IS NOT NULL
   GROUP BY 1, {{ group_by_grain(grain, 2) }}
 
 {% elif direction == 'to' %}
 
+  {% if with_incentive_split %}
+  , split AS (
+    SELECT *,
+      {{ territory_oi_collectivite_amount('end_code', true) }} AS oi_collectivite_self_amount,
+      {{ territory_oi_collectivite_amount('end_code', false) }} AS oi_collectivite_other_amount
+    FROM filtered_carpools
+  )
+  {% endif %}
   SELECT
     end_code AS code,
     {{ incremental_columns('carpool_datetime', grain) }},
-    {{ territory_agg_columns() }}
-  FROM filtered_carpools
+    {{ territory_agg_columns(with_incentive_split) }}
+    {% if with_incentive_split %}
+    ,
+    {{ territory_incentive_split_columns('end_code') }}
+    {% endif %}
+  FROM {{ 'split' if with_incentive_split else 'filtered_carpools' }}
   WHERE end_code IS NOT NULL
   GROUP BY 1, {{ group_by_grain(grain, 2) }}
 
@@ -82,11 +123,23 @@ WITH filtered_carpools AS (
     WHERE end_code IS NOT NULL
     AND NOT is_intra
   )
+  {% if with_incentive_split %}
+  , split AS (
+    SELECT *,
+      {{ territory_oi_collectivite_amount('code', true) }} AS oi_collectivite_self_amount,
+      {{ territory_oi_collectivite_amount('code', false) }} AS oi_collectivite_other_amount
+    FROM exploded
+  )
+  {% endif %}
   SELECT
     code,
     {{ incremental_columns('carpool_datetime', grain) }},
-    {{ territory_agg_columns() }}
-  FROM exploded
+    {{ territory_agg_columns(with_incentive_split) }}
+    {% if with_incentive_split %}
+    ,
+    {{ territory_incentive_split_columns('code') }}
+    {% endif %}
+  FROM {{ 'split' if with_incentive_split else 'exploded' }}
   WHERE code IS NOT NULL
   GROUP BY 1, {{ group_by_grain(grain, 2) }}
 {% endif %}
