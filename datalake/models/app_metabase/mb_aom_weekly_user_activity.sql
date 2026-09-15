@@ -1,7 +1,9 @@
 {#
-  Grain hebdo de l activitr utilisateur par aom. Sert, avec
+  Grain hebdo de l'activité utilisateur par aom. Sert, avec
   mb_aom_weekly_user_retention (first_week), au calcul de la courbe de rétention à
-  nimporte quelle date cote question Metabase
+  n'importe quelle date côté question Metabase.
+  - role = 'driver' / 'passenger' : actif CE rôle-là cette semaine.
+  - role = 'any'                  : actif cette semaine-là, tous rôles confondus.
 #}
 {{ config(
   materialized='view',
@@ -23,3 +25,15 @@ SELECT DISTINCT
   user_id,
   date_trunc('week', incremental_date)::date AS week
 FROM daily
+
+UNION ALL
+
+SELECT DISTINCT
+  perim,
+  code,
+  'any' AS role,  -- noqa: RF04
+  user_id,
+  date_trunc('week', incremental_date)::date AS week
+FROM daily
+
+ORDER BY perim, code, role, user_id, week
