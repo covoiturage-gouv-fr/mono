@@ -10,18 +10,18 @@ SELECT
   carpools,
   carpools
   - no_oi
-    AS carpools_incited,
+    AS carpools_with_incentive,
   round(100.0 * (carpools - no_oi) / nullif(carpools, 0), 1) AS incited_pct,
   oi_operator
-    AS carpools_incited_operator,
+    AS carpools_with_operator_incentive,
   oi_operator_only
-    AS carpools_incited_operator_only,
+    AS carpools_with_operator_incentive_only,
   carpools_collectivite_self_incentive
-    AS carpools_incited_aom,
+    AS carpools_with_aom_incentive,
   carpools_collectivite_other_incentive
-    AS carpools_incited_aom_other,
+    AS carpools_with_other_aom_incentive,
   oi_other
-    AS carpools_incited_other,
+    AS carpools_with_other_incentive,
   intra_carpools,
   carpools - intra_carpools                                  AS inter_carpools,
   q1_distance,
@@ -36,18 +36,18 @@ SELECT
   carpools,
   carpools
   - no_oi
-    AS carpools_incited,
+    AS carpools_with_incentive,
   round(100.0 * (carpools - no_oi) / nullif(carpools, 0), 1) AS incited_pct,
   oi_operator
-    AS carpools_incited_operator,
+    AS carpools_with_operator_incentive,
   oi_operator_only
-    AS carpools_incited_operator_only,
+    AS carpools_with_operator_incentive_only,
   carpools_collectivite_self_incentive
-    AS carpools_incited_aom,
+    AS carpools_with_aom_incentive,
   carpools_collectivite_other_incentive
-    AS carpools_incited_aom_other,
+    AS carpools_with_other_aom_incentive,
   oi_other
-    AS carpools_incited_other,
+    AS carpools_with_other_incentive,
   intra_carpools,
   carpools - intra_carpools                                  AS inter_carpools,
   q1_distance,

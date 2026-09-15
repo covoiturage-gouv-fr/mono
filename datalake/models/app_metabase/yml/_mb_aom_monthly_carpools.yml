@@ -1,0 +1,48 @@
+version: 2
+models:
+  - name: mb_aom_monthly_carpools
+    description: >
+      Vue app_metabase des trajets et de leur incitation par aom/aomreg et par mois.
+    columns:
+      - name: perim
+        data_type: text
+      - name: code
+        data_type: character varying
+      - name: date
+        data_type: text
+      - name: carpools
+        data_type: bigint
+      - name: carpools_with_incentive
+        data_type: bigint
+      - name: incited_pct
+        data_type: numeric
+      - name: carpools_with_operator_incentive
+        data_type: bigint
+      - name: carpools_with_operator_incentive_only
+        data_type: bigint
+      - name: carpools_with_aom_incentive
+        data_type: bigint
+        description: >
+          Nombre de trajets avec une incitation versée par l'aom (ou aomreg) elle-même.
+          Non exclusif avec carpools_with_other_aom_incentive : un trajet incité à la fois
+          par l'aom et par une autre aom est compté dans les deux colonnes. Les deux ne
+          sont donc pas additives et ne doivent pas être sommées pour reconstituer un total.
+      - name: carpools_with_other_aom_incentive
+        data_type: bigint
+        description: >
+          Nombre de trajets avec une incitation versée par une autre aom que celle du
+          territoire (les incitations epci ne sont pas comptées ici, cf.
+          territory_collectivite_siret_filter). Non exclusif avec carpools_with_aom_incentive :
+          voir sa description pour le détail du chevauchement.
+      - name: carpools_with_other_incentive
+        data_type: bigint
+      - name: intra_carpools
+        data_type: bigint
+      - name: inter_carpools
+        data_type: bigint
+      - name: q1_distance
+        data_type: numeric
+      - name: median_distance
+        data_type: numeric
+      - name: q3_distance
+        data_type: numeric
