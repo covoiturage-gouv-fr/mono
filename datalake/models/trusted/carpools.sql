@@ -86,6 +86,15 @@ collectivites AS (
     WHERE type IN ('epci', 'aom')
 ),
 
+-- sous-ensemble des collectivites de type aom, pour distinguer dans oi_details
+-- une incitation aom d'une incitation epci (territory_collectivite_siret_filter
+-- s'appuie dessus pour ne classer en self/other-aom que les vraies aom)
+aoms AS (
+    SELECT DISTINCT code
+    FROM {{ ref('perimeters_agg') }}
+    WHERE type = 'aom'
+),
+
 operator_incentives_agg AS (
     SELECT
         oi.carpool_id,
@@ -100,6 +109,9 @@ operator_incentives_agg AS (
             jsonb_build_object(
                 'siret', oi.siret,
                 'type', CASE WHEN c.code IS NOT NULL THEN 'collectivite' WHEN op.code IS NOT NULL THEN 'operator' ELSE 'other' END,
+                -- distingue une collectivite aom d'une collectivite epci sans
+                -- changer 'type' (consomme par territory_collectivite_siret_filter)
+                'is_aom', (aom.code IS NOT NULL),
                 'name', comp.legal_name,
                 'amount', oi.amount
             )
@@ -108,6 +120,7 @@ operator_incentives_agg AS (
     FROM {{ ref('operator_incentives') }} oi
     LEFT JOIN operators op ON op.code = left(oi.siret, 9)
     LEFT JOIN collectivites c ON c.code = left(oi.siret, 9)
+    LEFT JOIN aoms aom ON aom.code = left(oi.siret, 9)
     LEFT JOIN {{ source('dlk_import', 'company_companies') }} comp ON comp.siret = oi.siret
     WHERE {{ time_filter('oi.start_datetime', 'start_datetime', lookback_nb=3) }}
         AND oi.amount > 0
