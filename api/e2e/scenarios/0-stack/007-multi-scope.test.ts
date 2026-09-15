@@ -210,7 +210,18 @@ describe("Multi-périmètre : administration des utilisateurs", () => {
     await admin.delete(`/v3/dashboard/user/${row.id}`);
   });
 
-  it("un admin de territoire ne peut pas octroyer un périmètre étranger ni un login_siren", async () => {
+  it("la liste masque périmètres et SIREN de connexion sans la permission", async () => {
+    const territoryAdmin = new API();
+    await territoryAdmin.callback(TERRITORY_EMAIL, TERRITORY_PASSWORD);
+
+    const row = await findUser(territoryAdmin, MULTI_EMAIL);
+    // Le compteur reste (il porte les libellés de suppression), le détail disparaît.
+    expect(row.scopes_count).toBe(2);
+    expect(row.scopes).toEqual([]);
+    expect(row.login_siren).toBe(undefined);
+  });
+
+  it("un admin de territoire ne peut octroyer aucun périmètre, ni un login_siren", async () => {
     const admin = new API();
     await admin.callback(ADMIN_EMAIL, ADMIN_PASSWORD);
     const email = `e2e-guard-${Date.now()}@example.com`;
@@ -235,6 +246,7 @@ describe("Multi-périmètre : administration des utilisateurs", () => {
       territory_id: TERRITORY_IDFM_ID,
     };
 
+    // Territoire étranger comme territoire propre : `scopes[]` est réservé, sans exception.
     expect(
       (await territoryAdmin.put("/v3/dashboard/user", {
         ...body,
@@ -242,7 +254,125 @@ describe("Multi-périmètre : administration des utilisateurs", () => {
       })).status,
     ).toBe(403);
 
+    expect(
+      (await territoryAdmin.put("/v3/dashboard/user", {
+        ...body,
+        scopes: [{ territory_id: TERRITORY_IDFM_ID, is_default: true }],
+      })).status,
+    ).toBe(403);
+
     expect((await territoryAdmin.put("/v3/dashboard/user", { ...body, login_siren: "130025265" })).status).toBe(403);
+
+    await admin.delete(`/v3/dashboard/user/${row.id}`);
+  });
+
+  it("une modification par un admin de territoire ne touche ni le SIREN ni le pivot", async () => {
+    const admin = new API();
+    await admin.callback(ADMIN_EMAIL, ADMIN_PASSWORD);
+    const email = `e2e-siren-${Date.now()}@example.com`;
+    await admin.post("/v3/dashboard/user", {
+      firstname: "E2E",
+      lastname: "Siren",
+      email,
+      role: "territory.user",
+      login_siren: "130025265",
+      scopes: [
+        { territory_id: TERRITORY_IDFM_ID, is_default: true },
+        { territory_id: TERRITORY_LYON_ID },
+      ],
+    });
+    const row = await findUser(admin, email);
+
+    const territoryAdmin = new API();
+    await territoryAdmin.callback(TERRITORY_EMAIL, TERRITORY_PASSWORD);
+    const updated = await territoryAdmin.put("/v3/dashboard/user", {
+      id: row.id,
+      firstname: "E2E",
+      lastname: "Renommé",
+      email,
+      role: "territory.user",
+      // Champs de périmètre envoyés par l'appelant : ils ne doivent pas atteindre le pivot.
+      operator_id: 1,
+      territory_id: TERRITORY_IDFM_ID,
+    });
+    expect(updated.status).toBe(200);
+
+    // Le SIREN de connexion survit : sinon le compte ne pourrait plus s'authentifier.
+    const after = await findUser(admin, email);
+    expect(after.login_siren).toBe("130025265");
+    expect(after.scopes_count).toBe(2);
+    expect(after.operator_id).toBe(null);
+
+    await admin.delete(`/v3/dashboard/user/${after.id}`);
+  });
+
+  it("un admin de territoire ne peut rattacher un compte créé qu'à son propre périmètre", async () => {
+    const territoryAdmin = new API();
+    await territoryAdmin.callback(TERRITORY_EMAIL, TERRITORY_PASSWORD);
+
+    // Territoire étranger annoncé dans le corps : refusé par le contrôle de périmètre.
+    const foreign = await territoryAdmin.post("/v3/dashboard/user", {
+      firstname: "E2E",
+      lastname: "Foreign",
+      email: `e2e-foreign-create-${Date.now()}@example.com`,
+      role: "territory.user",
+      operator_id: null,
+      territory_id: TERRITORY_LYON_ID,
+    });
+    expect(foreign.status).toBe(403);
+
+    // Opérateur annoncé dans le corps : ignoré, le compte reste sur le territoire de l'appelant.
+    const email = `e2e-plant-${Date.now()}@example.com`;
+    const created = await territoryAdmin.post("/v3/dashboard/user", {
+      firstname: "E2E",
+      lastname: "Plant",
+      email,
+      role: "territory.user",
+      operator_id: 1,
+      territory_id: TERRITORY_IDFM_ID,
+    });
+    expect(created.status).toBe(200);
+
+    const admin = new API();
+    await admin.callback(ADMIN_EMAIL, ADMIN_PASSWORD);
+    const row = await findUser(admin, email);
+    expect(row.operator_id).toBe(null);
+    expect(row.scopes.map((sc) => sc.territory_id)).toEqual([TERRITORY_IDFM_ID]);
+
+    await admin.delete(`/v3/dashboard/user/${row.id}`);
+  });
+
+  it("un admin de territoire ne peut pas modifier un compte hors de son périmètre", async () => {
+    const admin = new API();
+    await admin.callback(ADMIN_EMAIL, ADMIN_PASSWORD);
+    const email = `e2e-foreign-${Date.now()}@example.com`;
+    await admin.post("/v3/dashboard/user", {
+      firstname: "E2E",
+      lastname: "Foreign",
+      email,
+      role: "territory.user",
+      scopes: [{ territory_id: TERRITORY_LYON_ID, is_default: true }],
+    });
+    const row = await findUser(admin, email);
+
+    // L'appelant n'a que le territoire 1 ; la cible n'appartient qu'au territoire 2.
+    const territoryAdmin = new API();
+    await territoryAdmin.callback(TERRITORY_EMAIL, TERRITORY_PASSWORD);
+    const attempt = await territoryAdmin.put("/v3/dashboard/user", {
+      id: row.id,
+      firstname: "E2E",
+      lastname: "Foreign",
+      // Reprise de compte : l'adresse sert de clé d'appariement à la connexion ProConnect.
+      email: `pirate-${Date.now()}@example.com`,
+      role: "territory.user",
+      operator_id: null,
+      // Le périmètre annoncé est celui de l'appelant : il ne doit pas faire autorité.
+      territory_id: TERRITORY_IDFM_ID,
+    });
+    expect(attempt.status).toBe(404);
+
+    // Le compte cible est intact.
+    expect((await findUser(admin, email)).email).toBe(email);
 
     await admin.delete(`/v3/dashboard/user/${row.id}`);
   });
