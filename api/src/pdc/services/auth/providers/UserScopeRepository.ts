@@ -72,6 +72,17 @@ export class UserScopeRepository {
     return rows.length > 0;
   }
 
+  // Même contrôle côté opérateur (scope 1:1) : le compte cible relève-t-il de cet opérateur ?
+  async userHasOperator(userId: number, operatorId: number): Promise<boolean> {
+    const rows = await this.denoConnection.query<{ one: number }>(sql`
+      SELECT 1 AS one
+      FROM ${raw(this.table)}
+      WHERE user_id = ${userId} AND operator_id = ${operatorId}
+      LIMIT 1
+    `);
+    return rows.length > 0;
+  }
+
   // Ajoute un territoire ; si défaut, dégrade l'ancien défaut dans la même transaction.
   async addTerritory(userId: number, territoryId: number, isDefault = false): Promise<void> {
     if (!isDefault) {

@@ -27,25 +27,22 @@ export function roleRank(role: string): number {
   return ROLE_RANK[role] ?? 0;
 }
 
-// Territoires demandés par le formulaire.
-function requestedTerritories(params: ParamsType): number[] {
+/**
+ * Détecte l'octroi d'un périmètre (tableau `scopes` non vide).
+ *
+ * On ne tente pas de tolérer « seulement son propre territoire » : `territory_id` vient
+ * du corps de la requête, donc de l'appelant, et `seedScopes` remplace tout le pivot —
+ * un appelant pourrait ainsi évincer un compte multi-territoire de ses autres périmètres.
+ * Sans la permission, aucun `scopes[]` n'est accepté ; le formulaire n'en envoie pas.
+ */
+function grantsScope(params: ParamsType): boolean {
   const scopes: unknown = get(params, "scopes", undefined);
-  if (!Array.isArray(scopes)) return [];
-  return scopes
-    .map((s) => (s as { territory_id?: number })?.territory_id)
-    .filter((id): id is number => Number.isInteger(id));
-}
-
-// Octroi privilégié = tout territoire hors de celui du caller (élargissement de périmètre).
-// Réémettre son propre territoire est l'usage normal d'un admin de territoire.
-function grantsForeignScope(params: ParamsType, context: ContextType): boolean {
-  const own = get(context, "call.user.territory_id", null) as number | null;
-  return requestedTerritories(params).some((id) => id !== own);
+  return Array.isArray(scopes) && scopes.length > 0;
 }
 
 /**
  * Garde les actions create/update user :
- * - champs privilégiés (login_siren, octroi d'un territoire étranger) réservés à MANAGE_SCOPES_PERMISSION ;
+ * - champs privilégiés (login_siren, octroi de périmètre) réservés à MANAGE_SCOPES_PERMISSION ;
  * - interdit d'attribuer un rôle de rang supérieur à celui du caller (anti-escalade).
  */
 @middleware()
@@ -59,8 +56,8 @@ export class UserScopeGuardMiddleware implements MiddlewareInterface {
     const callerRole = get(context, "call.user.role", "") as string;
     const hasManageScopes = permissions.includes(MANAGE_SCOPES_PERMISSION);
 
-    // Gate champ privilégié : login_siren / octroi d'un territoire étranger sans la permission.
-    const asksPrivileged = get(params, "login_siren", null) != null || grantsForeignScope(params, context);
+    // Gate champ privilégié : login_siren / octroi de périmètre sans la permission.
+    const asksPrivileged = get(params, "login_siren", null) != null || grantsScope(params);
     if (asksPrivileged && !hasManageScopes) {
       throw new ForbiddenException("login_siren / octroi de scope réservé à registry.admin");
     }

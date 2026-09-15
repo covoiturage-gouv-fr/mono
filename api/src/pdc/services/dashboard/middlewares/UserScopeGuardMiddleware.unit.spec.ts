@@ -58,7 +58,7 @@ describe("UserScopeGuardMiddleware", () => {
     );
   });
 
-  it("403 when territory.admin grants a territory that is not his own", async () => {
+  it("403 when territory.admin grants a foreign territory", async () => {
     await assertRejects(
       () =>
         middleware.process(
@@ -71,10 +71,25 @@ describe("UserScopeGuardMiddleware", () => {
     );
   });
 
-  it("OK when territory.admin re-submits his own territory (formulaire courant)", async () => {
+  // territory_id vient du corps de la requête : tolérer « son propre territoire » laisserait
+  // un appelant remplacer tout le pivot d'un compte multi-territoire par ce seul périmètre.
+  it("403 when territory.admin re-submits even his own territory", async () => {
+    await assertRejects(
+      () =>
+        middleware.process(
+          { role: "territory.user", scopes: [{ territory_id: 1, is_default: true }] },
+          ctx(territoryAdmin),
+          next,
+          undefined,
+        ),
+      ForbiddenException,
+    );
+  });
+
+  it("OK when territory.admin sends no scopes at all (formulaire courant)", async () => {
     assertEquals(
       await middleware.process(
-        { role: "territory.user", scopes: [{ territory_id: 1, is_default: true }] },
+        { role: "territory.user", territory_id: 1 },
         ctx(territoryAdmin),
         next,
         undefined,

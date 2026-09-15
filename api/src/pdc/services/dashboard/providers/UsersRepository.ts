@@ -217,6 +217,11 @@ export class UsersRepository implements UsersRepositoryInterface {
   }
 
   async updateUser(data: UpdateUserDataInterface): Promise<UpdateUserResultInterface> {
+    // Champ privilégié : on ne l'écrit que si l'appelant l'a fourni. L'écrire inconditionnellement
+    // viderait le SIREN à chaque modification par un admin de territoire, et le contrôle ProConnect
+    // étant fail-closed, le compte ne pourrait plus se connecter.
+    const loginSiren = data.login_siren !== undefined ? sql`login_siren = ${data.login_siren},` : sql``;
+
     const query = sql`
       UPDATE ${raw(this.table)}
       SET
@@ -224,7 +229,7 @@ export class UsersRepository implements UsersRepositoryInterface {
         lastname = ${data.lastname},
         email = ${data.email},
         role = ${data.role},
-        login_siren = ${data.login_siren ?? null},
+        ${loginSiren}
         updated_at = now()
       WHERE _id = ${data.id}
       RETURNING _id, updated_at, firstname, lastname, email, role
