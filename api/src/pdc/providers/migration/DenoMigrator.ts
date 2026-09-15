@@ -351,6 +351,14 @@ export class DenoMigrator {
       VALUES (${userId}::int, ${operatorId}::int, ${territoryId}::int, true)
       ON CONFLICT DO NOTHING
     `);
+
+    for (const extra of user.extraTerritories ?? []) {
+      await this.testConn.query(sql`
+        INSERT INTO auth.user_scopes (user_id, territory_id, is_default)
+        VALUES (${userId}::int, ${extra._id}::int, false)
+        ON CONFLICT DO NOTHING
+      `);
+    }
   }
 
   async seedTerritoryGroup(territory_group: CreateTerritoryGroupInterface) {

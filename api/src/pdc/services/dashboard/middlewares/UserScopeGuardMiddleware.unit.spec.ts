@@ -13,7 +13,7 @@ describe("UserScopeGuardMiddleware", () => {
   });
 
   const registryAdmin = { role: "registry.admin", permissions: ["registry.user.manageScopes", "registry.user.create"] };
-  const territoryAdmin = { role: "territory.admin", permissions: ["territory.user.create"] };
+  const territoryAdmin = { role: "territory.admin", permissions: ["territory.user.create"], territory_id: 1 };
 
   it("roleRank: registry.admin outranks territory.admin outranks territory.user", () => {
     assertEquals(roleRank("registry.admin") > roleRank("territory.admin"), true);
@@ -52,22 +52,41 @@ describe("UserScopeGuardMiddleware", () => {
 
   it("403 when territory.admin provides login_siren (privileged field)", async () => {
     await assertRejects(
-      () => middleware.process({ role: "territory.admin", login_siren: "123456789" }, ctx(territoryAdmin), next, undefined),
+      () =>
+        middleware.process({ role: "territory.admin", login_siren: "123456789" }, ctx(territoryAdmin), next, undefined),
       ForbiddenException,
     );
   });
 
-  it("403 when territory.admin grants a multi-territory scope", async () => {
+  it("403 when territory.admin grants a territory that is not his own", async () => {
     await assertRejects(
-      () => middleware.process({ role: "territory.admin", scopes: [1, 2] }, ctx(territoryAdmin), next, undefined),
+      () =>
+        middleware.process(
+          { role: "territory.admin", scopes: [{ territory_id: 1 }, { territory_id: 2 }] },
+          ctx(territoryAdmin),
+          next,
+          undefined,
+        ),
       ForbiddenException,
+    );
+  });
+
+  it("OK when territory.admin re-submits his own territory (formulaire courant)", async () => {
+    assertEquals(
+      await middleware.process(
+        { role: "territory.user", scopes: [{ territory_id: 1, is_default: true }] },
+        ctx(territoryAdmin),
+        next,
+        undefined,
+      ),
+      "next() called",
     );
   });
 
   it("OK when registry.admin provides login_siren + scopes", async () => {
     assertEquals(
       await middleware.process(
-        { role: "registry.admin", login_siren: "123456789", scopes: [1, 2] },
+        { role: "registry.admin", login_siren: "123456789", scopes: [{ territory_id: 1 }, { territory_id: 2 }] },
         ctx(registryAdmin),
         next,
         undefined,

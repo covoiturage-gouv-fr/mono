@@ -83,10 +83,20 @@ export default function UsersTable(props: { title: string; territoryId: number |
     return siret ? siret.slice(0, 9) : "";
   };
 
-  // La suggestion doit être semée dans currentRow : le PUT ne sérialise que ce qui y est écrit.
+  // currentRow EST le corps de la requête : n'y mettre que des champs acceptés par l'API.
+  // scopes_count est une sortie de la liste, et les champs privilégiés sont refusés aux autres rôles.
   const openUpdateModal = (row: UsersInterface["data"][0]) => {
     const scopes = initialScopes(row);
-    modal.setCurrentRow({ ...row, scopes, login_siren: row.login_siren ?? suggestSiren(scopes) });
+    modal.setCurrentRow({
+      id: row.id,
+      firstname: row.firstname,
+      lastname: row.lastname,
+      email: row.email,
+      role: row.role,
+      operator_id: row.operator_id ?? null,
+      territory_id: row.territory_id ?? null,
+      ...(canManageScopes ? { scopes, login_siren: row.login_siren ?? suggestSiren(scopes) } : {}),
+    });
     modal.setErrors({});
     modal.setOpenModal(true);
     modal.setTypeModal("update");
@@ -256,9 +266,9 @@ export default function UsersTable(props: { title: string; territoryId: number |
                 email: "",
                 operator_id: user?.operator_id ?? undefined,
                 territory_id: user?.territory_id ?? undefined,
-                scopes,
-                login_siren: suggestSiren(scopes),
                 role: `${user?.role === "registry.admin" ? user?.role : `${user?.role.split(".")[0]}.user`}`,
+                // Sans la permission, le périmètre du nouveau compte vient du seul territory_id.
+                ...(canManageScopes ? { scopes, login_siren: suggestSiren(scopes) } : {}),
               });
               modal.setOpenModal(true);
               modal.setErrors({});

@@ -77,6 +77,8 @@ just dc up
 just migrate
 
 # Seeder les données de test
+# (deux territoires : Ile-De-France-Mobilité et Metropole de Lyon ;
+#  multi-territory@example.com porte les deux, pour tester le multi-périmètre)
 just seed
 just seed-local-users
 

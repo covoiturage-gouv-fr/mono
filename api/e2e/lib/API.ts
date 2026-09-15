@@ -167,6 +167,14 @@ export class API {
     return await this.request("POST", url, body, searchParams);
   }
 
+  public async put<T extends string | object | null>(
+    url: string | URL,
+    body: object | BodyInit,
+    searchParams?: URLSearchParams,
+  ): Promise<HTTPResponse<T>> {
+    return await this.request("PUT", url, body, searchParams);
+  }
+
   public async delete<T extends string | object | null | void>(
     url: string | URL,
     searchParams?: URLSearchParams,
@@ -175,7 +183,7 @@ export class API {
   }
 
   public async request<T extends string | object | null | void>(
-    method: "GET" | "POST" | "DELETE",
+    method: "GET" | "POST" | "PUT" | "DELETE",
     url: string | URL,
     body?: object | BodyInit,
     searchParams?: URLSearchParams,
@@ -208,7 +216,7 @@ export class API {
       };
     }
 
-    if (method === "POST") {
+    if (method === "POST" || method === "PUT") {
       init.body = typeof body === "object" ? JSON.stringify(body) : body;
     }
 

@@ -213,7 +213,7 @@ describe("UsersRepository multi-scope (pivot)", () => {
       role: "territory.admin",
       operator_id: null,
       territory_id: 310,
-      scopes: [311],
+      scopes: [{ territory_id: 310, is_default: true }, { territory_id: 311 }],
     });
 
     const created = await repository.getUsers({ search: "multi.scope@example.com" });
@@ -252,6 +252,67 @@ describe("UsersRepository multi-scope (pivot)", () => {
     assertEquals(byT310.data[0].scopes_count, 2);
   });
 
+  it("la liste expose les périmètres complets et le login_siren", async () => {
+    const listed = await repository.getUsers({ search: "multi.scope@example.com" });
+    assertEquals(listed.data[0].scopes, [
+      { territory_id: 310, is_default: true },
+      { territory_id: 311, is_default: false },
+    ]);
+    assertEquals(listed.data[0].login_siren, null);
+  });
+
+  // Régression : un admin de territoire n'envoie pas scopes[] ; son update ne doit rien amputer.
+  it("update sans scopes conserve le pivot", async () => {
+    const uid = (await repository.getUsers({ search: "multi.scope@example.com" })).data[0].id;
+
+    await repository.updateUser({
+      id: uid,
+      firstname: "Multi",
+      lastname: "Scope",
+      email: "multi.scope@example.com",
+      role: "territory.admin",
+      operator_id: null,
+      territory_id: 310,
+    });
+
+    const after = await repository.getUsers({ id: uid });
+    assertEquals(after.data[0].scopes_count, 2);
+  });
+
+  it("update avec scopes applique le drapeau is_default", async () => {
+    const uid = (await repository.getUsers({ search: "multi.scope@example.com" })).data[0].id;
+
+    await repository.updateUser({
+      id: uid,
+      firstname: "Multi",
+      lastname: "Scope",
+      email: "multi.scope@example.com",
+      role: "territory.admin",
+      operator_id: null,
+      territory_id: 310,
+      scopes: [{ territory_id: 310, is_default: false }, { territory_id: 311, is_default: true }],
+    });
+
+    const after = await repository.getUsers({ id: uid });
+    assertEquals(after.data[0].territory_id, 311);
+    assertEquals(after.data[0].scopes, [
+      { territory_id: 311, is_default: true },
+      { territory_id: 310, is_default: false },
+    ]);
+
+    // Remise en état pour les cas suivants (310 redevient le défaut).
+    await repository.updateUser({
+      id: uid,
+      firstname: "Multi",
+      lastname: "Scope",
+      email: "multi.scope@example.com",
+      role: "territory.admin",
+      operator_id: null,
+      territory_id: 310,
+      scopes: [{ territory_id: 310, is_default: true }, { territory_id: 311 }],
+    });
+  });
+
   it("delete scoped on a non-granted territory finds nothing", async () => {
     const created = await repository.getUsers({ search: "multi.scope@example.com" });
     const uid = created.data[0].id;
@@ -286,7 +347,7 @@ describe("UsersRepository multi-scope (pivot)", () => {
       role: "territory.admin" as const,
       operator_id: null,
       territory_id: 310,
-      scopes: [311],
+      scopes: [{ territory_id: 310, is_default: true }, { territory_id: 311 }],
     });
     const uid = (await repository.getUsers({ search: "promote.scope@example.com" })).data[0].id;
 

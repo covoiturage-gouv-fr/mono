@@ -3,6 +3,7 @@ import { env_or_default } from "@/lib/env/index.ts";
 import { logger } from "@/lib/logger/index.ts";
 import { asyncHandler } from "@/pdc/proxy/helpers/asyncHandler.ts";
 import { MfaRequiredError, ProConnectOIDCProvider } from "@/pdc/services/auth/providers/ProConnectOIDCProvider.ts";
+import { UserRepository } from "@/pdc/services/auth/providers/UserRepository.ts";
 import { UserScopeRepository } from "@/pdc/services/auth/providers/UserScopeRepository.ts";
 import express, { NextFunction, Request, Response } from "dep:express";
 import { session } from "../../../config/proxy.ts";
@@ -21,6 +22,7 @@ export class AuthRouter {
     private proConnectOIDCProvider: ProConnectOIDCProvider,
     private config: ConfigInterfaceResolver,
     private userScopeRepository: UserScopeRepository,
+    private userRepository: UserRepository,
   ) {
   }
 
@@ -137,7 +139,7 @@ export class AuthRouter {
     if (isTestAuthEnabled(envs, this.config.get("test.enabled"))) {
       this.config.get("test.accounts")(); // fail fast at boot if APIE2E_AUTH_* are missing
       logger.warn("[auth] test login route /auth/test/callback is ENABLED");
-      this.app.post("/auth/test/callback", loginRateLimiter(), testCallbackRoute(this.config));
+      this.app.post("/auth/test/callback", loginRateLimiter(), testCallbackRoute(this.config, this.userRepository));
     }
   }
 }

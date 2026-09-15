@@ -17,6 +17,13 @@ import {
   UsersResultInterface,
 } from "@/pdc/services/dashboard/interfaces/UsersRepositoryInterface.ts";
 
+// Entrée de reconciliation des périmètres (formulaire, ou colonnes legacy d'un appel API direct).
+type ScopeSeedData = {
+  operator_id?: number | null;
+  territory_id?: number | null;
+  scopes?: Array<{ territory_id: number; is_default?: boolean }>;
+};
+
 @provider({
   identifier: UsersRepositoryInterfaceResolver,
 })
@@ -72,9 +79,17 @@ export class UsersRepository implements UsersRepositoryInterface {
         (ARRAY_AGG(us.operator_id ORDER BY us.is_default DESC, us._id ASC))[1] AS operator_id,
         (ARRAY_AGG(us.territory_id ORDER BY us.is_default DESC, us._id ASC))[1] AS territory_id,
         users.role,
-        -- Sous-requête : le WHERE dégrade le LEFT JOIN en jointure interne, il ne verrait
+        users.login_siren,
+        -- Sous-requêtes : le WHERE dégrade le LEFT JOIN en jointure interne, il ne verrait
         -- que les scopes du caller.
-        (SELECT COUNT(*) FROM ${raw(this.tableScopes)} s WHERE s.user_id = users._id)::int AS scopes_count
+        (SELECT COUNT(*) FROM ${raw(this.tableScopes)} s WHERE s.user_id = users._id)::int AS scopes_count,
+        -- Périmètres complets : sans eux le formulaire d'édition réécrirait le compte avec le seul défaut.
+        COALESCE((
+          SELECT json_agg(json_build_object('territory_id', s.territory_id, 'is_default', s.is_default)
+                          ORDER BY s.is_default DESC, s._id ASC)
+          FROM ${raw(this.tableScopes)} s
+          WHERE s.user_id = users._id AND s.territory_id IS NOT NULL
+        ), '[]'::json) AS scopes
       FROM ${raw(this.table)} AS users
       LEFT JOIN ${raw(this.tableScopes)} us ON us.user_id = users._id
       ${searchJoin}
@@ -127,11 +142,15 @@ export class UsersRepository implements UsersRepositoryInterface {
     };
   }
 
-  // Reconcilie user_scopes avec le formulaire (défaut + territoires additionnels), via UserScopeRepository.
-  private async seedScopes(
-    userId: number,
-    data: { operator_id?: number | null; territory_id?: number | null; scopes?: number[] },
-  ): Promise<void> {
+  // Périmètres demandés, défaut en tête (drapeau is_default, à défaut le premier de la liste).
+  private requestedTerritories(data: ScopeSeedData): number[] {
+    const scopes = data.scopes ?? (data.territory_id ? [{ territory_id: data.territory_id }] : []);
+    const ordered = [...scopes].sort((a, b) => Number(b.is_default ?? false) - Number(a.is_default ?? false));
+    return [...new Set(ordered.map((s) => s.territory_id))];
+  }
+
+  // Reconcilie user_scopes avec le formulaire, via UserScopeRepository.
+  private async seedScopes(userId: number, data: ScopeSeedData): Promise<void> {
     // Reset idempotent (no-op à la création, resynchronise à l'update).
     await this.pgConnection.query(sql`
       DELETE FROM ${raw(this.tableScopes)} WHERE user_id = ${userId}
@@ -142,11 +161,7 @@ export class UsersRepository implements UsersRepositoryInterface {
       return;
     }
 
-    const territories: number[] = [];
-    if (data.territory_id) territories.push(data.territory_id);
-    for (const t of data.scopes ?? []) {
-      if (!territories.includes(t)) territories.push(t);
-    }
+    const territories = this.requestedTerritories(data);
     for (let i = 0; i < territories.length; i++) {
       await this.userScopeRepository.addTerritory(userId, territories[i], i === 0);
     }
@@ -218,7 +233,11 @@ export class UsersRepository implements UsersRepositoryInterface {
     if (rows.length !== 1) {
       throw new Error(`Unable to update user with id ${data.id}`);
     }
-    await this.seedScopes(data.id, data);
+    // Pivot touché seulement si le formulaire porte des périmètres (ou bascule vers un opérateur) :
+    // un admin de territoire n'en envoie pas, et ne doit pas amputer un compte multi-territoires.
+    if (data.scopes?.length || data.operator_id) {
+      await this.seedScopes(data.id, data);
+    }
     return {
       success: true,
       message: `User ${JSON.stringify(rows[0])} updated`,
