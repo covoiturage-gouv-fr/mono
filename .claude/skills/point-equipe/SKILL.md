@@ -1,7 +1,7 @@
 ---
 name: point-equipe
-description: Use when preparing the weekly standup ("point d'équipe", "stand-up hebdo", "visio hebdo", "prépare mon point équipe", "résume mes tâches de la semaine pour le standup"). Compiles tasks the current user closed this week (État Done + Date fermeture tâche), plus current blockers and next items, into a tight aide-mémoire formatted as numbered bullets (1.X / 2.X / 3.X) with GEN-* links, validates with the user, then writes a new row in the standup table.
-allowed-tools: Bash, Skill, AskUserQuestion, mcp__claude_ai_Notion__notion-fetch, mcp__claude_ai_Notion__notion-search, mcp__claude_ai_Notion__notion-create-pages, mcp__claude_ai_Notion__notion-update-page
+description: Use when preparing the weekly standup ("point d'équipe", "stand-up hebdo", "visio hebdo", "prépare mon point équipe", "résume mes tâches de la semaine pour le standup"). Compiles tasks the current user closed this week (État Done + Date fermeture tâche) plus the user's PRs merged this week on mono (merge date = done, catches work with no Notion task; infra work is tracked as Notion "Chantier Infra" tasks), plus current blockers and next items, into a tight aide-mémoire formatted as numbered bullets (1.X / 2.X / 3.X) with GEN-* links, validates with the user, then writes a new row in the standup table.
+allowed-tools: Bash, Skill, AskUserQuestion, mcp__github__search_pull_requests, mcp__github__get_me, mcp__claude_ai_Notion__notion-query-data-sources, mcp__claude_ai_Notion__notion-fetch, mcp__claude_ai_Notion__notion-search, mcp__claude_ai_Notion__notion-create-pages, mcp__claude_ai_Notion__notion-update-page
 ---
 
 # Point d'équipe
@@ -19,6 +19,12 @@ ad-hoc après le stand-up.
   `collection://35d994be-c931-800c-aca3-000be22465c3`
 - **Page parent du stand-up** :
   <https://app.notion.com/p/356994bec9318053a8cacba279c7d066>
+- **Dépôt GitHub** (source des PR mergées) : `covoiturage-gouv-fr/mono`
+  uniquement. Le dépôt `infra` est privé et hors d'atteinte : le travail infra
+  est suivi dans Notion par les tâches rattachées au projet **Chantier Infra**
+  (relation `🛣️ Roadmap Projets 2026` →
+  `https://app.notion.com/3d6994bec931815cbe02ca4039048bea`). Ne pas interroger
+  GitHub pour l'infra.
 - Utilisateur courant : résoudre dynamiquement son ID Notion via `notion-search`
   (`query_type: "user"`, requête = l'email git de l'utilisateur, obtenu avec
   `git config user.email`). Ne jamais coder en dur d'identité (nom, ID, email).
@@ -70,18 +76,52 @@ besoin) :
 But : lister les tâches avec **`État = Done`** + **`Date fermeture tâche` dans
 [jeudi précédent, jeudi du stand-up]** + **`Personne` = utilisateur courant**.
 
-- L'API `notion-search` ne filtre pas sur les propriétés métier ; faire une
-  recherche large sur la data source des tâches (mots-clés génériques :
-  `Done terminée`, ou le nom de l'utilisateur), `page_size: 25`,
-  `max_highlight_length: 0`.
-- Lister les candidats récents (timestamps de la semaine), puis **fetch en
-  parallèle** chaque candidat pour lire ses propriétés
-  (`État`, `date:Date fermeture tâche:start`, `Personne`).
-- Garder ceux qui matchent les trois critères. Ne **jamais** se fier au seul
-  timestamp de la recherche : c'est la date de modification, pas de fermeture.
+Interroger la data source en SQL avec `notion-query-data-sources` (les noms de
+colonnes utiles : `Tâche`, `État`, `Personne`, `userDefined:ID` (le numéro
+GEN-*), `date:Date fermeture tâche:start`, `🛣️ Roadmap Projets 2026`, `url`) :
 
-Si la recherche large rate des tâches (rare), demander à l'utilisateur s'il en
-manque d'évidentes.
+```sql
+SELECT "userDefined:ID" AS id, "Tâche" AS titre,
+       "date:Date fermeture tâche:start" AS fermeture, url
+FROM "collection://2759b461-218e-4764-ae17-0025d728193c"
+WHERE "État" = 'Done'
+  AND "Personne" LIKE '%<id utilisateur>%'
+  AND date("date:Date fermeture tâche:start") >= '<debut>'
+ORDER BY fermeture DESC LIMIT 100
+```
+
+- **Piège : le résultat est tronqué à 25 lignes sans le signaler**
+  (`has_more: false` ment). Toujours `ORDER BY fermeture DESC` + `LIMIT` explicite,
+  et si le compte atteint la troncature, re-découper la fenêtre par tranches de
+  dates. Un tri ascendant ferait disparaître les tâches les plus récentes.
+- Ne **jamais** se fier au timestamp de recherche : c'est la date de
+  modification, pas de fermeture.
+
+Si des tâches évidentes manquent, demander à l'utilisateur.
+
+### 2 bis. Compléter avec les PR mergées de la semaine
+
+Beaucoup de travail applicatif n'a pas de tâche Notion. On rattrape via les PR
+mergées sur `mono` (le travail infra, lui, a toujours sa tâche Notion sous
+**Chantier Infra** — voir étape 2 —, donc rien à chercher côté GitHub).
+
+- Chercher les PR de l'utilisateur mergées dans la fenêtre avec
+  `mcp__github__search_pull_requests` :
+  `repo:covoiturage-gouv-fr/mono is:merged author:<login> merged:<debut>..<fin>`
+  (`fields: ["number", "title", "html_url", "closed_at"]`).
+  Le login GitHub se résout dynamiquement (`mcp__github__get_me`) : ne jamais le
+  coder en dur.
+- **La date de merge fait foi comme date de « done »** (`closed_at` sur une PR
+  mergée). C'est l'équivalent de `Date fermeture tâche` pour le travail sans
+  ticket.
+- **Dédoublonner** : une PR déjà couverte par une tâche Done de l'étape 2 (même
+  sujet, ticket GEN-* cité dans le titre ou le corps de la PR) ne donne pas de
+  puce en plus ; elle vient juste confirmer la tâche.
+- Les PR restantes (sans tâche Notion) deviennent des puces de la section 1,
+  reformulées en sujet métier, sans numéro de PR ni URL GitHub, et sans lien
+  GEN-* puisqu'il n'y en a pas.
+- En cas de doute sur une PR (travail mineur, chore CI, dépendances), demander à
+  l'utilisateur via `AskUserQuestion` s'il la garde.
 
 ### 3. Identifier bloquants et prochaines tâches
 
@@ -147,7 +187,8 @@ l'utilisateur.
 - `properties` :
   - `Membre` : nom de l'utilisateur courant (titre).
   - `date:Stand up:start` : date du stand-up (`AAAA-MM-JJ`).
-  - `date:Stand up:is_datetime` : `0`.
+  - `date:Stand up:is_datetime` : `0` en **nombre**, pas la chaîne `"0"`
+    (l'API rejette la chaîne avec une erreur 400).
   - `Points saillants réalisés` : le bloc Markdown de la section 1 (sans titre,
     seulement les puces `1.1 …`, `1.2 …`).
   - `Points bloquants` : bloc de la section 2.
@@ -165,4 +206,4 @@ encore éditer la ligne directement dans Notion si besoin.
 ## Sortie
 
 Rapport bref : nombre de puces par section, date du stand-up, URL de la ligne
-créée.
+créée, et nombre de PR mergées retenues sans tâche Notion associée.
