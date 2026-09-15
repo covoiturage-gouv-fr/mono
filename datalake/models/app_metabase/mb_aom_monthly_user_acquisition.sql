@@ -1,6 +1,10 @@
 {#
-  Nouveaux utilisateurs par mois et cumul : un utilisateur est "nouveau" sur une aom
-  le mois de sa première apparition dans user_aom_month/user_aomreg_month
+  Nouveaux utilisateurs par mois et cumul, par aom.
+  - role = 'driver' / 'passenger' : nouveau DANS ce rôle (un ancien conducteur qui
+    devient passager compte comme nouveau passager, et inversement).
+  - role = 'any'                  : nouveau tout court, sur sa toute première
+    apparition dans le territoire tous rôles confondus (un ancien conducteur qui
+    devient passager n'est pas recompté ici).
 #}
 {{ config(
   materialized='view',
@@ -15,7 +19,7 @@ WITH monthly AS (
   FROM {{ ref('user_aomreg_month') }}
 ),
 
-first_month AS (
+first_month_by_role AS (
   SELECT
     perim,
     code,
@@ -26,7 +30,7 @@ first_month AS (
   GROUP BY perim, code, role, user_id
 ),
 
-by_month AS (
+by_month_role AS (
   SELECT
     perim,
     code,
@@ -37,15 +41,45 @@ by_month AS (
   GROUP BY perim, code, role, incremental_date
 ),
 
-new_by_month AS (
+new_by_month_role AS (
   SELECT
     perim,
     code,
     role,
     first_date AS date,
     COUNT(*)   AS new_users
-  FROM first_month
+  FROM first_month_by_role
   GROUP BY perim, code, role, first_date
+),
+
+first_month_any AS (
+  SELECT
+    perim,
+    code,
+    user_id,
+    MIN(incremental_date) AS first_date
+  FROM monthly
+  GROUP BY perim, code, user_id
+),
+
+by_month_any AS (
+  SELECT
+    perim,
+    code,
+    incremental_date        AS date,
+    COUNT(DISTINCT user_id) AS active_users
+  FROM monthly
+  GROUP BY perim, code, incremental_date
+),
+
+new_by_month_any AS (
+  SELECT
+    perim,
+    code,
+    first_date AS date,
+    COUNT(*)   AS new_users
+  FROM first_month_any
+  GROUP BY perim, code, first_date
 ),
 
 combined AS (
@@ -56,18 +90,33 @@ combined AS (
     b.date,
     b.active_users,
     COALESCE(n.new_users, 0) AS new_users
-  FROM by_month b
-  LEFT JOIN new_by_month n
+  FROM by_month_role b
+  LEFT JOIN new_by_month_role n
     ON n.perim = b.perim
     AND n.code = b.code
     AND n.role = b.role
+    AND n.date = b.date
+
+  UNION ALL
+
+  SELECT
+    b.perim,
+    b.code,
+    'any' AS role,
+    b.date,
+    b.active_users,
+    COALESCE(n.new_users, 0) AS new_users
+  FROM by_month_any b
+  LEFT JOIN new_by_month_any n
+    ON n.perim = b.perim
+    AND n.code = b.code
     AND n.date = b.date
 )
 
 SELECT
   perim,
   code,
-  to_char(date, 'YYYY-MM') AS date,
+  to_char(date, 'YYYY-MM') AS month,
   role,
   active_users,
   new_users,
@@ -75,4 +124,4 @@ SELECT
     PARTITION BY perim, code, role ORDER BY date
   ) AS cumulative_users
 FROM combined
-ORDER BY date, perim, code, role
+ORDER BY month, perim, code, role
