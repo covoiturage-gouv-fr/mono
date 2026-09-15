@@ -1,6 +1,6 @@
 {{ config(
   materialized='view',
-  tags=['app_metabase', 'aom_carpools_month']
+  tags=['app_metabase', 'aom_monthly_carpools']
 ) }}
 
 SELECT
@@ -12,15 +12,15 @@ SELECT
   - no_oi
     AS carpools_incited,
   round(100.0 * (carpools - no_oi) / nullif(carpools, 0), 1) AS incited_pct,
-  carpools_operator_incentive
+  oi_operator
     AS carpools_incited_operator,
-  carpools_operator_incentive_only
+  oi_operator_only
     AS carpools_incited_operator_only,
   carpools_collectivite_self_incentive
     AS carpools_incited_aom,
   carpools_collectivite_other_incentive
     AS carpools_incited_aom_other,
-  carpools_other_incentive
+  oi_other
     AS carpools_incited_other,
   intra_carpools,
   carpools - intra_carpools                                  AS inter_carpools,
@@ -38,15 +38,15 @@ SELECT
   - no_oi
     AS carpools_incited,
   round(100.0 * (carpools - no_oi) / nullif(carpools, 0), 1) AS incited_pct,
-  carpools_operator_incentive
+  oi_operator
     AS carpools_incited_operator,
-  carpools_operator_incentive_only
+  oi_operator_only
     AS carpools_incited_operator_only,
   carpools_collectivite_self_incentive
     AS carpools_incited_aom,
   carpools_collectivite_other_incentive
     AS carpools_incited_aom_other,
-  carpools_other_incentive
+  oi_other
     AS carpools_incited_other,
   intra_carpools,
   carpools - intra_carpools                                  AS inter_carpools,
