@@ -1,0 +1,41 @@
+version: 2
+seeds:
+  # Seeds résolus par `just custom-territories-compile` (script one-shot, hors dbt build)
+  # depuis les déclarations YAML de pipelines/config/custom_territories/.
+  # Ne jamais éditer à la main : relancer la compilation et commiter le diff.
+  - name: custom_territories
+    description: >
+      Composition résolue des territoires custom : 1 ligne par (id composite, commune/arr).
+      Millésime figé au moment de la compilation.
+    columns:
+      - name: id
+        data_type: character varying
+        data_tests:
+          - not_null
+      - name: arr
+        data_type: character varying
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('perimeters')
+                field: arr
+  - name: custom_territories_meta
+    description: >
+      Métadonnées par territoire custom : libellé, activation, borne de backfill sûre.
+    columns:
+      - name: id
+        data_type: character varying
+        data_tests:
+          - unique
+          - not_null
+      - name: libelle
+        data_type: character varying
+        data_tests:
+          - not_null
+      - name: active
+        data_type: boolean
+        data_tests:
+          - not_null
+      - name: earliest_safe_start
+        data_type: date

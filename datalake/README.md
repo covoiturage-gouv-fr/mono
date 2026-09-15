@@ -440,6 +440,18 @@ dbt run-operation generate_model_yaml --args '{"model_names": ["interoperators_l
 1. Répéter pour les 5 grains × 3 directions = 15 fichiers (utiliser un script shell ou copier depuis un périmètre existant)
 1. Ajouter le périmètre dans les `type_map` des modèles `exposed/observatory/`
 
+### Territoire custom (composite)
+
+Territoire déclaré à l'avance comme union de communes issues de plusieurs AOM / EPCI /
+départements / régions / communes. Exposé dans `perimeters_agg` sous `type = 'custom'`
+(socle géo — le calcul agrégé complet arrive par phases).
+
+1. Ajouter `pipelines/config/custom_territories/<slug>.yml` (voir le README du dossier).
+2. `just custom-territories-compile` — résout les membres au dernier millésime et réécrit
+   `seeds/trusted/custom_territories.csv` + `custom_territories_meta.csv` (seeds figés,
+   à commiter avec le YAML). `just custom-territories-compile check` = garde-fou de dérive.
+3. `just pipeline-trusted-geo` — re-seed + rebuild `perimeters_agg`.
+
 ### Nouveau grain temporel
 
 1. Ajouter l'entrée dans le dict `lookbacks` de chaque macro (`od_model`, `fraud_model`, `territory_model`, `operators_model`)

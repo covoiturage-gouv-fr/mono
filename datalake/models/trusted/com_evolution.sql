@@ -7,6 +7,7 @@ SELECT
   mod,
   old_com,
   new_com,
+  date_eff::date                         AS date_eff,
   ROW_NUMBER() OVER ()                   AS id,
   DATE_PART('year', date_eff::date)::int AS year,  -- noqa: RF04
   CASE

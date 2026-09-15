@@ -25,6 +25,12 @@ dbt cmd *args:
 migrate *args:
   python -m pipelines.cmd.migrate {{args}}
 
+# Résout les déclarations de territoires custom (pipelines/config/custom_territories/*.yml)
+# et réécrit les seeds seeds/trusted/custom_territories*.csv. À relancer quand une
+# déclaration change ; commiter le diff des seeds. `check` échoue si les seeds divergent.
+custom-territories-compile *args:
+  python -m pipelines.cmd.custom_territories {{ if args == "" { "compile" } else { args } }}
+
 # Supprime une fenêtre temporelle puis relance proprement (évite les lignes fantômes)
 # ex: just dbt-recompute models/aggregated/od 2026-01-01 2027-01-01
 dbt-recompute path start end *args:
@@ -126,6 +132,9 @@ pipeline-raw *args:
 
 # Pipeline 2: trusted geo (yearly)
 pipeline-trusted-geo *args:
+  # `dbt run` ne matérialise pas les seeds : aom_region + custom_territories* sont lus par
+  # filtered_carpools / perimeters_agg et doivent exister avant le run.
+  just dbt seed --select aom_region custom_territories custom_territories_meta
   just dbt run --select "tag:trusted,tag:geo" {{args}}
   # perimeters/perimeters_agg sont des tables : dbt les reconstruit par DROP … CASCADE,
   # ce qui supprime les vues aval de zone_exposed (et laisse les tables aval, ex.

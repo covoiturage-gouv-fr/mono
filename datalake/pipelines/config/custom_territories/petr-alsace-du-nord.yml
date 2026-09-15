@@ -1,0 +1,13 @@
+# SIRET du PETR : 200 086 080 00013 (SIREN 200 086 080) — pas encore rattaché ici,
+# en attente de l'architecture d'association SIRET↔territoire (cf. discussion perimeter_siret).
+id: petr-alsace-du-nord
+libelle: PETR de l'Alsace du Nord
+active: true
+members:
+  epci:
+    - 200067874
+    - 246701098
+    - 246700843
+    - 200013050
+    - 200040178
+    - 246700926

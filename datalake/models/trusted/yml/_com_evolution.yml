@@ -4,6 +4,8 @@ models:
     columns:
       - name: id
         data_type: bigint
+      - name: date_eff
+        data_type: date
       - name: year
         data_type: integer
       - name: mod
