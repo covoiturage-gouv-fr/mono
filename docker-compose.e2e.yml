@@ -28,6 +28,8 @@ services:
       APIE2E_AUTH_OPERATOR_PASSWORD: admin1234
       APIE2E_AUTH_TERRITORY_EMAIL: territory@example.com
       APIE2E_AUTH_TERRITORY_PASSWORD: admin1234
+      APIE2E_AUTH_MULTI_EMAIL: multi-territory@example.com
+      APIE2E_AUTH_MULTI_PASSWORD: admin1234
 
     volumes:
       - ./docker/api/certs:/app/certs:ro

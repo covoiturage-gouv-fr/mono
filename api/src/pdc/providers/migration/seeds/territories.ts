@@ -53,4 +53,18 @@ export const idfm: CreateTerritoryGroupInterface = {
   selector: { aom: ["217500016"] },
 };
 
-export const territory_groups: CreateTerritoryGroupInterface[] = [idfm];
+export const lyon: CreateTerritoryGroupInterface = {
+  _id: 2,
+  company_id: 2,
+  name: "Metropole de Lyon",
+  contacts: {},
+  address: {
+    street: "20 rue du Lac",
+    postcode: "69003 Lyon",
+    city: "Lyon",
+    country: "France",
+  },
+  selector: { aom: ["200046977"] },
+};
+
+export const territory_groups: CreateTerritoryGroupInterface[] = [idfm, lyon];

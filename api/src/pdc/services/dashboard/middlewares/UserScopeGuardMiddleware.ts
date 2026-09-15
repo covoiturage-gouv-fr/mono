@@ -27,15 +27,25 @@ export function roleRank(role: string): number {
   return ROLE_RANK[role] ?? 0;
 }
 
-// Détecte l'octroi d'un scope multi-territoire (tableau de territoires non vide).
-function grantsMultiScope(params: ParamsType): boolean {
+// Territoires demandés par le formulaire.
+function requestedTerritories(params: ParamsType): number[] {
   const scopes: unknown = get(params, "scopes", undefined);
-  return Array.isArray(scopes) && scopes.length > 0;
+  if (!Array.isArray(scopes)) return [];
+  return scopes
+    .map((s) => (s as { territory_id?: number })?.territory_id)
+    .filter((id): id is number => Number.isInteger(id));
+}
+
+// Octroi privilégié = tout territoire hors de celui du caller (élargissement de périmètre).
+// Réémettre son propre territoire est l'usage normal d'un admin de territoire.
+function grantsForeignScope(params: ParamsType, context: ContextType): boolean {
+  const own = get(context, "call.user.territory_id", null) as number | null;
+  return requestedTerritories(params).some((id) => id !== own);
 }
 
 /**
  * Garde les actions create/update user :
- * - champs privilégiés (login_siren, octroi de scope multi-territoire) réservés à MANAGE_SCOPES_PERMISSION ;
+ * - champs privilégiés (login_siren, octroi d'un territoire étranger) réservés à MANAGE_SCOPES_PERMISSION ;
  * - interdit d'attribuer un rôle de rang supérieur à celui du caller (anti-escalade).
  */
 @middleware()
@@ -49,8 +59,8 @@ export class UserScopeGuardMiddleware implements MiddlewareInterface {
     const callerRole = get(context, "call.user.role", "") as string;
     const hasManageScopes = permissions.includes(MANAGE_SCOPES_PERMISSION);
 
-    // Gate champ privilégié : login_siren / octroi multi-territoire sans la permission → refus.
-    const asksPrivileged = get(params, "login_siren", null) != null || grantsMultiScope(params);
+    // Gate champ privilégié : login_siren / octroi d'un territoire étranger sans la permission.
+    const asksPrivileged = get(params, "login_siren", null) != null || grantsForeignScope(params, context);
     if (asksPrivileged && !hasManageScopes) {
       throw new ForbiddenException("login_siren / octroi de scope réservé à registry.admin");
     }
