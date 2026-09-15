@@ -27,6 +27,14 @@
   SUM(oi_collectivite) AS oi_collectivite,
   SUM(oi_operator) AS oi_operator,
   SUM(oi_other) AS oi_other,
+  COUNT(*) FILTER (
+    WHERE oi_details IS NOT NULL
+      AND jsonb_array_length(oi_details) > 0
+      AND NOT EXISTS (
+        SELECT 1 FROM jsonb_array_elements(oi_details) elem
+        WHERE elem ->> 'type' != 'operator'
+      )
+  ) AS oi_operator_only,
   COUNT(*) FILTER (WHERE NOT with_incentive) AS no_oi,
   SUM(oi_amount_collectivite) AS oi_amount_collectivite,
   SUM(oi_amount_operator) AS oi_amount_operator,
