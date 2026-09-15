@@ -14,20 +14,6 @@
   COUNT(*) FILTER (
     WHERE EXISTS (
       SELECT 1 FROM jsonb_array_elements(COALESCE(oi_details, '[]'::jsonb)) elem
-      WHERE elem ->> 'type' = 'operator'
-    )
-  ) AS carpools_operator_incentive,
-  COUNT(*) FILTER (
-    WHERE oi_details IS NOT NULL
-      AND jsonb_array_length(oi_details) > 0
-      AND NOT EXISTS (
-        SELECT 1 FROM jsonb_array_elements(oi_details) elem
-        WHERE elem ->> 'type' != 'operator'
-      )
-  ) AS carpools_operator_incentive_only,
-  COUNT(*) FILTER (
-    WHERE EXISTS (
-      SELECT 1 FROM jsonb_array_elements(COALESCE(oi_details, '[]'::jsonb)) elem
       WHERE {{ territory_collectivite_siret_filter(code_column, true) }}
     )
   ) AS carpools_collectivite_self_incentive,
@@ -36,11 +22,5 @@
       SELECT 1 FROM jsonb_array_elements(COALESCE(oi_details, '[]'::jsonb)) elem
       WHERE {{ territory_collectivite_siret_filter(code_column, false) }}
     )
-  ) AS carpools_collectivite_other_incentive,
-  COUNT(*) FILTER (
-    WHERE EXISTS (
-      SELECT 1 FROM jsonb_array_elements(COALESCE(oi_details, '[]'::jsonb)) elem
-      WHERE elem ->> 'type' = 'other'
-    )
-  ) AS carpools_other_incentive
+  ) AS carpools_collectivite_other_incentive
 {% endmacro %}
