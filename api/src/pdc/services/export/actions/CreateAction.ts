@@ -1,4 +1,4 @@
-import { ContextType, handler } from "@/ilos/common/index.ts";
+import { ContextType, ForbiddenException, handler } from "@/ilos/common/index.ts";
 import { Action as AbstractAction } from "@/ilos/core/index.ts";
 import { DefaultTimezoneMiddleware } from "@/pdc/middlewares/DefaultTimezoneMiddleware.ts";
 import {
@@ -20,7 +20,9 @@ import { TerritoryServiceInterfaceResolver } from "../services/TerritoryService.
   middlewares: [
     hasPermissionMiddleware("common.export.create"),
     ["timezone", DefaultTimezoneMiddleware],
-    copyFromContextMiddleware(`call.user._id`, "created_by", true),
+    // preserve=false : l'auteur vient de la session. Sinon le corps le fixe librement et
+    // l'export part au nom d'un tiers, qui en reçoit la notification et le lien de téléchargement.
+    copyFromContextMiddleware(`call.user._id`, "created_by", false),
     copyFromContextMiddleware(`call.user.operator_id`, "operator_id", false),
     copyFromContextMiddleware(
       `call.user.territory_id`,
@@ -50,11 +52,32 @@ export class CreateAction extends AbstractAction {
     super();
   }
 
+  /**
+   * Périmètre géographique de l'export, borné à celui de l'appelant.
+   *
+   * `resolve()` donne priorité au `geo_selector` sur `territory_id` : accepté depuis le corps,
+   * il permet à une session de territoire d'exporter n'importe quel périmètre, France entière
+   * comprise, avec des données de grade territoire (clés d'identité, coordonnées, opérateur).
+   * Un appelant territoire n'a donc que son `territory_id`, résolu côté serveur.
+   */
+  private scopedGeo(params: ParamsInterface, context: ContextType) {
+    const ownTerritory = context?.call?.user?.territory_id;
+    return {
+      territory_id: params.territory_id,
+      geo_selector: ownTerritory ? undefined : params.geo_selector,
+    };
+  }
+
   protected override async handle(
     params: ParamsInterface,
     context: ContextType,
   ): Promise<ResultInterface> {
     const paramTarget = Export.target(context);
+
+    // Sans auteur, l'INSERT viole la contrainte NOT NULL et rend un 500 : on refuse proprement.
+    if (typeof params.created_by !== "number") {
+      throw new ForbiddenException("Export creation requires a user session");
+    }
 
     // Create the export request
     const {
@@ -70,10 +93,7 @@ export class CreateAction extends AbstractAction {
         start_at: params.start_at,
         end_at: params.end_at,
         operator_id: params.operator_id,
-        geo_selector: await this.territoryService.resolve({
-          territory_id: params.territory_id,
-          geo_selector: params.geo_selector,
-        }),
+        geo_selector: await this.territoryService.resolve(this.scopedGeo(params, context)),
       }),
     });
 

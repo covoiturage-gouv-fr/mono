@@ -13,6 +13,8 @@ export const schema = {
     descriptive_sheet_url: {
       type: ["string", "null"],
       maxLength: 512,
+      // Sans contrainte de schéma, une URL "javascript:..." était stockée telle quelle.
+      pattern: "^https?://",
     },
   },
 };

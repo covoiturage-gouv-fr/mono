@@ -1,4 +1,4 @@
-import { provider } from "@/ilos/common/index.ts";
+import { NotFoundException, provider } from "@/ilos/common/index.ts";
 import { DenoPostgresConnection } from "@/ilos/connection-postgres/index.ts";
 import { logger } from "@/lib/logger/index.ts";
 import sql, { join, raw } from "@/lib/pg/sql.ts";
@@ -10,12 +10,12 @@ import {
   S3StorageProvider,
 } from "@/pdc/providers/storage/index.ts";
 import {
-  CampaignApdfParamsInterface,
   CampaignApdfResultInterface,
   CampaignsParamsInterface,
   CampaignsRepositoryInterface,
   CampaignsRepositoryInterfaceResolver,
-  CampaignsResultInterface
+  CampaignsResultInterface,
+  ScopedCampaignApdfParams,
 } from "../interfaces/CampaignsRepositoryInterface.ts";
 
 @provider({
@@ -87,15 +87,25 @@ export class CampaignsRepository implements CampaignsRepositoryInterface {
     };
   }
 
+  /**
+   * Appels de fonds d'une campagne, restreints au périmètre de l'appelant.
+   *
+   * Rien ne reliait la campagne demandée à l'appelant : n'importe quel détenteur de la permission
+   * obtenait les URL signées de toutes les campagnes, tous opérateurs confondus.
+   */
   async getCampaignApdf(
-    params: CampaignApdfParamsInterface,
+    params: ScopedCampaignApdfParams,
   ): Promise<CampaignApdfResultInterface> {
     try {
+      await this.assertCampaignInScope(params);
+
+      // Préfixe terminé par « / » : sans lui, la campagne 1 remonte aussi 10/, 100/...
       const list = await this.s3StorageProvider.list(
         this.bucket,
-        `${params.campaign_id}`,
+        `${params.campaign_id}/`,
       );
-      return await this.enrichApdf(list.filter((obj) => obj.size > 0));
+      const files = list.filter((obj) => obj.size > 0);
+      return await this.enrichApdf(this.ownedByCaller(files, params.operator_id));
     } catch (e) {
       if (e instanceof Error) {
         logger.error(`[Apdf:StorageRepo:findByCampaign] ${e.message}`);
@@ -104,6 +114,32 @@ export class CampaignsRepository implements CampaignsRepositoryInterface {
       }
       throw e;
     }
+  }
+
+  // Un appelant opérateur ne voit que ses propres fichiers (l'opérateur est encodé dans la clé).
+  private ownedByCaller(list: S3ObjectList, operatorId?: number): S3ObjectList {
+    if (!operatorId) return list;
+    return list.filter((o: S3Object) => {
+      try {
+        return this.APDFNameProvider.parse(o.key).operator_id === operatorId;
+      } catch (_e) {
+        // Clé non conforme : on ne peut pas prouver l'appartenance, donc on ne la rend pas.
+        return false;
+      }
+    });
+  }
+
+  // Un appelant territoire ne consulte que les campagnes de son territoire.
+  private async assertCampaignInScope(params: ScopedCampaignApdfParams): Promise<void> {
+    if (!params.territory_id) return;
+
+    const rows = await this.pgConnection.query<{ one: number }>(sql`
+      SELECT 1 AS one
+      FROM ${raw(this.table)}
+      WHERE _id = ${params.campaign_id} AND territory_id = ${params.territory_id}
+      LIMIT 1
+    `);
+    if (!rows.length) throw new NotFoundException();
   }
 
   async enrichApdf(list: S3ObjectList): Promise<CampaignApdfResultInterface> {

@@ -464,6 +464,17 @@ export class LegacyMigrator {
       `,
       values: [userId, operatorId, territoryId],
     });
+
+    for (const extra of user.extraTerritories ?? []) {
+      await this.testConn.getClient().query({
+        text: `
+          INSERT INTO auth.user_scopes (user_id, territory_id, is_default)
+          VALUES ($1::int, $2::int, false)
+          ON CONFLICT DO NOTHING
+        `,
+        values: [userId, extra._id],
+      });
+    }
   }
 
   async seedTerritoryGroup(territory_group: CreateTerritoryGroupInterface) {

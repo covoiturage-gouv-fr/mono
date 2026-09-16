@@ -27,15 +27,22 @@ export function roleRank(role: string): number {
   return ROLE_RANK[role] ?? 0;
 }
 
-// Détecte l'octroi d'un scope multi-territoire (tableau de territoires non vide).
-function grantsMultiScope(params: ParamsType): boolean {
+/**
+ * Détecte l'octroi d'un périmètre (tableau `scopes` non vide).
+ *
+ * On ne tente pas de tolérer « seulement son propre territoire » : `territory_id` vient
+ * du corps de la requête, donc de l'appelant, et `seedScopes` remplace tout le pivot —
+ * un appelant pourrait ainsi évincer un compte multi-territoire de ses autres périmètres.
+ * Sans la permission, aucun `scopes[]` n'est accepté ; le formulaire n'en envoie pas.
+ */
+function grantsScope(params: ParamsType): boolean {
   const scopes: unknown = get(params, "scopes", undefined);
   return Array.isArray(scopes) && scopes.length > 0;
 }
 
 /**
  * Garde les actions create/update user :
- * - champs privilégiés (login_siren, octroi de scope multi-territoire) réservés à MANAGE_SCOPES_PERMISSION ;
+ * - champs privilégiés (login_siren, octroi de périmètre) réservés à MANAGE_SCOPES_PERMISSION ;
  * - interdit d'attribuer un rôle de rang supérieur à celui du caller (anti-escalade).
  */
 @middleware()
@@ -49,8 +56,8 @@ export class UserScopeGuardMiddleware implements MiddlewareInterface {
     const callerRole = get(context, "call.user.role", "") as string;
     const hasManageScopes = permissions.includes(MANAGE_SCOPES_PERMISSION);
 
-    // Gate champ privilégié : login_siren / octroi multi-territoire sans la permission → refus.
-    const asksPrivileged = get(params, "login_siren", null) != null || grantsMultiScope(params);
+    // Gate champ privilégié : login_siren / octroi de périmètre sans la permission.
+    const asksPrivileged = get(params, "login_siren", null) != null || grantsScope(params);
     if (asksPrivileged && !hasManageScopes) {
       throw new ForbiddenException("login_siren / octroi de scope réservé à registry.admin");
     }

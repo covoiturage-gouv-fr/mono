@@ -1,6 +1,6 @@
 import { handler } from "../../../../ilos/common/index.ts";
 import { Action as AbstractAction } from "../../../../ilos/core/index.ts";
-import { hasPermissionMiddleware } from "../../../providers/middleware/middlewares.ts";
+import { copyFromContextMiddleware, hasPermissionMiddleware } from "../../../providers/middleware/middlewares.ts";
 import { Campaigns } from "../dto/Campaigns.ts";
 import { CampaignsRepositoryInterfaceResolver } from "../interfaces/CampaignsRepositoryInterface.ts";
 
@@ -33,6 +33,10 @@ export type ResultInterface = {
   middlewares: [
     ["validate", Campaigns],
     hasPermissionMiddleware("common.policy.list"),
+    // Le DTO déclare territory_id et operator_id : sans recopie depuis la session, l'appelant
+    // choisit lui-même son périmètre et lit les campagnes (et les montants) des autres.
+    copyFromContextMiddleware("call.user.territory_id", "territory_id", false),
+    copyFromContextMiddleware("call.user.operator_id", "operator_id", false),
   ],
   apiRoute: {
     path: "/dashboard/campaigns",

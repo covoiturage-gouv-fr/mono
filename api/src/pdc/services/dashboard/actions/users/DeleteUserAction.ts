@@ -37,10 +37,8 @@ export class DeleteUserAction extends AbstractAction {
 
   public override async handle(params: DeleteUser): Promise<ResultInterface> {
     const result = await this.repository.deleteUser(params);
-    // Retrait de périmètre : le compte survit, ses sessions restent valides.
-    if (result.outcome === "user_deleted") {
-      await this.sessionRepository.destroyByUser(params.id);
-    }
+    // Purge aussi sur retrait de périmètre : sinon la session en cours garde le territoire révoqué.
+    await this.sessionRepository.destroyByUser(params.id);
     return result;
   }
 }

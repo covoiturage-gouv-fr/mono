@@ -15,7 +15,6 @@ export const schema = {
     end: timeGeoPointSchema,
     distance: distanceSchema,
     incentives: incentivesSchema,
-    incentive_counterparts: {},
   },
 };
 

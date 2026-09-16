@@ -77,6 +77,8 @@ just dc up
 just migrate
 
 # Seeder les données de test
+# (deux territoires : Ile-De-France-Mobilité et Metropole de Lyon ;
+#  multi-territory@example.com porte les deux, pour tester le multi-périmètre)
 just seed
 just seed-local-users
 
@@ -121,7 +123,6 @@ Commandes principales :
 | `just api acquisition:geo` | Traiter le géocodage des acquisitions |
 | `just api company:fetch <siret>` | Récupérer les données entreprise (INSEE SIRENE) |
 | `just api journey:status <op_id> <journey_id>` | Vérifier le statut d'un trajet |
-| `just api monitoring:stats:refresh` | Rafraîchir les vues matérialisées stats |
 
 ## Configuration
 
@@ -152,7 +153,8 @@ Copier `.env.example` vers `.env` et configurer les valeurs.
 
 | Variable | Requis | Défaut | Description |
 | --- | --- | --- | --- |
-| `APP_RATE_LIMIT_MAX_FACTOR` | Non | `1` | Multiplicateur des limites de requêtes. `0` = désactivé |
+| `APP_RATE_LIMIT_MAX_FACTOR` | Non | `1` | Multiplicateur des limites de requêtes. `0` = désactivé. Sans effet sur les limiteurs d'authentification en `production` et `demo` |
+| `APP_ENABLE_RPC_ENDPOINT` | Non | `false` | Force l'ouverture du canal `/rpc`. Ouvert d'office en `local`, `test` et `ci` ; fermé partout ailleurs |
 | `APP_SENTRY_DSN` | Non | `""` | DSN privé Sentry pour le reporting d'erreurs. Vide = Sentry désactivé |
 | `APP_SENTRY_ENV` | Non | `${NODE_ENV}` | Environnement Sentry pour filtrer les erreurs |
 

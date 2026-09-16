@@ -6,6 +6,7 @@ import { handlerConfig, ParamsInterface, ResultInterface } from "../contracts/ge
 import { alias } from "../contracts/getDownloadLink.schema.ts";
 import { ExportRepositoryInterfaceResolver } from "../repositories/ExportRepository.ts";
 import { StorageService } from "../services/StorageService.ts";
+import { requireUserId } from "./ListAction.ts";
 
 @handler({
   ...handlerConfig,
@@ -30,7 +31,8 @@ export class GetDownloadLinkAction extends AbstractAction {
     params: ParamsInterface,
     context: ContextType,
   ): Promise<ResultInterface> {
-    const userId = context.call?.user?._id;
+    // Même garde que la liste : sans propriétaire, le dépôt ne filtrerait rien.
+    const userId = requireUserId(context);
 
     const exportEntity = await this.exportRepository.get(params.id, userId);
     if (!exportEntity) {

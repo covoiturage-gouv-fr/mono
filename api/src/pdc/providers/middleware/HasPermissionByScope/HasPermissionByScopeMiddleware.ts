@@ -63,10 +63,21 @@ export class HasPermissionByScopeMiddleware implements MiddlewareInterface<HasPe
     throw new ForbiddenException("Invalid permissions");
   }
 
+  /**
+   * Correspondance fail-closed entre le paramètre et la valeur du contexte.
+   *
+   * Deux pièges corrigés ici : un tableau vide passait (`[].reduce(..., true)`), et deux valeurs
+   * absentes se comparaient via `String(Symbol())` — donc « manquant » égalait « manquant », et
+   * un paramètre non déclaré par le DTO ouvrait la voie. Rien à comparer = pas de correspondance.
+   */
   private paramMatchesContext(value: unknown | unknown[], list: unknown | unknown[]): boolean {
+    const missing = (v: unknown) => v === undefined || v === null || typeof v === "symbol";
     const val = Array.isArray(value) ? value : [value];
-    const lst = Array.isArray(list) ? list : [list];
-    return val.reduce((p, c) => p && lst.map((i) => String(i)).includes(String(c)), true);
+    const lst = (Array.isArray(list) ? list : [list]).filter((i) => !missing(i));
+
+    if (!val.length || !lst.length || val.some(missing)) return false;
+
+    return val.every((v) => lst.some((i) => String(i) === String(v)));
   }
 }
 

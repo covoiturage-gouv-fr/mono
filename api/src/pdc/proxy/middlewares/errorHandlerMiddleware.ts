@@ -10,7 +10,14 @@ export function errorHandlerMiddleware(
   res: Response,
   _next: NextFunction,
 ): void {
-  let code: number;
+  // Les exceptions ILOS portent leur propre statut : s'y fier d'abord, la correspondance par
+  // message ci-dessous ne couvre pas tous les cas (« Invalid Request » retombait en 500).
+  const declared = (err as { httpCode?: number }).httpCode;
+  let code: number = typeof declared === "number" ? declared : 0;
+
+  if (code) {
+    return respond(err, res, _req, code);
+  }
 
   switch (err.message) {
     case "Bad Request Error":
@@ -53,6 +60,10 @@ export function errorHandlerMiddleware(
       code = 500;
   }
 
+  return respond(err, res, _req, code);
+}
+
+function respond(err: Error, res: Response, _req: Request, code: number): void {
   try {
     const { id, method } = Array.isArray(_req.body) ? _req.body.pop() : _req.body;
 
