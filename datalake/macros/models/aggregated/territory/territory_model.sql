@@ -65,7 +65,7 @@ SELECT {{ com_columns | join(', ') }} FROM {{ ref('territory_' ~ grain ~ '_plm_'
 ) }}
 
 WITH filtered_carpools AS (
-  {{ filtered_carpools(perim, lookback_nb=lb.nb, lookback_unit=lb.unit, strict=true) }}
+  {{ filtered_carpools(perim, lookback_nb=lb.nb, lookback_unit=lb.unit, with_oi_details=with_incentive_split, strict=true) }}
 )
 
 {% if direction == 'from' %}

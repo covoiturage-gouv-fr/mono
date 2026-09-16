@@ -1,3 +1,7 @@
+{# with_oi_details : oi_details (jsonb, une ligne par incitation) n est consomme que
+   par le split self/other des territory aom/aomreg. Projete uniquement la ou il sert,
+   pour eviter de le trainer (GROUP BY, tri) dans tous les autres consommateurs
+   (fraud/od/operators/location/user_od_day, territory hors aom/aomreg). #}
 {% macro filtered_carpools(
   perim='arr',
   column='c.start_datetime_tz',
@@ -8,6 +12,7 @@
   lookback_unit='day',
   with_new_users=true,
   with_valid=true,
+  with_oi_details=false,
   strict=false
 ) %}
 
@@ -151,7 +156,9 @@ SELECT
   false AS is_new_passenger,
   {% endif %}
   -- incitations operateurs
+  {% if with_oi_details %}
   c.oi_details,
+  {% endif %}
   c.oi_amount_collectivite,
   c.oi_amount_operator,
   c.oi_amount_other,
