@@ -37,14 +37,7 @@
   SUM(oi_operator) AS oi_operator,
   SUM(oi_other) AS oi_other,
   {% if with_incentive_split %}
-  COUNT(*) FILTER (
-    WHERE oi_details IS NOT NULL
-      AND jsonb_array_length(oi_details) > 0
-      AND NOT EXISTS (
-        SELECT 1 FROM jsonb_array_elements(oi_details) elem
-        WHERE elem ->> 'type' != 'operator'
-      )
-  ) AS oi_operator_only,
+  COUNT(*) FILTER (WHERE is_operator_only_incentive) AS oi_operator_only,
   {% else %}
   NULL::bigint AS oi_operator_only,
   {% endif %}

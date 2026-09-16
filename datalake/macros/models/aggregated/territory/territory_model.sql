@@ -72,10 +72,19 @@ WITH filtered_carpools AS (
 
   {% if with_incentive_split %}
   , split AS (
-    SELECT *,
-      {{ territory_oi_collectivite_amount('start_code', true) }} AS oi_collectivite_self_amount,
-      {{ territory_oi_collectivite_amount('start_code', false) }} AS oi_collectivite_other_amount
+    SELECT
+      filtered_carpools.*,
+      oi_split.oi_collectivite_self_amount,
+      oi_split.oi_collectivite_other_amount,
+      oi_split.oi_collectivite_self_exists,
+      oi_split.oi_collectivite_other_exists,
+      oi_split.is_operator_only_incentive,
+      ci_split.ci_amount_self,
+      ci_split.ci_amount_other,
+      ci_split.ci_result_self,
+      ci_split.ci_result_other
     FROM filtered_carpools
+    {{ territory_incentive_split_lateral('start_code') }}
   )
   {% endif %}
   SELECT
@@ -84,7 +93,7 @@ WITH filtered_carpools AS (
     {{ territory_agg_columns(with_incentive_split) }}
     {% if with_incentive_split %}
     ,
-    {{ territory_incentive_split_columns('start_code') }}
+    {{ territory_incentive_split_columns() }}
     {% endif %}
   FROM {{ 'split' if with_incentive_split else 'filtered_carpools' }}
   WHERE start_code IS NOT NULL
@@ -94,10 +103,19 @@ WITH filtered_carpools AS (
 
   {% if with_incentive_split %}
   , split AS (
-    SELECT *,
-      {{ territory_oi_collectivite_amount('end_code', true) }} AS oi_collectivite_self_amount,
-      {{ territory_oi_collectivite_amount('end_code', false) }} AS oi_collectivite_other_amount
+    SELECT
+      filtered_carpools.*,
+      oi_split.oi_collectivite_self_amount,
+      oi_split.oi_collectivite_other_amount,
+      oi_split.oi_collectivite_self_exists,
+      oi_split.oi_collectivite_other_exists,
+      oi_split.is_operator_only_incentive,
+      ci_split.ci_amount_self,
+      ci_split.ci_amount_other,
+      ci_split.ci_result_self,
+      ci_split.ci_result_other
     FROM filtered_carpools
+    {{ territory_incentive_split_lateral('end_code') }}
   )
   {% endif %}
   SELECT
@@ -106,7 +124,7 @@ WITH filtered_carpools AS (
     {{ territory_agg_columns(with_incentive_split) }}
     {% if with_incentive_split %}
     ,
-    {{ territory_incentive_split_columns('end_code') }}
+    {{ territory_incentive_split_columns() }}
     {% endif %}
   FROM {{ 'split' if with_incentive_split else 'filtered_carpools' }}
   WHERE end_code IS NOT NULL
@@ -125,10 +143,19 @@ WITH filtered_carpools AS (
   )
   {% if with_incentive_split %}
   , split AS (
-    SELECT *,
-      {{ territory_oi_collectivite_amount('code', true) }} AS oi_collectivite_self_amount,
-      {{ territory_oi_collectivite_amount('code', false) }} AS oi_collectivite_other_amount
+    SELECT
+      exploded.*,
+      oi_split.oi_collectivite_self_amount,
+      oi_split.oi_collectivite_other_amount,
+      oi_split.oi_collectivite_self_exists,
+      oi_split.oi_collectivite_other_exists,
+      oi_split.is_operator_only_incentive,
+      ci_split.ci_amount_self,
+      ci_split.ci_amount_other,
+      ci_split.ci_result_self,
+      ci_split.ci_result_other
     FROM exploded
+    {{ territory_incentive_split_lateral('code') }}
   )
   {% endif %}
   SELECT
@@ -137,7 +164,7 @@ WITH filtered_carpools AS (
     {{ territory_agg_columns(with_incentive_split) }}
     {% if with_incentive_split %}
     ,
-    {{ territory_incentive_split_columns('code') }}
+    {{ territory_incentive_split_columns() }}
     {% endif %}
   FROM {{ 'split' if with_incentive_split else 'exploded' }}
   WHERE code IS NOT NULL
