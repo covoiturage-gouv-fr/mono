@@ -132,10 +132,10 @@ pipeline-trusted-geo *args:
   # observatory_search_territories, sur l'ancien millésime). On rejoue tout l'exposé.
   just dbt run --select "models/exposed" {{args}}
 
-# Pipeline 3 : daily update (agrégés taggés daily + zone exposée + invalidation du cache).
+# Pipeline 3 : daily update (agrégés taggés daily + zone exposée + app_metabase + invalidation du cache).
 # Un seul `dbt run` sur l'union => dbt ordonne le DAG (agrégés frais avant l'exposé).
 pipeline-daily *args:
-  just dbt run --select "tag:daily" "models/exposed" {{args}}
+  just dbt run --select "tag:daily" "models/exposed" "models/app_metabase" {{args}}
   just cache-bump
 
 # Invalide le cache de l'API observatoire (INCR obs:cache:version). No-op sans REDIS_URL.
