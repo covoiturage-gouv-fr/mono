@@ -21,8 +21,9 @@
 
   {% set lb = lookbacks[grain] %}
 
-  {# cas ou le perim est une aom(r) ; on regarde si les incitations sont portées par l aom du perim ou alors une autre aom. #}
-  {% set with_incentive_split = perim in ['aom', 'aomreg'] %}
+  {# cas ou le perim est une aom(r) ; on regarde si les incitations sont portées par l aom du perim ou alors une autre aom.
+     borne a day/month + both. Pour l instant, limite à ce qui est réellement consommé. #}
+  {% set with_incentive_split = perim in ['aom', 'aomreg'] and grain in ['day', 'month'] and direction == 'both' %}
 
 {# --------------------------------------------------------
    Cas 'com' : vue UNION ALL des models arr + plm déjà calculés
