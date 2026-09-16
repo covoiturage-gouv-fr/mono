@@ -5,9 +5,9 @@
      agreger. #}
   SUM(oi_collectivite_self_amount) AS oi_amount_collectivite_self,
   SUM(oi_collectivite_self_amount)
-    FILTER (WHERE is_intra) AS oi_amount_collectivite_self_intra,
+    FILTER (WHERE COALESCE(is_intra, false)) AS oi_amount_collectivite_self_intra,
   SUM(oi_collectivite_self_amount)
-    FILTER (WHERE NOT is_intra) AS oi_amount_collectivite_self_inter,
+    FILTER (WHERE NOT COALESCE(is_intra, false)) AS oi_amount_collectivite_self_inter,
   SUM(oi_collectivite_other_amount) AS oi_amount_collectivite_other,
   SUM(ci_amount_self) AS ci_amount_total_self,
   SUM(ci_amount_other) AS ci_amount_total_other,
