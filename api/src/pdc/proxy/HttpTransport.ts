@@ -27,6 +27,7 @@ import { env_or_fail, env_or_false } from "@/lib/env/index.ts";
 import { logger } from "@/lib/logger/index.ts";
 import { get } from "@/lib/object/index.ts";
 import { join } from "@/lib/path/index.ts";
+import { isRpcEndpointEnabled } from "./helpers/rpcEndpointEnabled.ts";
 import { Sentry, SentryProvider } from "@/pdc/providers/sentry/index.ts";
 import { registerExpressRoute } from "@/pdc/proxy/helpers/registerExpressRoute.ts";
 import {
@@ -349,6 +350,13 @@ export class HttpTransport implements TransportInterface {
    */
   private registerCallHandler(): void {
     const endpoint = this.config.get("proxy.rpc.endpoint");
+
+    // Canal fermé hors local/CI : aucun client ne l'utilise, cf. rpcEndpointEnabled.ts.
+    const envs = [env_or_fail("NODE_ENV", "local"), env_or_fail("APP_ENV", "local")];
+    if (!isRpcEndpointEnabled(envs, env_or_false("APP_ENABLE_RPC_ENDPOINT"))) {
+      logger.info(`[proxy] RPC endpoint ${endpoint} is disabled`);
+      return;
+    }
 
     /**
      * List all RPC actions

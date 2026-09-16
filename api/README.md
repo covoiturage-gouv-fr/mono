@@ -153,7 +153,8 @@ Copier `.env.example` vers `.env` et configurer les valeurs.
 
 | Variable | Requis | Défaut | Description |
 | --- | --- | --- | --- |
-| `APP_RATE_LIMIT_MAX_FACTOR` | Non | `1` | Multiplicateur des limites de requêtes. `0` = désactivé |
+| `APP_RATE_LIMIT_MAX_FACTOR` | Non | `1` | Multiplicateur des limites de requêtes. `0` = désactivé. Sans effet sur les limiteurs d'authentification en `production` et `demo` |
+| `APP_ENABLE_RPC_ENDPOINT` | Non | `false` | Force l'ouverture du canal `/rpc`. Ouvert d'office en `local`, `test` et `ci` ; fermé partout ailleurs |
 | `APP_SENTRY_DSN` | Non | `""` | DSN privé Sentry pour le reporting d'erreurs. Vide = Sentry désactivé |
 | `APP_SENTRY_ENV` | Non | `${NODE_ENV}` | Environnement Sentry pour filtrer les erreurs |
 
