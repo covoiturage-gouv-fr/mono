@@ -115,4 +115,3 @@ SELECT
   )
     AS diff_op_rpc_pct
 FROM monthly
-ORDER BY date, perim, code

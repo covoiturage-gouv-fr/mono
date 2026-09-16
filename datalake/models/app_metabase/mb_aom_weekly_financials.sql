@@ -148,4 +148,3 @@ SELECT
   )
     AS diff_op_rpc_pct
 FROM weekly
-ORDER BY week, perim, code

@@ -54,4 +54,3 @@ SELECT
   median_distance,
   q3_distance
 FROM {{ ref('territory_month_aomreg_both') }}
-ORDER BY date, perim, code
