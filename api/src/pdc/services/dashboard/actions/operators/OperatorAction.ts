@@ -15,14 +15,16 @@ export type ResultInterface = {
 
 @handler({
   service: "dashboard",
-  method: "operators",
+  // Méthode distincte : OperatorsAction déclarait déjà `dashboard:operators`, et le registre
+  // garde silencieusement le premier handler enregistré — celui-ci ne servait jamais.
+  method: "operator",
   middlewares: [
     ["validate", Operators],
     hasPermissionMiddleware("common.operator.list"),
   ],
   apiRoute: {
     path: "/dashboard/operator/:id",
-    action: "dashboard:operators",
+    action: "dashboard:operator",
     method: "GET",
   },
 })

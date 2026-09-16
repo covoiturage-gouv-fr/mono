@@ -8,7 +8,7 @@ import { UserScopeRepository } from "@/pdc/services/auth/providers/UserScopeRepo
 import express, { NextFunction, Request, Response } from "dep:express";
 import { session } from "../../../config/proxy.ts";
 import { authGuard } from "../../proxy/middlewares/authGuard.ts";
-import { loginRateLimiter } from "../../proxy/middlewares/rateLimiter.ts";
+import { authRateLimiter, loginRateLimiter } from "../../proxy/middlewares/rateLimiter.ts";
 import { sessionMiddleware } from "../../proxy/middlewares/sessionMiddleware.ts";
 import { contextRoute } from "./context.ts";
 import { testCallbackRoute } from "./test/callback.ts";
@@ -29,6 +29,7 @@ export class AuthRouter {
   register() {
     this.app.get(
       "/auth/login",
+      authRateLimiter(),
       asyncHandler(async (req: Request, res: Response, _next: NextFunction) => {
         const { redirectUrl, state, nonce } = await this.proConnectOIDCProvider.getLoginUrl();
         req.session = req.session || {};
@@ -43,6 +44,7 @@ export class AuthRouter {
 
     this.app.get(
       "/auth/login/callback",
+      authRateLimiter(),
       asyncHandler(async (req: Request, res: Response) => {
         const url = new URL(req.originalUrl, this.config.get("proxy.apiUrl"));
         const { state, nonce } = req.session?.auth || {};
@@ -66,6 +68,17 @@ export class AuthRouter {
 
         const claims = tokens.claims();
         const user = await this.proConnectOIDCProvider.getUserInfo(tokens.access_token, claims!.sub);
+
+        // Un compte absent du registre ou dont le SIREN ne correspond pas retombe en « anonymous ».
+        // Un contrôle d'accès qui échoue doit refuser, pas ouvrir une session dégradée : sans cela
+        // le front voit un utilisateur connecté et tout futur écran sans garde en hérite.
+        if (!user || user.role === "anonymous") {
+          logger.warn(`[auth] connexion refusée pour ${user?.email ?? "inconnu"}`);
+          await new Promise<void>((resolve) => req.session ? req.session.destroy(() => resolve()) : resolve());
+          res.clearCookie(session.name);
+
+          return res.redirect(`${this.config.get("app_url")}?error=unauthorized`);
+        }
 
         // Anti-fixation : régénère la session avant d'attacher l'utilisateur authentifié.
         await new Promise<void>((resolve, reject) =>
@@ -132,7 +145,7 @@ export class AuthRouter {
     );
 
     // Bascule du contexte actif (users territoire) — revalidée en DB, cf. spec §6.
-    this.app.post("/auth/context", contextRoute(this.userScopeRepository));
+    this.app.post("/auth/context", authRateLimiter(), contextRoute(this.userScopeRepository));
 
     // Test-only login, opt-in via APP_ENABLE_TEST_AUTH and never in demo/production
     const envs = [this.config.get("env"), env_or_default("APP_ENV", "local")];

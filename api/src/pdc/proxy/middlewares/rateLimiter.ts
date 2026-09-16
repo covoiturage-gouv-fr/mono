@@ -1,4 +1,4 @@
-import { env_or_fail } from "@/lib/env/index.ts";
+import { env_or_default, env_or_fail } from "@/lib/env/index.ts";
 import { Request, Response } from "dep:express";
 import rateLimit, { Options as RateLimiterOptions, RateLimitRequestHandler } from "dep:express-rate-limit";
 import RateLimitRedisStore from "dep:rate-limit-redis";
@@ -10,6 +10,7 @@ const minute = 60000;
 export function rateLimiter(
   opts: Partial<RateLimiterOptions> = {},
   prefix = "rl",
+  scalable = true,
 ): RateLimitRequestHandler {
   const redisConfig = config.connections.redis;
   const client = new RedisClient(redisConfig);
@@ -29,7 +30,11 @@ export function rateLimiter(
     ...opts,
   };
 
-  const factor = parseFloat(env_or_fail("APP_RATE_LIMIT_MAX_FACTOR", "1"));
+  // Le facteur desserre les limites pour les suites de tests, qui se connectent en rafale.
+  // En production et en démo il ne s'applique pas aux routes d'authentification : sinon une
+  // simple variable d'environnement annule la protection anti-bruteforce.
+  const hardened = ["production", "demo"].includes(env_or_default("APP_ENV", "local"));
+  const factor = !scalable && hardened ? 1 : parseFloat(env_or_fail("APP_RATE_LIMIT_MAX_FACTOR", "1"));
   options.max = Number(options.max) *
     (typeof factor === "number" && !isNaN(factor) ? factor : 1);
 
@@ -40,13 +45,13 @@ export function rateLimiter(
 export function loginRateLimiter(
   opts: Partial<RateLimiterOptions> = {},
 ): RateLimitRequestHandler {
-  return rateLimiter({ windowMs: 1 * minute, max: 5, ...opts }, "rl-login");
+  return rateLimiter({ windowMs: 1 * minute, max: 5, ...opts }, "rl-login", false);
 }
 
 export function authRateLimiter(
   opts: Partial<RateLimiterOptions> = {},
 ): RateLimitRequestHandler {
-  return rateLimiter({ windowMs: 1 * minute, max: 100, ...opts }, "rl-auth");
+  return rateLimiter({ windowMs: 1 * minute, max: 100, ...opts }, "rl-auth", false);
 }
 
 // shortcut for api routes

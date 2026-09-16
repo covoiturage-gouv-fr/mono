@@ -12,7 +12,10 @@ import { MatviewItem } from "../interfaces/StatsRefreshInterfaces.ts";
 
 @handler({
   ...handlerConfig,
-  middlewares: [...internalOnlyMiddlewares("proxy"), ["validate", alias]],
+  // internalOnlyMiddlewares(<service>) est une LISTE BLANCHE : avec "proxy" elle autorisait
+  // précisément le canal HTTP, donc tout compte connecté pouvait déclencher un REFRESH
+  // MATERIALIZED VIEW en boucle via /rpc. Sans argument, le canal proxy est refusé.
+  middlewares: [...internalOnlyMiddlewares(), ["validate", alias]],
 })
 export class StatsRefreshAction extends AbstractAction {
   constructor(

@@ -18,24 +18,27 @@ export class EnforceOperatorMiddleware implements MiddlewareInterface<void> {
     context: ContextType,
     next: NextFunction,
   ): Promise<void> {
-    const role = get(context, "call.user.role", Symbol("role not found"));
-    const context_id = get(context, "call.user.operator_id", Symbol("operator_id not found in context"));
-    const params_id = get(params, "operator_id", Symbol("operator_id not found in params"));
+    // Sentinelle unique : comparer à `Symbol("...")` crée un nouveau symbole à chaque appel,
+    // l'égalité était donc toujours fausse et les trois gardes ci-dessous ne s'exécutaient jamais.
+    const NOT_FOUND = Symbol("not found");
+    const role = get(context, "call.user.role", NOT_FOUND);
+    const context_id = get(context, "call.user.operator_id", NOT_FOUND);
+    const params_id = get(params, "operator_id", NOT_FOUND);
 
-    if (role === Symbol("role not found")) {
+    if (role === NOT_FOUND) {
       throw new UnauthorizedException("User role is required");
     }
 
     // If the user is a registry admin, we don't need to enforce an operator ID
     if (typeof role === "string" && role === "registry.admin") {
-      if (params_id === Symbol("operator_id not found in params")) {
+      if (params_id === NOT_FOUND) {
         throw new InvalidRequestException("Operator ID is required in the request parameters");
       }
 
       return next(params, context);
     }
 
-    if (context_id === Symbol("operator_id not found in context")) {
+    if (context_id === NOT_FOUND) {
       throw new UnauthorizedException("Operator ID is required in the session context");
     }
 

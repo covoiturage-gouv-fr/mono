@@ -1,4 +1,4 @@
-import { provider } from "@/ilos/common/index.ts";
+import { NotFoundException, provider } from "@/ilos/common/index.ts";
 import { DenoPostgresConnection } from "@/ilos/connection-postgres/index.ts";
 import sql, { join, raw } from "@/lib/pg/sql.ts";
 import {
@@ -13,6 +13,7 @@ import {
   JourneysRepositoryInterface,
   JourneysRepositoryInterfaceResolver,
 } from "../interfaces/JourneysRepositoryInterface.ts";
+import { CallerScope } from "../interfaces/JourneysRepositoryInterface.ts";
 
 @provider({
   identifier: JourneysRepositoryInterfaceResolver,
@@ -21,17 +22,45 @@ export class JourneysRepository implements JourneysRepositoryInterface {
   private readonly tableByMonth = "dashboard_stats.campaigns_by_month";
   private readonly tableByDay = "dashboard_stats.campaigns_by_day";
   private readonly tableOperators = "operator.operators";
+  private readonly tablePolicies = "policy.policies";
 
   constructor(private pgConnection: DenoPostgresConnection) {}
 
+  /**
+   * Cloisonne une statistique de campagne au périmètre de l'appelant.
+   *
+   * `campaign_id` vient du corps et la seule garde était `common.observatory.stats`, détenue par
+   * tout compte : n'importe qui lisait les montants d'incitation, opérateur par opérateur, de la
+   * campagne d'un autre territoire. Un territoire ne voit que ses campagnes ; un opérateur ne
+   * voit que ses propres lignes (filtre ci-dessous) ; un compte RPC n'est pas restreint.
+   */
+  private async assertCampaignInScope(params: { campaign_id: number } & CallerScope): Promise<void> {
+    if (!params.territory_id) return;
+
+    const rows = await this.pgConnection.query<{ one: number }>(sql`
+      SELECT 1 AS one
+      FROM ${raw(this.tablePolicies)}
+      WHERE _id = ${params.campaign_id} AND territory_id = ${params.territory_id}
+      LIMIT 1
+    `);
+    if (!rows.length) throw new NotFoundException();
+  }
+
+  // Un appelant opérateur ne lit que ses propres chiffres, jamais le détail de ses concurrents.
+  private operatorFilter(params: CallerScope) {
+    return params.operator_id ? [sql`operator_id = ${params.operator_id}`] : [];
+  }
+
   async getIncentiveByDay(
-    params: JourneysIncentiveByDayParamsInterface,
+    params: JourneysIncentiveByDayParamsInterface & CallerScope,
   ): Promise<JourneysIncentiveByDayResultInterface[]> {
+    await this.assertCampaignInScope(params);
     const date = params.date ? new Date(params.date) : new Date();
     const filters = [
       sql`campaign_id = ${params.campaign_id}`,
       sql`start_date <= ${date.toISOString().split("T")[0]}`,
       sql`start_date >= ${new Date(date.setMonth(date.getMonth() - 2)).toISOString().split("T")[0]}`,
+      ...this.operatorFilter(params),
     ];
     const query = sql`
       SELECT 
@@ -50,10 +79,12 @@ export class JourneysRepository implements JourneysRepositoryInterface {
   }
 
   async getIncentiveByMonth(
-    params: JourneysIncentiveByMonthParamsInterface,
+    params: JourneysIncentiveByMonthParamsInterface & CallerScope,
   ): Promise<JourneysIncentiveByMonthResultInterface[]> {
+    await this.assertCampaignInScope(params);
     const filters = [
       sql`campaign_id = ${params.campaign_id}`,
+      ...this.operatorFilter(params),
     ];
     if (params.year) {
       filters.push(sql`year = ${params.year}`);
@@ -77,13 +108,15 @@ export class JourneysRepository implements JourneysRepositoryInterface {
   }
 
   async getOperatorsByDay(
-    params: JourneysOperatorsByDayParamsInterface,
+    params: JourneysOperatorsByDayParamsInterface & CallerScope,
   ): Promise<JourneysOperatorsByDayResultInterface[]> {
+    await this.assertCampaignInScope(params);
     const date = params.date ? new Date(params.date) : new Date();
     const filters = [
       sql`campaign_id = ${params.campaign_id}`,
       sql`start_date <= ${date.toISOString().split("T")[0]}`,
       sql`start_date >= ${new Date(date.setMonth(date.getMonth() - 2)).toISOString().split("T")[0]}`,
+      ...this.operatorFilter(params),
     ];
 
     const query = sql`
@@ -105,10 +138,12 @@ export class JourneysRepository implements JourneysRepositoryInterface {
   }
 
   async getOperatorsByMonth(
-    params: JourneysOperatorsByMonthParamsInterface,
+    params: JourneysOperatorsByMonthParamsInterface & CallerScope,
   ): Promise<JourneysOperatorsByMonthResultInterface[]> {
+    await this.assertCampaignInScope(params);
     const filters = [
       sql`campaign_id = ${params.campaign_id}`,
+      ...this.operatorFilter(params),
     ];
     if (params.year) {
       filters.push(sql`year = ${params.year}`);

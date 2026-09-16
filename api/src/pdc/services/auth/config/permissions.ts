@@ -188,9 +188,10 @@ export function getPermissions(role: string): string[] {
   if (SYSTEM_ROLES.has(role)) {
     return [...(permissionsByRoles[role] ?? [])];
   }
+  // Rôle inconnu (ou "anonymous") : aucune permission, plutôt qu'un TypeError sur undefined.
   return [
     ...permissionsByRoles["common"],
-    ...permissionsByRoles[role],
+    ...(permissionsByRoles[role] ?? []),
   ];
 }
 

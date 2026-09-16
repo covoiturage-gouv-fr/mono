@@ -9,6 +9,7 @@ import {
   ConfigInterface,
   ConfigInterfaceResolver,
   HandlerConfigType,
+  InvalidRequestException,
   KernelInterface,
   proxy,
   RegisterHookInterface,
@@ -19,6 +20,9 @@ import {
   UnauthorizedException,
 } from "@/ilos/common/index.ts";
 import { handlerListIdentifier, ServiceProvider } from "@/ilos/core/index.ts";
+
+// Plafond d'un batch JSON-RPC : le limiteur de débit compte la requête HTTP, pas les appels.
+const MAX_RPC_BATCH_SIZE = 20;
 import { env_or_fail, env_or_false } from "@/lib/env/index.ts";
 import { logger } from "@/lib/logger/index.ts";
 import { get } from "@/lib/object/index.ts";
@@ -152,16 +156,19 @@ export class HttpTransport implements TransportInterface {
     // protect with typical headers and enable cors
     this.app.use(helmet());
 
-    // apply CORS to all routes except the following ones
-    this.app.use(
-      /\/((?!honor|geo\/search).)*/,
-      cors({
-        origin: [this.config.get("proxy.cors"), this.config.get("proxy.dashboardV2Cors")],
-        optionsSuccessStatus: 200,
-        // Allow-Access-Credentials lets XHR requests send Cookies to a different URL
-        credentials: true,
-      }),
-    );
+    // Politique générale, sauf /honor et /geo/search qui ont la leur (plus bas).
+    // L'exclusion est testée explicitement : le montage par expression régulière d'Express
+    // ne se comporte pas comme un préfixe, et l'ancien motif n'excluait rien.
+    const generalCors = cors({
+      origin: [this.config.get("proxy.cors"), this.config.get("proxy.dashboardV2Cors")],
+      optionsSuccessStatus: 200,
+      // Allow-Access-Credentials lets XHR requests send Cookies to a different URL
+      credentials: true,
+    });
+    this.app.use((req: Request, res: Response, next: NextFunction) => {
+      if (/^\/(honor|geo\/search)\b/.test(req.path)) return next();
+      return generalCors(req, res, next);
+    });
 
     this.app.use(
       /\/(geo\/search)/i,
@@ -189,6 +196,12 @@ export class HttpTransport implements TransportInterface {
   }
 
   private registerGlobalMiddlewares(): void {
+    // Réponses authentifiées : jamais de cache partagé ni d'historique navigateur.
+    this.app.use((_req: Request, res: Response, next: NextFunction) => {
+      res.set("Cache-Control", "no-store");
+      next();
+    });
+
     // maintenance mode
     this.app.use((_req: Request, res: Response, next: NextFunction) => {
       if (env_or_false("APP_MAINTENANCE")) {
@@ -379,6 +392,15 @@ export class HttpTransport implements TransportInterface {
           // }
           // inject the req.session.user to context in the body
           const isBatch = Array.isArray(req.body);
+
+          // Un batch compte pour une requête au limiteur de débit : sans plafond, un seul appel
+          // multiplie n'importe quelle action par plusieurs milliers.
+          if (isBatch && req.body.length > MAX_RPC_BATCH_SIZE) {
+            throw new InvalidRequestException(
+              `Batch size exceeds ${MAX_RPC_BATCH_SIZE} calls`,
+            );
+          }
+
           let user = get(req, "session.user", null);
 
           if (!user) {
@@ -438,7 +460,25 @@ export class HttpTransport implements TransportInterface {
       mapStatusCode(response),
     );
 
-    res.status(status).json(this.parseErrorData(response, unnestResult));
+    // La voie REST masque déjà les 5xx ; sans cela le canal RPC rend le message Postgres brut.
+    res.status(status).json(this.maskInternalError(this.parseErrorData(response, unnestResult), status));
+  }
+
+  /**
+   * Remplace les détails d'une erreur interne par un libellé générique.
+   *
+   * `Kernel` sérialise `e.message` dans `error.data` : sur le canal RPC, une requête SQL en
+   * échec rendait le message Postgres (colonnes, types, tables) à l'appelant.
+   */
+  private maskInternalError(response: RPCResponseType, status: number): RPCResponseType {
+    if (status < 500) return response;
+    const error = (response as { error?: { data?: unknown; message?: string } })?.error;
+    if (!error) return response;
+
+    return {
+      ...(response as object),
+      error: { ...error, data: "Error", message: "Internal Server Error" },
+    } as RPCResponseType;
   }
 
   /**
@@ -499,7 +539,9 @@ export class HttpTransport implements TransportInterface {
         );
 
         dt.com = authorizedCodes.com || [];
-      } catch (e) { logger.warn("[proxy] failed to fetch authorized zone codes", { error: e }); }
+      } catch (e) {
+        logger.warn("[proxy] failed to fetch authorized zone codes", { error: e });
+      }
 
       user.authorizedZoneCodes = { ...dt };
 

@@ -22,7 +22,8 @@ export class StatsRefreshCommand implements CommandInterface {
 
   public async call({ schema }: CommandOptions): Promise<ResultType> {
     const context: ContextType = {
-      channel: { service: "proxy" },
+      // Canal dédié : l'action refuse désormais le canal proxy (voir StatsRefreshAction).
+      channel: { service: "monitoring" },
       call: { user: {} },
     };
 
