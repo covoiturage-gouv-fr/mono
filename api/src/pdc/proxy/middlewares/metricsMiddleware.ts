@@ -1,3 +1,4 @@
+import { safeCompare } from "@/lib/crypto/safeCompare.ts";
 import { env } from "@/lib/env/index.ts";
 import { getHostName } from "@/lib/net/index.ts";
 import { NextFunction, Request, Response } from "dep:express";
@@ -14,7 +15,7 @@ export function metricsMiddleware(endpoint: string) {
     res: Response,
     next: NextFunction,
   ): Promise<void> => {
-    if (token && req.headers["x-monitoring-token"] === token) {
+    if (token && safeCompare(String(req.headers["x-monitoring-token"] ?? ""), token)) {
       return next();
     }
     return rl(req, res, next);

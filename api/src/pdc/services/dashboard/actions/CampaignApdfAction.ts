@@ -2,7 +2,10 @@ import { handler } from "@/ilos/common/index.ts";
 import { Action as AbstractAction } from "@/ilos/core/index.ts";
 import { copyGroupIdAndApplyGroupPermissionMiddlewares } from "@/pdc/providers/middleware/index.ts";
 import { CampaignApdf } from "@/pdc/services/dashboard/dto/CampaignApdf.ts";
-import { CampaignsRepositoryInterfaceResolver } from "@/pdc/services/dashboard/interfaces/CampaignsRepositoryInterface.ts";
+import {
+  CampaignsRepositoryInterfaceResolver,
+  ScopedCampaignApdfParams,
+} from "@/pdc/services/dashboard/interfaces/CampaignsRepositoryInterface.ts";
 
 export type ResultInterface = {
   signed_url: string;
@@ -36,7 +39,9 @@ export class CampaignApdfAction extends AbstractAction {
     super();
   }
 
-  public override async handle(params: CampaignApdf): Promise<ResultInterface> {
+  // `validate` précède la recopie de périmètre : l'appelant ne peut pas fournir lui-même
+  // territory_id / operator_id (le DTO les refuse), ils viennent donc bien de sa session.
+  public override async handle(params: ScopedCampaignApdfParams): Promise<ResultInterface> {
     return this.repository.getCampaignApdf(params);
   }
 }

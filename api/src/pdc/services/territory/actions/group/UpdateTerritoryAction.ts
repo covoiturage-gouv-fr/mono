@@ -8,10 +8,12 @@ import { TerritoryRepositoryProviderInterfaceResolver } from "../../interfaces/T
 @handler({
   ...handlerConfig,
   middlewares: [
+    // Le périmètre se compare à `_id`, le territoire réellement modifié. Sur `territory_id`,
+    // le contrôle portait sur un paramètre fourni par l'appelant et non sur sa cible.
     hasPermissionByScopeMiddleware("registry.territory.update", [
       "territory.territory.update",
       "call.user.territory_id",
-      "territory_id",
+      "_id",
     ]),
     ["validate", alias],
   ],

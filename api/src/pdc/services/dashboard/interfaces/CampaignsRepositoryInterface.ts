@@ -6,12 +6,18 @@ import { CampaignApdf as CampaignApdfParamsInterface } from "@/pdc/services/dash
 import { Campaigns as CampaignsParamsInterface } from "@/pdc/services/dashboard/dto/Campaigns.ts";
 import { TerritoriesWithCampaign as TerritoriesWithCampaignParamsInterface } from "@/pdc/services/dashboard/dto/TerritoriesWithCampaign.ts";
 
+// Périmètre de l'appelant, recopié depuis la session par les middlewares de scope.
+export type ScopedCampaignApdfParams = CampaignApdfParamsInterface & {
+  territory_id?: number;
+  operator_id?: number;
+};
+
 export type {
   CampaignApdfParamsInterface,
   CampaignApdfResultInterface,
   CampaignsParamsInterface,
   CampaignsResultInterface,
-  TerritoriesWithCampaignParamsInterface
+  TerritoriesWithCampaignParamsInterface,
 };
 
 export interface CampaignsRepositoryInterface {
@@ -19,7 +25,7 @@ export interface CampaignsRepositoryInterface {
     params: CampaignsParamsInterface,
   ): Promise<CampaignsResultInterface[]>;
   getCampaignApdf(
-    params: CampaignApdfParamsInterface,
+    params: ScopedCampaignApdfParams,
   ): Promise<CampaignApdfResultInterface>;
 }
 
@@ -31,7 +37,7 @@ export abstract class CampaignsRepositoryInterfaceResolver implements CampaignsR
   }
 
   async getCampaignApdf(
-    params: CampaignApdfParamsInterface,
+    params: ScopedCampaignApdfParams,
   ): Promise<CampaignApdfResultInterface> {
     throw new Error();
   }

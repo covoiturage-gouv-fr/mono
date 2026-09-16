@@ -9,6 +9,9 @@ import {
 import type { ResultInterface as JourneysOperatorsByDayResultInterface } from "../actions/JourneysOperatorsByDayAction.ts";
 import type { ResultInterface as JourneysOperatorsByMonthResultInterface } from "../actions/JourneysOperatorsByMonthAction.ts";
 
+// Périmètre de l'appelant, recopié depuis la session par les middlewares (jamais depuis le corps).
+export type CallerScope = { territory_id?: number; operator_id?: number };
+
 export type {
   JourneysIncentiveByDayParamsInterface,
   JourneysIncentiveByDayResultInterface,
@@ -22,37 +25,37 @@ export type {
 
 export interface JourneysRepositoryInterface {
   getOperatorsByMonth(
-    params: JourneysOperatorsByMonthParamsInterface,
+    params: JourneysOperatorsByMonthParamsInterface & CallerScope,
   ): Promise<JourneysOperatorsByMonthResultInterface[]>;
   getOperatorsByDay(
-    params: JourneysOperatorsByDayParamsInterface,
+    params: JourneysOperatorsByDayParamsInterface & CallerScope,
   ): Promise<JourneysOperatorsByDayResultInterface[]>;
   getIncentiveByMonth(
-    params: JourneysIncentiveByMonthParamsInterface,
+    params: JourneysIncentiveByMonthParamsInterface & CallerScope,
   ): Promise<JourneysIncentiveByMonthResultInterface[]>;
   getIncentiveByDay(
-    params: JourneysIncentiveByDayParamsInterface,
+    params: JourneysIncentiveByDayParamsInterface & CallerScope,
   ): Promise<JourneysIncentiveByDayResultInterface[]>;
 }
 
 export abstract class JourneysRepositoryInterfaceResolver implements JourneysRepositoryInterface {
   async getOperatorsByMonth(
-    params: JourneysOperatorsByMonthParamsInterface,
+    params: JourneysOperatorsByMonthParamsInterface & CallerScope,
   ): Promise<JourneysOperatorsByMonthResultInterface[]> {
     throw new Error();
   }
   async getOperatorsByDay(
-    params: JourneysOperatorsByDayParamsInterface,
+    params: JourneysOperatorsByDayParamsInterface & CallerScope,
   ): Promise<JourneysOperatorsByDayResultInterface[]> {
     throw new Error();
   }
   async getIncentiveByMonth(
-    params: JourneysIncentiveByMonthParamsInterface,
+    params: JourneysIncentiveByMonthParamsInterface & CallerScope,
   ): Promise<JourneysIncentiveByMonthResultInterface[]> {
     throw new Error();
   }
   async getIncentiveByDay(
-    params: JourneysIncentiveByDayParamsInterface,
+    params: JourneysIncentiveByDayParamsInterface & CallerScope,
   ): Promise<JourneysIncentiveByDayResultInterface[]> {
     throw new Error();
   }
