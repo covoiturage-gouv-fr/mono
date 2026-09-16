@@ -22,5 +22,8 @@
       SELECT 1 FROM jsonb_array_elements(COALESCE(oi_details, '[]'::jsonb)) elem
       WHERE {{ territory_collectivite_siret_filter(code_column, false) }}
     )
-  ) AS carpools_collectivite_other_incentive
+  ) AS carpools_collectivite_other_incentive,
+  {# un carpool peut avoir plusieurs lignes d incitation operateur/other, on ne le compte qu une fois #}
+  COUNT(*) FILTER (WHERE oi_operator > 0) AS carpools_operator_incentive,
+  COUNT(*) FILTER (WHERE oi_other > 0) AS carpools_other_incentive
 {% endmacro %}

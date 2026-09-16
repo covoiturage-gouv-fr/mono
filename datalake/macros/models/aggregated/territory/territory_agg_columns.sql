@@ -34,8 +34,8 @@
   {% endif %}
   SUM(duration) AS duration,
   SUM(oi_collectivite) AS oi_collectivite,
-  COUNT(*) FILTER (WHERE oi_operator > 0) AS oi_operator,
-  COUNT(*) FILTER (WHERE oi_other > 0) AS oi_other,
+  SUM(oi_operator) AS oi_operator,
+  SUM(oi_other) AS oi_other,
   {% if with_incentive_split %}
   COUNT(*) FILTER (
     WHERE oi_details IS NOT NULL
