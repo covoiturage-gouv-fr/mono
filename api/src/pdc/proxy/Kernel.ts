@@ -4,7 +4,6 @@ import { Kernel as BaseKernel } from "@/ilos/framework/index.ts";
 import { SentryProvider } from "@/pdc/providers/sentry/index.ts";
 import { ListCommand } from "@/pdc/proxy/commands/ListCommand.ts";
 import { AuthServiceProvider } from "@/pdc/services/auth/AuthServiceProvider.ts";
-import { MonitoringServiceProvider } from "@/pdc/services/monitoring/MonitoringServiceProvider.ts";
 import { DenoPostgresConnection, LegacyPostgresConnection } from "../../ilos/connection-postgres/index.ts";
 import { NotificationMailTransporter } from "../providers/notification/NotificationMailTransporter.ts";
 import { HandlebarsTemplateProvider } from "../providers/template/HandlebarsTemplateProvider.ts";
@@ -29,7 +28,6 @@ import { config } from "./config/index.ts";
     CompanyServiceProvider,
     ExportServiceProvider,
     HonorServiceProvider,
-    MonitoringServiceProvider,
     OperatorServiceProvider,
     PolicyServiceProvider,
     TerritoryServiceProvider,

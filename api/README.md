@@ -123,7 +123,6 @@ Commandes principales :
 | `just api acquisition:geo` | Traiter le géocodage des acquisitions |
 | `just api company:fetch <siret>` | Récupérer les données entreprise (INSEE SIRENE) |
 | `just api journey:status <op_id> <journey_id>` | Vérifier le statut d'un trajet |
-| `just api monitoring:stats:refresh` | Rafraîchir les vues matérialisées stats |
 
 ## Configuration
 
