@@ -140,7 +140,9 @@ services:
       - front
 
   s3:
-    image: minio/minio:edge
+    # Docker Hub ne publie plus minio/minio : le dépôt a disparu et le pull échoue.
+    # quay.io est le registre officiel restant ; tag épinglé pour que la CI soit reproductible.
+    image: quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z
     environment:
       MINIO_DOMAIN: s3
     command: 'server /data'
@@ -148,7 +150,7 @@ services:
       - back
 
   s3-init:
-    image: minio/mc:edge
+    image: quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z
     environment:
       MINIO_URL: http://s3:9000
       MINIO_ACCESS_KEY: minioadmin
