@@ -1,6 +1,9 @@
 {# arr et plm sont full-refreshés/altérés indépendamment : leur ordre physique de colonnes
    peut diverger. On énumère les colonnes par nom pour que le UNION ALL apparie par nom,
-   pas par position  #}
+   pas par position.
+
+   Doit rester synchro a la main avec les alias de territory_agg_columns() : verifie par
+   tests/aggregated/territory_day_arr_both/column_names_macro_sync.sql. #}
 {% macro territory_agg_column_names() %}
   {% do return([
     'carpools',

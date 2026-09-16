@@ -1,6 +1,10 @@
 {# with_incentive_split: percentile_cont et le NOT EXISTS sur oi_details ne sont
    consommes que par mb_aom_monthly_carpools (aom/aomreg) - desactives ailleurs
-   (h3z8/h3z9 en tete) pour eviter des requetes couteuses. #}
+   (h3z8/h3z9 en tete) pour eviter des requetes couteuses.
+
+   Les alias ici doivent rester synchro a la main avec la liste statique de
+   territory_agg_column_names() Verifie par
+   tests/aggregated/territory_day_arr_both/column_names_macro_sync.sql. #}
 {% macro territory_agg_columns(with_incentive_split=false) %}
   COUNT(*) AS carpools,
   COUNT(*) FILTER (WHERE is_intra) AS intra_carpools,
