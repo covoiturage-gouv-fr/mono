@@ -1,4 +1,4 @@
-@import 'remixicon/fonts/remixicon.css';
+@import "remixicon/fonts/remixicon.css";
 
 .text-center {
   text-align: center;
@@ -17,4 +17,10 @@
 
 .proconnect-no-help p {
   display: none;
+}
+// Le pied de modale DSFR est `sticky` sans z-index : tout contenu positionné du corps
+// (tableau, champ de formulaire) lui passe devant pendant le défilement.
+.fr-modal__footer {
+  position: sticky;
+  z-index: 1;
 }
