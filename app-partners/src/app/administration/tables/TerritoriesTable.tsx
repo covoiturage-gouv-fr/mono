@@ -2,8 +2,8 @@ import AlertMessage from "@/components/common/AlertMessage";
 import { Modal } from "@/components/common/Modal";
 import Pagination from "@/components/common/Pagination";
 import { getApiUrl } from "@/helpers/api";
-import { formatErrors, useActionsModal } from "@/hooks/useActionsModal";
-import { useApi } from "@/hooks/useApi";
+import { formatErrors, FormValidationError, useActionsModal } from "@/hooks/useActionsModal";
+import { apiErrorMessage, parseBody, toUserError, useApi } from "@/hooks/useApi";
 import { useUrlSearch } from "@/hooks/useUrlSearch";
 import { type AuthContextProps } from "@/interfaces/auth";
 import type { Company, TerritoriesInterface, TerritorySelectorsInterface } from "@/interfaces/dataInterface";
@@ -23,6 +23,7 @@ export default function TerritoriesTable(props: { title: string; id: number | nu
   const [selector, setSelector] = useState<TerritorySelectorsInterface>();
   const modal = useActionsModal<TerritoriesInterface["data"][0]>();
   const [alert, setAlert] = useState<"create" | "update" | "delete" | "error">();
+  const [submitError, setSubmitError] = useState<Error>();
   const onChangePage = (page: number) => {
     setCurrentPage(page);
   };
@@ -76,7 +77,12 @@ export default function TerritoriesTable(props: { title: string; id: number | nu
     ]) ?? [];
 
   const formSchema = z.object({
-    name: z.string().min(3, { message: "Le nom doit contenir au moins 3 caractères" }),
+    name: z
+      .string()
+      .trim()
+      .min(3, { message: "Le nom doit contenir au moins 3 caractères" })
+      .max(256, { message: "Le nom ne peut pas dépasser 256 caractères" })
+      .regex(/^[^<>]*$/, { message: "Les caractères < et > ne sont pas autorisés" }),
     siret: z.string().regex(/^\d{14}$/, { message: "Le SIRET doit contenir 14 chiffres" }),
   });
   const fetchCompany = async (siret: string): Promise<Response> => {
@@ -107,8 +113,9 @@ export default function TerritoriesTable(props: { title: string; id: number | nu
     if (modal.typeModal === "create") {
       const result = formSchema.safeParse(modal.currentRow);
       if (!result.success) {
-        const errors = result.error.flatten().fieldErrors;
-        modal.setErrors(formatErrors(errors));
+        const errors = formatErrors(result.error.flatten().fieldErrors);
+        modal.setErrors(errors);
+        throw new FormValidationError(errors);
       }
     }
     const request = {
@@ -128,6 +135,9 @@ export default function TerritoriesTable(props: { title: string; id: number | nu
         break;
       case "create": {
         const companyResponse: Response = await fetchCompany(modal.currentRow.siret as string);
+        if (companyResponse.status >= 500) {
+          throw new Error("La recherche d'entreprise est indisponible pour le moment. Réessayez plus tard.");
+        }
         if (companyResponse.ok) {
           const companyBody = (await companyResponse.json()) as Company;
           request.url = getApiUrl("v3", url);
@@ -138,22 +148,23 @@ export default function TerritoriesTable(props: { title: string; id: number | nu
             selector: selector,
           });
         } else {
-          throw new Error("Aucune entreprise trouvée pour ce siret");
+          throw new Error("Aucune entreprise trouvée pour ce SIRET.");
         }
         break;
       }
     }
     const response = await fetch(request.url, request.params);
     if (!response.ok) {
-      const res = (await response.json()) as { message?: string };
-      throw new Error(res?.message ?? "Une erreur est survenue");
+      throw new Error(apiErrorMessage(response.status, parseBody(await response.text())));
     }
     return;
   };
 
+  // Recherche géo à la saisie du SIRET, en création seulement : en suppression, elle écrasait
+  // le nom affiché dans la confirmation par celui de l'AOM trouvée.
   useEffect(() => {
     const siretValidated = async () => {
-      if (!modal.errors?.siret && modal.currentRow.siret) {
+      if (modal.typeModal === "create" && !modal.errors?.siret && modal.currentRow.siret) {
         const geoResponse = await findGeoBySiren(modal.currentRow.siret as string);
         if (geoResponse.ok) {
           const body = (await geoResponse.json()) as { aom_siren: string; aom_name: string };
@@ -202,7 +213,7 @@ export default function TerritoriesTable(props: { title: string; id: number | nu
       {alert === "error" && (
         <AlertMessage
           title="Une erreur s'est produite"
-          message={Object.values(modal.errors!).join(" | ")}
+          message={submitError?.message ?? Object.values(modal.errors ?? {}).join(" | ")}
           typeAlert={alert}
           onClose={() => setAlert(undefined)}
         />
@@ -236,15 +247,22 @@ export default function TerritoriesTable(props: { title: string; id: number | nu
           />
         </div>
       )}
-      <Table data={dataTable} headers={headers} colorVariant="blue-ecume" fixed />
+      <Table data={dataTable} headers={headers} colorVariant="blue-ecume" />
       <Pagination count={totalPages()} defaultPage={currentPage} onChange={onChangePage} />
       <Modal
         open={modal.openModal}
         title={modal.modalTitle(modal.typeModal)}
         onClose={() => modal.setOpenModal(false)}
         onSubmit={async () => {
-          await submitModal("dashboard/territory");
-          setAlert(Object.keys(modal.errors ?? {}).length > 0 ? "error" : modal.typeModal);
+          try {
+            setSubmitError(undefined);
+            await submitModal("dashboard/territory");
+            setAlert(modal.typeModal);
+          } catch (e) {
+            if (e instanceof FormValidationError) return false;
+            setSubmitError(toUserError(e));
+            setAlert("error");
+          }
           await refetchTerritories();
         }}
       >
@@ -256,6 +274,7 @@ export default function TerritoriesTable(props: { title: string; id: number | nu
                 state={modal.errors?.siret ? "error" : "default"}
                 stateRelatedMessage={modal.errors?.siret ?? ""}
                 nativeInputProps={{
+                  "aria-invalid": !!modal.errors?.siret,
                   type: "text",
                   value: (modal.currentRow.siret as string) ?? "",
                   onChange: (e) => {
@@ -268,6 +287,7 @@ export default function TerritoriesTable(props: { title: string; id: number | nu
                 state={modal.errors?.name ? "error" : "default"}
                 stateRelatedMessage={modal.errors?.name ?? ""}
                 nativeInputProps={{
+                  "aria-invalid": !!modal.errors?.name,
                   type: "text",
                   value: (modal.currentRow.name as string) ?? "",
                   onChange: (e) => {
@@ -277,10 +297,8 @@ export default function TerritoriesTable(props: { title: string; id: number | nu
               />
             </>
           )}
-          {
-            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-            modal.typeModal === "delete" && `Êtes-vous sûr de vouloir supprimer l'opérateur ${modal.currentRow?.name} ?`
-          }
+          {modal.typeModal === "delete" &&
+            `Êtes-vous sûr de vouloir supprimer le territoire ${(modal.currentRow?.name as string) ?? ""} ?`}
         </>
       </Modal>
     </>

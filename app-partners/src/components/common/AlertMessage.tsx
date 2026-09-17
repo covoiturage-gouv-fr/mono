@@ -36,11 +36,12 @@ export default function AlertMessage(props: AlertProps) {
       className="fr-container"
       style={{
         position: "fixed",
-        backgroundColor: "#fff",
+        // Jeton DSFR : un blanc codé en dur rend le titre illisible en thème sombre.
+        backgroundColor: "var(--background-default-grey)",
         top: "1rem",
         left: 0,
         right: 0,
-        zIndex: 1000,
+        zIndex: 2000,
       }}
     >
       <Alert

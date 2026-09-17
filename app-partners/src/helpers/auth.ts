@@ -5,7 +5,6 @@ import {
   type Role,
   type RoleKind,
   type RoleLevel,
-  roles,
   type UserInterface,
   type UserScope,
 } from "@/interfaces/auth";
@@ -36,6 +35,12 @@ export const labelRole = (role: string) => {
       return "Utilisateur opérateur";
     case "operator.admin":
       return "Administrateur opérateur";
+    case "registry.user":
+      return "Utilisateur RPC";
+    case "territory.demo":
+      return "Démo territoire";
+    case "application.admin":
+      return "Administrateur application";
     case "anonymous":
       return "Anonyme";
     default:
@@ -43,15 +48,27 @@ export const labelRole = (role: string) => {
   }
 };
 
+// Rôles que l'API accepte à la création et à la modification d'un compte.
+// Les autres (demo, registry.user…) existent en base mais ne s'attribuent pas depuis l'interface.
+export const EDITABLE_ROLES: readonly Role[] = [
+  "registry.admin",
+  "territory.user",
+  "territory.admin",
+  "operator.user",
+  "operator.admin",
+];
+
+export const isEditableRole = (role: string): role is Role => (EDITABLE_ROLES as readonly string[]).includes(role);
+
 export const getRolesList = (role: Role) => {
   const group = role.split(".")[0];
   switch (group) {
     case "registry":
-      return roles;
+      return EDITABLE_ROLES;
     case "territory":
-      return roles.filter((r) => r.startsWith("territory"));
+      return EDITABLE_ROLES.filter((r) => r.startsWith("territory"));
     case "operator":
-      return roles.filter((r) => r.startsWith("operator"));
+      return EDITABLE_ROLES.filter((r) => r.startsWith("operator"));
     default:
       return [];
   }

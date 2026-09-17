@@ -1,12 +1,11 @@
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
 
 import { getApiUrl } from "@/helpers/api";
+import { apiErrorMessage, parseBody, toUserError } from "@/hooks/useApi";
 import { useCallback, useState } from "react";
 import { ZodError, type ZodSchema, type ZodType } from "zod";
 
-export const formatErrors = (
-  formattedErrors: Record<string, string[] | undefined>,
-): Record<string, string> => {
+export const formatErrors = (formattedErrors: Record<string, string[] | undefined>): Record<string, string> => {
   return Object.keys(formattedErrors).reduce(
     (acc, key) => {
       acc[key] = formattedErrors[key]?.[0] ?? "";
@@ -16,11 +15,16 @@ export const formatErrors = (
   );
 };
 
+// Levée avant tout appel réseau : le formulaire reste ouvert et affiche ses erreurs de champ.
+export class FormValidationError extends Error {
+  constructor(public readonly fields: Record<string, string>) {
+    super("Formulaire invalide");
+  }
+}
+
 export const useActionsModal = <T extends Record<string, unknown>>() => {
   const [openModal, setOpenModal] = useState(false);
-  const [typeModal, setTypeModal] = useState<"update" | "delete" | "create">(
-    "update",
-  );
+  const [typeModal, setTypeModal] = useState<"update" | "delete" | "create">("update");
   const [currentRow, setCurrentRow] = useState<T | Record<string, unknown>>({});
   const [errors, setErrors] = useState<Record<string, string> | undefined>({});
   const [submitData, setSubmitData] = useState<T>();
@@ -61,12 +65,16 @@ export const useActionsModal = <T extends Record<string, unknown>>() => {
   const submitModal = useCallback(
     async (url: string, validationSchema: ZodSchema) => {
       try {
+        // Le corps envoyé est la version validée (rognée, normalisée) ; les clés hors schéma (id…) sont conservées.
+        let payload: Record<string, unknown> = currentRow;
         if (typeModal !== "delete") {
           const result = validationSchema.safeParse(currentRow);
           if (!result.success) {
-            const errors = result.error.flatten().fieldErrors;
-            setErrors(formatErrors(errors));
+            const errors = formatErrors(result.error.flatten().fieldErrors);
+            setErrors(errors);
+            throw new FormValidationError(errors);
           }
+          payload = { ...currentRow, ...(result.data as Record<string, unknown>) };
         } else {
           setErrors({});
         }
@@ -79,7 +87,7 @@ export const useActionsModal = <T extends Record<string, unknown>>() => {
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify(currentRow) as BodyInit,
+            body: JSON.stringify(payload) as BodyInit,
           } as RequestInit,
         };
         switch (typeModal) {
@@ -100,15 +108,17 @@ export const useActionsModal = <T extends Record<string, unknown>>() => {
             break;
         }
         const response = await fetch(request.url, request.params);
-        const res = await response.json() as T & { message?: string; outcome?: string };
+        const parsed = parseBody(await response.text());
         if (!response.ok) {
-          throw new Error(res.message ?? "Une erreur est survenue");
+          throw new Error(apiErrorMessage(response.status, parsed));
         }
+        const res = (parsed ?? {}) as T & { message?: string; outcome?: string };
         setSubmitData(res);
         return res;
       } catch (e) {
-        setSubmitError(e as Error);
-        throw e;
+        const error = toUserError(e);
+        setSubmitError(error);
+        throw error;
       } finally {
         setSubmitLoading(false);
       }

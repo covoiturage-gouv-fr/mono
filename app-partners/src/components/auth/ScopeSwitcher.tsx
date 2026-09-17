@@ -2,7 +2,6 @@
 import { type UserScope } from "@/interfaces/auth";
 import { useAuth } from "@/providers/AuthProvider";
 import { fr } from "@codegouvfr/react-dsfr";
-import Badge from "@codegouvfr/react-dsfr/Badge";
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 
@@ -14,22 +13,15 @@ export function ScopeSwitcher() {
   // Seuls les territoires sont basculables (opérateur = 1:1).
   const territoryScopes = scopes.filter((s) => s.territory_id);
 
-  // 0 ou 1 périmètre basculable : badge statique, pas de menu.
-  if (territoryScopes.length <= 1) {
-    if (!activeScope) return null;
-    return (
-      <Badge as="span" severity="info" noIcon>
-        {activeScope.label}
-      </Badge>
-    );
-  }
+  // 0 ou 1 périmètre basculable : rien à choisir, le tag du bouton profil suffit.
+  if (territoryScopes.length <= 1) return null;
 
   // Tuple de session hors des scopes connus (transitoire) : rien à contrôler, checkAuth réaligne.
   if (!activeScope) return null;
 
   return (
+    // Pas d'id fixe : le DSFR rend les accès rapides deux fois (barre + menu mobile).
     <Autocomplete
-      id="scope-switcher"
       size="small"
       disableClearable
       options={territoryScopes}

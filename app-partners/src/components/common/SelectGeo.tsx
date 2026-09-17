@@ -18,21 +18,21 @@ export default function SelectGeo(props: {
     } | null,
   ) => void;
 }) {
-  const defaultOption = {
-    id: "",
-    territory: "",
-    l_territory: "",
-    type: "com" as PerimeterType, // Default type, can be changed based on your needs
-  };
-  const [, setValue] = useState<typeof defaultOption | null>(null);
-  const [options, setOptions] = useState<(typeof defaultOption)[]>([defaultOption]);
+  interface GeoOption {
+    id: string;
+    territory: string;
+    l_territory: string;
+    type: PerimeterType;
+  }
+  const [, setValue] = useState<GeoOption | null>(null);
+  const [options, setOptions] = useState<GeoOption[]>([]);
   const search = async (v: string | null) => {
     const query = {
       q: v,
       attributesToSearchOn: ["territory", "l_territory"],
       limit: 20,
     };
-    const response = await fetchSearchAPI<{ hits: (typeof defaultOption)[] }>("indexes/geo/search", {
+    const response = await fetchSearchAPI<{ hits: GeoOption[] }>("indexes/geo/search", {
       method: "post",
       body: JSON.stringify(query),
     });
