@@ -10,21 +10,9 @@
 ) }}
 
 WITH daily AS (
-  SELECT
-    'aom' AS perim,
-    user_id,
-    role,
-    code,
-    incremental_date
-  FROM {{ ref('user_aom_day') }}
-  UNION ALL
-  SELECT
-    'aomreg' AS perim,
-    user_id,
-    role,
-    code,
-    incremental_date
-  FROM {{ ref('user_aomreg_day') }}
+  {{ mb_union_aom_aomreg('day', [
+    'user_id', 'role', 'code', 'incremental_date'
+  ]) }}
 )
 
 SELECT

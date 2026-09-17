@@ -11,23 +11,13 @@
 ) }}
 
 WITH monthly AS (
-  SELECT
-    'aom'            AS perim,
-    code,
-    role,
-    incremental_date AS date,
-    active_users,
-    new_users
-  FROM {{ ref('user_aom_acquisition_month') }}
-  UNION ALL
-  SELECT
-    'aomreg'         AS perim,
-    code,
-    role,
-    incremental_date AS date,
-    active_users,
-    new_users
-  FROM {{ ref('user_aomreg_acquisition_month') }}
+  {{ mb_union_aom_aomreg('acquisition_month', [
+    'code',
+    'role',
+    'incremental_date AS date',
+    'active_users',
+    'new_users'
+  ]) }}
 )
 
 SELECT
