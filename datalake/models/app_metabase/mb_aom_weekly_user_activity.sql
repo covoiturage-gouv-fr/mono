@@ -11,10 +11,20 @@
 ) }}
 
 WITH daily AS (
-  SELECT 'aom' AS perim, user_id, role, code, incremental_date
+  SELECT
+    'aom' AS perim,
+    user_id,
+    role,
+    code,
+    incremental_date
   FROM {{ ref('user_aom_day') }}
   UNION ALL
-  SELECT 'aomreg' AS perim, user_id, role, code, incremental_date
+  SELECT
+    'aomreg' AS perim,
+    user_id,
+    role,
+    code,
+    incremental_date
   FROM {{ ref('user_aomreg_day') }}
 )
 
@@ -31,7 +41,7 @@ UNION ALL
 SELECT DISTINCT
   perim,
   code,
-  'any' AS role,  -- noqa: RF04
+  'any'                                      AS role,  -- noqa: RF04
   user_id,
   date_trunc('week', incremental_date)::date AS week
 FROM daily

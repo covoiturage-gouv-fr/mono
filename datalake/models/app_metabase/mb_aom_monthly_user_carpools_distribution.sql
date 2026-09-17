@@ -7,9 +7,9 @@
 ) }}
 
 SELECT
-  'aom'                                 AS perim,
+  'aom'                                AS perim,
   code,
-  to_char(incremental_date, 'YYYY-MM')  AS date,
+  to_char(incremental_date, 'YYYY-MM') AS date,
   role,
   users,
   q1_carpools,
@@ -18,9 +18,9 @@ SELECT
 FROM {{ ref('user_aom_carpools_distribution_month') }}
 UNION ALL
 SELECT
-  'aomreg'                              AS perim,
+  'aomreg'                             AS perim,
   code,
-  to_char(incremental_date, 'YYYY-MM')  AS date,
+  to_char(incremental_date, 'YYYY-MM') AS date,
   role,
   users,
   q1_carpools,

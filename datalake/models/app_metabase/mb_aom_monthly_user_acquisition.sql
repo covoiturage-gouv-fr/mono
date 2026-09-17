@@ -11,21 +11,33 @@
 ) }}
 
 WITH monthly AS (
-  SELECT 'aom' AS perim, code, role, incremental_date AS date, active_users, new_users
+  SELECT
+    'aom'            AS perim,
+    code,
+    role,
+    incremental_date AS date,
+    active_users,
+    new_users
   FROM {{ ref('user_aom_acquisition_month') }}
   UNION ALL
-  SELECT 'aomreg' AS perim, code, role, incremental_date AS date, active_users, new_users
+  SELECT
+    'aomreg'         AS perim,
+    code,
+    role,
+    incremental_date AS date,
+    active_users,
+    new_users
   FROM {{ ref('user_aomreg_acquisition_month') }}
 )
 
 SELECT
   perim,
   code,
-  to_char(date, 'YYYY-MM') AS month,
   role,
   active_users,
   new_users,
-  SUM(new_users) OVER (
+  to_char(date, 'YYYY-MM') AS month,  -- noqa: RF04
+  sum(new_users) OVER (
     PARTITION BY perim, code, role ORDER BY date
-  ) AS cumulative_users
+  )                        AS cumulative_users
 FROM monthly
