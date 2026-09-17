@@ -59,7 +59,14 @@ export class ProConnectOIDCProvider implements InitHookInterface {
       return;
     }
 
-    await this.getConfig();
+    try {
+      await this.getConfig();
+    } catch (e) {
+      // Au démarrage (fail=false) : un ProConnect injoignable ne doit pas empêcher l'API de
+      // démarrer. La découverte est rejouée à la première connexion, où l'échec reste bloquant.
+      if (fail) throw e;
+      logger.warn(`[proconnect] découverte impossible au démarrage : ${(e as Error).message}`);
+    }
   }
 
   async init(): Promise<void> {
