@@ -63,7 +63,6 @@ services:
       # Exposed Services URLs
       APP_API_URL: ${APP_API_URL:-http://localhost:8080}
       APP_APP_URL: ${APP_APP_URL:-http://localhost:4200}
-      APP_DASHBOARD_V2_URL: ${APP_DASHBOARD_V2_URL:-http://localhost:4200}
 
       # Internal Services URLs
       APP_MAIL_SMTP_URL: ${APP_MAIL_SMTP_URL:-smtp://mailer:1025}
@@ -119,7 +118,6 @@ services:
       DEX_BASE_URL: ${DEX_BASE_URL:-http://dex:8090}
       DEX_CLIENT_ID: ${DEX_CLIENT_ID:-secret}
       DEX_CLIENT_SECRET: ${DEX_CLIENT_SECRET:-secret}
-      DEX_REDIRECT_URL: ${DEX_REDIRECT_URL:-http://localhost:8080/auth/callback}
       DEX_GRPC_HOST: ${DEX_GRPC_HOST:-dex}
       DEX_GRPC_PORT: ${DEX_GRPC_PORT:-5557}
 
@@ -127,8 +125,7 @@ services:
       PROCONNECT_ENABLED: ${PROCONNECT_ENABLED:-true}
       PROCONNECT_CLIENT_ID: ${PROCONNECT_CLIENT_ID:-secret}
       PROCONNECT_CLIENT_SECRET: ${PROCONNECT_CLIENT_SECRET:-secret}
-      PROCONNECT_REDIRECT_URL: ${PROCONNECT_REDIRECT_URL:-http://localhost:8080/auth/login/callback}
-      PROCONNECT_LOGOUT_REDIRECT_URL: ${PROCONNECT_LOGOUT_REDIRECT_URL:-http://localhost:8080/auth/logout/callback}
+      # Les URL de rappel se déduisent de APP_API_URL, cf. api/src/config/urls.ts
       PROCONNECT_BASE_URL: ${PROCONNECT_BASE_URL:-https://fca.integ01.dev-agentconnect.fr/api/v2}
       PROCONNECT_REQUIRE_MFA: ${PROCONNECT_REQUIRE_MFA:-false}
     
