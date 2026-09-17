@@ -74,7 +74,8 @@ export default function OperatorsTable(props: { title: string; id: number | null
       .string()
       .trim()
       .min(3, { message: "Le nom doit contenir au moins 3 caractères" })
-      .max(256, { message: "Le nom ne peut pas dépasser 256 caractères" }),
+      .max(256, { message: "Le nom ne peut pas dépasser 256 caractères" })
+      .regex(/^[^<>]*$/, { message: "Les caractères < et > ne sont pas autorisés" }),
     siret: z.string().regex(/^\d{14}$/, { message: "Le SIRET doit contenir 14 chiffres" }),
   });
 
@@ -167,6 +168,7 @@ export default function OperatorsTable(props: { title: string; id: number | null
                 state={modal.errors?.name ? "error" : "default"}
                 stateRelatedMessage={modal.errors?.name ?? ""}
                 nativeInputProps={{
+                  "aria-invalid": !!modal.errors?.name,
                   type: "text",
                   value: (modal.currentRow.name as string) ?? "",
                   onChange: (e) => modal.validateInputChange(formSchema, "name", e.target.value),
@@ -177,6 +179,7 @@ export default function OperatorsTable(props: { title: string; id: number | null
                 state={modal.errors?.siret ? "error" : "default"}
                 stateRelatedMessage={modal.errors?.siret ?? ""}
                 nativeInputProps={{
+                  "aria-invalid": !!modal.errors?.siret,
                   type: "text",
                   value: (modal.currentRow.siret as string) ?? "",
                   onChange: (e) => modal.validateInputChange(formSchema, "siret", e.target.value),

@@ -80,7 +80,17 @@ export function Modal(props: ModalProps) {
       }
       concealingBackdrop={false}
     >
-      {props.children}
+      {/* Le DSFR n'écoute Échap que sur ses propres boutons : depuis un champ, la modale restait ouverte. */}
+      <div
+        onKeyDown={(e) => {
+          if (e.key === "Escape") {
+            e.stopPropagation();
+            modal.close();
+          }
+        }}
+      >
+        {props.children}
+      </div>
     </modal.Component>
   );
 }

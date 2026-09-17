@@ -26,7 +26,10 @@ export default function Home() {
         id="content"
         className={fr.cx("fr-grid-row", "fr-grid-row--gutters", "fr-grid-row--center", "fr-grid-row--middle")}
       >
-        <div className={fr.cx("fr-col-12", "fr-col-sm-6")} style={{ wordBreak: "break-word", minWidth: 0 }}>
+        <div
+          className={`${fr.cx("fr-col-12", "fr-col-sm-6")} home-title`}
+          style={{ overflowWrap: "anywhere", minWidth: 0 }}
+        >
           <PageTitle title={`Bienvenue sur l'espace partenaire de covoiturage.beta.gouv.fr`} />
         </div>
         <div className={fr.cx("fr-col-12", "fr-col-sm-6", "fr-hidden", "fr-unhidden-sm")}>

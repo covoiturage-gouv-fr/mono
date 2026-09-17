@@ -159,7 +159,8 @@ export default function UsersTable(props: { title: string; territoryId: number |
       .string()
       .trim()
       .min(3, { message: `${label} doit contenir au moins 3 caractères` })
-      .max(256, { message: `${label} ne peut pas dépasser 256 caractères` });
+      .max(256, { message: `${label} ne peut pas dépasser 256 caractères` })
+      .regex(/^[^<>]*$/, { message: "Les caractères < et > ne sont pas autorisés" });
   const formSchema = z
     .object({
       firstname: name("Le prénom"),
@@ -390,6 +391,7 @@ export default function UsersTable(props: { title: string; territoryId: number |
                     state={modal.errors?.firstname ? "error" : "default"}
                     stateRelatedMessage={modal.errors?.firstname ?? ""}
                     nativeInputProps={{
+                      "aria-invalid": !!modal.errors?.firstname,
                       type: "text",
                       value: (modal.currentRow.firstname as string) ?? "",
                       onChange: (e) => modal.validateInputChange(formSchema, "firstname", e.target.value),
@@ -402,6 +404,7 @@ export default function UsersTable(props: { title: string; territoryId: number |
                     state={modal.errors?.lastname ? "error" : "default"}
                     stateRelatedMessage={modal.errors?.lastname ?? ""}
                     nativeInputProps={{
+                      "aria-invalid": !!modal.errors?.lastname,
                       type: "text",
                       value: (modal.currentRow.lastname as string) ?? "",
                       onChange: (e) => modal.validateInputChange(formSchema, "lastname", e.target.value),
@@ -414,6 +417,7 @@ export default function UsersTable(props: { title: string; territoryId: number |
                     state={modal.errors?.email ? "error" : "default"}
                     stateRelatedMessage={modal.errors?.email ?? ""}
                     nativeInputProps={{
+                      "aria-invalid": !!modal.errors?.email,
                       type: "text",
                       value: (modal.currentRow.email as string) ?? "",
                       onChange: (e) => modal.validateInputChange(formSchema, "email", e.target.value),
@@ -426,6 +430,7 @@ export default function UsersTable(props: { title: string; territoryId: number |
                     state={modal.errors?.role ? "error" : "default"}
                     stateRelatedMessage={modal.errors?.role ?? ""}
                     nativeSelectProps={{
+                      "aria-invalid": !!modal.errors?.role,
                       value: (modal.currentRow.role ?? "") as string,
                       onChange: (e) => onChangeRole(e.target.value),
                     }}
@@ -450,6 +455,7 @@ export default function UsersTable(props: { title: string; territoryId: number |
                       state={modal.errors?.login_siren ? "error" : "default"}
                       stateRelatedMessage={modal.errors?.login_siren ?? ""}
                       nativeInputProps={{
+                        "aria-invalid": !!modal.errors?.login_siren,
                         inputMode: "numeric",
                         value: (modal.currentRow.login_siren as string | null) ?? "",
                         onChange: (e) => modal.validateInputChange(formSchema, "login_siren", e.target.value || null),
@@ -470,6 +476,7 @@ export default function UsersTable(props: { title: string; territoryId: number |
                         state={modal.errors?.operator_id ? "error" : "default"}
                         stateRelatedMessage={modal.errors?.operator_id ?? ""}
                         nativeSelectProps={{
+                          "aria-invalid": !!modal.errors?.operator_id,
                           value: (modal.currentRow.operator_id as number | null) ?? "",
                           onChange: (e) => onChangeOperator(e.target.value),
                         }}
