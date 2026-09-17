@@ -1,9 +1,7 @@
 -- territory_agg_column_names() pilote par nom le UNION ALL du cas 'com' (arr + plm), mais
 -- est une liste statique recopiee a la main depuis les alias de territory_agg_columns() :
 -- une divergence disparaitrait silencieusement du cas com (colonne manquante) ou casserait
--- la compilation (colonne inexistante). territory_day_arr_both sert de reference car 'arr'
--- n'a jamais with_incentive_split=true, donc ses colonnes sont exactement celles de
--- territory_agg_column_names().
+-- la compilation (colonne inexistante). 
 {{ config(severity='error', tags=['aggregated', 'territory']) }}
 
 {% set actual_columns = adapter.get_columns_in_relation(ref('territory_day_arr_both')) | map(attribute='name') | list %}
