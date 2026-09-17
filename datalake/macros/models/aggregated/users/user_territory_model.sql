@@ -81,7 +81,7 @@ SELECT
   role,  -- noqa: RF04
   code,
   {{ incremental_columns('carpool_datetime', grain) }},
-  {{ user_agg_columns() }}
+  COUNT(*) AS carpools
 FROM carpools_by_role
 WHERE code IS NOT NULL
 GROUP BY 1, 2, 3, {{ group_by_grain(grain, 4) }}
