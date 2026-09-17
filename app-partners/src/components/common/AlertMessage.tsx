@@ -41,7 +41,7 @@ export default function AlertMessage(props: AlertProps) {
         top: "1rem",
         left: 0,
         right: 0,
-        zIndex: 1000,
+        zIndex: 2000,
       }}
     >
       <Alert

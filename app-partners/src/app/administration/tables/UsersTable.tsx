@@ -153,27 +153,63 @@ export default function UsersTable(props: { title: string; territoryId: number |
       rowActions(d),
     ]) ?? [];
 
-  const formSchema = z.object({
-    firstname: z.string().min(3, { message: "Le prénom doit contenir au moins 3 caractères" }),
-    lastname: z.string().min(3, { message: "Le nom doit contenir au moins 3 caractères" }),
-    email: z.string().email({ message: `L'adresse mail n'est pas valide` }),
-    operator_id: z.number({ message: "Sélectionnez un opérateur" }).nullish(),
-    territory_id: z.number({ message: "Sélectionnez un territoire" }).nullish(),
-    role: z.enum(roles, { message: "Le rôle n'est pas valide" }),
-    login_siren: z
+  // Bornes alignées sur l'API (Varchar 256) ; rognage pour refuser les blancs et normaliser l'email.
+  const name = (label: string) =>
+    z
       .string()
-      .regex(/^\d{9}$/, { message: "Le SIREN doit contenir 9 chiffres" })
-      .nullish(),
-    scopes: z
-      .array(
-        z.object({
-          territory_id: z.number().optional(),
-          operator_id: z.number().optional(),
-          is_default: z.boolean().optional(),
-        }),
-      )
-      .optional(),
-  });
+      .trim()
+      .min(3, { message: `${label} doit contenir au moins 3 caractères` })
+      .max(256, { message: `${label} ne peut pas dépasser 256 caractères` });
+  const formSchema = z
+    .object({
+      firstname: name("Le prénom"),
+      lastname: name("Le nom"),
+      email: z
+        .string()
+        .trim()
+        .toLowerCase()
+        .email({ message: `L'adresse mail n'est pas valide` })
+        .max(256, { message: "L'adresse mail ne peut pas dépasser 256 caractères" }),
+      operator_id: z.number({ message: "Sélectionnez un opérateur" }).nullish(),
+      territory_id: z.number({ message: "Sélectionnez un territoire" }).nullish(),
+      role: z.enum(roles, { message: "Le rôle n'est pas valide" }),
+      login_siren: z
+        .string()
+        .regex(/^\d{9}$/, { message: "Le SIREN doit contenir 9 chiffres" })
+        .nullish(),
+      scopes: z
+        .array(
+          z.object({
+            territory_id: z.number().optional(),
+            operator_id: z.number().optional(),
+            is_default: z.boolean().optional(),
+          }),
+        )
+        .optional(),
+    })
+    // Un rôle opérateur sans opérateur, ou territoire sans périmètre, est un compte sans accès.
+    .superRefine((row, ctx) => {
+      if (row.role.startsWith("operator.") && !row.operator_id) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["operator_id"], message: "Sélectionnez un opérateur" });
+      }
+      if (row.role.startsWith("territory.") && row.scopes && row.scopes.length === 0) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["scopes"], message: "Ajoutez au moins un périmètre" });
+      }
+    });
+
+  // À la bascule de rôle, les champs de l'autre famille sont purgés : sinon le corps envoyé porte
+  // à la fois un opérateur et des périmètres.
+  const onChangeRole = (role: string) => {
+    modal.setCurrentRow((prev) => ({
+      ...prev,
+      role,
+      ...(role.startsWith("operator.") ? {} : { operator_id: null }),
+      ...(role.startsWith("territory.") || !canManageScopes
+        ? {}
+        : { scopes: [], territory_id: null, login_siren: null }),
+    }));
+    modal.setErrors({});
+  };
   const roleList = () => {
     if (simulatedRole) {
       if (user?.territory_id) {
@@ -317,7 +353,7 @@ export default function UsersTable(props: { title: string; territoryId: number |
           />
         </div>
       )}
-      <Table data={dataTable} headers={headers} colorVariant="blue-ecume" fixed />
+      <Table data={dataTable} headers={headers} colorVariant="blue-ecume" />
       <Pagination count={totalPages} defaultPage={currentPage} onChange={onChangePage} />
       <Modal
         open={modal.openModal}
@@ -391,7 +427,7 @@ export default function UsersTable(props: { title: string; territoryId: number |
                     stateRelatedMessage={modal.errors?.role ?? ""}
                     nativeSelectProps={{
                       value: (modal.currentRow.role ?? "") as string,
-                      onChange: (e) => modal.validateInputChange(formSchema, "role", e.target.value),
+                      onChange: (e) => onChangeRole(e.target.value),
                     }}
                   >
                     {roleList().map((r: string, i: number) => (
@@ -415,7 +451,6 @@ export default function UsersTable(props: { title: string; territoryId: number |
                       stateRelatedMessage={modal.errors?.login_siren ?? ""}
                       nativeInputProps={{
                         inputMode: "numeric",
-                        maxLength: 9,
                         value: (modal.currentRow.login_siren as string | null) ?? "",
                         onChange: (e) => modal.validateInputChange(formSchema, "login_siren", e.target.value || null),
                       }}
@@ -424,8 +459,8 @@ export default function UsersTable(props: { title: string; territoryId: number |
                 </fieldset>
               )}
 
-              {/* Périmètres : masqués pour territory.admin ; opérateur = Select unique, territoire = table éditable. */}
-              {(canManageScopes || isOperatorTarget) && (
+              {/* Périmètres : masqués pour territory.admin et pour un rôle sans périmètre (registry). */}
+              {(isOperatorTarget || (canManageScopes && isTerritoryTarget)) && (
                 <fieldset className={fr.cx("fr-fieldset")}>
                   <legend className={fr.cx("fr-fieldset__legend")}>Périmètres</legend>
                   {isOperatorTarget && (
@@ -455,6 +490,7 @@ export default function UsersTable(props: { title: string; territoryId: number |
                         territories={territoriesList()}
                         onChange={onChangeScopes}
                       />
+                      {modal.errors?.scopes && <p className={fr.cx("fr-error-text")}>{modal.errors.scopes}</p>}
                     </div>
                   )}
                 </fieldset>

@@ -23,6 +23,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [authError, setAuthError] = useState<Error>();
   const [switchToast, setSwitchToast] = useState<{ severity: "success" | "error"; description: string }>();
   const formEditingRef = useRef(false);
+
+  // Le toast de bascule se ferme seul : fixé en haut, il recouvrait l'en-tête jusqu'au rechargement.
+  useEffect(() => {
+    if (!switchToast) return;
+    const timer = setTimeout(() => setSwitchToast(undefined), 6000);
+    return () => clearTimeout(timer);
+  }, [switchToast]);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -74,7 +81,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!loading && !authError) {
       if (!isAuth) {
-        router.push("/");
+        // Déjà sur l'accueil : ne pas re-pousser, cela effacerait ?error=… avant l'affichage de l'alerte.
+        if (pathname !== "/") router.push("/");
       } else if (isAuth && pathname === "/") {
         router.push("/activite");
       }
@@ -232,7 +240,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           </Button>
         </div>
       ) : (
-        !loading && children
+        // Anonyme hors accueil : rien tant que la redirection n'a pas eu lieu (sinon les pages protégées
+        // se rendent avec un user sans rôle et plantent).
+        !loading && (isAuth || pathname === "/") && children
       )}
     </AuthContext.Provider>
   );

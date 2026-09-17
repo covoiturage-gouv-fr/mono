@@ -5,11 +5,7 @@ interface PaginateAPIResponse<T> {
   data?: T[];
 }
 
-interface ErrorResponse {
-  message: string;
-}
-
-type ApiResponse<T> = PaginateAPIResponse<T> | T | ErrorResponse;
+type ApiResponse<T> = PaginateAPIResponse<T> | T;
 
 export const UNREACHABLE_MESSAGE = "Le service est momentanément injoignable. Réessayez dans quelques instants.";
 
@@ -17,12 +13,41 @@ export const UNREACHABLE_MESSAGE = "Le service est momentanément injoignable. R
 export const toUserError = (e: unknown): Error =>
   e instanceof TypeError ? new Error(UNREACHABLE_MESSAGE) : e instanceof Error ? e : new Error(String(e));
 
-export const useApi = <T>(
-  url: string | URL,
-  paginate = false,
-  init?: RequestInit,
-  reloadDependency?: unknown,
-) => {
+// L'API répond tantôt { message }, tantôt un tableau de violations, tantôt une chaîne nue ou rien.
+export const apiErrorMessage = (status: number, body: unknown): string => {
+  const fromBody = (): string | undefined => {
+    if (typeof body === "string" && body.trim()) return body;
+    if (Array.isArray(body)) return body.map(String).join("\n");
+    if (body && typeof body === "object") {
+      const { message, error } = body as { message?: unknown; error?: unknown };
+      if (typeof message === "string" && message) return message;
+      if (typeof error === "string" && error && status < 500) return error;
+    }
+    return undefined;
+  };
+  switch (status) {
+    case 401:
+      return "Votre session a expiré, reconnectez-vous.";
+    case 403:
+      return "Vous n'avez pas les droits nécessaires pour cette action.";
+    case 404:
+      return "Élément introuvable.";
+    default:
+      if (status >= 500) return `Le service a rencontré une erreur interne (${status}). Réessayez plus tard.`;
+      return fromBody() ?? `La requête a été refusée (${status}).`;
+  }
+};
+
+export const parseBody = (text: string): unknown => {
+  if (!text) return undefined;
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text;
+  }
+};
+
+export const useApi = <T>(url: string | URL, paginate = false, init?: RequestInit, reloadDependency?: unknown) => {
   const [data, setData] = useState<T>();
   const [error, setError] = useState<Error | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -32,31 +57,13 @@ export const useApi = <T>(
       setLoading(true);
       const response = await fetch(url, { ...init, credentials: "include" });
       const text = await response.text();
-      let res: ApiResponse<T> | null = null;
-      if (text.length > 0) {
-        try {
-          res = JSON.parse(text) as ApiResponse<T>;
-        } catch {
-          if (!response.ok) {
-            throw new Error(
-              response.statusText || `Erreur ${response.status}`,
-            );
-          }
-          res = null;
-        }
-      }
+      const parsed = parseBody(text);
       if (!response.ok) {
-        throw new Error(
-          (res as ErrorResponse | null)?.message ??
-            response.statusText ??
-            "Une erreur est survenue",
-        );
+        throw new Error(apiErrorMessage(response.status, parsed));
       }
+      const res = (typeof parsed === "object" ? parsed : null) as ApiResponse<T> | null;
 
-      if (
-        paginate &&
-        ((res as PaginateAPIResponse<T> | null)?.meta?.totalPages ?? 0) > 1
-      ) {
+      if (paginate && ((res as PaginateAPIResponse<T> | null)?.meta?.totalPages ?? 0) > 1) {
         const paginateResponse = res as PaginateAPIResponse<T>;
 
         setData({

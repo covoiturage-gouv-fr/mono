@@ -1,4 +1,5 @@
 import { getApiUrl } from "@/helpers/api";
+import { apiErrorMessage, parseBody, toUserError } from "@/hooks/useApi";
 import { TerritorySelectorsInterface } from "@/interfaces/dataInterface";
 import { useCallback, useState } from "react";
 
@@ -48,40 +49,37 @@ export function useExportCreate() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  const createExport = useCallback(
-    async (params: ExportCreateParams): Promise<ExportResponse> => {
-      try {
-        setLoading(true);
-        setError(null);
-        setData(undefined);
+  const createExport = useCallback(async (params: ExportCreateParams): Promise<ExportResponse> => {
+    try {
+      setLoading(true);
+      setError(null);
+      setData(undefined);
 
-        const response = await fetch(getApiUrl("v3", "exports"), {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(params),
-          credentials: "include",
-        });
+      const response = await fetch(getApiUrl("v3", "exports"), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(params),
+        credentials: "include",
+      });
 
-        if (!response.ok) {
-          const errorData = (await response.json()) as { message?: string };
-          throw new Error(errorData.message ?? "Failed to create export");
-        }
-
-        const json = (await response.json()) as ExportResponse;
-        setData(json);
-        return json;
-      } catch (e) {
-        const err = e as Error;
-        setError(err);
-        throw err;
-      } finally {
-        setLoading(false);
+      const parsed = parseBody(await response.text());
+      if (!response.ok) {
+        throw new Error(apiErrorMessage(response.status, parsed));
       }
-    },
-    [],
-  );
+
+      const json = parsed as ExportResponse;
+      setData(json);
+      return json;
+    } catch (e) {
+      const err = toUserError(e);
+      setError(err);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   const reset = useCallback(() => {
     setData(undefined);

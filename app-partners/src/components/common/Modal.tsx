@@ -41,15 +41,22 @@ export function Modal(props: ModalProps) {
     },
   });
 
+  // Verrou : un double clic sur OK envoyait deux requêtes.
+  const [submitting, setSubmitting] = useState(false);
   const okButton = {
     children: "OK",
     doClosesModal: false,
+    disabled: submitting,
     onClick: async () => {
+      if (submitting) return;
+      setSubmitting(true);
       let keepOpen = false;
       try {
         keepOpen = (await props.onSubmit()) === false;
       } catch {
         // Un rejet inattendu ne doit pas laisser la modale figée.
+      } finally {
+        setSubmitting(false);
       }
       if (!keepOpen) modal.close();
     },
@@ -71,7 +78,7 @@ export function Modal(props: ModalProps) {
             ]
           : [okButton]
       }
-      concealingBackdrop={true}
+      concealingBackdrop={false}
     >
       {props.children}
     </modal.Component>

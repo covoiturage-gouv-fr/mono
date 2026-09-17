@@ -70,7 +70,11 @@ export default function OperatorsTable(props: { title: string; id: number | null
     ]) ?? [];
 
   const formSchema = z.object({
-    name: z.string().min(3, { message: "Le nom doit contenir au moins 3 caractères" }),
+    name: z
+      .string()
+      .trim()
+      .min(3, { message: "Le nom doit contenir au moins 3 caractères" })
+      .max(256, { message: "Le nom ne peut pas dépasser 256 caractères" }),
     siret: z.string().regex(/^\d{14}$/, { message: "Le SIRET doit contenir 14 chiffres" }),
   });
 
@@ -103,7 +107,7 @@ export default function OperatorsTable(props: { title: string; id: number | null
       {alert === "error" && (
         <AlertMessage
           title="Une erreur s'est produite"
-          message={Object.values(modal.errors!).join(" | ")}
+          message={modal.submitError?.message ?? Object.values(modal.errors ?? {}).join(" | ")}
           typeAlert={alert}
           onClose={() => setAlert(undefined)}
         />
@@ -138,7 +142,7 @@ export default function OperatorsTable(props: { title: string; id: number | null
         </div>
       )}
 
-      <Table data={dataTable} headers={headers} colorVariant="blue-ecume" fixed />
+      <Table data={dataTable} headers={headers} colorVariant="blue-ecume" />
       <Pagination count={totalPages} defaultPage={currentPage} onChange={onChangePage} />
       <Modal
         open={modal.openModal}
