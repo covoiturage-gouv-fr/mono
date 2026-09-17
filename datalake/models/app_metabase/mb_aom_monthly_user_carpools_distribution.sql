@@ -27,4 +27,3 @@ SELECT
   median_carpools,
   q3_carpools
 FROM {{ ref('user_aomreg_carpools_distribution_month') }}
-ORDER BY date, perim, code, role

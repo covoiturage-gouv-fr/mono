@@ -36,5 +36,3 @@ SELECT
   MIN(date_trunc('week', incremental_date))::date AS first_week
 FROM daily
 GROUP BY perim, code, user_id
-
-ORDER BY perim, code, role, user_id

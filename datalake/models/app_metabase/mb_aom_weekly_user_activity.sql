@@ -35,5 +35,3 @@ SELECT DISTINCT
   user_id,
   date_trunc('week', incremental_date)::date AS week
 FROM daily
-
-ORDER BY perim, code, role, user_id, week

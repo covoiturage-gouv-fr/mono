@@ -29,4 +29,3 @@ SELECT
     PARTITION BY perim, code, role ORDER BY date
   ) AS cumulative_users
 FROM monthly
-ORDER BY month, perim, code, role

@@ -24,4 +24,3 @@ SELECT
   user_id,
   carpools
 FROM {{ ref('user_aomreg_month') }}
-ORDER BY date, perim, code, role
