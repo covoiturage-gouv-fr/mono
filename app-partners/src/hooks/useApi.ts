@@ -16,8 +16,9 @@ export const toUserError = (e: unknown): Error =>
 // L'API répond tantôt { message }, tantôt un tableau de violations, tantôt une chaîne nue ou rien.
 export const apiErrorMessage = (status: number, body: unknown): string => {
   const fromBody = (): string | undefined => {
-    if (typeof body === "string" && body.trim()) return body;
-    if (Array.isArray(body)) return body.map(String).join("\n");
+    // Relais borné : seules des chaînes courtes, jamais un objet imprévu.
+    if (typeof body === "string" && body.trim()) return body.slice(0, 500);
+    if (Array.isArray(body) && body.every((v) => typeof v === "string")) return body.join("\n").slice(0, 500);
     if (body && typeof body === "object") {
       const { message, error } = body as { message?: unknown; error?: unknown };
       if (typeof message === "string" && message) return message;
