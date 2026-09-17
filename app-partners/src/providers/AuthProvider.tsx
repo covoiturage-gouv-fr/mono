@@ -1,8 +1,10 @@
 "use client";
 import { activeScopeLabel, getActiveScope, getUserSession, postAuthContext } from "@/helpers/auth";
+import { toUserError } from "@/hooks/useApi";
 import { type AuthContextProps, type UserInterface } from "@/interfaces/auth";
 import { fr } from "@codegouvfr/react-dsfr";
 import Alert from "@codegouvfr/react-dsfr/Alert";
+import Button from "@codegouvfr/react-dsfr/Button";
 import { usePathname, useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 
@@ -17,6 +19,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [simulate, setSimulate] = useState(false);
   const [simulatedRole, setSimulatedRole] = useState<"operator" | "territory" | undefined>(undefined);
   const [loading, setLoading] = useState(true);
+  // API injoignable au chargement : page d'erreur lisible plutôt qu'un écran vide.
+  const [authError, setAuthError] = useState<Error>();
   const [switchToast, setSwitchToast] = useState<{ severity: "success" | "error"; description: string }>();
   const formEditingRef = useRef(false);
   const router = useRouter();
@@ -37,7 +41,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const checkAuth = async () => {
-    const data = await getUserSession();
+    let data: UserInterface | undefined;
+    try {
+      data = await getUserSession();
+      setAuthError(undefined);
+    } catch (e) {
+      setAuthError(toUserError(e));
+      setLoading(false);
+      return;
+    }
     if (data?.role && data?.role !== "anonymous") {
       await assertMirror(data);
       setIsAuth(true);
@@ -60,14 +72,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (!loading) {
+    if (!loading && !authError) {
       if (!isAuth) {
         router.push("/");
       } else if (isAuth && pathname === "/") {
         router.push("/activite");
       }
     }
-  }, [loading, isAuth, pathname, router]);
+  }, [loading, authError, isAuth, pathname, router]);
 
   // Réconciliation avec le serveur au retour d'onglet (le miroir ne fait jamais autorité).
   useEffect(() => {
@@ -183,7 +195,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }}
     >
       {switchToast && (
-        <div aria-live="polite" role="status" className={fr.cx("fr-container")} style={{ position: "fixed", top: "1rem", left: 0, right: 0, zIndex: 1000 }}>
+        <div
+          aria-live="polite"
+          role="status"
+          className={fr.cx("fr-container")}
+          style={{
+            position: "fixed",
+            top: "1rem",
+            left: 0,
+            right: 0,
+            zIndex: 1000,
+            backgroundColor: "var(--background-default-grey)",
+          }}
+        >
           <Alert
             severity={switchToast.severity}
             title={switchToast.severity === "error" ? "Bascule impossible" : "Périmètre changé"}
@@ -193,7 +217,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           />
         </div>
       )}
-      {!loading && children}
+      {authError ? (
+        <div className={fr.cx("fr-container", "fr-my-7w")}>
+          <Alert severity="error" title="Une erreur s'est produite" description={authError.message} />
+          <Button
+            className={fr.cx("fr-mt-3w")}
+            iconId="fr-icon-refresh-line"
+            onClick={() => {
+              setLoading(true);
+              void checkAuth();
+            }}
+          >
+            Réessayer
+          </Button>
+        </div>
+      ) : (
+        !loading && children
+      )}
     </AuthContext.Provider>
   );
 }

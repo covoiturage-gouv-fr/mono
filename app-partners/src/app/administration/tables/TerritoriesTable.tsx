@@ -2,7 +2,7 @@ import AlertMessage from "@/components/common/AlertMessage";
 import { Modal } from "@/components/common/Modal";
 import Pagination from "@/components/common/Pagination";
 import { getApiUrl } from "@/helpers/api";
-import { formatErrors, useActionsModal } from "@/hooks/useActionsModal";
+import { formatErrors, FormValidationError, useActionsModal } from "@/hooks/useActionsModal";
 import { useApi } from "@/hooks/useApi";
 import { useUrlSearch } from "@/hooks/useUrlSearch";
 import { type AuthContextProps } from "@/interfaces/auth";
@@ -107,8 +107,9 @@ export default function TerritoriesTable(props: { title: string; id: number | nu
     if (modal.typeModal === "create") {
       const result = formSchema.safeParse(modal.currentRow);
       if (!result.success) {
-        const errors = result.error.flatten().fieldErrors;
-        modal.setErrors(formatErrors(errors));
+        const errors = formatErrors(result.error.flatten().fieldErrors);
+        modal.setErrors(errors);
+        throw new FormValidationError(errors);
       }
     }
     const request = {
@@ -243,8 +244,13 @@ export default function TerritoriesTable(props: { title: string; id: number | nu
         title={modal.modalTitle(modal.typeModal)}
         onClose={() => modal.setOpenModal(false)}
         onSubmit={async () => {
-          await submitModal("dashboard/territory");
-          setAlert(Object.keys(modal.errors ?? {}).length > 0 ? "error" : modal.typeModal);
+          try {
+            await submitModal("dashboard/territory");
+            setAlert(modal.typeModal);
+          } catch (e) {
+            if (e instanceof FormValidationError) return false;
+            setAlert("error");
+          }
           await refetchTerritories();
         }}
       >

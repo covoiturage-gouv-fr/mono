@@ -2,7 +2,7 @@ import AlertMessage from "@/components/common/AlertMessage";
 import { Modal } from "@/components/common/Modal";
 import Pagination from "@/components/common/Pagination";
 import { useOperatorsList } from "@/hooks/api";
-import { useActionsModal } from "@/hooks/useActionsModal";
+import { FormValidationError, useActionsModal } from "@/hooks/useActionsModal";
 import { useUrlSearch } from "@/hooks/useUrlSearch";
 import { type OperatorsInterface } from "@/interfaces/dataInterface";
 import { useAuth } from "@/providers/AuthProvider";
@@ -145,8 +145,13 @@ export default function OperatorsTable(props: { title: string; id: number | null
         title={modal.modalTitle(modal.typeModal)}
         onClose={() => modal.setOpenModal(false)}
         onSubmit={async () => {
-          await modal.submitModal("dashboard/operator", formSchema);
-          setAlert(Object.keys(modal.errors ?? {}).length > 0 ? "error" : modal.typeModal);
+          try {
+            await modal.submitModal("dashboard/operator", formSchema);
+            setAlert(modal.typeModal);
+          } catch (e) {
+            if (e instanceof FormValidationError) return false;
+            setAlert("error");
+          }
           await refetchOperators();
         }}
       >

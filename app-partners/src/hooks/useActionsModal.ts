@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
 
 import { getApiUrl } from "@/helpers/api";
+import { toUserError } from "@/hooks/useApi";
 import { useCallback, useState } from "react";
 import { ZodError, type ZodSchema, type ZodType } from "zod";
 
@@ -15,6 +16,13 @@ export const formatErrors = (
     {} as Record<string, string>,
   );
 };
+
+// Levée avant tout appel réseau : le formulaire reste ouvert et affiche ses erreurs de champ.
+export class FormValidationError extends Error {
+  constructor(public readonly fields: Record<string, string>) {
+    super("Formulaire invalide");
+  }
+}
 
 export const useActionsModal = <T extends Record<string, unknown>>() => {
   const [openModal, setOpenModal] = useState(false);
@@ -64,8 +72,9 @@ export const useActionsModal = <T extends Record<string, unknown>>() => {
         if (typeModal !== "delete") {
           const result = validationSchema.safeParse(currentRow);
           if (!result.success) {
-            const errors = result.error.flatten().fieldErrors;
-            setErrors(formatErrors(errors));
+            const errors = formatErrors(result.error.flatten().fieldErrors);
+            setErrors(errors);
+            throw new FormValidationError(errors);
           }
         } else {
           setErrors({});
@@ -107,8 +116,9 @@ export const useActionsModal = <T extends Record<string, unknown>>() => {
         setSubmitData(res);
         return res;
       } catch (e) {
-        setSubmitError(e as Error);
-        throw e;
+        const error = toUserError(e);
+        setSubmitError(error);
+        throw error;
       } finally {
         setSubmitLoading(false);
       }

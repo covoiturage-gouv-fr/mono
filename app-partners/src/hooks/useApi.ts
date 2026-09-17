@@ -11,6 +11,12 @@ interface ErrorResponse {
 
 type ApiResponse<T> = PaginateAPIResponse<T> | T | ErrorResponse;
 
+export const UNREACHABLE_MESSAGE = "Le service est momentanément injoignable. Réessayez dans quelques instants.";
+
+// fetch rejette un TypeError anglophone quand le serveur ne répond pas : on parle français à l'utilisateur.
+export const toUserError = (e: unknown): Error =>
+  e instanceof TypeError ? new Error(UNREACHABLE_MESSAGE) : e instanceof Error ? e : new Error(String(e));
+
 export const useApi = <T>(
   url: string | URL,
   paginate = false,
@@ -61,7 +67,7 @@ export const useApi = <T>(
         setData((res ?? undefined) as T | undefined);
       }
     } catch (e) {
-      setError(e as Error);
+      setError(toUserError(e));
       setData(undefined);
     } finally {
       setLoading(false);
