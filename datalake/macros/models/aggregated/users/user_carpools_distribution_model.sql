@@ -20,7 +20,7 @@ WITH monthly AS (
   SELECT code, role, user_id, incremental_date, carpools
   FROM {{ ref('user_' ~ perim ~ '_month') }}
   WHERE {{ time_filter(
-    'incremental_date', type='date', default_start="'2020-01-01'",
+    'incremental_date', type='timestamp', default_start="'2020-01-01'",
     lookback_nb=1, lookback_unit='month'
   ) }}
 ),
