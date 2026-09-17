@@ -5,14 +5,14 @@
 
 WITH daily AS (
   SELECT
-    'aom'                     AS perim,
+    'aom'                                               AS perim,
     code,
     incremental_date,
     {{ mb_aom_financials_columns() | join(',\n    ') }}
   FROM {{ ref('territory_day_aom_both') }}
   UNION ALL
   SELECT
-    'aomreg'                  AS perim,
+    'aomreg'                                            AS perim,
     code,
     incremental_date,
     {{ mb_aom_financials_columns() | join(',\n    ') }}
