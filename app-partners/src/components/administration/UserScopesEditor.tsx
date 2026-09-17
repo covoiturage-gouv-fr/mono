@@ -1,12 +1,9 @@
 "use client";
 import { type Territory } from "@/interfaces/dataInterface";
 import { type UserScopeInput } from "@/interfaces/dataInterface";
-import { fr } from "@codegouvfr/react-dsfr";
 import Button from "@codegouvfr/react-dsfr/Button";
+import Select from "@codegouvfr/react-dsfr/Select";
 import Table from "@codegouvfr/react-dsfr/Table";
-import Autocomplete from "@mui/material/Autocomplete";
-import TextField from "@mui/material/TextField";
-import { useState } from "react";
 
 // Édition des périmètres territoire d'un user : liste + radio défaut + ajout (registry.admin).
 export default function UserScopesEditor(props: {
@@ -15,7 +12,6 @@ export default function UserScopesEditor(props: {
   onChange: (scopes: UserScopeInput[]) => void;
 }) {
   const { scopes, territories, onChange } = props;
-  const [toAdd, setToAdd] = useState<Territory | null>(null);
 
   const nameOf = (territory_id?: number) => territories.find((t) => t?._id === territory_id)?.name ?? territory_id;
 
@@ -32,10 +28,9 @@ export default function UserScopesEditor(props: {
     onChange(next);
   };
 
-  const add = (territory: Territory | null) => {
-    if (!territory?._id || scopes.some((s) => s.territory_id === territory._id)) return;
-    onChange([...scopes, { territory_id: territory._id, is_default: scopes.length === 0 }]);
-    setToAdd(null);
+  const add = (territory_id: number) => {
+    if (!territory_id || scopes.some((s) => s.territory_id === territory_id)) return;
+    onChange([...scopes, { territory_id, is_default: scopes.length === 0 }]);
   };
 
   const rows = scopes.map((s) => [
@@ -64,19 +59,26 @@ export default function UserScopesEditor(props: {
   const options = territories.filter((t) => t?._id && !scopes.some((s) => s.territory_id === t._id));
 
   return (
-    <div className={fr.cx("fr-mt-2w")}>
+    <>
       <Table data={rows} headers={["Territoire", "Défaut", "Action"]} fixed />
-      <Autocomplete
-        id="add-scope"
-        size="small"
-        options={options}
-        value={toAdd}
-        getOptionLabel={(o) => o?.name ?? ""}
-        isOptionEqualToValue={(o, v) => o?._id === v?._id}
-        noOptionsText="Aucun territoire"
-        onChange={(e, v) => add(v)}
-        renderInput={(params) => <TextField {...params} label="Ajouter un périmètre" />}
-      />
-    </div>
+      {/* Select natif plutôt qu'un champ à liste déroulante : la liste d'un composant porté
+          hors de la modale se peint sous elle, et le rendu s'aligne sur le reste du formulaire. */}
+      <Select
+        label="Ajouter un périmètre"
+        disabled={options.length === 0}
+        nativeSelectProps={{
+          id: "add-scope",
+          value: "",
+          onChange: (e) => add(Number(e.target.value)),
+        }}
+      >
+        <option value="">{options.length ? "Sélectionner un territoire" : "Aucun territoire disponible"}</option>
+        {options.map((t) => (
+          <option key={t._id} value={t._id}>
+            {t.name}
+          </option>
+        ))}
+      </Select>
+    </>
   );
 }
