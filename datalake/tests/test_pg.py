@@ -1,3 +1,5 @@
+import pyarrow as pa
+import pyarrow.parquet as pq
 import pytest
 
 from pipelines.helpers import pg
@@ -39,6 +41,24 @@ def test_load_csv_select_rejects_untrusted_type(tmp_path):
     assert pg._ident('a"b') == '"a""b"'
 
 
+def test_load_parquet_columns_rejects_untrusted_type(tmp_path):
+    path = tmp_path / "x.parquet"
+    pq.write_table(pa.table({"a": [1]}), path)
+    conn = FakePgConn()
+    with pytest.raises(ValueError, match="type"):
+        pg.load_parquet(conn, "zone_raw", "t", str(path),
+                         columns=[["a", "text); DROP TABLE u; --"]])
+
+
+def test_load_parquet_select_rejects_untrusted_type(tmp_path):
+    path = tmp_path / "x.parquet"
+    pq.write_table(pa.table({"MOD": [1]}), path)
+    conn = FakePgConn()
+    with pytest.raises(ValueError, match="type"):
+        pg.load_parquet(conn, "zone_raw", "t", str(path),
+                         select=[["MOD", "integer); DROP TABLE u; --", "mod"]])
+
+
 class FakeCopy:
     def __init__(self, calls):
         self.calls = calls
@@ -50,7 +70,7 @@ class FakeCopy:
         return False
 
     def write(self, data):
-        self.calls.append(("copy_write", len(data)))
+        self.calls.append(("copy_write", data))
 
 
 class FakeCursor:
@@ -110,3 +130,41 @@ def test_load_csv_select_uses_text_staging_and_casts(tmp_path):
     assert 'CREATE TEMP TABLE "_staging_insee" ("MOD" text, "DATE_EFF" text)' in joined
     assert 'CAST(NULLIF("MOD", \'\') AS integer) AS "mod"' in joined
     assert 'CAST(NULLIF("DATE_EFF", \'\') AS date) AS "date_eff"' in joined
+
+
+def test_load_parquet_columns_creates_typed_table_and_copies_rows(tmp_path):
+    path = tmp_path / "x.parquet"
+    pq.write_table(pa.table({"a": ["x", "y"], "n": [1, 2]}), path)
+    conn = FakePgConn()
+
+    n = pg.load_parquet(conn, "zone_raw", "t", str(path),
+                         columns=[["a", "varchar"], ["n", "bigint"]])
+    joined = _sql(conn)
+    assert 'CREATE TABLE "zone_raw"."t" ("a" varchar, "n" bigint)' in joined
+    copied = b"".join(c[1] for c in conn.calls if isinstance(c, tuple) and c[0] == "copy_write")
+    assert copied == b'"x",1\n"y",2\n'
+    assert n == 3
+
+
+def test_load_parquet_select_renames_and_types_columns(tmp_path):
+    path = tmp_path / "i.parquet"
+    pq.write_table(pa.table({"MOD": [32], "DATE_EFF": ["2025-01-01"]}), path)
+    conn = FakePgConn()
+
+    pg.load_parquet(conn, "zone_raw", "insee", str(path),
+                     select=[["MOD", "integer", "mod"], ["DATE_EFF", "date", "date_eff"]])
+    joined = _sql(conn)
+    assert 'CREATE TABLE "zone_raw"."insee" ("mod" integer, "date_eff" date)' in joined
+    copied = b"".join(c[1] for c in conn.calls if isinstance(c, tuple) and c[0] == "copy_write")
+    assert copied == b'32,"2025-01-01"\n'
+
+
+def test_load_parquet_treats_empty_string_as_null(tmp_path):
+    path = tmp_path / "x.parquet"
+    pq.write_table(pa.table({"a": ["x", "", None], "n": [1, None, 3]}), path)
+    conn = FakePgConn()
+
+    pg.load_parquet(conn, "zone_raw", "t", str(path),
+                     columns=[["a", "varchar"], ["n", "bigint"]])
+    copied = b"".join(c[1] for c in conn.calls if isinstance(c, tuple) and c[0] == "copy_write")
+    assert copied == b'"x",1\n,\n,3\n'  # chaîne vide comme null Arrow -> champ vide non quoté
