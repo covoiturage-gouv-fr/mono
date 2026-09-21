@@ -51,7 +51,7 @@ Remplace les projet legacy `sqlmesh/` et `dbt/`. Ingère les données brutes de 
                                 │  dbt run --select aggregated.*
                                 ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
-│  ZONE AGGREGATED  (zone_aggregated)  — 467 modèles générés par macros   │
+│  ZONE AGGREGATED  (zone_aggregated)  — 475 modèles générés par macros   │
 │                                                                         │
 │  Grains temporels : day · month · quarter · semester · year             │
 │  Périmètres géo   : arr · com · plm · epci · aom · dep · reg · pays     │
@@ -101,11 +101,17 @@ Remplace les projet legacy `sqlmesh/` et `dbt/`. Ingère les données brutes de 
 │  └────────────────────────────────────────────────────────────────┘     │
 │                                                                         │
 │  ┌────────────────────────────────────────────────────────────────┐     │
-│  │  Users · 2 modèles                                             │     │
-│  │  users            user_id · 1re/dernière date conducteur       │     │
-│  │                   et passager · geo_code de 1re activité       │     │
+│  │  Users · 10 modèles                                            │     │
+│  │  users              user_id · 1re/dernière date conducteur     │     │
+│  │                     et passager · geo_code de 1re activité     │     │
 │  │  user_od_day        activité journalière par rôle              │     │
-│  │                   avec métriques OD (distance, revenus, CI…)   │     │
+│  │                     avec métriques OD (distance, revenus, CI…) │     │
+│  │  user_<aom|aomreg>_<day|month>  carpools par user/rôle/        │     │
+│  │                     territoire (grain day ou month)            │     │
+│  │  user_<aom|aomreg>_acquisition_month  nouveaux/actifs          │     │
+│  │                     mensuels (role-agnostique via role='any')  │     │
+│  │  user_<aom|aomreg>_carpools_distribution_month  quartiles      │     │
+│  │                     du nb de trajets/mois par user, par rôle   │     │
 │  └────────────────────────────────────────────────────────────────┘     │
 └───────────────────────────────┬─────────────────────────────────────────┘
                                 │  dbt run --select exposed.*
@@ -155,6 +161,8 @@ Remplace les projet legacy `sqlmesh/` et `dbt/`. Ingère les données brutes de 
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
+Hors diagramme : `models/app_metabase/` (schéma `app_metabase`, 19 vues `mb_*`) expose des retraitements ad hoc au grain attendu par chaque dashboard Metabase — pas de convention de nommage générique comme les zones ci-dessus.
+
 ---
 
 ## Notion de direction : from / to / both
@@ -173,7 +181,7 @@ Les modèles `aggregated` et `exposed` sont déclinés selon **trois directions*
 
 ## Macros
 
-Toute la génération de code des 467 modèles agrégés repose sur des macros Jinja organisées en trois familles.
+Toute la génération de code des 475 modèles agrégés repose sur des macros Jinja organisées en trois familles.
 
 ### Macros de génération de modèles
 
