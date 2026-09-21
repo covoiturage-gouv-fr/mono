@@ -7,7 +7,8 @@ import * as proconnect from "./proconnect.ts";
 import * as test from "./test.ts";
 
 export const env = env_or_fail("NODE_ENV", "local");
-export const app_url = env_or_fail("APP_DASHBOARD_V2_URL");
+// Une seule URL de front, résolue dans `config/proxy.ts` (`APP_APP_URL`, ancien nom APP_DASHBOARD_V2_URL).
+export const app_url = proxy.appUrl;
 export const config = {
   app_url,
   connections,

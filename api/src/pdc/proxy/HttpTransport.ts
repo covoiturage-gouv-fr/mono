@@ -161,7 +161,7 @@ export class HttpTransport implements TransportInterface {
     // L'exclusion est testée explicitement : le montage par expression régulière d'Express
     // ne se comporte pas comme un préfixe, et l'ancien motif n'excluait rien.
     const generalCors = cors({
-      origin: [this.config.get("proxy.cors"), this.config.get("proxy.dashboardV2Cors")],
+      origin: this.config.get("proxy.cors"),
       optionsSuccessStatus: 200,
       // Allow-Access-Credentials lets XHR requests send Cookies to a different URL
       credentials: true,

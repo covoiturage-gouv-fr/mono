@@ -41,10 +41,7 @@ services:
     environment:
       APP_CORS: ${APP_CORS:-https://app.covoiturage.test}
       APP_API_URL: ${APP_API_URL:-https://api.covoiturage.test}
-      APP_DASHBOARD_V2_URL: ${APP_DASHBOARD_V2_URL:-https://app.covoiturage.test}
-      DEX_REDIRECT_URL: ${DEX_REDIRECT_URL:-https://api.covoiturage.test/auth/callback}
-      PROCONNECT_REDIRECT_URL: ${PROCONNECT_REDIRECT_URL:-https://api.covoiturage.test/auth/login/callback}
-      PROCONNECT_LOGOUT_REDIRECT_URL: ${PROCONNECT_LOGOUT_REDIRECT_URL:-https://api.covoiturage.test/auth/logout/callback}
+      APP_APP_URL: ${APP_APP_URL:-https://app.covoiturage.test}
     command: ["just", "serve-unsafe"]
     volumes:
       - ./api:/app/api
