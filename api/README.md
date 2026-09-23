@@ -118,11 +118,32 @@ Commandes principales :
 | `just api campaign:finalize` | Finaliser les règles stateful |
 | `just api campaign:sync` | Synchroniser les sommes d'incitation |
 | `just api campaign:stats` | Générer les stats de campagne |
+| `just api campaign:territory <action> -c <id> [type:code...]` | Périmètre versionné d'une campagne (voir ci-dessous) |
 | `just api apdf:export` | Exporter les APDF |
 | `just api territory:index` | Indexer les territoires dans Meilisearch |
 | `just api acquisition:geo` | Traiter le géocodage des acquisitions |
 | `just api company:fetch <siret>` | Récupérer les données entreprise (INSEE SIRENE) |
 | `just api journey:status <op_id> <journey_id>` | Vérifier le statut d'un trajet |
+
+### Périmètre des campagnes (`policy.policy_territories`)
+
+Le périmètre géographique d'une campagne est une liste d'`arr` versionnée (ajout seul). Pour un trajet, la version
+retenue est la plus haute dont `[valid_from, valid_to)` contient sa date ; sans version, le moteur se replie sur
+`territory_id`. Codes `type:code` avec `type` ∈ `arr|com|epci|aom|dep|reg|country`, résolus sur tous les millésimes
+depuis `--from`.
+
+```bash
+just api campaign:territory show     -c 42 [--at 2026-07-01]
+just api campaign:territory history  -c 42
+just api campaign:territory add      -c 42 aom:241700434 com:17300 [-f 2026-07-01] [-t 2026-09-01]
+just api campaign:territory remove   -c 42 com:17306
+just api campaign:territory set      -c 42 aom:241700434
+just api campaign:territory rollback -c 42 --to-version 3
+```
+
+`add`/`remove`/`set` partent de la version en vigueur à `--from` (défaut : début de campagne). La commande affiche le
+diff puis demande confirmation ; hors TTY, `--yes` est obligatoire, `--dry-run` n'écrit rien. Les incitations déjà
+calculées ne sont pas recalculées : relancer `campaign:apply --override` sur la période.
 
 ## Configuration
 
