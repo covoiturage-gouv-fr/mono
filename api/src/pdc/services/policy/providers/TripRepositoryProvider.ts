@@ -1,6 +1,7 @@
 import { provider } from "@/ilos/common/index.ts";
 import { DenoPostgresConnection } from "@/ilos/connection-postgres/index.ts";
 import sql, { empty, raw } from "@/lib/pg/sql.ts";
+import { isCovered, overlapping } from "../helpers/territories.ts";
 import { CarpoolInterface, PolicyInterface, TripRepositoryProviderInterfaceResolver } from "../interfaces/index.ts";
 
 @provider({
@@ -100,17 +101,21 @@ export class TripRepositoryProvider implements TripRepositoryProviderInterfaceRe
     batchSize = 100,
     override = false,
   ): AsyncGenerator<CarpoolInterface[], void, void> {
-    const yearRows = await this.pgConnection.query<{ year: number }>(sql`
-      SELECT * from ${raw(this.getMillesimeFunction)}() as year
-    `);
-    const year = yearRows[0]?.year;
+    const territories = policy.territories ?? [];
+    const com = new Set(overlapping(territories, from, to).flatMap((v) => v.arr));
 
-    const comRows = await this.pgConnection.query<{ com: string }>(sql`
-      SELECT * FROM ${raw(this.getComFunction)}(${policy.territory_id}::int, ${year}::smallint)
-    `);
+    if (!isCovered(territories, from, to)) {
+      const yearRows = await this.pgConnection.query<{ year: number }>(sql`
+        SELECT * from ${raw(this.getMillesimeFunction)}() as year
+      `);
+      const year = yearRows[0]?.year;
 
-    const com: string[] = comRows.map((r) => r.com);
+      const comRows = await this.pgConnection.query<{ com: string }>(sql`
+        SELECT * FROM ${raw(this.getComFunction)}(${policy.territory_id}::int, ${year}::smallint)
+      `);
+      comRows.forEach((r) => com.add(r.com));
+    }
 
-    yield* this.findTripByGeo(com, from, to, batchSize, override, policy._id);
+    yield* this.findTripByGeo([...com], from, to, batchSize, override, policy._id);
   }
 }

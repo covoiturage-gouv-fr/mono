@@ -8,6 +8,7 @@ import {
   PolicyHandlerParamsInterface,
   PolicyHandlerStaticInterface,
   PolicyInterface,
+  PolicyTerritoryInterface,
   SerializedIncentiveInterface,
   SerializedPolicyInterface,
   StatefulIncentiveInterface,
@@ -17,11 +18,14 @@ import {
 } from "../../interfaces/index.ts";
 import { NotEligibleTargetException } from "../exceptions/NotEligibleTargetException.ts";
 import { UnknownHandlerException } from "../exceptions/UnknownHandlerException.ts";
+import { findVersionAt } from "../../helpers/territories.ts";
 import { isSelected } from "../helpers/index.ts";
 import { policies } from "../policies/index.ts";
 import { StatefulContext, StatelessContext } from "./Context.ts";
 
 export class Policy implements PolicyInterface {
+  private territoryArr = new Map<number, Set<string>>();
+
   constructor(
     public _id: number,
     public territory_id: number,
@@ -34,6 +38,7 @@ export class Policy implements PolicyInterface {
     public status: PolicyStatusEnum,
     public incentive_sum: number,
     public descriptive_sheet_url?: string,
+    public territories?: PolicyTerritoryInterface[],
   ) {}
 
   static async import(data: SerializedPolicyInterface): Promise<Policy> {
@@ -57,6 +62,7 @@ export class Policy implements PolicyInterface {
       data.status,
       data.incentive_sum,
       data.descriptive_sheet_url,
+      data.territories,
     );
 
     return pcy;
@@ -76,6 +82,7 @@ export class Policy implements PolicyInterface {
       incentive_sum: this.incentive_sum,
       handler: (this.handler.constructor as PolicyHandlerStaticInterface).id,
       max_amount: this.handler.max_amount!,
+      territories: this.territories,
     };
   }
 
@@ -133,6 +140,12 @@ export class Policy implements PolicyInterface {
       return false;
     }
 
+    const version = findVersionAt(this.territories ?? [], carpool.datetime);
+    if (version) {
+      const arr = this.arrOf(version);
+      return arr.has(carpool.start?.arr ?? "") || arr.has(carpool.end?.arr ?? "");
+    }
+
     if (
       !this.territory_selector ||
       Object.keys(this.territory_selector).length <= 0
@@ -152,5 +165,14 @@ export class Policy implements PolicyInterface {
 
   params(): PolicyHandlerParamsInterface {
     return this.handler.params();
+  }
+
+  private arrOf(version: PolicyTerritoryInterface): Set<string> {
+    let arr = this.territoryArr.get(version.version);
+    if (!arr) {
+      arr = new Set(version.arr);
+      this.territoryArr.set(version.version, arr);
+    }
+    return arr;
   }
 }

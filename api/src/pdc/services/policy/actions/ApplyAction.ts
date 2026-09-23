@@ -12,6 +12,7 @@ import { subDaysTz, today, toTzString } from "../helpers/index.ts";
 import {
   IncentiveRepositoryProviderInterfaceResolver,
   PolicyRepositoryProviderInterfaceResolver,
+  PolicyTerritoryRepositoryProviderInterfaceResolver,
   StatelessIncentiveInterface,
   TripRepositoryProviderInterfaceResolver,
 } from "../interfaces/index.ts";
@@ -37,6 +38,7 @@ export class ApplyAction extends AbstractAction {
     private policyRepository: PolicyRepositoryProviderInterfaceResolver,
     private incentiveRepository: IncentiveRepositoryProviderInterfaceResolver,
     private tripRepository: TripRepositoryProviderInterfaceResolver,
+    private policyTerritoryRepository: PolicyTerritoryRepositoryProviderInterfaceResolver,
   ) {
     super();
   }
@@ -81,6 +83,7 @@ export class ApplyAction extends AbstractAction {
       throw new NotFoundException(`[policy ${policy_id}] Not found`);
     }
 
+    pol.territories = await this.policyTerritoryRepository.findByPolicy(policy_id);
     const policy = await Policy.import(pol);
 
     // init counter and benchmark
