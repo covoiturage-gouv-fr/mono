@@ -14,7 +14,5 @@ export {
   type ArrDescriptionInterface,
   type PolicyTerritoryInterface,
   PolicyTerritoryRepositoryProviderInterfaceResolver,
-  TERRITORY_TYPES,
   type TerritoryCode,
-  type TerritoryType,
 } from "./PolicyTerritoryRepositoryProviderInterface.ts";

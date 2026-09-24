@@ -1,8 +1,7 @@
-export const TERRITORY_TYPES = ["arr", "com", "epci", "aom", "dep", "reg", "country"] as const;
-export type TerritoryType = typeof TERRITORY_TYPES[number];
+import { TerritoryCodeEnum } from "@/pdc/services/territory/contracts/common/interfaces/TerritoryCodeInterface.ts";
 
 export interface TerritoryCode {
-  type: TerritoryType;
+  type: TerritoryCodeEnum;
   code: string;
 }
 

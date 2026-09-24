@@ -129,8 +129,8 @@ Commandes principales :
 
 Le périmètre géographique d'une campagne est une liste d'`arr` versionnée (ajout seul). Pour un trajet, la version
 retenue est la plus haute dont `[valid_from, valid_to)` contient sa date ; sans version, le moteur se replie sur
-`territory_id`. Codes `type:code` avec `type` ∈ `arr|com|epci|aom|dep|reg|country`, résolus sur tous les millésimes
-depuis `--from`.
+`territory_id`. Codes `type:code` avec `type` ∈ `TerritoryCodeEnum` (`arr|com|epci|aom|dep|reg|reseau|country`),
+résolus sur tous les millésimes depuis `--from`.
 
 ```bash
 just api campaign:territory show     -c 42 [--at 2026-07-01]

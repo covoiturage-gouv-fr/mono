@@ -1,6 +1,6 @@
 import { assertEquals, assertThrows } from "dep:assert";
 import { describe, it } from "dep:testing-bdd";
-import { PolicyTerritoryInterface } from "../interfaces/index.ts";
+import { PolicyTerritoryInterface, TerritoryCodeEnum } from "../interfaces/index.ts";
 import { applyOperation, diffArr, findVersionAt, isCovered, parseTerritoryCodes } from "./territories.ts";
 
 function version(
@@ -15,24 +15,25 @@ function version(
 describe("parseTerritoryCodes", () => {
   it("parses type:code tokens", () => {
     assertEquals(parseTerritoryCodes(["aom:241700434", "com:17300"]), [
-      { type: "aom", code: "241700434" },
-      { type: "com", code: "17300" },
+      { type: TerritoryCodeEnum.Mobility, code: "241700434" },
+      { type: TerritoryCodeEnum.City, code: "17300" },
     ]);
   });
 
   it("splits comma separated tokens and deduplicates", () => {
     assertEquals(parseTerritoryCodes(["com:17300,com:17306", "com:17300"]), [
-      { type: "com", code: "17300" },
-      { type: "com", code: "17306" },
+      { type: TerritoryCodeEnum.City, code: "17300" },
+      { type: TerritoryCodeEnum.City, code: "17306" },
     ]);
   });
 
-  it("accepts corsican codes, overseas dep and country", () => {
-    assertEquals(parseTerritoryCodes(["com:2A004", "dep:2B", "dep:971", "country:XXXXX"]), [
-      { type: "com", code: "2A004" },
-      { type: "dep", code: "2B" },
-      { type: "dep", code: "971" },
-      { type: "country", code: "XXXXX" },
+  it("accepts corsican codes, overseas dep, network and country", () => {
+    assertEquals(parseTerritoryCodes(["com:2A004", "dep:2B", "dep:971", "reseau:232", "country:XXXXX"]), [
+      { type: TerritoryCodeEnum.City, code: "2A004" },
+      { type: TerritoryCodeEnum.District, code: "2B" },
+      { type: TerritoryCodeEnum.District, code: "971" },
+      { type: TerritoryCodeEnum.Network, code: "232" },
+      { type: TerritoryCodeEnum.Country, code: "XXXXX" },
     ]);
   });
 
