@@ -3,9 +3,10 @@ import { DenoPostgresConnection } from "@/ilos/connection-postgres/index.ts";
 import sql, { raw } from "@/lib/pg/sql.ts";
 import {
   ArrDescriptionInterface,
+  ComEvolutionInterface,
   PolicyTerritoryInterface,
   PolicyTerritoryRepositoryProviderInterfaceResolver,
-  TerritoryCode,
+  TerritorySelectorsInterface,
 } from "../interfaces/index.ts";
 
 @provider({
@@ -14,6 +15,8 @@ import {
 export class PolicyTerritoryRepositoryProvider implements PolicyTerritoryRepositoryProviderInterfaceResolver {
   public readonly table = "policy.policy_territories";
   protected readonly perimetersTable = "geo.perimeters";
+  protected readonly evolutionTable = "geo.com_evolution";
+  protected readonly getArrFunction = "geo.get_arr_by_selectors";
 
   constructor(protected pgConnection: DenoPostgresConnection) {}
 
@@ -47,45 +50,26 @@ export class PolicyTerritoryRepositoryProvider implements PolicyTerritoryReposit
   }
 
   /**
-   * Resolve codes to arr over every millesime from fromYear onwards,
-   * so that trips geocoded with the code of a since-merged commune still match.
+   * Resolve selectors against every millesime still loaded, so that trips
+   * geocoded with the previous millesime keep matching after a merge.
    */
-  async resolve(
-    codes: TerritoryCode[],
-    fromYear: number,
-  ): Promise<{ arr: string[]; unknown: TerritoryCode[] }> {
-    const rows = await this.pgConnection.query<{ type: string; code: string; arr: string[] }>(sql`
-      WITH input AS (
-        SELECT * FROM unnest(${codes.map((c) => c.type)}::varchar[], ${codes.map((c) => c.code)}::varchar[])
-          AS t(type, code)
-      ),
-      years AS (
-        SELECT LEAST(${fromYear}::smallint, MAX(year)) AS year FROM ${raw(this.perimetersTable)}
-      )
-      SELECT
-        i.type,
-        i.code,
-        COALESCE(array_agg(DISTINCT p.arr) FILTER (WHERE p.arr IS NOT NULL), '{}') AS arr
-      FROM input i
-      CROSS JOIN years y
-      LEFT JOIN ${raw(this.perimetersTable)} p
-        ON p.year >= y.year
-        AND i.code = CASE i.type
-          WHEN 'arr' THEN p.arr
-          WHEN 'com' THEN p.com
-          WHEN 'epci' THEN p.epci
-          WHEN 'aom' THEN p.aom
-          WHEN 'dep' THEN p.dep
-          WHEN 'reg' THEN p.reg
-          WHEN 'reseau' THEN p.reseau::varchar
-          WHEN 'country' THEN p.country
-        END
-      GROUP BY i.type, i.code
+  async resolve(selectors: TerritorySelectorsInterface): Promise<{ arr: string[]; unknown: string[] }> {
+    const pairs = (Object.entries(selectors) as [string, string[] | undefined][])
+      .flatMap(([type, codes]) => (codes ?? []).map((code) => [type, code]));
+    const rows = await this.pgConnection.query<{ selector_type: string; selector_value: string; arr: string }>(sql`
+      SELECT DISTINCT r.selector_type, r.selector_value, r.arr
+      FROM (SELECT DISTINCT year FROM ${raw(this.perimetersTable)}) y
+      CROSS JOIN LATERAL ${raw(this.getArrFunction)}(
+        ${pairs.map(([t]) => t)}::varchar[],
+        ${pairs.map(([, c]) => c)}::varchar[],
+        y.year
+      ) r
     `);
 
+    const found = new Set(rows.map((r) => `${r.selector_type}:${r.selector_value}`));
     return {
-      arr: [...new Set(rows.flatMap((r) => r.arr))].sort(),
-      unknown: rows.filter((r) => !r.arr.length).map(({ type, code }) => ({ type, code }) as TerritoryCode),
+      arr: [...new Set(rows.map((r) => r.arr))].sort(),
+      unknown: pairs.map(([t, c]) => `${t}:${c}`).filter((k) => !found.has(k)),
     };
   }
 
@@ -95,6 +79,14 @@ export class PolicyTerritoryRepositoryProvider implements PolicyTerritoryReposit
       FROM ${raw(this.perimetersTable)}
       WHERE arr = ANY(${arr}::varchar[])
       ORDER BY arr, year DESC
+    `);
+  }
+
+  async findEvolutions(): Promise<ComEvolutionInterface[]> {
+    return await this.pgConnection.query<ComEvolutionInterface>(sql`
+      SELECT DISTINCT old_com, new_com
+      FROM ${raw(this.evolutionTable)}
+      WHERE old_com IS NOT NULL AND new_com IS NOT NULL AND old_com <> new_com
     `);
   }
 }

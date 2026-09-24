@@ -12,7 +12,7 @@ export {
 export { MetadataRepositoryProviderInterfaceResolver } from "./MetadataRepositoryProviderInterface.ts";
 export {
   type ArrDescriptionInterface,
+  type ComEvolutionInterface,
   type PolicyTerritoryInterface,
   PolicyTerritoryRepositoryProviderInterfaceResolver,
-  type TerritoryCode,
 } from "./PolicyTerritoryRepositoryProviderInterface.ts";

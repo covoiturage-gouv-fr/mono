@@ -1,37 +1,58 @@
-import { PolicyTerritoryInterface, TerritoryCode, TerritoryCodeEnum } from "../interfaces/index.ts";
+import { PolicyTerritoryInterface, TerritoryCodeEnum, TerritorySelectorsInterface } from "../interfaces/index.ts";
 
-const CODE_FORMATS: Record<TerritoryCodeEnum, RegExp> = {
+const CODE_FORMATS: Partial<Record<TerritoryCodeEnum, RegExp>> = {
   [TerritoryCodeEnum.Arr]: /^[0-9][0-9AB][0-9]{3}$/,
   [TerritoryCodeEnum.City]: /^[0-9][0-9AB][0-9]{3}$/,
   [TerritoryCodeEnum.CityGroup]: /^[0-9]{9}$/,
   [TerritoryCodeEnum.Mobility]: /^[0-9]{9}$/,
   [TerritoryCodeEnum.District]: /^([0-9]{2,3}|2A|2B)$/,
   [TerritoryCodeEnum.Region]: /^[0-9]{2}$/,
-  [TerritoryCodeEnum.Network]: /^[0-9]+$/,
-  [TerritoryCodeEnum.Country]: /^[0-9X]{5}$/,
 };
-const TYPES = Object.values(TerritoryCodeEnum) as string[];
+const TYPES = Object.keys(CODE_FORMATS);
 
 export type TerritoryOperation = "add" | "remove" | "set";
 
-export function parseTerritoryCodes(tokens: string[]): TerritoryCode[] {
-  const codes = new Map<string, TerritoryCode>();
+export function parseTerritoryCodes(tokens: string[]): TerritorySelectorsInterface {
+  const selectors: Record<string, Set<string>> = {};
   for (const token of tokens.flatMap((t) => t.split(",")).map((t) => t.trim()).filter(Boolean)) {
-    const [type, code, ...rest] = token.split(":");
+    const [rawType, rawCode = "", ...rest] = token.split(":");
+    const type = rawType.toLowerCase();
+    const code = rawCode.toUpperCase();
     if (rest.length || !TYPES.includes(type)) {
       throw new Error(`Code invalide '${token}', format attendu type:code (${TYPES.join("|")})`);
     }
-    if (!CODE_FORMATS[type as TerritoryCodeEnum].test(code)) {
+    if (!CODE_FORMATS[type as TerritoryCodeEnum]!.test(code)) {
       throw new Error(`Code invalide '${token}' pour le type ${type}`);
     }
-    codes.set(token, { type: type as TerritoryCodeEnum, code });
+    (selectors[type] ??= new Set()).add(code);
   }
 
-  if (!codes.size) {
+  if (!Object.keys(selectors).length) {
     throw new Error("Aucun code territoire fourni");
   }
 
-  return [...codes.values()];
+  return Object.fromEntries(Object.entries(selectors).map(([t, c]) => [t, [...c]]));
+}
+
+/**
+ * Codes that replace the given ones after merges, splits or code changes,
+ * following chains across successive millesimes.
+ */
+export function successors(arr: string[], evolutions: { old_com: string; new_com: string }[]): string[] {
+  const known = new Set(arr);
+  const found = new Set<string>();
+  let frontier = [...known];
+  while (frontier.length) {
+    const next = evolutions
+      .filter((e) => frontier.includes(e.old_com) && !known.has(e.new_com))
+      .map((e) => e.new_com);
+    next.forEach((c) => {
+      known.add(c);
+      found.add(c);
+    });
+    frontier = next;
+  }
+  return [...found].sort();
 }
 
 function covers(v: PolicyTerritoryInterface, d: Date): boolean {

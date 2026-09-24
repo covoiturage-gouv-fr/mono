@@ -1,9 +1,4 @@
-import { TerritoryCodeEnum } from "@/pdc/services/territory/contracts/common/interfaces/TerritoryCodeInterface.ts";
-
-export interface TerritoryCode {
-  type: TerritoryCodeEnum;
-  code: string;
-}
+import { TerritorySelectorsInterface } from "@/pdc/services/territory/contracts/common/interfaces/TerritoryCodeInterface.ts";
 
 export interface PolicyTerritoryInterface {
   version: number;
@@ -18,6 +13,11 @@ export interface ArrDescriptionInterface {
   pop: number | null;
 }
 
+export interface ComEvolutionInterface {
+  old_com: string;
+  new_com: string;
+}
+
 export abstract class PolicyTerritoryRepositoryProviderInterfaceResolver {
   abstract findByPolicy(policy_id: number): Promise<PolicyTerritoryInterface[]>;
 
@@ -26,10 +26,9 @@ export abstract class PolicyTerritoryRepositoryProviderInterfaceResolver {
     data: Omit<PolicyTerritoryInterface, "version">,
   ): Promise<PolicyTerritoryInterface>;
 
-  abstract resolve(
-    codes: TerritoryCode[],
-    fromYear: number,
-  ): Promise<{ arr: string[]; unknown: TerritoryCode[] }>;
+  abstract resolve(selectors: TerritorySelectorsInterface): Promise<{ arr: string[]; unknown: string[] }>;
 
   abstract describe(arr: string[]): Promise<ArrDescriptionInterface[]>;
+
+  abstract findEvolutions(): Promise<ComEvolutionInterface[]>;
 }

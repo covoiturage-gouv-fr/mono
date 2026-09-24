@@ -5,7 +5,7 @@ import {
   PolicyTerritoryInterface,
   PolicyTerritoryRepositoryProviderInterfaceResolver,
   SerializedPolicyInterface,
-  TerritoryCode,
+  TerritorySelectorsInterface,
 } from "../interfaces/index.ts";
 import { TerritoryCommand } from "./TerritoryCommand.ts";
 
@@ -17,6 +17,7 @@ const RESOLVED: Record<string, string[]> = {
 
 class FakeTerritoryRepository extends PolicyTerritoryRepositoryProviderInterfaceResolver {
   versions: PolicyTerritoryInterface[] = [];
+  evolutions = [{ old_com: "91471", new_com: "91999" }];
 
   async findByPolicy(): Promise<PolicyTerritoryInterface[]> {
     return this.versions;
@@ -28,12 +29,16 @@ class FakeTerritoryRepository extends PolicyTerritoryRepositoryProviderInterface
     return v;
   }
 
-  async resolve(codes: TerritoryCode[]) {
-    const keys = codes.map((c) => `${c.type}:${c.code}`);
+  async resolve(selectors: TerritorySelectorsInterface) {
+    const keys = Object.entries(selectors).flatMap(([t, codes]) => codes!.map((c) => `${t}:${c}`));
     return {
       arr: [...new Set(keys.flatMap((k) => RESOLVED[k] ?? []))].sort(),
-      unknown: codes.filter((_, i) => !RESOLVED[keys[i]]),
+      unknown: keys.filter((k) => !RESOLVED[k]),
     };
+  }
+
+  async findEvolutions() {
+    return this.evolutions;
   }
 
   async describe(arr: string[]) {
@@ -116,6 +121,24 @@ describe("TerritoryCommand", () => {
   it("dry-run does not write", async () => {
     await command.call("add", ["com:91471"], { campaign: 42, dryRun: true });
     assertEquals(territories.versions.length, 0);
+  });
+
+  it("remap adds successor codes from --from, keeping the base range", async () => {
+    await command.call("add", ["epci:200056232"], { campaign: 42, yes: true, to: "2027-01-01" });
+    await command.call("remap", [], { campaign: 42, yes: true, from: "2026-07-01" });
+
+    assertEquals(territories.versions[1], {
+      version: 2,
+      arr: ["91377", "91471", "91477", "91999"],
+      valid_from: new Date("2026-06-30T22:00:00Z"),
+      valid_to: new Date("2026-12-31T23:00:00Z"),
+    });
+  });
+
+  it("remap does nothing without evolution", async () => {
+    await command.call("add", ["arr:69381"], { campaign: 42, yes: true });
+    await command.call("remap", [], { campaign: 42, yes: true, from: "2026-07-01" });
+    assertEquals(territories.versions.length, 1);
   });
 
   it("refuses unknown action", async () => {
