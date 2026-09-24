@@ -2,6 +2,7 @@ import { assertEquals, assertRejects } from "dep:assert";
 import { afterAll, beforeAll, describe, it } from "dep:testing-bdd";
 import sql from "@/lib/pg/sql.ts";
 import { DenoDbContext, makeDenoDbBeforeAfter } from "@/pdc/providers/test/index.ts";
+import { TerritoryCodeEnum } from "../interfaces/index.ts";
 import { PolicyTerritoryRepositoryProvider } from "./PolicyTerritoryRepositoryProvider.ts";
 
 describe("PolicyTerritoryRepositoryProvider", () => {
@@ -27,13 +28,14 @@ describe("PolicyTerritoryRepositoryProvider", () => {
 
   it("resolves mixed codes to arr, clamping the year to the latest millesime", async () => {
     const result = await repository.resolve([
-      { type: "epci", code: "200056232" },
-      { type: "arr", code: "69381" },
-      { type: "aom", code: "123456789" },
+      { type: TerritoryCodeEnum.CityGroup, code: "200056232" },
+      { type: TerritoryCodeEnum.Arr, code: "69381" },
+      { type: TerritoryCodeEnum.Network, code: "232" },
+      { type: TerritoryCodeEnum.Mobility, code: "123456789" },
     ], 2026);
 
     assertEquals(result.arr, ["69381", "91377", "91471", "91477"]);
-    assertEquals(result.unknown, [{ type: "aom", code: "123456789" }]);
+    assertEquals(result.unknown, [{ type: TerritoryCodeEnum.Mobility, code: "123456789" }]);
   });
 
   it("describes arr with their label", async () => {

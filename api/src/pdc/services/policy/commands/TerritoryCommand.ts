@@ -29,7 +29,7 @@ const MAX_LISTED = 50;
 @command({
   signature: "campaign:territory <action> [codes...]",
   description: "Périmètre d'une campagne : show | history | add | remove | set | rollback. Codes type:code " +
-    "(arr|com|epci|aom|dep|reg|country), ex. aom:241700434 com:17300",
+    "(arr|com|epci|aom|dep|reg|reseau|country), ex. aom:241700434 com:17300",
   options: [
     {
       signature: "-c, --campaign <campaign>",

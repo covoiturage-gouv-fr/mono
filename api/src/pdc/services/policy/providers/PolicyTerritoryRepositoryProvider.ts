@@ -77,6 +77,7 @@ export class PolicyTerritoryRepositoryProvider implements PolicyTerritoryReposit
           WHEN 'aom' THEN p.aom
           WHEN 'dep' THEN p.dep
           WHEN 'reg' THEN p.reg
+          WHEN 'reseau' THEN p.reseau::varchar
           WHEN 'country' THEN p.country
         END
       GROUP BY i.type, i.code

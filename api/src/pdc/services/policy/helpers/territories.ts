@@ -1,14 +1,16 @@
-import { PolicyTerritoryInterface, TERRITORY_TYPES, TerritoryCode, TerritoryType } from "../interfaces/index.ts";
+import { PolicyTerritoryInterface, TerritoryCode, TerritoryCodeEnum } from "../interfaces/index.ts";
 
-const CODE_FORMATS: Record<TerritoryType, RegExp> = {
-  arr: /^[0-9][0-9AB][0-9]{3}$/,
-  com: /^[0-9][0-9AB][0-9]{3}$/,
-  epci: /^[0-9]{9}$/,
-  aom: /^[0-9]{9}$/,
-  dep: /^([0-9]{2,3}|2A|2B)$/,
-  reg: /^[0-9]{2}$/,
-  country: /^[0-9X]{5}$/,
+const CODE_FORMATS: Record<TerritoryCodeEnum, RegExp> = {
+  [TerritoryCodeEnum.Arr]: /^[0-9][0-9AB][0-9]{3}$/,
+  [TerritoryCodeEnum.City]: /^[0-9][0-9AB][0-9]{3}$/,
+  [TerritoryCodeEnum.CityGroup]: /^[0-9]{9}$/,
+  [TerritoryCodeEnum.Mobility]: /^[0-9]{9}$/,
+  [TerritoryCodeEnum.District]: /^([0-9]{2,3}|2A|2B)$/,
+  [TerritoryCodeEnum.Region]: /^[0-9]{2}$/,
+  [TerritoryCodeEnum.Network]: /^[0-9]+$/,
+  [TerritoryCodeEnum.Country]: /^[0-9X]{5}$/,
 };
+const TYPES = Object.values(TerritoryCodeEnum) as string[];
 
 export type TerritoryOperation = "add" | "remove" | "set";
 
@@ -16,13 +18,13 @@ export function parseTerritoryCodes(tokens: string[]): TerritoryCode[] {
   const codes = new Map<string, TerritoryCode>();
   for (const token of tokens.flatMap((t) => t.split(",")).map((t) => t.trim()).filter(Boolean)) {
     const [type, code, ...rest] = token.split(":");
-    if (rest.length || !TERRITORY_TYPES.includes(type as TerritoryType)) {
-      throw new Error(`Code invalide '${token}', format attendu type:code (${TERRITORY_TYPES.join("|")})`);
+    if (rest.length || !TYPES.includes(type)) {
+      throw new Error(`Code invalide '${token}', format attendu type:code (${TYPES.join("|")})`);
     }
-    if (!CODE_FORMATS[type as TerritoryType].test(code)) {
+    if (!CODE_FORMATS[type as TerritoryCodeEnum].test(code)) {
       throw new Error(`Code invalide '${token}' pour le type ${type}`);
     }
-    codes.set(token, { type: type as TerritoryType, code });
+    codes.set(token, { type: type as TerritoryCodeEnum, code });
   }
 
   if (!codes.size) {
