@@ -36,6 +36,17 @@ export default function TabExport() {
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
+  // Les bornes des calendriers ne s'appliquent pas à la saisie clavier : on revalide avant l'envoi.
+  const minStart = dayjs().subtract(2, "years").startOf("day");
+  const maxEnd = dayjs().subtract(5, "days").endOf("day");
+  const rangeError = endDate.isBefore(startDate, "day")
+    ? "La date de fin doit être postérieure à la date de début."
+    : endDate.isAfter(maxEnd)
+      ? "La date de fin doit être antérieure d'au moins 5 jours à aujourd'hui."
+      : startDate.isBefore(minStart)
+        ? "La date de début ne peut pas remonter à plus de 2 ans."
+        : undefined;
+
   const { createExport, data: exportResponse, loading, error, reset } = useExportCreate();
 
   useEffect(() => {
@@ -56,7 +67,7 @@ export default function TabExport() {
       category: "export",
       action: "Export",
       name: `Territory ID | Operator ID | TerritorySelector`,
-      value: `${territorySelectors ? "N/A" : territoryId ?? "N/A"} | ${user?.operator_id ?? "N/A"} | ${territorySelectors ? JSON.stringify(territorySelectors) : "N/A"}`,
+      value: `${territorySelectors ? "N/A" : (territoryId ?? "N/A")} | ${user?.operator_id ?? "N/A"} | ${territorySelectors ? JSON.stringify(territorySelectors) : "N/A"}`,
     });
     try {
       await createExport({
@@ -131,14 +142,20 @@ export default function TabExport() {
                 label: "Périmètre géographique",
                 nativeInputProps: {
                   checked: geoSelector === "geo",
-                  onChange: () => { setGeoSelector("geo"); setTerritoryId(undefined); },
+                  onChange: () => {
+                    setGeoSelector("geo");
+                    setTerritoryId(undefined);
+                  },
                 },
               },
               {
                 label: "Périmètre campagne",
                 nativeInputProps: {
                   checked: geoSelector === "campaign",
-                  onChange: () => { setGeoSelector("campaign"); setTerritorySelectors(undefined); },
+                  onChange: () => {
+                    setGeoSelector("campaign");
+                    setTerritorySelectors(undefined);
+                  },
                 },
               },
             ]}
@@ -188,9 +205,14 @@ export default function TabExport() {
                 />
               </div>
 
+              {rangeError && (
+                <p className={fr.cx("fr-error-text", "fr-mt-2w")} role="alert">
+                  {rangeError}
+                </p>
+              )}
               <div>
                 <Button
-                  disabled={loading}
+                  disabled={loading || !!rangeError}
                   style={{
                     marginTop: fr.spacing("5v"),
                   }}

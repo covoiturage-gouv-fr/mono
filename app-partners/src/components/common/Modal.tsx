@@ -9,7 +9,8 @@ export interface ModalProps {
   cancelButton?: boolean;
   onClose: () => void;
   onOpen?: () => Promise<void>;
-  onSubmit: () => Promise<void>;
+  // Renvoyer `false` garde la modale ouverte (erreurs de champ à corriger).
+  onSubmit: () => Promise<void | boolean>;
 }
 
 export interface ModalResponse {
@@ -40,11 +41,24 @@ export function Modal(props: ModalProps) {
     },
   });
 
+  // Verrou : un double clic sur OK envoyait deux requêtes.
+  const [submitting, setSubmitting] = useState(false);
   const okButton = {
     children: "OK",
-    onClick: () => {
-      props.onClose();
-      void props.onSubmit();
+    doClosesModal: false,
+    disabled: submitting,
+    onClick: async () => {
+      if (submitting) return;
+      setSubmitting(true);
+      let keepOpen = false;
+      try {
+        keepOpen = (await props.onSubmit()) === false;
+      } catch {
+        // Un rejet inattendu ne doit pas laisser la modale figée.
+      } finally {
+        setSubmitting(false);
+      }
+      if (!keepOpen) modal.close();
     },
   };
 
@@ -64,9 +78,19 @@ export function Modal(props: ModalProps) {
             ]
           : [okButton]
       }
-      concealingBackdrop={true}
+      concealingBackdrop={false}
     >
-      {props.children}
+      {/* Le DSFR n'écoute Échap que sur ses propres boutons : depuis un champ, la modale restait ouverte. */}
+      <div
+        onKeyDown={(e) => {
+          if (e.key === "Escape") {
+            e.stopPropagation();
+            modal.close();
+          }
+        }}
+      >
+        {props.children}
+      </div>
     </modal.Component>
   );
 }

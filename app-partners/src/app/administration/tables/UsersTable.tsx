@@ -2,9 +2,9 @@ import UserScopesEditor from "@/components/administration/UserScopesEditor";
 import AlertMessage from "@/components/common/AlertMessage";
 import { Modal } from "@/components/common/Modal";
 import Pagination from "@/components/common/Pagination";
-import { getRolesList, labelRole } from "@/helpers/auth";
+import { getRolesList, isEditableRole, labelRole } from "@/helpers/auth";
 import { useOperatorsList, useTerritoriesList, useUsersList } from "@/hooks/api";
-import { useActionsModal } from "@/hooks/useActionsModal";
+import { FormValidationError, useActionsModal } from "@/hooks/useActionsModal";
 import { useUrlSearch } from "@/hooks/useUrlSearch";
 import { roles } from "@/interfaces/auth";
 import {
@@ -15,7 +15,8 @@ import {
 } from "@/interfaces/dataInterface";
 import { useAuth } from "@/providers/AuthProvider";
 import { fr } from "@codegouvfr/react-dsfr";
-import Button from "@codegouvfr/react-dsfr/Button";
+import Alert from "@codegouvfr/react-dsfr/Alert";
+import Button, { type ButtonProps } from "@codegouvfr/react-dsfr/Button";
 import ButtonsGroup from "@codegouvfr/react-dsfr/ButtonsGroup";
 import Input from "@codegouvfr/react-dsfr/Input";
 import Select from "@codegouvfr/react-dsfr/Select";
@@ -47,7 +48,11 @@ export default function UsersTable(props: { title: string; territoryId: number |
     return () => setFormEditing(false);
   }, [modal.openModal, modal.typeModal, setFormEditing]);
 
-  const { data, refetch: refetchUsers } = useUsersList({
+  const {
+    data,
+    error: usersError,
+    refetch: refetchUsers,
+  } = useUsersList({
     territoryId: props.territoryId,
     operatorId: props.operatorId,
     page: currentPage,
@@ -77,10 +82,11 @@ export default function UsersTable(props: { title: string; territoryId: number |
   };
 
   // Suggestion login_siren = 9 premiers chiffres du SIRET du territoire par défaut.
-  const suggestSiren = (scopes: UserScopeInput[]): string => {
+  // null (jamais "") faute de suggestion : l'API refuse une chaîne vide.
+  const suggestSiren = (scopes: UserScopeInput[]): string | null => {
     const def = scopes.find((s) => s.is_default) ?? scopes[0];
     const siret = territoriesList().find((t) => t?._id === def?.territory_id)?.siret;
-    return siret ? siret.slice(0, 9) : "";
+    return siret ? siret.slice(0, 9) : null;
   };
 
   // currentRow EST le corps de la requête : n'y mettre que des champs acceptés par l'API.
@@ -102,6 +108,40 @@ export default function UsersTable(props: { title: string; territoryId: number |
     modal.setTypeModal("update");
   };
 
+  // Un compte au rôle non attribuable (demo, registry.user…) serait refusé par l'API : pas de bouton.
+  const rowActions = (d: UsersInterface["data"][0]) => {
+    const buttons: ButtonProps[] = [];
+    if (isEditableRole(d.role)) {
+      buttons.push({
+        children: "modifier",
+        iconId: "fr-icon-refresh-line" as const,
+        priority: "secondary" as const,
+        onClick: () => openUpdateModal(d),
+      });
+    }
+    if (d.email !== user?.email) {
+      buttons.push({
+        children: "supprimer",
+        iconId: "fr-icon-delete-bin-line" as const,
+        onClick: () => {
+          modal.setCurrentRow(d);
+          modal.setOpenModal(true);
+          setDeleteOutcome(undefined);
+          modal.setTypeModal("delete");
+        },
+      });
+    }
+    if (buttons.length === 0) return null;
+    return (
+      <ButtonsGroup
+        key={d.id}
+        buttons={buttons as [ButtonProps, ...ButtonProps[]]}
+        buttonsSize="small"
+        inlineLayoutWhen="lg and up"
+      />
+    );
+  };
+
   const dataTable =
     data?.data?.map((d) => [
       d.firstname,
@@ -110,62 +150,67 @@ export default function UsersTable(props: { title: string; territoryId: number |
       labelRole(d.role),
       operatorsList().find((o) => o?.id === d.operator_id)?.name,
       territoriesList().find((t) => t?._id === d.territory_id)?.name,
-      <ButtonsGroup
-        key={d.id}
-        buttons={
-          d.email !== user?.email
-            ? [
-                {
-                  children: "modifier",
-                  iconId: "fr-icon-refresh-line",
-                  priority: "secondary",
-                  onClick: () => openUpdateModal(d),
-                },
-                {
-                  children: "supprimer",
-                  iconId: "fr-icon-delete-bin-line",
-                  onClick: () => {
-                    modal.setCurrentRow(d);
-                    modal.setOpenModal(true);
-                    setDeleteOutcome(undefined);
-                    modal.setTypeModal("delete");
-                  },
-                },
-              ]
-            : [
-                {
-                  children: "modifier",
-                  iconId: "fr-icon-refresh-line",
-                  priority: "secondary",
-                  onClick: () => openUpdateModal(d),
-                },
-              ]
-        }
-        buttonsSize="small"
-        inlineLayoutWhen="lg and up"
-      />,
+      rowActions(d),
     ]) ?? [];
 
-  const formSchema = z.object({
-    firstname: z.string().min(3, { message: "Le prénom doit contenir au moins 3 caractères" }),
-    lastname: z.string().min(3, { message: "Le nom doit contenir au moins 3 caractères" }),
-    email: z.string().email({ message: `L'adresse mail n'est pas valide` }),
-    operator_id: z.coerce.number({ message: "L'identifiant n'est pas un nombre" }).nullable(),
-    territory_id: z.coerce.number({ message: "L'identifiant n'est pas un nombre" }).nullable(),
-    role: z.enum(roles, { message: "Le rôle n'est pas valide" }),
-    login_siren: z
-      .union([z.string().regex(/^\d{9}$/, { message: "Le SIREN doit contenir 9 chiffres" }), z.literal(""), z.null()])
-      .optional(),
-    scopes: z
-      .array(
-        z.object({
-          territory_id: z.number().optional(),
-          operator_id: z.number().optional(),
-          is_default: z.boolean().optional(),
-        }),
-      )
-      .optional(),
-  });
+  // Bornes alignées sur l'API (Varchar 256) ; rognage pour refuser les blancs et normaliser l'email.
+  const name = (label: string) =>
+    z
+      .string()
+      .trim()
+      .min(3, { message: `${label} doit contenir au moins 3 caractères` })
+      .max(256, { message: `${label} ne peut pas dépasser 256 caractères` })
+      .regex(/^[^<>]*$/, { message: "Les caractères < et > ne sont pas autorisés" });
+  const formSchema = z
+    .object({
+      firstname: name("Le prénom"),
+      lastname: name("Le nom"),
+      email: z
+        .string()
+        .trim()
+        .toLowerCase()
+        .email({ message: `L'adresse mail n'est pas valide` })
+        .max(256, { message: "L'adresse mail ne peut pas dépasser 256 caractères" }),
+      operator_id: z.number({ message: "Sélectionnez un opérateur" }).nullish(),
+      territory_id: z.number({ message: "Sélectionnez un territoire" }).nullish(),
+      role: z.enum(roles, { message: "Le rôle n'est pas valide" }),
+      login_siren: z
+        .string()
+        .regex(/^\d{9}$/, { message: "Le SIREN doit contenir 9 chiffres" })
+        .nullish(),
+      scopes: z
+        .array(
+          z.object({
+            territory_id: z.number().optional(),
+            operator_id: z.number().optional(),
+            is_default: z.boolean().optional(),
+          }),
+        )
+        .optional(),
+    })
+    // Un rôle opérateur sans opérateur, ou territoire sans périmètre, est un compte sans accès.
+    .superRefine((row, ctx) => {
+      if (row.role.startsWith("operator.") && !row.operator_id) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["operator_id"], message: "Sélectionnez un opérateur" });
+      }
+      if (row.role.startsWith("territory.") && row.scopes && row.scopes.length === 0) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["scopes"], message: "Ajoutez au moins un périmètre" });
+      }
+    });
+
+  // À la bascule de rôle, les champs de l'autre famille sont purgés : sinon le corps envoyé porte
+  // à la fois un opérateur et des périmètres.
+  const onChangeRole = (role: string) => {
+    modal.setCurrentRow((prev) => ({
+      ...prev,
+      role,
+      ...(role.startsWith("operator.") ? {} : { operator_id: null }),
+      ...(role.startsWith("territory.") || !canManageScopes
+        ? {}
+        : { scopes: [], territory_id: null, login_siren: null }),
+    }));
+    modal.setErrors({});
+  };
   const roleList = () => {
     if (simulatedRole) {
       if (user?.territory_id) {
@@ -207,9 +252,18 @@ export default function UsersTable(props: { title: string; territoryId: number |
     modal.setCurrentRow((prev) => ({
       ...prev,
       scopes,
-      territory_id: def?.territory_id,
-      login_siren: (prev.login_siren as string) || suggestSiren(scopes),
+      territory_id: def?.territory_id ?? null,
+      login_siren: (prev.login_siren as string | null) ?? suggestSiren(scopes),
     }));
+  };
+
+  // Le select natif ne connaît que des chaînes : "" = aucun opérateur.
+  const onChangeOperator = (value: string) =>
+    modal.validateInputChange(formSchema, "operator_id", value === "" ? null : Number(value));
+
+  const errorAlertMessage = () => {
+    const fields = Object.values(modal.errors ?? {}).filter(Boolean);
+    return fields.length > 0 ? fields.join(" | ") : (modal.submitError?.message ?? "");
   };
 
   return (
@@ -245,13 +299,21 @@ export default function UsersTable(props: { title: string; territoryId: number |
       {alert === "error" && (
         <AlertMessage
           title="Une erreur s'est produite"
-          message={Object.values(modal.errors!).join(" | ")}
+          message={errorAlertMessage()}
           typeAlert={alert}
           onClose={() => setAlert(undefined)}
         />
       )}
 
       <h3 className={fr.cx("fr-callout__title")}>{props.title}</h3>
+      {usersError && (
+        <Alert
+          severity="error"
+          title="Une erreur s'est produite"
+          description={usersError.message}
+          className={fr.cx("fr-mb-2w")}
+        />
+      )}
       {user?.role.split(".")[1] === "admin" && (
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "1rem" }}>
           <Button
@@ -292,7 +354,7 @@ export default function UsersTable(props: { title: string; territoryId: number |
           />
         </div>
       )}
-      <Table data={dataTable} headers={headers} colorVariant="blue-ecume" fixed />
+      <Table data={dataTable} headers={headers} colorVariant="blue-ecume" />
       <Pagination count={totalPages} defaultPage={currentPage} onChange={onChangePage} />
       <Modal
         open={modal.openModal}
@@ -309,7 +371,8 @@ export default function UsersTable(props: { title: string; territoryId: number |
             const result = await modal.submitModal("dashboard/user", formSchema);
             setDeleteOutcome(result?.outcome === "scope_released" ? "scope_released" : "user_deleted");
             setAlert(modal.typeModal);
-          } catch {
+          } catch (e) {
+            if (e instanceof FormValidationError) return false;
             setAlert("error");
           }
           await refetchUsers();
@@ -328,6 +391,7 @@ export default function UsersTable(props: { title: string; territoryId: number |
                     state={modal.errors?.firstname ? "error" : "default"}
                     stateRelatedMessage={modal.errors?.firstname ?? ""}
                     nativeInputProps={{
+                      "aria-invalid": !!modal.errors?.firstname,
                       type: "text",
                       value: (modal.currentRow.firstname as string) ?? "",
                       onChange: (e) => modal.validateInputChange(formSchema, "firstname", e.target.value),
@@ -340,6 +404,7 @@ export default function UsersTable(props: { title: string; territoryId: number |
                     state={modal.errors?.lastname ? "error" : "default"}
                     stateRelatedMessage={modal.errors?.lastname ?? ""}
                     nativeInputProps={{
+                      "aria-invalid": !!modal.errors?.lastname,
                       type: "text",
                       value: (modal.currentRow.lastname as string) ?? "",
                       onChange: (e) => modal.validateInputChange(formSchema, "lastname", e.target.value),
@@ -352,6 +417,7 @@ export default function UsersTable(props: { title: string; territoryId: number |
                     state={modal.errors?.email ? "error" : "default"}
                     stateRelatedMessage={modal.errors?.email ?? ""}
                     nativeInputProps={{
+                      "aria-invalid": !!modal.errors?.email,
                       type: "text",
                       value: (modal.currentRow.email as string) ?? "",
                       onChange: (e) => modal.validateInputChange(formSchema, "email", e.target.value),
@@ -361,9 +427,12 @@ export default function UsersTable(props: { title: string; territoryId: number |
                 <div className={fr.cx("fr-fieldset__element")}>
                   <Select
                     label="Rôle"
+                    state={modal.errors?.role ? "error" : "default"}
+                    stateRelatedMessage={modal.errors?.role ?? ""}
                     nativeSelectProps={{
+                      "aria-invalid": !!modal.errors?.role,
                       value: (modal.currentRow.role ?? "") as string,
-                      onChange: (e) => modal.validateInputChange(formSchema, "role", e.target.value),
+                      onChange: (e) => onChangeRole(e.target.value),
                     }}
                   >
                     {roleList().map((r: string, i: number) => (
@@ -386,30 +455,33 @@ export default function UsersTable(props: { title: string; territoryId: number |
                       state={modal.errors?.login_siren ? "error" : "default"}
                       stateRelatedMessage={modal.errors?.login_siren ?? ""}
                       nativeInputProps={{
+                        "aria-invalid": !!modal.errors?.login_siren,
                         inputMode: "numeric",
-                        maxLength: 9,
-                        value: (modal.currentRow.login_siren as string) ?? "",
-                        onChange: (e) => modal.validateInputChange(formSchema, "login_siren", e.target.value),
+                        value: (modal.currentRow.login_siren as string | null) ?? "",
+                        onChange: (e) => modal.validateInputChange(formSchema, "login_siren", e.target.value || null),
                       }}
                     />
                   </div>
                 </fieldset>
               )}
 
-              {/* Périmètres : masqués pour territory.admin ; opérateur = Select unique, territoire = table éditable. */}
-              {(canManageScopes || isOperatorTarget) && (
+              {/* Périmètres : masqués pour territory.admin et pour un rôle sans périmètre (registry). */}
+              {(isOperatorTarget || (canManageScopes && isTerritoryTarget)) && (
                 <fieldset className={fr.cx("fr-fieldset")}>
                   <legend className={fr.cx("fr-fieldset__legend")}>Périmètres</legend>
                   {isOperatorTarget && (
                     <div className={fr.cx("fr-fieldset__element")}>
                       <Select
                         label="Opérateur"
+                        state={modal.errors?.operator_id ? "error" : "default"}
+                        stateRelatedMessage={modal.errors?.operator_id ?? ""}
                         nativeSelectProps={{
-                          value: (modal.currentRow.operator_id as number) ?? undefined,
-                          onChange: (e) => modal.validateInputChange(formSchema, "operator_id", e.target.value),
+                          "aria-invalid": !!modal.errors?.operator_id,
+                          value: (modal.currentRow.operator_id as number | null) ?? "",
+                          onChange: (e) => onChangeOperator(e.target.value),
                         }}
                       >
-                        {canManageScopes && <option value={undefined}>aucun</option>}
+                        {canManageScopes && <option value="">aucun</option>}
                         {operatorsList().map((o, i) => (
                           <option key={i} value={o?.id}>
                             {o?.name}
@@ -425,6 +497,7 @@ export default function UsersTable(props: { title: string; territoryId: number |
                         territories={territoriesList()}
                         onChange={onChangeScopes}
                       />
+                      {modal.errors?.scopes && <p className={fr.cx("fr-error-text")}>{modal.errors.scopes}</p>}
                     </div>
                   )}
                 </fieldset>
