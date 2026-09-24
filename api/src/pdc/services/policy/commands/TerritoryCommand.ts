@@ -5,6 +5,7 @@ import {
   diffArr,
   findVersionAt,
   parseTerritoryCodes,
+  successors,
   TerritoryOperation,
 } from "../helpers/territories.ts";
 import {
@@ -28,8 +29,8 @@ const MAX_LISTED = 50;
 
 @command({
   signature: "campaign:territory <action> [codes...]",
-  description: "Périmètre d'une campagne : show | history | add | remove | set | rollback. Codes type:code " +
-    "(arr|com|epci|aom|dep|reg|reseau|country), ex. aom:241700434 com:17300",
+  description: "Périmètre d'une campagne : show | history | add | remove | set | rollback | remap. " +
+    "Codes type:code (arr|com|epci|aom|dep|reg), ex. aom:241700434 com:17300",
   options: [
     {
       signature: "-c, --campaign <campaign>",
@@ -91,8 +92,10 @@ export class TerritoryCommand implements CommandInterface {
         return await this.change(policy, versions, action, codes, options);
       case "rollback":
         return await this.rollback(policy, versions, options);
+      case "remap":
+        return await this.remap(policy, versions, options);
       default:
-        throw new Error(`Action inconnue '${action}' (show|history|add|remove|set|rollback)`);
+        throw new Error(`Action inconnue '${action}' (show|history|add|remove|set|rollback|remap)`);
     }
   }
 
@@ -128,9 +131,9 @@ export class TerritoryCommand implements CommandInterface {
     options: Options,
   ): Promise<void> {
     const { valid_from, valid_to } = this.validity(policy, options);
-    const resolved = await this.territoryRepository.resolve(parseTerritoryCodes(codes), valid_from.getUTCFullYear());
+    const resolved = await this.territoryRepository.resolve(parseTerritoryCodes(codes));
     if (resolved.unknown.length) {
-      throw new Error(`Codes inconnus : ${resolved.unknown.map((c) => `${c.type}:${c.code}`).join(" ")}`);
+      throw new Error(`Codes inconnus : ${resolved.unknown.join(" ")}`);
     }
 
     const current = findVersionAt(versions, valid_from)?.arr ?? [];
@@ -149,6 +152,29 @@ export class TerritoryCommand implements CommandInterface {
     const { valid_from, valid_to } = this.validity(policy, options);
     const current = findVersionAt(versions, valid_from)?.arr ?? [];
     await this.write(policy, current, target.arr, valid_from, valid_to, options);
+  }
+
+  /**
+   * Adds the codes that replaced the current ones in a newer millesime,
+   * from --from (default: now) since earlier trips keep their former code.
+   */
+  protected async remap(
+    policy: SerializedPolicyInterface,
+    versions: PolicyTerritoryInterface[],
+    options: Options,
+  ): Promise<void> {
+    const valid_from = castUserStringToUTC(options.from, policy.tz) ?? new Date();
+    const base = findVersionAt(versions, valid_from);
+    if (!base) {
+      throw new Error(`Aucune version au ${this.day(valid_from, policy)}`);
+    }
+    const added = successors(base.arr, await this.territoryRepository.findEvolutions());
+    if (!added.length) {
+      console.log("Aucun code à remapper");
+      return;
+    }
+    const valid_to = castUserStringToUTC(options.to, policy.tz) ?? base.valid_to;
+    await this.write(policy, base.arr, applyOperation("add", base.arr, added), valid_from, valid_to, options);
   }
 
   protected async write(

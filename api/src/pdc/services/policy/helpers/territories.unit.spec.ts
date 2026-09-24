@@ -1,7 +1,7 @@
 import { assertEquals, assertThrows } from "dep:assert";
 import { describe, it } from "dep:testing-bdd";
-import { PolicyTerritoryInterface, TerritoryCodeEnum } from "../interfaces/index.ts";
-import { applyOperation, diffArr, findVersionAt, isCovered, parseTerritoryCodes } from "./territories.ts";
+import { PolicyTerritoryInterface } from "../interfaces/index.ts";
+import { applyOperation, diffArr, findVersionAt, isCovered, parseTerritoryCodes, successors } from "./territories.ts";
 
 function version(
   v: number,
@@ -13,35 +13,42 @@ function version(
 }
 
 describe("parseTerritoryCodes", () => {
-  it("parses type:code tokens", () => {
-    assertEquals(parseTerritoryCodes(["aom:241700434", "com:17300"]), [
-      { type: TerritoryCodeEnum.Mobility, code: "241700434" },
-      { type: TerritoryCodeEnum.City, code: "17300" },
-    ]);
+  it("groups type:code tokens into selectors", () => {
+    assertEquals(parseTerritoryCodes(["aom:241700434", "com:17300", "com:17306"]), {
+      aom: ["241700434"],
+      com: ["17300", "17306"],
+    });
   });
 
   it("splits comma separated tokens and deduplicates", () => {
-    assertEquals(parseTerritoryCodes(["com:17300,com:17306", "com:17300"]), [
-      { type: TerritoryCodeEnum.City, code: "17300" },
-      { type: TerritoryCodeEnum.City, code: "17306" },
-    ]);
+    assertEquals(parseTerritoryCodes(["com:17300,com:17306", "com:17300"]), { com: ["17300", "17306"] });
   });
 
-  it("accepts corsican codes, overseas dep, network and country", () => {
-    assertEquals(parseTerritoryCodes(["com:2A004", "dep:2B", "dep:971", "reseau:232", "country:XXXXX"]), [
-      { type: TerritoryCodeEnum.City, code: "2A004" },
-      { type: TerritoryCodeEnum.District, code: "2B" },
-      { type: TerritoryCodeEnum.District, code: "971" },
-      { type: TerritoryCodeEnum.Network, code: "232" },
-      { type: TerritoryCodeEnum.Country, code: "XXXXX" },
-    ]);
+  it("normalises case", () => {
+    assertEquals(parseTerritoryCodes(["COM:2a004", "Dep:2b"]), { com: ["2A004"], dep: ["2B"] });
   });
 
-  it("rejects unknown type", () => {
+  it("accepts every campaign scale", () => {
+    assertEquals(
+      parseTerritoryCodes(["arr:69381", "com:17300", "epci:200041762", "aom:241700434", "dep:971", "reg:75"]),
+      {
+        arr: ["69381"],
+        com: ["17300"],
+        epci: ["200041762"],
+        aom: ["241700434"],
+        dep: ["971"],
+        reg: ["75"],
+      },
+    );
+  });
+
+  it("rejects scales without campaigns", () => {
+    assertThrows(() => parseTerritoryCodes(["country:XXXXX"]), Error, "country:XXXXX");
+    assertThrows(() => parseTerritoryCodes(["reseau:232"]), Error, "reseau:232");
+  });
+
+  it("rejects unknown or missing type", () => {
     assertThrows(() => parseTerritoryCodes(["foo:17300"]), Error, "foo:17300");
-  });
-
-  it("rejects missing type", () => {
     assertThrows(() => parseTerritoryCodes(["17300"]), Error, "17300");
   });
 
@@ -52,6 +59,27 @@ describe("parseTerritoryCodes", () => {
 
   it("rejects empty input", () => {
     assertThrows(() => parseTerritoryCodes([]), Error);
+  });
+});
+
+describe("successors", () => {
+  it("follows merges and splits", () => {
+    const evolutions = [
+      { old_com: "01001", new_com: "01100" },
+      { old_com: "01002", new_com: "01100" },
+      { old_com: "02001", new_com: "02100" },
+      { old_com: "02001", new_com: "02200" },
+    ];
+    assertEquals(successors(["01001", "02001", "03001"], evolutions), ["01100", "02100", "02200"]);
+  });
+
+  it("follows chains and ignores codes already present", () => {
+    const evolutions = [
+      { old_com: "01001", new_com: "01100" },
+      { old_com: "01100", new_com: "01200" },
+      { old_com: "01200", new_com: "01200" },
+    ];
+    assertEquals(successors(["01001", "01100"], evolutions), ["01200"]);
   });
 });
 

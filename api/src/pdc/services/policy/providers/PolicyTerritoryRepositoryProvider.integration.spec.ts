@@ -2,7 +2,6 @@ import { assertEquals, assertRejects } from "dep:assert";
 import { afterAll, beforeAll, describe, it } from "dep:testing-bdd";
 import sql from "@/lib/pg/sql.ts";
 import { DenoDbContext, makeDenoDbBeforeAfter } from "@/pdc/providers/test/index.ts";
-import { TerritoryCodeEnum } from "../interfaces/index.ts";
 import { PolicyTerritoryRepositoryProvider } from "./PolicyTerritoryRepositoryProvider.ts";
 
 describe("PolicyTerritoryRepositoryProvider", () => {
@@ -26,16 +25,36 @@ describe("PolicyTerritoryRepositoryProvider", () => {
     await after(db);
   });
 
-  it("resolves mixed codes to arr, clamping the year to the latest millesime", async () => {
-    const result = await repository.resolve([
-      { type: TerritoryCodeEnum.CityGroup, code: "200056232" },
-      { type: TerritoryCodeEnum.Arr, code: "69381" },
-      { type: TerritoryCodeEnum.Network, code: "232" },
-      { type: TerritoryCodeEnum.Mobility, code: "123456789" },
-    ], 2026);
+  it("resolves selectors to arr and reports unknown codes", async () => {
+    const result = await repository.resolve({
+      epci: ["200056232"],
+      arr: ["69381"],
+      aom: ["123456789"],
+    });
 
     assertEquals(result.arr, ["69381", "91377", "91471", "91477"]);
-    assertEquals(result.unknown, [{ type: TerritoryCodeEnum.Mobility, code: "123456789" }]);
+    assertEquals(result.unknown, ["aom:123456789"]);
+  });
+
+  it("resolves a com selector to its arrondissements", async () => {
+    const result = await repository.resolve({ com: ["69123"] });
+    assertEquals(result.arr, ["69381", "69382", "69383", "69384", "69385", "69386", "69387", "69388", "69389"]);
+  });
+
+  it("keeps territory.get_com_by_territory_id results", async () => {
+    const rows = await db.connection.query<{ com: string }>(sql`
+      SELECT com FROM territory.get_com_by_territory_id(1, 2021::smallint) ORDER BY com
+    `);
+    assertEquals(rows.map((r) => r.com), ["91377", "91471", "91477"]);
+  });
+
+  it("lists code changes only", async () => {
+    await db.connection.query(sql`
+      INSERT INTO geo.com_evolution (year, mod, old_com, new_com, l_mod) VALUES
+        (2024, 32, '91471', '91999', 'fusion'),
+        (2024, 10, '91477', '91477', 'changement de nom')
+    `);
+    assertEquals(await repository.findEvolutions(), [{ old_com: "91471", new_com: "91999" }]);
   });
 
   it("describes arr with their label", async () => {
