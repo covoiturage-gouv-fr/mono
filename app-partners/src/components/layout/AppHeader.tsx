@@ -1,6 +1,7 @@
 import { AuthButton } from "@/components/auth/AuthButton";
 import { ProfilButton } from "@/components/auth/ProfilButton";
 import { ScopeSwitcher } from "@/components/auth/ScopeSwitcher";
+import { features } from "@/config/features";
 import { Header } from "@codegouvfr/react-dsfr/Header";
 import Navigation from "./Navigation";
 
@@ -27,7 +28,7 @@ export function AppHeader() {
       serviceTagline="Ensemble, accélérons le covoiturage quotidien"
       navigation={<Navigation />}
       quickAccessItems={[
-        <ScopeSwitcher key="scope-switcher" />,
+        ...(features.multiSiret ? [<ScopeSwitcher key="scope-switcher" />] : []),
         <ProfilButton key="profil-button" />,
         <AuthButton key="auth-button" />,
       ]}

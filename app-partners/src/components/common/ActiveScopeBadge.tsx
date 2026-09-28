@@ -1,4 +1,5 @@
 "use client";
+import { features } from "@/config/features";
 import { activeScopeLabel } from "@/helpers/auth";
 import { useAuth } from "@/providers/AuthProvider";
 import Badge from "@codegouvfr/react-dsfr/Badge";
@@ -7,7 +8,7 @@ import Badge from "@codegouvfr/react-dsfr/Badge";
 export function ActiveScopeBadge() {
   const { user } = useAuth();
   const label = activeScopeLabel(user);
-  if (!label) return null;
+  if (!features.multiSiret || !label) return null;
   return (
     <Badge as="span" severity="info" noIcon>
       Périmètre actif : {label}

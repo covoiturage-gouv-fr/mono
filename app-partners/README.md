@@ -66,13 +66,16 @@ npm run lint
 
 Copier `.env.example` vers `.env.local` et configurer :
 
-| Variable                   | Description                        |
-| -------------------------- | ---------------------------------- |
-| `NEXT_PUBLIC_API_URL`      | URL de l'API backend               |
-| `NEXT_PUBLIC_API_REDIRECT` | URL de redirection API             |
-| `NEXT_PUBLIC_SEARCH_URL`   | URL du service de recherche        |
-| `NEXT_PUBLIC_SEARCH_TOKEN` | Token d'authentification recherche |
-| `NEXT_PUBLIC_PC_USER_URI`  | URI utilisateur PC                 |
+| Variable                          | Description                                                                 |
+| --------------------------------- | --------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_API_URL`             | URL de l'API backend                                                        |
+| `NEXT_PUBLIC_API_REDIRECT`        | URL de redirection API                                                      |
+| `NEXT_PUBLIC_SEARCH_URL`          | URL du service de recherche                                                 |
+| `NEXT_PUBLIC_SEARCH_TOKEN`        | Token d'authentification recherche                                          |
+| `NEXT_PUBLIC_PC_USER_URI`         | URI utilisateur PC                                                          |
+| `NEXT_PUBLIC_FEATURE_MULTI_SIRET` | `true` affiche le multi-périmètre (bascule, badge, éditeur). Off par défaut |
+
+Les `NEXT_PUBLIC_*` sont figées au build : changer le flag demande un redéploiement (var GitHub `PARTNER_FEATURE_MULTI_SIRET` par environnement).
 
 ### Alias de chemin
 
