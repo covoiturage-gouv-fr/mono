@@ -75,7 +75,12 @@ Titre non publiant (`chore`, `ci`…) : les feat/fix des rc ne sont pas comptés
 La production est correcte, mais les commits d'origine de `next` n'ont pas été comptés par cette release. Au prochain merge `next` → `main`, ils le seront une seconde fois (version en trop, changelog en double). Au choix :
 
 - accepter : sans gravité ;
-- réaligner `next` sur `main`, quand `next` n'a rien en attente : désactiver temporairement « Protect base branches », `git push --force origin main:next`, réactiver. Les rc de la version publiée sont de toute façon dépassés.
+- réaligner `next` sur `main`, quand `next` n'a rien en attente (administrateur seulement, équipe prévenue) :
+  1. dans « Protect base branches », ajouter le rôle Repository admin en bypass (ne pas désactiver le ruleset : `main` resterait sans protection) ;
+  2. `git push --force-with-lease=next:<sha actuel de next> origin main:next` ;
+  3. retirer le bypass et vérifier le ruleset (Settings → Rules).
+
+  Les rc de la version publiée sont de toute façon dépassés.
 
 ### Prérelease abandonnée
 
