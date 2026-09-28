@@ -1,5 +1,3 @@
-ALTER TABLE territory.territory_group ALTER COLUMN company_id DROP NOT NULL;
-
 CREATE TABLE territory.territory_perimeters (
   _id          serial PRIMARY KEY,
   territory_id int NOT NULL REFERENCES territory.territory_group(_id),
