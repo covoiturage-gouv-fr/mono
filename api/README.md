@@ -2,6 +2,8 @@
 
 Backend du Registre de Preuve de Covoiturage. API REST/RPC fournissant les services d'authentification, gestion des utilisateurs, territoires, opérateurs et exports.
 
+Versions déployées : releases stables en demo et production, préreleases `-rc.N` (branche `next`) en demo seulement. Voir [Versions](../README.md#versions).
+
 ## Ownership
 
 | Rôle               | Personne | Contact      |
