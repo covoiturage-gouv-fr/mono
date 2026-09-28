@@ -2,6 +2,7 @@ import UserScopesEditor from "@/components/administration/UserScopesEditor";
 import AlertMessage from "@/components/common/AlertMessage";
 import { Modal } from "@/components/common/Modal";
 import Pagination from "@/components/common/Pagination";
+import { features } from "@/config/features";
 import { getRolesList, labelRole } from "@/helpers/auth";
 import { useOperatorsList, useTerritoriesList, useUsersList } from "@/hooks/api";
 import { useActionsModal } from "@/hooks/useActionsModal";
@@ -424,11 +425,33 @@ export default function UsersTable(props: { title: string; territoryId: number |
                   )}
                   {canManageScopes && isTerritoryTarget && !isOperatorTarget && (
                     <div className={fr.cx("fr-fieldset__element")}>
-                      <UserScopesEditor
-                        scopes={(modal.currentRow.scopes as UserScopeInput[]) ?? []}
-                        territories={territoriesList()}
-                        onChange={onChangeScopes}
-                      />
+                      {features.multiSiret ? (
+                        <UserScopesEditor
+                          scopes={(modal.currentRow.scopes as UserScopeInput[]) ?? []}
+                          territories={territoriesList()}
+                          onChange={onChangeScopes}
+                        />
+                      ) : (
+                        <Select
+                          label="Territoire"
+                          nativeSelectProps={{
+                            value: (modal.currentRow.territory_id as number) ?? "",
+                            onChange: (e) => {
+                              const territory_id = Number(e.target.value);
+                              if (territory_id) onChangeScopes([{ territory_id, is_default: true }]);
+                            },
+                          }}
+                        >
+                          <option value="" disabled>
+                            Sélectionner un territoire
+                          </option>
+                          {territoriesList().map((t) => (
+                            <option key={t?._id} value={t?._id}>
+                              {t?.name}
+                            </option>
+                          ))}
+                        </Select>
+                      )}
                     </div>
                   )}
                 </fieldset>

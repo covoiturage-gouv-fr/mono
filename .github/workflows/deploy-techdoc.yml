@@ -15,6 +15,7 @@ on:
 jobs:
   deploy:
     name: Deploy API documentation
+    if: ${{ !github.event.release.prerelease }}
     runs-on: ubuntu-latest
 
     strategy:
