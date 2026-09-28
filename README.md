@@ -107,6 +107,23 @@ Cycle de contribution recommandé avec Claude Code :
 
 Le code suit les spécifications [semver](https://semver.org/).
 
+Les versions sont publiées par semantic-release :
+
+- `main` → release stable `vX.Y.Z`, déployée en demo et en production ;
+- `next` → prérelease `vX.Y.Z-rc.N`, déployée en demo seulement (API, espace partenaires, observatoire).
+
+Faire valider une évolution en demo :
+
+1. PR vers `next` : au merge, `vX.Y.Z-rc.N` part en demo (environ 10 min, délai de scan Flux).
+2. Une fois validée, PR `next` → `main` : la release stable part en demo et en production.
+3. Après chaque release stable, merger `main` dans `next`. Sinon semantic-release refuse de publier sur `next` (`EINVALIDNEXTVERSION`).
+
+> **Attention**
+>
+> - Jamais de tag de prérelease posé à la main : cela fausse le calcul de la version suivante.
+> - Une prérelease migre la base demo. Ses migrations doivent rester compatibles avec la stable suivante. Si elle est abandonnée, le schéma demo diverge jusqu'au prochain reset de la base.
+> - Pas de retour arrière automatique : la demo suit la plus haute version. Pour revenir à la stable, publier une version supérieure.
+
 # License
 
 DINUM / DGITM / ADEME, 2017-2026

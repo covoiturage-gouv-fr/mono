@@ -15,6 +15,7 @@ on:
 jobs:
   deploy:
     name: Deploy Attestation
+    if: ${{ !github.event.release.prerelease }}
     environment: production
     runs-on: ubuntu-latest
     steps:
