@@ -78,10 +78,11 @@ export default function UsersTable(props: { title: string; territoryId: number |
   };
 
   // Suggestion login_siren = 9 premiers chiffres du SIRET du territoire par défaut.
-  const suggestSiren = (scopes: UserScopeInput[]): string => {
+  // null (jamais "") quand rien à suggérer : l'API n'accepte que null ou 9 chiffres.
+  const suggestSiren = (scopes: UserScopeInput[]): string | null => {
     const def = scopes.find((s) => s.is_default) ?? scopes[0];
     const siret = territoriesList().find((t) => t?._id === def?.territory_id)?.siret;
-    return siret ? siret.slice(0, 9) : "";
+    return siret ? siret.slice(0, 9) : null;
   };
 
   // currentRow EST le corps de la requête : n'y mettre que des champs acceptés par l'API.
@@ -151,12 +152,10 @@ export default function UsersTable(props: { title: string; territoryId: number |
     firstname: z.string().min(3, { message: "Le prénom doit contenir au moins 3 caractères" }),
     lastname: z.string().min(3, { message: "Le nom doit contenir au moins 3 caractères" }),
     email: z.string().email({ message: `L'adresse mail n'est pas valide` }),
-    operator_id: z.coerce.number({ message: "L'identifiant n'est pas un nombre" }).nullable(),
-    territory_id: z.coerce.number({ message: "L'identifiant n'est pas un nombre" }).nullable(),
+    operator_id: z.number({ message: "L'identifiant n'est pas un nombre" }).nullish(),
+    territory_id: z.number({ message: "L'identifiant n'est pas un nombre" }).nullish(),
     role: z.enum(roles, { message: "Le rôle n'est pas valide" }),
-    login_siren: z
-      .union([z.string().regex(/^\d{9}$/, { message: "Le SIREN doit contenir 9 chiffres" }), z.literal(""), z.null()])
-      .optional(),
+    login_siren: z.string().regex(/^\d{9}$/, { message: "Le SIREN doit contenir 9 chiffres" }).nullish(),
     scopes: z
       .array(
         z.object({
@@ -390,7 +389,7 @@ export default function UsersTable(props: { title: string; territoryId: number |
                         inputMode: "numeric",
                         maxLength: 9,
                         value: (modal.currentRow.login_siren as string) ?? "",
-                        onChange: (e) => modal.validateInputChange(formSchema, "login_siren", e.target.value),
+                        onChange: (e) => modal.validateInputChange(formSchema, "login_siren", e.target.value || null),
                       }}
                     />
                   </div>
@@ -406,11 +405,16 @@ export default function UsersTable(props: { title: string; territoryId: number |
                       <Select
                         label="Opérateur"
                         nativeSelectProps={{
-                          value: (modal.currentRow.operator_id as number) ?? undefined,
-                          onChange: (e) => modal.validateInputChange(formSchema, "operator_id", e.target.value),
+                          value: (modal.currentRow.operator_id as number) ?? "",
+                          onChange: (e) =>
+                            modal.validateInputChange(
+                              formSchema,
+                              "operator_id",
+                              e.target.value === "" ? null : Number(e.target.value),
+                            ),
                         }}
                       >
-                        {canManageScopes && <option value={undefined}>aucun</option>}
+                        {canManageScopes && <option value="">aucun</option>}
                         {operatorsList().map((o, i) => (
                           <option key={i} value={o?.id}>
                             {o?.name}

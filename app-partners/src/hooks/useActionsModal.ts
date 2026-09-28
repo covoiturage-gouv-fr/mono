@@ -102,7 +102,10 @@ export const useActionsModal = <T extends Record<string, unknown>>() => {
         const response = await fetch(request.url, request.params);
         const res = await response.json() as T & { message?: string; outcome?: string };
         if (!response.ok) {
-          throw new Error(res.message ?? "Une erreur est survenue");
+          // Message API dans errors : l'alerte des tables l'affiche à la place des erreurs de champ obsolètes.
+          const message = Array.isArray(res) ? res.join(" | ") : (res.message ?? "Une erreur est survenue");
+          setErrors({ submit: message });
+          throw new Error(message);
         }
         setSubmitData(res);
         return res;
