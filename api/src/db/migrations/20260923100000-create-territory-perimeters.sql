@@ -43,8 +43,8 @@ LANGUAGE sql STABLE AS $$
   CROSS JOIN LATERAL geo.get_arr_by_selectors(s.types, s.codes, $2) r
 $$;
 
--- every loaded millesime, so that trips geocoded with the previous one keep matching after a merge
-CREATE OR REPLACE FUNCTION territory.get_arr_by_selectors(_id integer)
+-- _year NULL = every loaded millesime, so that trips geocoded with the previous one keep matching after a merge
+CREATE OR REPLACE FUNCTION territory.get_arr_by_selectors(_id integer, _year smallint DEFAULT NULL)
 RETURNS TABLE(arr varchar)
 LANGUAGE sql STABLE AS $$
   SELECT DISTINCT r.arr
@@ -53,10 +53,11 @@ LANGUAGE sql STABLE AS $$
     FROM territory.territory_group_selector
     WHERE territory_group_id = $1
   ) s
-  CROSS JOIN (SELECT DISTINCT year FROM geo.perimeters) y
+  CROSS JOIN (SELECT DISTINCT year FROM geo.perimeters WHERE $2 IS NULL OR year = $2) y
   CROSS JOIN LATERAL geo.get_arr_by_selectors(s.types, s.codes, y.year) r
 $$;
 
+-- selectors on the latest millesime only: it grants data access (dashboard), a former member must not be kept
 CREATE OR REPLACE FUNCTION territory.get_arr(_id integer, _at timestamptz)
 RETURNS TABLE(arr varchar)
 LANGUAGE sql STABLE AS $$
@@ -71,7 +72,7 @@ LANGUAGE sql STABLE AS $$
   )
   SELECT unnest(v.arr) FROM version v
   UNION ALL
-  SELECT s.arr FROM territory.get_arr_by_selectors($1) s
+  SELECT s.arr FROM territory.get_arr_by_selectors($1, geo.get_latest_millesime()) s
   WHERE NOT EXISTS (SELECT 1 FROM version)
 $$;
 

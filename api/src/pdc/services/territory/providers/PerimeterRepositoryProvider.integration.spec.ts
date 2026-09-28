@@ -142,4 +142,19 @@ describe("PerimeterRepositoryProvider", () => {
       repository.create(territory_id, { arr: [], valid_from: new Date("2026-01-01"), valid_to: null })
     );
   });
+
+  // last: adds a millesime that every selector resolution above would pick up
+  it("get_arr resolves selectors on the latest millesime only, get_arr_range on all of them", async () => {
+    await db.connection.query(sql`
+      INSERT INTO geo.perimeters
+      SELECT (jsonb_populate_record(p, jsonb_build_object(
+        'id', (SELECT MAX(id) + 1 FROM geo.perimeters), 'year', 2020, 'arr', '91000', 'com', '91000'
+      ))).*
+      FROM geo.perimeters p
+      WHERE p.arr = '91377' AND p.year = 2021
+    `);
+
+    assertEquals(await repository.getArr(SEEDED_TERRITORY, new Date("2025-06-01")), ["91377", "91471", "91477"]);
+    assertEquals(await getArrRange(SEEDED_TERRITORY, "2025-01-01", "2025-06-01"), ["91000", "91377", "91471", "91477"]);
+  });
 });
