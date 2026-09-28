@@ -137,24 +137,19 @@ services:
       - front
 
   s3:
-    # Docker Hub ne publie plus minio/minio : le dépôt a disparu et le pull échoue.
-    # quay.io est le registre officiel restant ; tag épinglé pour que la CI soit reproductible.
-    image: quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z
+    # MinIO a retiré ses images publiques (Docker Hub puis quay.io) : image Chainguard épinglée par digest.
+    image: cgr.dev/chainguard/minio:latest@sha256:6a1d0b45c8669726bba580ced0bfa4cb9fdeed1ed636dfabd81d1577beb6937b
     environment:
       MINIO_DOMAIN: s3
-    command: 'server /data'
+    command: ['server', '/data']
     networks:
       - back
 
   s3-init:
-    image: quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z
+    # image sans shell : alias passé par MC_HOST_<alias>, commande fournie par `just create_bucket`
+    image: cgr.dev/chainguard/minio-client:latest@sha256:b2bd7824d23d3e3b15bedd7e87fbc3be29d2e213307b4f901e4a1d92356dc20f
     environment:
-      MINIO_URL: http://s3:9000
-      MINIO_ACCESS_KEY: minioadmin
-      MINIO_SECRET_KEY: minioadmin
-      MINIO_REGION_NAME: fr-par
-    entrypoint:
-      ['sh', '-c', 'mc alias set minio $$MINIO_URL $$MINIO_ACCESS_KEY $$MINIO_SECRET_KEY && mc mb minio/$$BUCKET']
+      MC_HOST_minio: http://minioadmin:minioadmin@s3:9000
     networks:
       - back
     depends_on:

@@ -276,7 +276,7 @@ generate_certs skip=path_exists(join(cert_dir,"cert.key")):
 # Create a new bucket
 [private]
 create_bucket name:
-  just dc_e2e run --rm -e BUCKET={{name}} s3-init
+  just dc_e2e run --rm s3-init mb --ignore-existing minio/{{name}}
 
 # Wait for app
 [private]
