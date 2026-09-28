@@ -1,6 +1,6 @@
 ---
 name: cra-mensuel
-description: Use when producing the monthly activity report / CRA ("CRA mensuel", "fais mon CRA", "compte rendu d'activité", "CRA de juillet", "rapport d'activité du mois"). Lists the tasks the current user closed in the target month (Notion "Suivi des tâches", État Done + Date fermeture tâche), cross-checks them against merged PRs, numbers everything so the user can pick, then renders a plain-text French report grouped by theme, capped at 5000 characters.
+description: Use when producing the monthly activity report / CRA ("CRA mensuel", "fais mon CRA", "compte rendu d'activité", "rapport d'activité du mois"). Lists the tasks the current user closed in the target month (Notion "Suivi des tâches", État Done + Date fermeture tâche), cross-checks them against merged PRs, numbers everything so the user can pick, then renders a plain-text French report grouped by theme, capped at 5000 characters.
 allowed-tools: Bash, Skill, AskUserQuestion, mcp__claude_ai_Notion__notion-fetch, mcp__claude_ai_Notion__notion-search, mcp__claude_ai_Notion__notion-query-data-sources
 ---
 
@@ -155,19 +155,27 @@ Thème 2 :
 
 ### 7. Publier dans Notion (sur demande)
 
-Page de publication : **CRA Malt ISN 2026**
-<https://app.notion.com/p/3b3994bec93180fc97bed6459839770d>
+Base de publication : **CRA**, base en ligne dans la page « Suivi Malt ISN 2026 »
+(anciennement « CRA Malt ISN 2026 »).
 
-Structure : un titre de niveau 2 par mois-année, et sous chaque titre une
-sous-page par CRA, nommée `CRA <Mois AAAA> - <Prénom Nom>`.
+- Base : <https://app.notion.com/p/51480162dded498eb1d75146403df987>
+- Source de données : `collection://0ecfd554-798d-460b-ac27-d2b30374d40f`
+- Page parente : <https://app.notion.com/p/3b3994bec93180fc97bed6459839770d>
 
-- Créer la sous-page avec `notion-create-pages`, parent = la page ci-dessus. Le
-  contenu reprend le CRA **sans la ligne de titre** (le titre de la page la
-  porte) : thèmes en paragraphe suivi de `:`, puces en liste à tirets.
-- Les sous-pages créées s'ajoutent en fin de page. Réordonner ensuite avec
-  `notion-update-page` / `replace_content`, en plaçant chaque balise
-  `<page url="...">` sous son titre de mois. Conserver toutes les balises
-  existantes : en retirer une **supprime** la sous-page.
+Une ligne par CRA, créée avec `notion-create-pages`, parent =
+`data_source_id: 0ecfd554-798d-460b-ac27-d2b30374d40f`. Propriétés :
+
+| Propriété | Valeur |
+| --- | --- |
+| `Titre` | `CRA <Mois AAAA> - <Prénom Nom>` |
+| `date:Mois:start` | premier jour du mois **facturé** (`AAAA-MM-01`) |
+| `Personne` | `["user://<id-notion-utilisateur>"]` |
+| `Statut` | `Brouillon`, `Envoyé` ou `Validé` (créer en `Brouillon`) |
+
+Le contenu de la page reprend le CRA **sans la ligne de titre** (la propriété
+`Titre` la porte) : thèmes en paragraphe suivi de `:`, puces en liste à tirets.
+Plus rien à réordonner : la base trie sur `Mois`.
+
 - **Mois de facturation ≠ mois travaillé** : le CRA porte le mois convenu avec
   le client, pas la fenêtre d'extraction. Demander confirmation du libellé avant
   de publier si l'utilisateur ne l'a pas donné.
