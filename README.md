@@ -98,14 +98,19 @@ Cycle de contribution recommandé avec Claude Code :
 3. Coder en TDD
 4. `/pr-prep` -- commit, vérifications (CGU + sécurité), push et ouverture de la PR, avec confirmation
 5. `/notion-debrief` -- journaliser le travail réalisé dans le suivi des tâches
-6. Revue humaine, puis squash-merge de la PR
+6. Revue humaine, puis fusion de la PR (squash, sauf entre `main` et `next` : voir [docs/GITFLOW.md](./docs/GITFLOW.md))
 
 > **Note**
 > `/pr-prep` gère le commit, le push et l'ouverture de la PR : pas d'étape `commit + push` séparée.
 
 ### Versions
 
-Le code suit les spécifications [semver](https://semver.org/).
+Le code suit les spécifications [semver](https://semver.org/). Les versions sont publiées par semantic-release :
+
+- `main` → release stable `vX.Y.Z`, déployée en demo et en production ;
+- `next` → prérelease `vX.Y.Z-rc.N`, déployée en demo seulement.
+
+Branches, méthodes de fusion, procédures et remédiations : [docs/GITFLOW.md](./docs/GITFLOW.md).
 
 Les versions sont publiées par semantic-release :
 
