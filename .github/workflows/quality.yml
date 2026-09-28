@@ -359,7 +359,7 @@ jobs:
         uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.0.1
         with:
           # push on next: diff vs the previous commit, not vs main (default base)
-          base: ${{ github.ref_name }}
+          base: ${{ github.event_name == 'push' && github.ref_name || '' }}
           filters: |
             app:
               - 'api/**'
