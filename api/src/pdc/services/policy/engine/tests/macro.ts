@@ -89,7 +89,7 @@ export const makeProcessHelper = (cp?: CarpoolInterface) => {
         policyDef.status,
         policyDef.incentive_sum,
         undefined,
-        policyDef.territories,
+        policyDef.perimeters,
       )
       : await Policy.import(policyDef);
     const store = new MetadataStore(new MemoryMetadataRepository(inputMeta));

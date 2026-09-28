@@ -1,0 +1,145 @@
+import { assertEquals, assertRejects } from "dep:assert";
+import { afterAll, beforeAll, describe, it } from "dep:testing-bdd";
+import sql from "@/lib/pg/sql.ts";
+import { DenoDbContext, makeDenoDbBeforeAfter } from "@/pdc/providers/test/index.ts";
+import { PerimeterRepositoryProvider } from "./PerimeterRepositoryProvider.ts";
+
+// seeded territory 1 (aom:217500016) only covers 91377, 91471 and 91477 in the geo seed
+const SEEDED_TERRITORY = 1;
+
+describe("PerimeterRepositoryProvider", () => {
+  let repository: PerimeterRepositoryProvider;
+  let db: DenoDbContext;
+  let territory_id: number;
+  const { before, after } = makeDenoDbBeforeAfter();
+
+  beforeAll(async () => {
+    db = await before();
+    repository = new PerimeterRepositoryProvider(db.connection);
+    territory_id = await repository.createTerritory("SCoT de test");
+  });
+
+  afterAll(async () => {
+    await after(db);
+  });
+
+  async function getArrRange(id: number, from: string, to: string): Promise<string[]> {
+    const rows = await db.connection.query<{ arr: string }>(sql`
+      SELECT arr FROM territory.get_arr_range(${id}::int, ${from}::timestamptz, ${to}::timestamptz) ORDER BY arr
+    `);
+    return rows.map((r) => r.arr);
+  }
+
+  it("resolves selectors to arr and reports unknown codes", async () => {
+    const result = await repository.resolve({
+      epci: ["200056232"],
+      arr: ["69381"],
+      aom: ["123456789"],
+    });
+
+    assertEquals(result.arr, ["69381", "91377", "91471", "91477"]);
+    assertEquals(result.unknown, ["aom:123456789"]);
+  });
+
+  it("resolves a com selector to its arrondissements", async () => {
+    const result = await repository.resolve({ com: ["69123"] });
+    assertEquals(result.arr, ["69381", "69382", "69383", "69384", "69385", "69386", "69387", "69388", "69389"]);
+  });
+
+  it("keeps territory.get_com_by_territory_id results", async () => {
+    const rows = await db.connection.query<{ com: string }>(sql`
+      SELECT com FROM territory.get_com_by_territory_id(${SEEDED_TERRITORY}, 2021::smallint) ORDER BY com
+    `);
+    assertEquals(rows.map((r) => r.com), ["91377", "91471", "91477"]);
+  });
+
+  it("lists code changes only", async () => {
+    await db.connection.query(sql`
+      INSERT INTO geo.com_evolution (year, mod, old_com, new_com, l_mod) VALUES
+        (2024, 32, '91471', '91999', 'fusion'),
+        (2024, 10, '91477', '91477', 'changement de nom')
+    `);
+    assertEquals(await repository.findEvolutions(), [{ old_com: "91471", new_com: "91999" }]);
+  });
+
+  it("describes arr with their label", async () => {
+    const rows = await repository.describe(["91471", "91477"]);
+    assertEquals(rows.map((r) => [r.arr, r.label]), [["91471", "Orsay"], ["91477", "Palaiseau"]]);
+  });
+
+  it("creates a territory without company", async () => {
+    const territory = await repository.findTerritory(territory_id);
+    assertEquals(territory, { _id: territory_id, name: "SCoT de test" });
+  });
+
+  it("refuses an unknown siret", async () => {
+    await assertRejects(() => repository.createTerritory("inconnu", "00000000000000"), Error, "00000000000000");
+  });
+
+  it("falls back to the selectors when no version exists", async () => {
+    assertEquals(await repository.getArr(SEEDED_TERRITORY, new Date("2026-01-01")), ["91377", "91471", "91477"]);
+    assertEquals(await repository.getArr(territory_id, new Date("2026-01-01")), []);
+  });
+
+  it("creates incremental versions", async () => {
+    const v1 = await repository.create(territory_id, {
+      arr: ["91471"],
+      valid_from: new Date("2026-01-01T00:00:00Z"),
+      valid_to: null,
+    });
+    const v2 = await repository.create(territory_id, {
+      arr: ["91471", "91477"],
+      valid_from: new Date("2026-07-01T00:00:00Z"),
+      valid_to: new Date("2026-09-01T00:00:00Z"),
+    });
+
+    assertEquals([v1.version, v2.version], [1, 2]);
+
+    const versions = await repository.findByTerritory(territory_id);
+    assertEquals(versions.map((v) => [v.version, v.arr, v.valid_to]), [
+      [1, ["91471"], null],
+      [2, ["91471", "91477"], new Date("2026-09-01T00:00:00Z")],
+    ]);
+  });
+
+  it("get_arr picks the highest version covering the date", async () => {
+    assertEquals(await repository.getArr(territory_id, new Date("2026-03-01")), ["91471"]);
+    assertEquals(await repository.getArr(territory_id, new Date("2026-08-01")), ["91471", "91477"]);
+    assertEquals(await repository.getArr(territory_id, new Date("2026-09-01")), ["91471"]);
+  });
+
+  it("get_arr falls back to the selectors before the first version", async () => {
+    await repository.create(SEEDED_TERRITORY, {
+      arr: ["91471"],
+      valid_from: new Date("2026-01-01T00:00:00Z"),
+      valid_to: null,
+    });
+    assertEquals(await repository.getArr(SEEDED_TERRITORY, new Date("2025-06-01")), ["91377", "91471", "91477"]);
+    assertEquals(await repository.getArr(SEEDED_TERRITORY, new Date("2026-06-01")), ["91471"]);
+  });
+
+  it("get_arr_range unions the versions overlapping the period", async () => {
+    assertEquals(await getArrRange(territory_id, "2026-01-01", "2026-03-01"), ["91471"]);
+    assertEquals(await getArrRange(territory_id, "2026-06-01", "2026-08-01"), ["91471", "91477"]);
+  });
+
+  it("get_arr_range adds the selectors when versions leave a gap", async () => {
+    assertEquals(await getArrRange(SEEDED_TERRITORY, "2026-02-01", "2026-03-01"), ["91471"]);
+    assertEquals(await getArrRange(SEEDED_TERRITORY, "2025-12-01", "2026-03-01"), ["91377", "91471", "91477"]);
+  });
+
+  it("lists the campaigns owned by the territory", async () => {
+    await db.connection.query(sql`
+      INSERT INTO policy.policies (territory_id, name, status, handler, start_date, end_date)
+      VALUES (${territory_id}, 'campagne du SCoT', 'draft', 'Idfm', '2026-01-01', '2027-01-01')
+    `);
+    const policies = await repository.findPolicies(territory_id);
+    assertEquals(policies.map((p) => [p.name, p.status]), [["campagne du SCoT", "draft"]]);
+  });
+
+  it("rejects an empty perimeter", async () => {
+    await assertRejects(() =>
+      repository.create(territory_id, { arr: [], valid_from: new Date("2026-01-01"), valid_to: null })
+    );
+  });
+});

@@ -1,7 +1,6 @@
 import { provider } from "@/ilos/common/index.ts";
 import { DenoPostgresConnection } from "@/ilos/connection-postgres/index.ts";
 import sql, { empty, raw } from "@/lib/pg/sql.ts";
-import { isCovered, overlapping } from "../helpers/territories.ts";
 import { CarpoolInterface, PolicyInterface, TripRepositoryProviderInterfaceResolver } from "../interfaces/index.ts";
 
 @provider({
@@ -13,8 +12,7 @@ export class TripRepositoryProvider implements TripRepositoryProviderInterfaceRe
   public readonly statusTable = "carpool_v2.status";
   public readonly operatorTable = "operator.operators";
   public readonly incentiveTable = "policy.incentives";
-  public readonly getComFunction = "territory.get_com_by_territory_id";
-  public readonly getMillesimeFunction = "geo.get_latest_millesime";
+  public readonly getArrRangeFunction = "territory.get_arr_range";
 
   constructor(protected pgConnection: DenoPostgresConnection) {}
 
@@ -101,21 +99,12 @@ export class TripRepositoryProvider implements TripRepositoryProviderInterfaceRe
     batchSize = 100,
     override = false,
   ): AsyncGenerator<CarpoolInterface[], void, void> {
-    const territories = policy.territories ?? [];
-    const com = new Set(overlapping(territories, from, to).flatMap((v) => v.arr));
+    const rows = await this.pgConnection.query<{ arr: string }>(sql`
+      SELECT arr FROM ${raw(this.getArrRangeFunction)}(
+        ${policy.territory_id}::int, ${from}::timestamptz, ${to}::timestamptz
+      )
+    `);
 
-    if (!isCovered(territories, from, to)) {
-      const yearRows = await this.pgConnection.query<{ year: number }>(sql`
-        SELECT * from ${raw(this.getMillesimeFunction)}() as year
-      `);
-      const year = yearRows[0]?.year;
-
-      const comRows = await this.pgConnection.query<{ com: string }>(sql`
-        SELECT * FROM ${raw(this.getComFunction)}(${policy.territory_id}::int, ${year}::smallint)
-      `);
-      comRows.forEach((r) => com.add(r.com));
-    }
-
-    yield* this.findTripByGeo([...com], from, to, batchSize, override, policy._id);
+    yield* this.findTripByGeo(rows.map((r) => r.arr), from, to, batchSize, override, policy._id);
   }
 }

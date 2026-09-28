@@ -14,7 +14,7 @@ import {
   TerritorySelectorsInterface,
   UnboundedSlices,
 } from "../index.ts";
-import { PolicyTerritoryInterface } from "../providers/PolicyTerritoryRepositoryProviderInterface.ts";
+import { TerritoryPerimeterInterface } from "@/pdc/services/territory/contracts/common/interfaces/TerritoryPerimeterInterface.ts";
 
 export interface PolicyInterface {
   _id: number;
@@ -26,7 +26,7 @@ export interface PolicyInterface {
   tz: Timezone;
   handler: PolicyHandlerInterface;
   status: PolicyStatusEnum;
-  territories?: PolicyTerritoryInterface[];
+  perimeters?: TerritoryPerimeterInterface[];
 
   export(): SerializedPolicyInterface;
   processStateless(
@@ -52,7 +52,7 @@ export interface SerializedPolicyInterface {
   status: PolicyStatusEnum;
   incentive_sum: number;
   max_amount: number;
-  territories?: PolicyTerritoryInterface[];
+  perimeters?: TerritoryPerimeterInterface[];
 }
 
 export interface PolicyHandlerStaticInterface {

@@ -1,4 +1,8 @@
-import { PolicyTerritoryInterface, TerritoryCodeEnum, TerritorySelectorsInterface } from "../interfaces/index.ts";
+import {
+  TerritoryCodeEnum,
+  TerritorySelectorsInterface,
+} from "../contracts/common/interfaces/TerritoryCodeInterface.ts";
+import { TerritoryPerimeterInterface } from "../contracts/common/interfaces/TerritoryPerimeterInterface.ts";
 
 const CODE_FORMATS: Partial<Record<TerritoryCodeEnum, RegExp>> = {
   [TerritoryCodeEnum.Arr]: /^[0-9][0-9AB][0-9]{3}$/,
@@ -55,38 +59,20 @@ export function successors(arr: string[], evolutions: { old_com: string; new_com
   return [...found].sort();
 }
 
-function covers(v: PolicyTerritoryInterface, d: Date): boolean {
+function covers(v: TerritoryPerimeterInterface, d: Date): boolean {
   return v.valid_from <= d && (v.valid_to === null || d < v.valid_to);
 }
 
 export function findVersionAt(
-  versions: PolicyTerritoryInterface[],
+  versions: TerritoryPerimeterInterface[],
   d: Date,
-): PolicyTerritoryInterface | undefined {
+): TerritoryPerimeterInterface | undefined {
   return versions
     .filter((v) => covers(v, d))
-    .reduce<PolicyTerritoryInterface | undefined>(
+    .reduce<TerritoryPerimeterInterface | undefined>(
       (best, v) => (!best || v.version > best.version ? v : best),
       undefined,
     );
-}
-
-export function overlapping(
-  versions: PolicyTerritoryInterface[],
-  from: Date,
-  to: Date,
-): PolicyTerritoryInterface[] {
-  return versions.filter((v) => v.valid_from < to && (v.valid_to === null || v.valid_to > from));
-}
-
-export function isCovered(versions: PolicyTerritoryInterface[], from: Date, to: Date): boolean {
-  let cursor = from.getTime();
-  for (const v of [...versions].sort((a, b) => a.valid_from.getTime() - b.valid_from.getTime())) {
-    if (v.valid_from.getTime() > cursor) break;
-    cursor = Math.max(cursor, v.valid_to?.getTime() ?? Infinity);
-    if (cursor >= to.getTime()) return true;
-  }
-  return cursor >= to.getTime();
 }
 
 export function applyOperation(op: TerritoryOperation, current: string[], resolved: string[]): string[] {

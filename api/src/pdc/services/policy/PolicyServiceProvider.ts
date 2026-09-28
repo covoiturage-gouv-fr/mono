@@ -14,7 +14,6 @@ import { ApplyCommand } from "./commands/ApplyCommand.ts";
 import { FinalizeCommand } from "./commands/FinalizeCommand.ts";
 import { StatsCommand } from "./commands/StatsCommand.ts";
 import { SyncCommand } from "./commands/SyncCommand.ts";
-import { TerritoryCommand } from "./commands/TerritoryCommand.ts";
 import { config } from "./config/index.ts";
 import { binding as applySchemaBinding } from "./contracts/apply.schema.ts";
 import { binding as finalizeSchemaBinding } from "./contracts/finalize.schema.ts";
@@ -26,7 +25,6 @@ import { binding as updateDescriptiveSheetUrlSchemaBinding } from "./contracts/u
 import { IncentiveRepositoryProvider } from "./providers/IncentiveRepositoryProvider.ts";
 import { MetadataRepositoryProvider } from "./providers/MetadataRepositoryProvider.ts";
 import { PolicyRepositoryProvider } from "./providers/PolicyRepositoryProvider.ts";
-import { PolicyTerritoryRepositoryProvider } from "./providers/PolicyTerritoryRepositoryProvider.ts";
 import { TerritoryRepositoryProvider } from "./providers/TerritoryRepositoryProvider.ts";
 import { TripRepositoryProvider } from "./providers/TripRepositoryProvider.ts";
 
@@ -37,7 +35,6 @@ import { TripRepositoryProvider } from "./providers/TripRepositoryProvider.ts";
     IncentiveRepositoryProvider,
     MetadataRepositoryProvider,
     PolicyRepositoryProvider,
-    PolicyTerritoryRepositoryProvider,
     TerritoryRepositoryProvider,
     TripRepositoryProvider,
   ],
@@ -59,7 +56,7 @@ import { TripRepositoryProvider } from "./providers/TripRepositoryProvider.ts";
     syncIncentiveSumAction,
     UpdateDescriptiveSheetUrlAction,
   ],
-  commands: [ApplyCommand, FinalizeCommand, StatsCommand, SyncCommand, TerritoryCommand],
+  commands: [ApplyCommand, FinalizeCommand, StatsCommand, SyncCommand],
   middlewares: [...defaultMiddlewareBindings, [
     "validate",
     ValidatorMiddleware,

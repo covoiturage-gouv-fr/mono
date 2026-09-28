@@ -1,14 +1,14 @@
 import { assertEquals, assertThrows } from "dep:assert";
 import { describe, it } from "dep:testing-bdd";
-import { PolicyTerritoryInterface } from "../interfaces/index.ts";
-import { applyOperation, diffArr, findVersionAt, isCovered, parseTerritoryCodes, successors } from "./territories.ts";
+import { TerritoryPerimeterInterface } from "../contracts/common/interfaces/TerritoryPerimeterInterface.ts";
+import { applyOperation, diffArr, findVersionAt, parseTerritoryCodes, successors } from "./perimeters.ts";
 
 function version(
   v: number,
   from: string,
   to: string | null,
   arr: string[] = [],
-): PolicyTerritoryInterface {
+): TerritoryPerimeterInterface {
   return { version: v, arr, valid_from: new Date(from), valid_to: to ? new Date(to) : null };
 }
 
@@ -28,7 +28,7 @@ describe("parseTerritoryCodes", () => {
     assertEquals(parseTerritoryCodes(["COM:2a004", "Dep:2b"]), { com: ["2A004"], dep: ["2B"] });
   });
 
-  it("accepts every campaign scale", () => {
+  it("accepts every perimeter scale", () => {
     assertEquals(
       parseTerritoryCodes(["arr:69381", "com:17300", "epci:200041762", "aom:241700434", "dep:971", "reg:75"]),
       {
@@ -42,7 +42,7 @@ describe("parseTerritoryCodes", () => {
     );
   });
 
-  it("rejects scales without campaigns", () => {
+  it("rejects scales without perimeter", () => {
     assertThrows(() => parseTerritoryCodes(["country:XXXXX"]), Error, "country:XXXXX");
     assertThrows(() => parseTerritoryCodes(["reseau:232"]), Error, "reseau:232");
   });
@@ -103,41 +103,6 @@ describe("findVersionAt", () => {
   it("returns undefined when no version covers the date", () => {
     assertEquals(findVersionAt(versions, new Date("2025-12-31")), undefined);
     assertEquals(findVersionAt([], new Date("2026-01-01")), undefined);
-  });
-});
-
-describe("isCovered", () => {
-  it("is true when contiguous versions cover the range", () => {
-    const versions = [
-      version(1, "2026-01-01", "2026-03-01"),
-      version(2, "2026-03-01", null),
-    ];
-    assertEquals(isCovered(versions, new Date("2026-01-01"), new Date("2027-01-01")), true);
-  });
-
-  it("is false when there is a gap", () => {
-    const versions = [
-      version(1, "2026-01-01", "2026-03-01"),
-      version(2, "2026-04-01", null),
-    ];
-    assertEquals(isCovered(versions, new Date("2026-01-01"), new Date("2026-05-01")), false);
-  });
-
-  it("is false when the range starts before the first version", () => {
-    const versions = [version(1, "2026-02-01", null)];
-    assertEquals(isCovered(versions, new Date("2026-01-01"), new Date("2026-05-01")), false);
-  });
-
-  it("ignores version order", () => {
-    const versions = [
-      version(2, "2026-03-01", null),
-      version(1, "2026-01-01", "2026-03-01"),
-    ];
-    assertEquals(isCovered(versions, new Date("2026-01-01"), new Date("2026-05-01")), true);
-  });
-
-  it("is false without versions", () => {
-    assertEquals(isCovered([], new Date("2026-01-01"), new Date("2026-05-01")), false);
   });
 });
 

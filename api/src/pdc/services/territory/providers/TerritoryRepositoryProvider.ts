@@ -374,11 +374,8 @@ export class TerritoryRepositoryProvider implements TerritoryRepositoryProviderI
     const query = {
       text: `
       SELECT
-        ARRAY_AGG(com) AS com
-      FROM territory.get_com_by_territory_id(
-        $1::int,
-        (select * from geo.get_latest_millesime())
-      )
+        ARRAY_AGG(arr) AS com
+      FROM territory.get_arr($1::int, now())
       `,
       values: [params._id],
     };

@@ -120,36 +120,45 @@ Commandes principales :
 | `just api campaign:finalize` | Finaliser les règles stateful |
 | `just api campaign:sync` | Synchroniser les sommes d'incitation |
 | `just api campaign:stats` | Générer les stats de campagne |
-| `just api campaign:territory <action> -c <id> [type:code...]` | Périmètre versionné d'une campagne (voir ci-dessous) |
 | `just api apdf:export` | Exporter les APDF |
 | `just api territory:index` | Indexer les territoires dans Meilisearch |
+| `just api territory:perimeter <action> -t <territory_id> [type:code...]` | Périmètre versionné d'un territoire (voir ci-dessous) |
 | `just api acquisition:geo` | Traiter le géocodage des acquisitions |
 | `just api company:fetch <siret>` | Récupérer les données entreprise (INSEE SIRENE) |
 | `just api journey:status <op_id> <journey_id>` | Vérifier le statut d'un trajet |
 
-### Périmètre des campagnes (`policy.policy_territories`)
+### Périmètre des territoires (`territory.territory_perimeters`)
 
-Le périmètre géographique d'une campagne est une liste d'`arr` versionnée (ajout seul). Pour un trajet, la version
-retenue est la plus haute dont `[valid_from, valid_to)` contient sa date ; sans version, le moteur se replie sur
-`territory_id`. Codes `type:code` avec `type` ∈ `arr|com|epci|aom|dep|reg`, résolus par `geo.get_arr_by_selectors`
-sur tous les millésimes chargés.
+Un territoire (`territory.territory_group`) tire son périmètre soit de ses sélecteurs (territoire standard, suit les
+millésimes), soit de versions datées de listes d'`arr` (territoire custom ou qui évolue, ajout seul). Pour une date, la
+version retenue est la plus haute dont `[valid_from, valid_to)` contient cette date ; sans version, on se replie sur
+les sélecteurs. Toutes les lectures passent par `territory.get_arr(territory_id, date)` et
+`territory.get_arr_range(territory_id, from, to)`.
+
+Le périmètre de calcul d'une campagne est celui de son territoire propriétaire (`policies.territory_id`) à la date du
+trajet. Codes `type:code` avec `type` ∈ `arr|com|epci|aom|dep|reg`, résolus par `geo.get_arr_by_selectors` sur tous
+les millésimes chargés.
 
 ```bash
-just api campaign:territory show     -c 42 [--at 2026-07-01]
-just api campaign:territory history  -c 42
-just api campaign:territory add      -c 42 aom:241700434 com:17300 [-f 2026-07-01] [-t 2026-09-01]
-just api campaign:territory remove   -c 42 com:17306
-just api campaign:territory set      -c 42 aom:241700434
-just api campaign:territory rollback -c 42 --to-version 3
-just api campaign:territory remap    -c 42 [-f 2027-03-01]
+just api territory:perimeter create   -n "SCoT Mont Blanc" [-s <siret>] epci:200000172 epci:200023372 [-f 2019-01-01]
+just api territory:perimeter show     -t 57 [--at 2026-07-01]
+just api territory:perimeter history  -t 57
+just api territory:perimeter add      -t 57 epci:200069730 [-f 2026-01-01] [--to 2027-01-01]
+just api territory:perimeter remove   -t 57 com:74056
+just api territory:perimeter set      -t 57 epci:200000172 com:74056
+just api territory:perimeter rollback -t 57 --to-version 1
+just api territory:perimeter remap    (-t 57 | --all) [-f 2027-03-01]
 ```
 
-`add`/`remove`/`set` partent de la version en vigueur à `--from` (défaut : début de campagne). La commande affiche le
-diff puis demande confirmation ; hors TTY, `--yes` est obligatoire, `--dry-run` n'écrit rien. Les incitations déjà
-calculées ne sont pas recalculées : relancer `campaign:apply --override` sur la période.
+`create` crée le territoire (`company_id` résolu depuis `-s`, sinon NULL) et sa version 1, valable par défaut à partir
+du 2019-01-01. `add`/`remove`/`set`/`rollback` partent du périmètre en vigueur à `--from` (défaut : maintenant),
+sélecteurs compris pour un territoire standard. La commande affiche le diff puis demande confirmation ; hors TTY,
+`--yes` est obligatoire, `--dry-run` n'écrit rien. Les incitations déjà calculées ne sont pas recalculées : la commande
+liste les campagnes du territoire, relancer `campaign:apply --override` sur la période.
 
-Les `arr` stockés sont figés : après le chargement d'un nouveau millésime, lancer `remap` sur chaque campagne active.
-Il ajoute, à partir de `--from` (défaut : maintenant), les codes issus de fusions ou scissions (`geo.com_evolution`).
+Les `arr` stockés sont figés : après le chargement d'un nouveau millésime, lancer `remap --all`. Il ajoute aux
+versions en vigueur, à partir de `--from` (défaut : maintenant), les codes issus de fusions ou scissions
+(`geo.com_evolution`). Les territoires sans version suivent les millésimes via leurs sélecteurs.
 
 ## Configuration
 

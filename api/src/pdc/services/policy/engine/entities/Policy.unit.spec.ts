@@ -166,13 +166,13 @@ it(
 );
 
 it(
-  "should restrict to the policy_territories version valid at the carpool date",
+  "should restrict to the perimeter version valid at the carpool date",
   async () =>
     await process(
       {
         handler: new TestHandler(),
         policy: {
-          territories: [
+          perimeters: [
             { version: 1, arr: ["69381"], valid_from: new Date("2022-01-01"), valid_to: null },
             { version: 2, arr: ["91377"], valid_from: new Date("2022-06-01"), valid_to: null },
           ],
@@ -194,13 +194,13 @@ it(
 );
 
 it(
-  "should match policy_territories on start or end arr",
+  "should match perimeter versions on start or end arr",
   async () =>
     await process(
       {
         handler: new TestHandler(),
         policy: {
-          territories: [{ version: 1, arr: ["69381"], valid_from: new Date("2022-01-01"), valid_to: null }],
+          perimeters: [{ version: 1, arr: ["69381"], valid_from: new Date("2022-01-01"), valid_to: null }],
         },
         carpool: [
           { distance: 10000, datetime: new Date("2022-02-01"), end: { arr: "69381" } },
@@ -220,19 +220,45 @@ it(
 );
 
 it(
-  "should fall back to territory_selector when no policy_territories version covers the date",
+  "should fall back to territory_selector when no perimeter version covers the date",
   async () =>
     await process(
       {
         handler: new TestHandler(),
         policy: {
-          territories: [{ version: 1, arr: ["69381"], valid_from: new Date("2022-06-01"), valid_to: null }],
+          perimeters: [{ version: 1, arr: ["69381"], valid_from: new Date("2022-06-01"), valid_to: null }],
         },
         carpool: [{ distance: 10000, datetime: new Date("2022-02-01") }],
         meta: [],
       },
       {
         incentive: [100],
+        meta: [{
+          key: "max_amount_restriction.global.campaign.global",
+          value: 100,
+        }],
+      },
+    ),
+);
+
+it(
+  "should refuse carpools outside the perimeter versions of a territory without selector",
+  async () =>
+    await process(
+      {
+        handler: new TestHandler(),
+        policy: {
+          territory_selector: {},
+          perimeters: [{ version: 1, arr: ["69381"], valid_from: new Date("2022-06-01"), valid_to: null }],
+        },
+        carpool: [
+          { distance: 10000, datetime: new Date("2022-02-01"), start: { arr: "69381" } },
+          { distance: 10000, datetime: new Date("2022-07-01"), start: { arr: "69381" } },
+        ],
+        meta: [],
+      },
+      {
+        incentive: [0, 100],
         meta: [{
           key: "max_amount_restriction.global.campaign.global",
           value: 100,

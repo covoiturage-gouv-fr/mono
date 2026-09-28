@@ -10,9 +10,3 @@ export {
   TerritoryRepositoryProviderInterfaceResolver,
 } from "./TerritoryRepositoryProviderInterface.ts";
 export { MetadataRepositoryProviderInterfaceResolver } from "./MetadataRepositoryProviderInterface.ts";
-export {
-  type ArrDescriptionInterface,
-  type ComEvolutionInterface,
-  type PolicyTerritoryInterface,
-  PolicyTerritoryRepositoryProviderInterfaceResolver,
-} from "./PolicyTerritoryRepositoryProviderInterface.ts";
