@@ -98,34 +98,19 @@ Cycle de contribution recommandé avec Claude Code :
 3. Coder en TDD
 4. `/pr-prep` -- commit, vérifications (CGU + sécurité), push et ouverture de la PR, avec confirmation
 5. `/notion-debrief` -- journaliser le travail réalisé dans le suivi des tâches
-6. Revue humaine, puis squash-merge de la PR
+6. Revue humaine, puis fusion de la PR (squash, sauf entre `main` et `next` : voir [docs/GITFLOW.md](./docs/GITFLOW.md))
 
 > **Note**
 > `/pr-prep` gère le commit, le push et l'ouverture de la PR : pas d'étape `commit + push` séparée.
 
 ### Versions
 
-Le code suit les spécifications [semver](https://semver.org/).
-
-Les versions sont publiées par semantic-release :
+Le code suit les spécifications [semver](https://semver.org/). Les versions sont publiées par semantic-release :
 
 - `main` → release stable `vX.Y.Z`, déployée en demo et en production ;
-- `next` → prérelease `vX.Y.Z-rc.N`, déployée en demo seulement (API, espace partenaires, observatoire).
+- `next` → prérelease `vX.Y.Z-rc.N`, déployée en demo seulement.
 
-Faire valider une évolution en demo :
-
-1. PR vers `next` : au merge, `vX.Y.Z-rc.N` part en demo (environ 10 min, délai de scan Flux).
-2. Une fois validée, PR `next` → `main` **en merge commit** : la release stable part en demo et en production. Un squash ne garderait que le titre de la PR et perdrait les feat/fix.
-3. Après chaque release stable, PR `main` → `next` **en merge commit**, pour que le tag stable soit atteignable depuis `next`. Sinon semantic-release refuse de publier sur `next` (`EINVALIDNEXTVERSION`).
-
-Partout ailleurs, les PR restent en squash.
-
-> **Attention**
->
-> - Jamais de tag de prérelease posé à la main : cela fausse le calcul de la version suivante.
-> - Une prérelease migre la base demo. Ses migrations doivent rester compatibles avec la stable suivante. Si elle est abandonnée, le schéma demo diverge jusqu'au prochain reset de la base.
-> - Pas de retour arrière automatique : l'API demo suit la plus haute version. Pour revenir à la stable, publier une version supérieure.
-> - Les fronts demo (partenaires, observatoire) suivent la dernière publication : une stable publiée pendant qu'un rc est en demo les remplace par la version stable, alors que l'API demo reste sur le rc.
+Branches, méthodes de fusion, procédures et remédiations : [docs/GITFLOW.md](./docs/GITFLOW.md).
 
 # License
 
