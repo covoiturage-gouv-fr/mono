@@ -2,7 +2,7 @@
 name: cgu-rules
 description: Cached, machine-checkable distillation of the RPC CGU - read by the pr-preparer cgu-guard check.
 canonical_url: https://doc.covoiturage.beta.gouv.fr/nos-services/le-registre-de-preuve-de-covoiturage/cgu-conditions-generales-dutilisation-de-covoiturage.beta.gouv
-last_synced: 2026-09-10
+last_synced: 2026-09-28
 ttl_days: 7
 ---
 
@@ -62,6 +62,18 @@ open data; open-data geo is INSEE codes / carroyage only, "sans réidentificatio
   (`driver_phone_trunc`, `passenger_phone_trunc`, ...);
 - widens the fields exposed by an export, public stat, or attestation beyond the documented set;
 - removes truncation/hashing applied to identifying fields.
+
+## CGU-4 - Contrôle des accès des agents  (CGU 2.3 / 2.1)  [severity: high]
+
+Chaque AOM contrôle les accès de ses agents au Service ; le responsable désigné dispose d'un
+compte « administrateur » qui enregistre les agents habilités. La DGITM ouvre l'accès
+« exclusivement » aux personnes remplissant les conditions et assure la traçabilité des actions.
+
+**Flag the diff if it:**
+- permet à un compte de créer / modifier / rattacher un utilisateur hors de son propre
+  périmètre (territoire ou opérateur) sans la permission d'administration du registre ;
+- retire une garde de permission ou de périmètre sur les routes `dashboard/user*` ;
+- supprime ou affaiblit la journalisation des actions d'administration des comptes.
 
 ## How the guard reports
 
