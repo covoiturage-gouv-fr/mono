@@ -1,5 +1,5 @@
 -- FDW datalake : tout le schéma territory (voir 20260703000000-datalake-fdw-export.sql).
--- Côté datalake, `just fdw-sync` importe ces vues dans dlk_import une fois l'API déployée.
+-- Côté datalake, import manuel dans dlk_import une fois l'API déployée (voir datalake/README.md).
 
 CREATE OR REPLACE VIEW dlk_export.territory_territory_group_selector AS
 SELECT territory_group_id, selector_type, selector_value

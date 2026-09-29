@@ -97,10 +97,6 @@ datagouv *args:
 analyze-sources:
   python -m pipelines.cmd.analyze
 
-# Importe dans dlk_import les vues dlk_export (API) absentes. À lancer après le déploiement de l'API.
-fdw-sync *args:
-  python -m pipelines.cmd.fdw_sync {{args}}
-
 # Backfill par mois pour éviter les timeouts et borner la mémoire.
 # GUCs de session (via PGOPTIONS) : work_mem réduit + gather non parallèle bornent
 # le pic mémoire (sinon work_mem × workers parallèles × threads → OOM, backend tué =
