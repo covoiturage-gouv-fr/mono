@@ -185,12 +185,13 @@ checklist** rather than invoking the command.
   stop, resolve them (or surface to the user), and only continue once clean.
   Rebasing the **feature** branch onto `next` is fine; `next` itself is never rebased.
 - Ensure the branch is pushed: `git push -u origin <branch>` (confirm first - outward-facing).
-  After a rebase that rewrote already-pushed commits, this needs `--force-with-lease`.
+  After a rebase that rewrote already-pushed commits, this needs `--force-with-lease` - on the
+  feature branch only, never on `main` / `next`.
 - Create the PR, **base `$BASE`**, with the title + `tmp/pr/pr-body.md`, via either:
   - `mcp__github__create_pull_request` (preferred per CLAUDE.md), or
   - `gh pr create --base $BASE --title "<titre>" -F tmp/pr/pr-body.md`.
 - An existing PR opened against the wrong base: change the base in GitHub (`gh pr edit <n>
-  --base $BASE`) after rebasing, rather than opening a new PR.
+  --base $BASE`) after rebasing and after confirming with the user, rather than opening a new PR.
 - **Always confirm with the user before pushing and before opening the PR** (outward-facing).
 
 ### 8. Post-push: monitor CI and fix feedback (loop until green)
@@ -203,7 +204,8 @@ and fix failures** — do not hand back a red PR.
   **job conclusion** (`gh run view <run> --json jobs`), not a stale check-run row — a run can
   show `success` overall while a non-required job failed, and the merge gate still blocks on it.
 - **On failure**: fetch the failing job log (`gh run view --job <id> --log`), diagnose, fix,
-  commit (signed), push (`--force-with-lease` after amend/rebase), and **re-watch**. Repeat
+  commit (signed), push (`--force-with-lease` after amend/rebase, feature branch only), and
+  **re-watch**. Repeat
   until all required checks are green or you hit a genuine blocker for the user.
 - **Rebase first when behind** (biggest gotcha): CI lints the **merge commit** (branch + current
   `$BASE`) and lints **only files changed vs the merge-base**. A branch behind `$BASE` fails on
