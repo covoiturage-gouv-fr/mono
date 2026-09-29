@@ -11,11 +11,20 @@ import typer
 from dotenv import load_dotenv
 from psycopg import sql
 
-from pipelines.cmd.analyze import foreign_tables
 from pipelines.helpers.pg import pg_conninfo
 
 load_dotenv()
 app = typer.Typer()
+
+
+def foreign_tables(conn, schema: str) -> list[str]:
+  # pg_catalog plutôt qu'information_schema, qui masque les tables sans droit pour le rôle.
+  rows = conn.execute(
+    "SELECT c.relname FROM pg_foreign_table f JOIN pg_class c ON c.oid = f.ftrelid "
+    "JOIN pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = %s ORDER BY c.relname",
+    (schema,),
+  ).fetchall()
+  return [r[0] for r in rows]
 
 
 def fdw_server(conn) -> str:

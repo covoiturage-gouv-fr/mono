@@ -279,6 +279,8 @@ just fdw-sync          # importe les vues dlk_export absentes de dlk_import
 just analyze-sources
 ```
 
+`fdw-sync` importe toute vue de `dlk_export` absente de `dlk_import` : chaque nouvelle vue est relue côté API (migration) avant d'être importée. Le rôle datalake doit avoir `USAGE` sur le serveur FDW et `CREATE` sur `dlk_import` ; ne pas le lancer en superuser pour contourner un refus.
+
 ### Étape 3 — Backfill de la couche trusted (FDW)
 
 ```bash
