@@ -1,0 +1,70 @@
+name: Deno dependencies
+
+# Dependabot ne gère pas api/deno.jsonc : rapport hebdomadaire dans une issue.
+
+on:
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+  report:
+    name: (api) audit et versions Deno
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write # crée ou met à jour l'issue de rapport
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+      - uses: denoland/setup-deno@667a34cdef165d8d2b2e98dde39547c9daac7282 # v2.0.4
+        with:
+          deno-version: v2.6.4
+      - name: Publish report
+        working-directory: api
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TITLE: "(api) veille des dépendances Deno"
+        run: |
+          strip_ansi() { sed 's/\x1b\[[0-9;]*m//g'; }
+          # deno audit sort en 1 dès qu'une vulnérabilité est trouvée
+          audit=$(deno audit 2>&1 | strip_ansi) || true
+          outdated=$(deno outdated 2>&1 | strip_ansi)
+          pinned=$(sed -n 's/^ARG DENO_VERSION=//p' ../docker/api/Dockerfile)
+          latest=$(curl -fsSL https://dl.deno.land/release-latest.txt)
+
+          {
+            echo "Rapport du [workflow]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID) du $(date -I)."
+            echo
+            echo "## Version de Deno"
+            echo "Épinglée (\`docker/api/Dockerfile\`) : $pinned ; dernière publiée : ${latest#v}"
+            echo
+            echo "## Vulnérabilités (\`deno audit\`)"
+            echo '```'
+            echo "$audit"
+            echo '```'
+            echo
+            echo "## Versions obsolètes (\`deno outdated\`)"
+            echo '```'
+            echo "$outdated"
+            echo '```'
+          } > "$RUNNER_TEMP/full.md"
+          # corps d'issue limité à 65 536 caractères
+          head -c 60000 "$RUNNER_TEMP/full.md" > "$RUNNER_TEMP/body.md"
+
+          number=$(gh issue list --state open --search "\"$TITLE\" in:title" --json number,title \
+            --jq '.[] | select(.title == env.TITLE) | .number' | head -1)
+          if [ -n "$number" ]; then
+            gh issue edit "$number" --body-file "$RUNNER_TEMP/body.md"
+          else
+            gh issue create --title "$TITLE" --body-file "$RUNNER_TEMP/body.md"
+          fi
