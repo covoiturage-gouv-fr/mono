@@ -2,7 +2,7 @@ import { assertEquals, assertRejects } from "dep:assert";
 import { afterAll, beforeAll, describe, it } from "dep:testing-bdd";
 import { env_or_fail } from "@/lib/env/index.ts";
 import sql, { raw } from "@/lib/pg/sql.ts";
-import { DenoMigrator } from "@/pdc/providers/migration/DenoMigrator.ts";
+import { DenoMigrator } from "./DenoMigrator.ts";
 
 // Seeds : 17 périmètres, millésime 2021, dans la table geo.perimeters.
 describe("geo.perimeters millésimes", () => {
@@ -23,7 +23,9 @@ describe("geo.perimeters millésimes", () => {
     `);
 
   const switchToMillesimes = async () =>
-    mig.testConn.query(raw(await Deno.readTextFile(new URL("./switch-to-millesimes.sql", import.meta.url))));
+    mig.testConn.query(
+      raw(await Deno.readTextFile(new URL("../../../db/geo/switch-to-millesimes.sql", import.meta.url))),
+    );
 
   const kind = async () =>
     (await mig.testConn.query<{ kind: string }>(sql`
@@ -121,7 +123,7 @@ describe("geo.perimeters millésimes", () => {
       ) AS t (year, mod, old_com, new_com, l_mod)
     `);
     await mig.testConn.query(
-      raw(await Deno.readTextFile(new URL("./import-com-evolution.sql", import.meta.url))),
+      raw(await Deno.readTextFile(new URL("../../../db/geo/import-com-evolution.sql", import.meta.url))),
     );
 
     const rows = await mig.testConn.query<{ year: number; old_com: string }>(sql`
