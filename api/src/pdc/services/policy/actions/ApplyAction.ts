@@ -13,6 +13,7 @@ import {
   IncentiveRepositoryProviderInterfaceResolver,
   PolicyRepositoryProviderInterfaceResolver,
   StatelessIncentiveInterface,
+  TerritoryRepositoryProviderInterfaceResolver,
   TripRepositoryProviderInterfaceResolver,
 } from "../interfaces/index.ts";
 
@@ -37,6 +38,7 @@ export class ApplyAction extends AbstractAction {
     private policyRepository: PolicyRepositoryProviderInterfaceResolver,
     private incentiveRepository: IncentiveRepositoryProviderInterfaceResolver,
     private tripRepository: TripRepositoryProviderInterfaceResolver,
+    private territoryRepository: TerritoryRepositoryProviderInterfaceResolver,
   ) {
     super();
   }
@@ -81,6 +83,7 @@ export class ApplyAction extends AbstractAction {
       throw new NotFoundException(`[policy ${policy_id}] Not found`);
     }
 
+    pol.perimeters = await this.territoryRepository.findPerimeters(pol.territory_id);
     const policy = await Policy.import(pol);
 
     // init counter and benchmark

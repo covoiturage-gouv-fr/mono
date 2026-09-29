@@ -28,16 +28,49 @@ or asks me to open one. It is the only path that should create a PR for this pro
 
 - Must be in a git repo with a working tree. If clean AND no unpushed commits on a feature
   branch -> nothing to do; stop and say so.
-- If on `main` with uncommitted changes -> the skill creates the branch itself (step 1).
+- If on `main` or `next` with uncommitted changes -> the skill creates the branch itself (step 1).
 - Requires `$DATABASE_URL` is NOT needed; requires network for the CGU refresh and `gh`/MCP.
+- Only for **feature PRs**. `next` -> `main` and `main` -> `next` PRs are merge-commit PRs done
+  with the `release-sync` skill (`main-to-next` / `next-to-main`); this skill never creates them
+  and never rebases `next`.
 
 ## Procedure
 
 ### 1. Branch
 
-- `git branch --show-current`. If on `main`, infer `<type>/<scope-kebab>` from the diff paths
-  and `git switch -c <type>/<scope-kebab>` (ASCII, no accents). Otherwise keep current branch.
+- `git branch --show-current`. If on `main` or `next`, infer `<type>/<scope-kebab>` from the diff
+  paths and `git switch -c <type>/<scope-kebab>` (ASCII, no accents). Otherwise keep current branch.
 - Pick a release-appropriate `<type>`/`<scope>` per step 2b when the diff touches app-stack code.
+
+### 1b. Base branch (`$BASE`)
+
+Gitflow: `docs/GITFLOW.md` (source of truth, re-read it if unsure). Pick the PR target from the
+files the branch itself changes, diffed from where it started (`origin/next` if it was cut from
+`next`, else `origin/main`): `git diff --name-only $(git merge-base origin/<start> HEAD)`.
+
+| Diff | `$BASE` | Release on merge |
+| ---- | ------- | ---------------- |
+| touches `api/`, `app-partners/`, `app-observatory/` or `shared/` | **`next`** (default) | prerelease `vX.Y.Z-rc.N`, **demo only** |
+| same, but the user asks for a hotfix / direct delivery | `main` | stable `vX.Y.Z`, demo + **production** |
+| data-only (`datalake/`, `dbt/`, `cms/`), `docker/`, `.github/`, `docs/`, `.claude/` | **`main`** | none (no demo env for these) |
+
+- Mixed app + data diff -> `next` (the app code decides), or split the data part into its own PR
+  to `main`.
+- Ambiguous (hotfix or not?) -> ask the user before going further.
+- `$BASE` is used by steps 4, 7 and 8. Feature PRs are **squash**-merged on both bases.
+
+**If `$BASE` is `next`: is `next` up to date with `main`?** The last stable of `main` must be
+reachable from `next` before any other merge into `next`:
+
+```bash
+git fetch origin main next --tags
+STABLE=$(git describe --tags --abbrev=0 --match 'v[0-9]*' --exclude '*-*' origin/main)
+git merge-base --is-ancestor "$STABLE" origin/next || echo "next en retard sur $STABLE"
+```
+
+If behind: warn the user and **offer** to run the `release-sync` skill in mode `main-to-next`
+first (do not launch it without a yes: that PR concerns the whole team). Whatever the answer,
+the feature PR can still be prepared, but say it must not be merged before the catch-up.
 
 ### 2. Commit
 
@@ -93,6 +126,10 @@ datalake / cms / docker / .github ...) can **never** cut a release, whatever the
 deploys. A manual `workflow_dispatch` builds a `github.sha`-tagged image the cluster does not
 reference -> no rollout. A real release is the only way to deploy app code.
 
+**Where it deploys depends on `$BASE`** (step 1b): merged into `next` -> `rc` in **demo only**;
+merged into `main` -> stable in demo **and production**. A prerelease migrates the demo database:
+its migrations must stay compatible with the next stable.
+
 ### 3. CGU freshness (refresh if stale)
 
 - Read `cgu-rules.md` frontmatter `last_synced`. Compute age with `date`.
@@ -107,7 +144,7 @@ reference -> no rollout. A real release is the only way to deploy app code.
 
 Dispatch **every registry row as a parallel read-only `Explore` subagent in one batch**.
 Each subagent reads its `source` checklist + the PR diff
-(`git diff $(git merge-base main HEAD)`) and returns a structured report **in French**:
+(`git diff $(git merge-base origin/$BASE HEAD)`) and returns a structured report **in French**:
 verdict `PASS`/`FAIL`, severity, and findings (`fichier:ligne`, problème, recommandation).
 
 **Check registry** (extend by appending a row - no orchestration change):
@@ -142,15 +179,19 @@ checklist** rather than invoking the command.
 
 ### 7. Create the PR (with confirmation)
 
-- **Rebase on `origin/main` first** (before pushing): `git fetch origin main` then
-  `git rebase origin/main`. A branch behind `main` is flagged out-of-date by GitHub
+- **Rebase on `origin/$BASE` first** (before pushing): `git fetch origin $BASE` then
+  `git rebase origin/$BASE`. A branch behind its base is flagged out-of-date by GitHub
   (blocks the merge) and re-runs the CI for nothing. If the rebase hits conflicts,
   stop, resolve them (or surface to the user), and only continue once clean.
+  Rebasing the **feature** branch onto `next` is fine; `next` itself is never rebased.
 - Ensure the branch is pushed: `git push -u origin <branch>` (confirm first - outward-facing).
-  After a rebase that rewrote already-pushed commits, this needs `--force-with-lease`.
-- Create the PR, **base `main`**, with the title + `tmp/pr/pr-body.md`, via either:
+  After a rebase that rewrote already-pushed commits, this needs `--force-with-lease` - on the
+  feature branch only, never on `main` / `next`.
+- Create the PR, **base `$BASE`**, with the title + `tmp/pr/pr-body.md`, via either:
   - `mcp__github__create_pull_request` (preferred per CLAUDE.md), or
-  - `gh pr create --base main --title "<titre>" -F tmp/pr/pr-body.md`.
+  - `gh pr create --base $BASE --title "<titre>" -F tmp/pr/pr-body.md`.
+- An existing PR opened against the wrong base: change the base in GitHub (`gh pr edit <n>
+  --base $BASE`) after rebasing and after confirming with the user, rather than opening a new PR.
 - **Always confirm with the user before pushing and before opening the PR** (outward-facing).
 
 ### 8. Post-push: monitor CI and fix feedback (loop until green)
@@ -163,13 +204,14 @@ and fix failures** — do not hand back a red PR.
   **job conclusion** (`gh run view <run> --json jobs`), not a stale check-run row — a run can
   show `success` overall while a non-required job failed, and the merge gate still blocks on it.
 - **On failure**: fetch the failing job log (`gh run view --job <id> --log`), diagnose, fix,
-  commit (signed), push (`--force-with-lease` after amend/rebase), and **re-watch**. Repeat
+  commit (signed), push (`--force-with-lease` after amend/rebase, feature branch only), and
+  **re-watch**. Repeat
   until all required checks are green or you hit a genuine blocker for the user.
 - **Rebase first when behind** (biggest gotcha): CI lints the **merge commit** (branch + current
-  `main`) and lints **only files changed vs the merge-base**. A branch behind `main` fails on
-  *main's* content (e.g. a long line another PR merged into a file you also touch) — invisible in
-  your local file. If a violation points at a line you never wrote, `git fetch origin main &&
-  git rebase origin/main`, then fix the offending line (it's now in your rebased file).
+  `$BASE`) and lints **only files changed vs the merge-base**. A branch behind `$BASE` fails on
+  the base's content (e.g. a long line another PR merged into a file you also touch) — invisible
+  in your local file. If a violation points at a line you never wrote, `git fetch origin $BASE &&
+  git rebase origin/$BASE`, then fix the offending line (it's now in your rebased file).
 - **Reproduce SQL lint locally** (`sqlfluff` uses the dbt templater; the nix venv's `yaml` is a
   broken stub): spin up the CI's DB and run the pinned version —
   `docker run -d --name sqlfluff-pg -e POSTGRES_DB=covoiturage_ci -e POSTGRES_USER=postgres
@@ -188,7 +230,11 @@ and fix failures** — do not hand back a red PR.
 
 ## Output
 
-Report: branch, commit subject, each check's verdict (PASS/FAIL + count), the PR URL once
-created - or the blocking reason if halted at the gate - the **release verdict** per step 2b
-(will this PR cut a version and deploy, or not, and why), and the **final CI state** after
-step 8 (all green / still red with the fix applied / green and awaiting human approval).
+Report: branch, **base `$BASE` and merge method (squash)**, commit subject, each check's verdict
+(PASS/FAIL + count), the PR URL once created - or the blocking reason if halted at the gate - the
+**release verdict** per step 2b (rc in demo, stable in production, or no release, and why), and
+the **final CI state** after step 8 (all green / still red with the fix applied / green and
+awaiting human approval).
+
+If `$BASE` is `main` and the PR cuts a stable release: remind that `main` must then be merged back
+into `next` (PR `main` -> `next`, **merge commit**) before any other merge into `next`.

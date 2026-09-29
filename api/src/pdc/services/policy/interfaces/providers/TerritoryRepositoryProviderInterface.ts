@@ -2,6 +2,7 @@ import {
   TerritoryCodeInterface,
   TerritorySelectorsInterface,
 } from "../index.ts";
+import { TerritoryPerimeterInterface } from "@/pdc/services/territory/contracts/common/interfaces/TerritoryPerimeterInterface.ts";
 export interface TerritoryRepositoryProviderInterface {
   findByPoint(
     { lon, lat }: { lon: number; lat: number },
@@ -12,6 +13,7 @@ export interface TerritoryRepositoryProviderInterface {
   findUUIDByOperatorId(_id: number): Promise<string>;
   findBySelector(data: Partial<TerritoryCodeInterface>): Promise<number[]>;
   findSelectorFromId(id: number): Promise<TerritorySelectorsInterface>;
+  findPerimeters(territory_id: number): Promise<TerritoryPerimeterInterface[]>;
 }
 export abstract class TerritoryRepositoryProviderInterfaceResolver
   implements TerritoryRepositoryProviderInterface {
@@ -34,6 +36,9 @@ export abstract class TerritoryRepositoryProviderInterfaceResolver
     throw new Error();
   }
   async findSelectorFromId(id: number): Promise<TerritorySelectorsInterface> {
+    throw new Error();
+  }
+  async findPerimeters(territory_id: number): Promise<TerritoryPerimeterInterface[]> {
     throw new Error();
   }
 }
