@@ -25,6 +25,8 @@ feature ──squash──▶ next ──merge commit──▶ main
 
 Le ruleset « Protect base branches » autorise merge commit et squash sur `main` et `next`. Il ne sait pas filtrer sur la branche source : **le choix de la méthode est manuel**, et GitHub présélectionne la dernière utilisée. Vérifier le bouton avant de fusionner.
 
+Le ruleset « Block deletion » interdit, sans bypass, la suppression de `main` et `next`. Il empêche aussi l'option « Automatically delete head branches » de supprimer `next` au merge d'une PR `next` → `main`.
+
 Pourquoi un merge commit entre `main` et `next` :
 
 - `next` → `main` : semantic-release lit les commits. Un squash ne garde que le titre de la PR et perd les feat/fix des rc.
