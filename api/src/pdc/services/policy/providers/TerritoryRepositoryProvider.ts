@@ -9,6 +9,7 @@ import {
   TerritoryRepositoryProviderInterfaceResolver,
   TerritorySelectorsInterface,
 } from "../interfaces/index.ts";
+import { TerritoryPerimeterInterface } from "@/pdc/services/territory/contracts/common/interfaces/TerritoryPerimeterInterface.ts";
 
 @provider({
   identifier: TerritoryRepositoryProviderInterfaceResolver,
@@ -21,6 +22,7 @@ export class TerritoryRepositoryProvider implements TerritoryRepositoryProviderI
   protected readonly territorySelectorTable = "territory.territory_group_selector";
   protected readonly operatorTable = "operator.operators";
   protected readonly companyTable = "company.companies";
+  protected readonly perimeterTable = "territory.territory_perimeters";
 
   constructor(protected pgConnection: DenoPostgresConnection) {}
 
@@ -96,5 +98,14 @@ export class TerritoryRepositoryProvider implements TerritoryRepositoryProviderI
       throw new NotFoundException();
     }
     return rows[0].selector;
+  }
+
+  async findPerimeters(territory_id: number): Promise<TerritoryPerimeterInterface[]> {
+    return await this.pgConnection.query<TerritoryPerimeterInterface>(sql`
+      SELECT version, arr, valid_from, valid_to
+      FROM ${raw(this.perimeterTable)}
+      WHERE territory_id = ${territory_id}
+      ORDER BY version
+    `);
   }
 }
