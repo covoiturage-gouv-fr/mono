@@ -104,7 +104,7 @@ export default function DescriptiveSheetUrlEditor({ campaignId, initialValue }: 
                   category: "campagne",
                   action: "Consultation de la fiche descriptive",
                   name: `Campaign ID`,
-                  value: `${campaignId}`,
+                  value: Number(campaignId),
                 });
 
                 // Navigate to URL in new tab

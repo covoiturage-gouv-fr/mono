@@ -1,14 +1,16 @@
 import JDMA from "@/components/common/JDMA";
 import { MatomoAnalytics } from "@/components/layout/MatomoAnalytics";
 import { Skiplinks } from "@/components/layout/Skiplinks";
-import { StartDsfr } from "@/components/layout/StartDsfr";
-import { defaultColorScheme } from "@/components/layout/defaultColorScheme";
+import {
+  DsfrProvider,
+  StartDsfrOnHydration,
+} from "@/components/layout/dsfr-bootstrap";
+import {
+  DsfrHead,
+  getHtmlAttributes,
+} from "@/components/layout/dsfr-bootstrap/server-only-index";
 import MuiDsfrThemeProvider from "@codegouvfr/react-dsfr/mui";
-import { DsfrHead } from "@codegouvfr/react-dsfr/next-appdir/DsfrHead";
-import { DsfrProvider } from "@codegouvfr/react-dsfr/next-appdir/DsfrProvider";
-import { getHtmlAttributes } from "@codegouvfr/react-dsfr/next-appdir/getHtmlAttributes";
 import { Metadata } from "next";
-import Link from "next/link";
 import { Suspense } from "react";
 import "../styles/global.scss";
 
@@ -27,14 +29,12 @@ export default function RootLayout({
   //NOTE: The lang parameter is optional and defaults to "fr"
   const lang = "fr";
   return (
-    <html {...getHtmlAttributes({ defaultColorScheme, lang })}>
+    <html {...getHtmlAttributes({ lang })}>
       <head>
         <Suspense fallback={null}>
           <MatomoAnalytics />
         </Suspense>
-        <StartDsfr />
         <DsfrHead
-          Link={Link}
           preloadFonts={[
             //"Marianne-Light",
             //"Marianne-Light_Italic",
@@ -50,7 +50,8 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <DsfrProvider>
+        <DsfrProvider lang={lang}>
+          <StartDsfrOnHydration />
           <MuiDsfrThemeProvider>
             <Skiplinks />
             {children}

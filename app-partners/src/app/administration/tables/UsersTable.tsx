@@ -208,7 +208,8 @@ export default function UsersTable(props: { title: string; territoryId: number |
       ...prev,
       scopes,
       territory_id: def?.territory_id,
-      login_siren: (prev.login_siren as string) || suggestSiren(scopes),
+      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- "" doit aussi être remplacé
+      login_siren: prev.login_siren || suggestSiren(scopes),
     }));
   };
 

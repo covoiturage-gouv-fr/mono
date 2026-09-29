@@ -55,8 +55,7 @@ export default function TabExport() {
     void sendEvent({
       category: "export",
       action: "Export",
-      name: `Territory ID | Operator ID | TerritorySelector`,
-      value: `${territorySelectors ? "N/A" : territoryId ?? "N/A"} | ${user?.operator_id ?? "N/A"} | ${territorySelectors ? JSON.stringify(territorySelectors) : "N/A"}`,
+      name: `Territory ID | Operator ID | TerritorySelector : ${territorySelectors ? "N/A" : territoryId ?? "N/A"} | ${user?.operator_id ?? "N/A"} | ${territorySelectors ? JSON.stringify(territorySelectors) : "N/A"}`,
     });
     try {
       await createExport({

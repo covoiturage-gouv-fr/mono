@@ -1,6 +1,6 @@
 services:
   proxy:
-    image: traefik:v3.6.8
+    image: traefik:v3.7.13
     container_name: traefik
     ports:
       - 80:80
