@@ -39,7 +39,7 @@ jobs:
           key: ${{ runner.os }}-deno-${{ hashFiles('**/deno.lock') }}
       - uses: denoland/setup-deno@667a34cdef165d8d2b2e98dde39547c9daac7282 # v2.0.4
         with:
-          deno-version: v2.6.4
+          deno-version: v2.9.6
       - name: Run lint
         working-directory: ./api
         # FIXME
@@ -64,7 +64,7 @@ jobs:
           key: ${{ runner.os }}-deno-${{ hashFiles('**/deno.lock') }}
       - uses: denoland/setup-deno@667a34cdef165d8d2b2e98dde39547c9daac7282 # v2.0.4
         with:
-          deno-version: v2.6.4
+          deno-version: v2.9.6
       - uses: taiki-e/install-action@0631aa6515c7d545823c67cfae7ef4fc7f490154 # v2.81.8
         with:
           tool: just@1.44.1
@@ -363,11 +363,13 @@ jobs:
           filters: |
             app:
               - 'api/**'
+              - 'docker/api/**'
               - 'app-partners/**'
               - 'app-observatory/**'
               - 'shared/**'
             api:
               - 'api/**'
+              - 'docker/api/**'
               - 'shared/**'
             partners:
               - 'app-partners/**'
