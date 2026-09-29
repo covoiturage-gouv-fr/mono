@@ -6,6 +6,7 @@ permissions:
   packages: write # zizmor: ignore[excessive-permissions]
   id-token: write # zizmor: ignore[excessive-permissions]
   attestations: write # zizmor: ignore[excessive-permissions]
+  security-events: write # zizmor: ignore[excessive-permissions]
 
 inputs:
   name:
@@ -70,14 +71,30 @@ runs:
           org.opencontainers.image.created=${{ steps.buildx.outputs.start }}
           org.opencontainers.image.version=${{ inputs.tag }}
 
-    - name: Run Trivy vulnerability scanner
+    - name: Trivy report (all severities)
       uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
       with:
         image-ref: ghcr.io/${{ github.repository_owner }}/${{ inputs.name }}:${{ inputs.tag }}
-        format: "template"
-        template: "@/contrib/sarif.tpl"
-        output: "trivy-results.sarif"
-      continue-on-error: true
+        format: sarif
+        output: trivy-results.sarif
+        trivyignores: .trivyignore
+
+    - name: Upload Trivy report to Code scanning
+      uses: github/codeql-action/upload-sarif@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4.38.2
+      with:
+        sarif_file: trivy-results.sarif
+        category: trivy-${{ inputs.name }}
+
+    - name: Trivy gate (fixable CRITICAL)
+      uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+      with:
+        image-ref: ghcr.io/${{ github.repository_owner }}/${{ inputs.name }}:${{ inputs.tag }}
+        format: table
+        severity: CRITICAL
+        ignore-unfixed: true
+        exit-code: "1"
+        trivyignores: .trivyignore
+        skip-setup-trivy: true
 
     - name: Login to GitHub Container Registry
       uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4.2.0
