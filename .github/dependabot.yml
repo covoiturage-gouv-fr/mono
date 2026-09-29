@@ -1,0 +1,69 @@
+# API Deno (deno.jsonc) non géré par Dependabot : à couvrir à part.
+version: 2
+
+updates:
+  - package-ecosystem: npm
+    directories:
+      - /app-partners
+      - /app-observatory
+      - /app-attestation-forms
+      - /cms
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: build(deps)
+    groups:
+      npm-minor-patch:
+        update-types: [minor, patch]
+
+  # Application gelée : correctifs de sécurité seulement.
+  - package-ecosystem: npm
+    directory: /app-attestation
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 0
+    commit-message:
+      prefix: build(deps)
+
+  - package-ecosystem: uv
+    directories:
+      - /api-datalake
+      - /datalake
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: build(deps)
+    groups:
+      uv-minor-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: docker
+    directories:
+      - /docker/**
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: build(deps)
+    groups:
+      docker-minor-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directories:
+      - /
+      - /.github/actions/*
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: ci(deps)
+    groups:
+      actions-minor-patch:
+        update-types: [minor, patch]
