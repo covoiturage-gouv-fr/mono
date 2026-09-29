@@ -354,12 +354,29 @@ jobs:
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
+          fetch-depth: 0
+      # push: diff since the last release tag, not the previous push, so a run cancelled
+      # by a later non-app push does not lose its app changes (and its release)
+      - name: Last release tag
+        id: last_release
+        if: ${{ github.event_name == 'push' }}
+        shell: bash
+        env:
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          exclude=()
+          if [ "$REF_NAME" = main ]; then exclude=(--exclude '*-*'); fi
+          tag=$(git describe --tags --abbrev=0 --match 'v[0-9]*' "${exclude[@]}" || true)
+          if [ -n "$tag" ]; then
+            echo "Last release: $tag"
+            echo "sha=$(git rev-list -n 1 "$tag")" >> "$GITHUB_OUTPUT"
+          fi
       - name: Detect app-stack changes
         id: filter
         uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.0.1
         with:
-          # push on next: diff vs the previous commit, not vs main (default base)
-          base: ${{ github.event_name == 'push' && github.ref_name || '' }}
+          # fallback without tag: diff vs the previous push, not vs main (default base)
+          base: ${{ steps.last_release.outputs.sha || (github.event_name == 'push' && github.ref_name) || '' }}
           filters: |
             app:
               - 'api/**'
