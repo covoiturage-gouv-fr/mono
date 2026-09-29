@@ -140,6 +140,40 @@ seed:
 source:
   deno run {{ deno_flags }} --v8-flags=--max-old-space-size=4096 src/db/cmd-source.ts
 
+# Import the perimeters millesimes and com_evolution dumped by the datalake (`just export-perimeters`),
+# in one transaction.
+# Each goes to its own geo.perimeters_<year> partition; geo.perimeters then points to the latest
+# (the first import renames the former table to geo.perimeters_legacy and creates that view).
+# replace=true overwrites millesimes already there (the datalake re-exports the previous one).
+# ex: just geo-import perimeters_2025-2026.20260929T080503Z.pgdump <sha256> true
+[group('database')]
+geo-import source sha replace="false":
+  #!/usr/bin/env bash
+  set -euo pipefail
+  [[ "{{ replace }}" =~ ^(true|false)$ ]] || { echo "replace must be true or false" >&2; exit 1; }
+  cd "{{ invocation_directory() }}"
+  file="{{ source }}"
+  if [[ "$file" == https://* ]]; then
+    file="$(mktemp --suffix=.pgdump)"
+    trap 'rm -f "$file"' EXIT
+    curl -fsSL -o "$file" "{{ source }}"
+  fi
+  echo "{{ sha }}  $file" | sha256sum --check --quiet
+  tables="$(pg_restore -l "$file" | awk '$4 == "TABLE" && $5 == "DATA" && $6 == "geo_export" && $7 ~ /^perimeters_/ { print $7 }' | sort)"
+  [[ -n "$tables" ]] || { echo "no perimeters table in dump" >&2; exit 1; }
+  attach=""
+  for table in $tables; do
+    year="${table#perimeters_}"
+    [[ "$year" =~ ^[0-9]{4}$ ]] || { echo "unexpected dump content: '$table'" >&2; exit 1; }
+    attach+="SELECT geo.attach_millesime('geo_export.$table', $year::smallint, {{ replace }});"
+  done
+  psql "{{ pgurl }}" -v ON_ERROR_STOP=1 -q -c "DROP SCHEMA IF EXISTS geo_export CASCADE; CREATE SCHEMA geo_export"
+  pg_restore --no-owner --no-acl --exit-on-error -d "{{ pgurl }}" "$file"
+  psql "{{ pgurl }}" -v ON_ERROR_STOP=1 --single-transaction -c "$attach" \
+    -f "{{ justfile_directory() }}/src/db/geo/switch-to-millesimes.sql" \
+    -f "{{ justfile_directory() }}/src/db/geo/import-com-evolution.sql"
+  psql "{{ pgurl }}" -v ON_ERROR_STOP=1 -q -c "DROP SCHEMA geo_export CASCADE"
+
 # Run external data migrations
 [group('database')]
 external_data_migrate:

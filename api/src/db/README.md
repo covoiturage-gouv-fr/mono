@@ -12,7 +12,8 @@
 
 - `just migrate`: run all migrations and flash data from the cache
 - `just seed`: run all migrations and seed test data from `providers/migration/seeds`
-- `just source`: import datasets from `db/geo` to `geo.perimeters`
+- `just source`: import datasets from `db/geo` to `geo.perimeters` (legacy, superseded by the datalake)
+- `just geo-import <file|url> <sha256> [replace]`: import the millesimes and `com_evolution` dumped by the datalake
 - `just external_data_migrate`: import external datasets
 
 ## Migrations
@@ -43,9 +44,52 @@ pg_dump --no-owner --no-acl --no-comments -s \
     > application.sql
 ```
 
+## Geo perimeters and millesimes
+
+| Object | Content |
+| ------ | ------- |
+| `geo.perimeters_all` | millesimes imported from the datalake, partitioned by `year` |
+| `geo.perimeters_<year>` | one partition per imported millesime |
+
+`geo.perimeters` stays the current table until the first `geo-import`. At the end of it, in the
+same transaction, `src/db/geo/switch-to-millesimes.sql` (no-op afterwards):
+
+- renames the table to `geo.perimeters_legacy` (backup, never read again),
+- creates the `geo.perimeters` view on the latest millesime of `geo.perimeters_all`,
+- repoints the SQL functions reading `geo.perimeters` to `geo.perimeters_all`.
+
+Lookups on a past year (trip date, APDF, campaigns) go through `geo.*` functions
+(`geo.get_by_code`, `geo.get_latest_millesime_or`), which read the right table before and after the
+switch. `valid_from` / `valid_until` come from the datalake (`zone_trusted.perimeters`).
+
+Import from the datalake. The export holds the 2 latest millesimes so the previous one gets its
+updated `valid_until`, hence `replace` = true. The dump is attached in one transaction.
+
+```shell
+# datalake
+just export-perimeters
+# api (psql, pg_restore >= server version)
+just geo-import perimeters_2025-2026.<ts>.pgdump <sha256> true
+```
+
+The same transaction refreshes `geo.com_evolution` (no versioning): rows of the years covered by the
+export (from 2020) are replaced, older ones (2019) are kept (`src/db/geo/import-com-evolution.sql`).
+
+`geo.attach_millesime(source, year, replace)` copies the staging `source` rows for `year` into
+`geo.perimeters_<year>` and attaches it. It refuses to:
+
+- overwrite an existing millesime unless `replace` is true,
+- attach a latest millesime with fewer than 90 % of the rows of the one in service.
+
+`just source` (legacy geo pipeline) writes to the `geo.perimeters` table: do not use it after the
+switch.
+
 ## Dump data for flashing
 
 The `geo.perimeters` table can be sourced (see below) or flashed from a data dump.
+
+The current archive fills the `geo.perimeters` table (before the switch). Do not rebuild it from a
+switched database: run `geo-import` on the fresh database instead.
 
 ```shell
 # dump geo data for flashing

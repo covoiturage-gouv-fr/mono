@@ -24,7 +24,6 @@ export class DataRepositoryProvider implements DataRepositoryInterface {
   protected readonly carpoolV2StatusTable = "carpool_v2.status";
   protected readonly carpoolV2GeoTable = "carpool_v2.geo";
   protected readonly policyIncentivesTable = "policy.incentives";
-  protected readonly geoPerimetersTable = "geo.perimeters";
   protected readonly operatorsTable = "operator.operators";
 
   constructor(public pgConnection: DenoPostgresConnection) {
@@ -211,8 +210,8 @@ export class DataRepositoryProvider implements DataRepositoryInterface {
       join ${raw(this.carpoolV2Table)} cc on cc.operator_id = pi.operator_id and cc.operator_journey_id = pi.operator_journey_id
       join ${raw(this.carpoolV2StatusTable)} cs on cc._id = cs.carpool_id
       join ${raw(this.carpoolV2GeoTable)} cg on cc._id = cg.carpool_id
-      left join ${raw(this.geoPerimetersTable)} gps on cg.start_geo_code = gps.arr and gps.year = geo.get_latest_millesime_or(extract(year from cc.start_datetime)::smallint)
-      left join ${raw(this.geoPerimetersTable)} gpe on cg.end_geo_code = gpe.arr and gpe.year = geo.get_latest_millesime_or(extract(year from cc.end_datetime)::smallint)
+      left join lateral geo.get_by_code(cg.start_geo_code, geo.get_latest_millesime_or(extract(year from cc.start_datetime)::smallint)) gps on true
+      left join lateral geo.get_by_code(cg.end_geo_code, geo.get_latest_millesime_or(extract(year from cc.end_datetime)::smallint)) gpe on true
       left join ${raw(this.operatorsTable)} oo on oo._id = cc.operator_id
       ${declaredJoin}
 
