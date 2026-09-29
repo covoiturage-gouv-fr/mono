@@ -16,6 +16,7 @@ import { ListTerritoryActionV2 } from "./actions/group/ListTerritoryActionV2.ts"
 import { PatchContactsTerritoryAction } from "./actions/group/PatchContactsTerritoryAction.ts";
 import { UpdateTerritoryAction } from "./actions/group/UpdateTerritoryAction.ts";
 import { IndexCommand } from "./commands/IndexCommand.ts";
+import { PerimeterCommand } from "./commands/PerimeterCommand.ts";
 import { config } from "./config/index.ts";
 import { create } from "./contracts/create.schema.ts";
 import { deleteTerritory } from "./contracts/delete.schema.ts";
@@ -27,11 +28,12 @@ import { binding as listGeoBinding } from "./contracts/listGeo.schema.ts";
 import { patchContacts } from "./contracts/patchContacts.schema.ts";
 import { update } from "./contracts/update.schema.ts";
 import { GeoRepositoryProvider } from "./providers/GeoRepositoryProvider.ts";
+import { PerimeterRepositoryProvider } from "./providers/PerimeterRepositoryProvider.ts";
 import { TerritoryRepositoryProvider } from "./providers/TerritoryRepositoryProvider.ts";
 
 @serviceProvider({
   config,
-  providers: [TerritoryRepositoryProvider, GeoRepositoryProvider],
+  providers: [TerritoryRepositoryProvider, GeoRepositoryProvider, PerimeterRepositoryProvider],
   validator: [
     ["territory.create", create],
     ["territory.update", update],
@@ -61,7 +63,7 @@ import { TerritoryRepositoryProvider } from "./providers/TerritoryRepositoryProv
     GetAuthorizedCodesAction,
     IndexAllGeoAction,
   ],
-  commands: [IndexCommand],
+  commands: [IndexCommand, PerimeterCommand],
 })
 export class TerritoryServiceProvider extends AbstractServiceProvider {
   override readonly extensions: NewableType<ExtensionInterface>[] = [ValidatorExtension];
