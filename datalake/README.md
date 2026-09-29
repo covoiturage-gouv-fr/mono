@@ -272,12 +272,12 @@ just analyze-sources
 
 `ANALYZE` les foreign tables `dlk_import.*`. Autovacuum ne les analyse jamais (elles n'ont pas de tuples locaux), donc sans ce pas leurs stats locales restent vides (`reltuples = -1`). À lancer une fois avant le backfill lourd : le planner s'appuie dessus pour les fragments de requête non délégués au serveur distant. Les stats côté serveur distant (base de l'API, ce que lit `use_remote_estimate`) sont, elles, entretenues par l'autovacuum de l'API.
 
-Une vue ajoutée à `dlk_export` côté API n'apparaît pas toute seule dans `dlk_import` : l'import initial est fait une seule fois par les ops. Une fois l'API déployée, importer la nouvelle vue (rôle avec `USAGE` sur le serveur FDW et `CREATE` sur `dlk_import`), puis `just analyze-sources` :
+Une vue ajoutée à `dlk_export` côté API n'apparaît pas toute seule dans `dlk_import` : le bootstrap FDW est manuel (dépôt infra, `tf/datalake.tf`). Une fois l'API déployée, importer la nouvelle vue connecté en `datalake` (propriétaire du serveur et de `dlk_import` ; serveur `covoiturage_production_srv` en prod, `SELECT srvname FROM pg_foreign_server` ailleurs), puis `just analyze-sources` :
 
 ```sql
 IMPORT FOREIGN SCHEMA dlk_export
   LIMIT TO (territory_territory_group_selector, territory_territory_perimeters)
-  FROM SERVER <serveur_fdw> INTO dlk_import;
+  FROM SERVER covoiturage_production_srv INTO dlk_import;
 ```
 
 ### Étape 3 — Backfill de la couche trusted (FDW)
