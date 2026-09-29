@@ -1,34 +1,34 @@
 # Migrations
 
-## Requirements
+## Prérequis
 
 - `pg_dump`
 - `pg_restore`
 - `7z`
 - `sha256sum`
-- Access to the S3 bucket (Scaleway: geo-datasets-archives) (public read)
+- Accès au bucket S3 (Scaleway : geo-datasets-archives), en lecture publique
 
-## Available commands
+## Commandes disponibles
 
-- `just migrate`: run all migrations and flash data from the cache
-- `just seed`: run all migrations and seed test data from `providers/migration/seeds`
-- `just source`: import datasets from `db/geo` to `geo.perimeters` (legacy, superseded by the datalake)
-- `just geo-import <file|url> <sha256> [replace]`: import the millesimes and `com_evolution` dumped by the datalake
-- `just external_data_migrate`: import external datasets
+- `just migrate` : joue toutes les migrations et flashe les données depuis le cache
+- `just seed` : joue toutes les migrations et charge les données de test de `providers/migration/seeds`
+- `just source` : importe les jeux de données de `db/geo` dans `geo.perimeters` (legacy, remplacé par le datalake)
+- `just geo-import <fichier|url> <sha256> [replace]` : importe les millésimes et `com_evolution` exportés du datalake
+- `just external_data_migrate` : importe les jeux de données externes
 
 ## Migrations
 
-Migrations are ordered by name in the `src/db/migrations` folder.
+Les migrations sont jouées dans l'ordre de leur nom, dans le dossier `src/db/migrations`.
 
-- `000`: initial migrations (manual), e.g. `extensions.sql`
-- `050`: geo schema
-- `100`: application
-- `200`: fraud
-- `400`: observatory
-- `500`: cee
-- `600`: stats
+- `000` : migrations initiales (manuelles), ex. `extensions.sql`
+- `050` : schéma geo
+- `100` : application
+- `200` : fraude
+- `400` : observatoire
+- `500` : CEE
+- `600` : stats
 
-## Dump all schemas
+## Dump de tous les schémas
 
 ```shell
 pg_dump --no-owner --no-acl --no-comments -s -n geo > geo.sql
@@ -44,62 +44,63 @@ pg_dump --no-owner --no-acl --no-comments -s \
     > application.sql
 ```
 
-## Geo perimeters and millesimes
+## Périmètres géographiques et millésimes
 
-| Object | Content |
-| ------ | ------- |
-| `geo.perimeters_all` | millesimes imported from the datalake, partitioned by `year` |
-| `geo.perimeters_<year>` | one partition per imported millesime |
+| Objet | Contenu |
+| ----- | ------- |
+| `geo.perimeters_all` | millésimes importés du datalake, partitionnés par `year` |
+| `geo.perimeters_<année>` | une partition par millésime importé |
 
-`geo.perimeters` stays the current table until the first `geo-import`. At the end of it, in the
-same transaction, `src/db/geo/switch-to-millesimes.sql` (no-op afterwards):
+`geo.perimeters` reste la table actuelle jusqu'au premier `geo-import`. À la fin de celui-ci, dans
+la même transaction, `src/db/geo/switch-to-millesimes.sql` (sans effet ensuite) :
 
-- renames the table to `geo.perimeters_legacy` (backup, never read again),
-- creates the `geo.perimeters` view on the latest millesime of `geo.perimeters_all`,
-- repoints the SQL functions reading `geo.perimeters` to `geo.perimeters_all`.
+- renomme la table en `geo.perimeters_legacy` (sauvegarde, plus jamais lue) ;
+- crée la vue `geo.perimeters` sur le dernier millésime de `geo.perimeters_all` ;
+- repointe vers `geo.perimeters_all` les fonctions SQL qui lisaient `geo.perimeters`.
 
-Lookups on a past year (trip date, APDF, campaigns) go through `geo.*` functions
-(`geo.get_by_code`, `geo.get_latest_millesime_or`), which read the right table before and after the
-switch. `valid_from` / `valid_until` come from the datalake (`zone_trusted.perimeters`).
+Les recherches sur une année passée (date du trajet, APDF, campagnes) passent par les fonctions
+`geo.*` (`geo.get_by_code`, `geo.get_latest_millesime_or`), qui lisent la bonne table avant comme
+après la bascule. `valid_from` / `valid_until` viennent du datalake (`zone_trusted.perimeters`).
 
-Import from the datalake. The export holds the 2 latest millesimes so the previous one gets its
-updated `valid_until`, hence `replace` = true. The dump is attached in one transaction.
+Import depuis le datalake. L'export contient les 2 derniers millésimes : le précédent reçoit ainsi
+son `valid_until` à jour, d'où `replace` = true. Tout le dump est attaché en une transaction.
 
 ```shell
 # datalake
 just export-perimeters
-# api (psql, pg_restore >= server version)
+# api (psql, pg_restore >= version du serveur)
 just geo-import perimeters_2025-2026.<ts>.pgdump <sha256> true
 ```
 
-The same transaction refreshes `geo.com_evolution` (no versioning): rows of the years covered by the
-export (from 2020) are replaced, older ones (2019) are kept (`src/db/geo/import-com-evolution.sql`).
+La même transaction met à jour `geo.com_evolution` (sans versions) : les lignes des années couvertes
+par l'export (depuis 2020) sont remplacées, les plus anciennes (2019) sont conservées
+(`src/db/geo/import-com-evolution.sql`).
 
-`geo.attach_millesime(source, year, replace)` copies the staging `source` rows for `year` into
-`geo.perimeters_<year>` and attaches it. It refuses to:
+`geo.attach_millesime(source, year, replace)` copie les lignes `year` de la table de transit
+`source` dans `geo.perimeters_<année>` et l'attache. Elle refuse :
 
-- overwrite an existing millesime unless `replace` is true,
-- attach a latest millesime with fewer than 90 % of the rows of the one in service.
+- d'écraser un millésime existant, sauf si `replace` vaut true ;
+- d'attacher un dernier millésime qui a moins de 90 % des lignes de celui en service.
 
-`just source` (legacy geo pipeline) writes to the `geo.perimeters` table: do not use it after the
-switch.
+`just source` (pipeline géo legacy) écrit dans la table `geo.perimeters` : ne plus l'utiliser après
+la bascule.
 
-## Dump data for flashing
+## Dump des données pour le flash
 
-The `geo.perimeters` table can be sourced (see below) or flashed from a data dump.
+La table `geo.perimeters` peut être alimentée par `just source` ou flashée depuis un dump de données.
 
-The current archive fills the `geo.perimeters` table (before the switch). Do not rebuild it from a
-switched database: run `geo-import` on the fresh database instead.
+L'archive actuelle remplit la table `geo.perimeters` (avant la bascule). Ne pas la régénérer depuis
+une base déjà basculée : lancer plutôt `geo-import` sur la base neuve.
 
 ```shell
-# dump geo data for flashing
+# dump des données geo pour le flash
 DUMP_FILE=$(date +%F)_data.sql.7z
 pg_dump -Fc -xO -a -n geo | 7z a -si $DUMP_FILE
 sha256sum $DUMP_FILE | tee $DUMP_FILE.sha
 ```
 
-1. Upload the archive alongside the sha256sum file to the cache bucket
-   (geo-datasets-archives) using the web interface
-2. Set the visilibity of both files to public
-3. Update the cache configuration in the `api/src/db/cmd-migrate.ts` file
-   with the public URL and the SHA256 checksum.
+1. Déposer l'archive et le fichier sha256sum dans le bucket de cache (geo-datasets-archives) via
+   l'interface web.
+2. Rendre les deux fichiers publics.
+3. Mettre à jour la configuration du cache dans `api/src/db/cmd-migrate.ts` avec l'URL publique et
+   l'empreinte SHA256.
