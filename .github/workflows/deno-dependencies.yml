@@ -28,12 +28,8 @@ jobs:
       - uses: denoland/setup-deno@667a34cdef165d8d2b2e98dde39547c9daac7282 # v2.0.4
         with:
           deno-version: v2.6.4
-      - name: Publish report
+      - name: Build report
         working-directory: api
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
-          TITLE: "(api) veille des dépendances Deno"
         run: |
           strip_ansi() { sed 's/\x1b\[[0-9;]*m//g'; }
           # deno audit sort en 1 dès qu'une vulnérabilité est trouvée
@@ -41,6 +37,7 @@ jobs:
           outdated=$(deno outdated 2>&1 | strip_ansi)
           pinned=$(sed -n 's/^ARG DENO_VERSION=//p' ../docker/api/Dockerfile)
           latest=$(curl -fsSL https://dl.deno.land/release-latest.txt)
+          [[ $latest =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]
 
           {
             echo "Rapport du [workflow]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID) du $(date -I)."
@@ -49,19 +46,27 @@ jobs:
             echo "Épinglée (\`docker/api/Dockerfile\`) : $pinned ; dernière publiée : ${latest#v}"
             echo
             echo "## Vulnérabilités (\`deno audit\`)"
-            echo '```'
+            echo '~~~~~~'
             echo "$audit"
-            echo '```'
+            echo '~~~~~~'
             echo
             echo "## Versions obsolètes (\`deno outdated\`)"
-            echo '```'
+            echo '~~~~~~'
             echo "$outdated"
-            echo '```'
+            echo '~~~~~~'
           } > "$RUNNER_TEMP/full.md"
           # corps d'issue limité à 65 536 caractères
           head -c 60000 "$RUNNER_TEMP/full.md" > "$RUNNER_TEMP/body.md"
 
-          number=$(gh issue list --state open --search "\"$TITLE\" in:title" --json number,title \
+      - name: Publish report
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TITLE: "(api) veille des dépendances Deno"
+        run: |
+          # filtre par auteur : une issue homonyme ouverte par un tiers est ignorée
+          number=$(gh issue list --state open --author "app/github-actions" \
+            --search "\"$TITLE\" in:title" --json number,title \
             --jq '.[] | select(.title == env.TITLE) | .number' | head -1)
           if [ -n "$number" ]; then
             gh issue edit "$number" --body-file "$RUNNER_TEMP/body.md"
