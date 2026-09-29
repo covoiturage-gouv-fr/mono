@@ -101,4 +101,32 @@ describe("default notification", () => {
     assert((text as string).search("contact@covoiturage.beta.gouv.fr") > -1);
     assert((html as string).search("contact@covoiturage.beta.gouv.fr") > -1);
   });
+
+  it("should escape placeholder values in message_html only", async () => {
+    const notification = new DefaultNotification("toto <toto@example.com>", {
+      fullname: `<b>x</b> & "y"`,
+      message_html: "<p>{{ fullname }}</p>",
+      message_text: "{{ fullname }}",
+    });
+
+    await transporter.send(notification);
+    const { text, html } = stub.sendMail.getCall(0).args[0];
+    assert((html as string).includes("<p>&lt;b&gt;x&lt;/b&gt; &amp; &quot;y&quot;</p>"));
+    assert(!(html as string).includes("<b>x</b>"));
+    // the text template already escapes message_text: moustache must not escape it twice
+    assert(!(text as string).includes("&amp;lt;"));
+  });
+
+  it("should render missing placeholder values as empty", async () => {
+    const notification = new DefaultNotification("toto <toto@example.com>", {
+      message_html: "<p>[{{ unknown }}]</p>",
+      message_text: "[{{ unknown }}]",
+    });
+
+    await transporter.send(notification);
+    const { text, html } = stub.sendMail.getCall(0).args[0];
+    assert((html as string).includes("<p>[]</p>"));
+    assert((text as string).includes("[]"));
+    assert(!(text as string).includes("undefined"));
+  });
 });
