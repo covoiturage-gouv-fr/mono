@@ -50,8 +50,16 @@ runs:
       id: buildx
       uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4.1.0
 
-    - name: Build ${{ inputs.name }} image for test
-      id: docker_test
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4.2.0
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ inputs.GITHUB_TOKEN }}
+
+    # pushed untagged: the release tag is only set on this digest once the scan passes
+    - name: Build and push ${{ inputs.name }} by digest
+      id: docker_build
       uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7.2.0
       with:
         builder: ${{ steps.buildx.outputs.name }}
@@ -59,9 +67,8 @@ runs:
         # add allowed contexts to ALLOWED="" variable in that step when needed.
         context: ${{ inputs.context }} # zizmor: ignore[template-injection]
         file: ${{ inputs.dockerfile }}
-        load: true
-        push: false
-        tags: ghcr.io/${{ github.repository_owner }}/${{ inputs.name }}:${{ inputs.tag }}
+        outputs: type=image,name=ghcr.io/${{ github.repository_owner }}/${{ inputs.name }},push-by-digest=true,name-canonical=true,push=true
+        sbom: true
         cache-from: type=gha,scope=${{ inputs.name }}
         cache-to: type=gha,mode=max,scope=${{ inputs.name }}
         labels: |
@@ -74,7 +81,7 @@ runs:
     - name: Trivy report (all severities)
       uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
       with:
-        image-ref: ghcr.io/${{ github.repository_owner }}/${{ inputs.name }}:${{ inputs.tag }}
+        image-ref: ghcr.io/${{ github.repository_owner }}/${{ inputs.name }}@${{ steps.docker_build.outputs.digest }}
         format: sarif
         output: trivy-results.sarif
         trivyignores: .trivyignore
@@ -88,7 +95,7 @@ runs:
     - name: Trivy gate (fixable CRITICAL)
       uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
       with:
-        image-ref: ghcr.io/${{ github.repository_owner }}/${{ inputs.name }}:${{ inputs.tag }}
+        image-ref: ghcr.io/${{ github.repository_owner }}/${{ inputs.name }}@${{ steps.docker_build.outputs.digest }}
         format: table
         severity: CRITICAL
         ignore-unfixed: true
@@ -96,30 +103,19 @@ runs:
         trivyignores: .trivyignore
         skip-setup-trivy: true
 
-    - name: Login to GitHub Container Registry
-      uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4.2.0
-      with:
-        registry: ghcr.io
-        username: ${{ github.actor }}
-        password: ${{ inputs.GITHUB_TOKEN }}
-
-    - name: Build and push ${{ inputs.name }}
-      id: docker_build
-      uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7.2.0
-      with:
-        builder: ${{ steps.buildx.outputs.name }}
-        context: ${{ inputs.context }} # zizmor: ignore[template-injection]
-        file: ${{ inputs.dockerfile }}
-        push: true
-        tags: ghcr.io/${{ github.repository_owner }}/${{ inputs.name }}:${{ inputs.tag }}
-        sbom: true
-        cache-from: type=gha,scope=${{ inputs.name }}
-        labels: |
-          org.opencontainers.image.title=${{ inputs.name }} Image
-          org.opencontainers.image.source=${{ github.event.repository.html_url }}
-          org.opencontainers.image.revision=${{ github.sha }}
-          org.opencontainers.image.created=${{ steps.buildx.outputs.start }}
-          org.opencontainers.image.version=${{ inputs.tag }}
+    - name: Tag scanned ${{ inputs.name }} image
+      shell: bash
+      env:
+        IMAGE: ghcr.io/${{ github.repository_owner }}/${{ inputs.name }}
+        TAG: ${{ inputs.tag }}
+        DIGEST: ${{ steps.docker_build.outputs.digest }}
+      run: |
+        docker buildx imagetools create --tag "$IMAGE:$TAG" "$IMAGE@$DIGEST"
+        TAGGED=$(docker buildx imagetools inspect "$IMAGE:$TAG" --format '{{.Manifest.Digest}}')
+        if [ "$TAGGED" != "$DIGEST" ]; then
+          echo "Tagged digest $TAGGED differs from scanned digest $DIGEST"
+          exit 1
+        fi
 
     - name: Attest build provenance
       uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
