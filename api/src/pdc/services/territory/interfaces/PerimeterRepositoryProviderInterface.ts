@@ -21,7 +21,13 @@ export interface OwnedPolicyInterface {
 export abstract class PerimeterRepositoryProviderInterfaceResolver {
   abstract findTerritory(territory_id: number): Promise<{ _id: number; name: string } | undefined>;
 
-  abstract createTerritory(name: string, siret?: string): Promise<number>;
+  abstract findTerritoryByName(name: string): Promise<{ _id: number; name: string } | undefined>;
+
+  abstract createTerritory(
+    name: string,
+    siret: string | undefined,
+    data: Omit<TerritoryPerimeterInterface, "version">,
+  ): Promise<number>;
 
   abstract findTerritoriesWithVersions(): Promise<number[]>;
 

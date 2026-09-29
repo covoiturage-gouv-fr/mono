@@ -16,7 +16,11 @@ describe("PerimeterRepositoryProvider", () => {
   beforeAll(async () => {
     db = await before();
     repository = new PerimeterRepositoryProvider(db.connection);
-    territory_id = await repository.createTerritory("SCoT de test");
+    territory_id = await repository.createTerritory("SCoT de test", undefined, {
+      arr: ["91471"],
+      valid_from: new Date("2026-01-01T00:00:00Z"),
+      valid_to: null,
+    });
   });
 
   afterAll(async () => {
@@ -67,33 +71,50 @@ describe("PerimeterRepositoryProvider", () => {
     assertEquals(rows.map((r) => [r.arr, r.label]), [["91471", "Orsay"], ["91477", "Palaiseau"]]);
   });
 
-  it("creates a territory without company", async () => {
-    const territory = await repository.findTerritory(territory_id);
-    assertEquals(territory, { _id: territory_id, name: "SCoT de test" });
+  it("creates a territory without company and its version 1", async () => {
+    assertEquals(await repository.findTerritory(territory_id), { _id: territory_id, name: "SCoT de test" });
+    assertEquals((await repository.findByTerritory(territory_id)).map((v) => [v.version, v.arr]), [[1, ["91471"]]]);
+  });
+
+  it("finds a territory by name, ignoring case and spaces", async () => {
+    assertEquals(await repository.findTerritoryByName(" scot DE test "), { _id: territory_id, name: "SCoT de test" });
+    assertEquals(await repository.findTerritoryByName("inconnu"), undefined);
   });
 
   it("refuses an unknown siret", async () => {
-    await assertRejects(() => repository.createTerritory("inconnu", "00000000000000"), Error, "00000000000000");
+    await assertRejects(
+      () =>
+        repository.createTerritory("inconnu", "00000000000000", {
+          arr: ["91471"],
+          valid_from: new Date("2026-01-01"),
+          valid_to: null,
+        }),
+      Error,
+      "00000000000000",
+    );
   });
 
-  it("falls back to the selectors when no version exists", async () => {
+  it("does not keep the territory when its version is rejected", async () => {
+    await assertRejects(() =>
+      repository.createTerritory("orphelin", undefined, { arr: [], valid_from: new Date("2026-01-01"), valid_to: null })
+    );
+    const rows = await db.connection.query(sql`SELECT 1 FROM territory.territory_group WHERE name = 'orphelin'`);
+    assertEquals(rows.length, 0);
+  });
+
+  it("falls back to the selectors when no version covers the date", async () => {
     assertEquals(await repository.getArr(SEEDED_TERRITORY, new Date("2026-01-01")), ["91377", "91471", "91477"]);
-    assertEquals(await repository.getArr(territory_id, new Date("2026-01-01")), []);
+    assertEquals(await repository.getArr(territory_id, new Date("2025-06-01")), []);
   });
 
   it("creates incremental versions", async () => {
-    const v1 = await repository.create(territory_id, {
-      arr: ["91471"],
-      valid_from: new Date("2026-01-01T00:00:00Z"),
-      valid_to: null,
-    });
     const v2 = await repository.create(territory_id, {
       arr: ["91471", "91477"],
       valid_from: new Date("2026-07-01T00:00:00Z"),
       valid_to: new Date("2026-09-01T00:00:00Z"),
     });
 
-    assertEquals([v1.version, v2.version], [1, 2]);
+    assertEquals(v2.version, 2);
 
     const versions = await repository.findByTerritory(territory_id);
     assertEquals(versions.map((v) => [v.version, v.arr, v.valid_to]), [

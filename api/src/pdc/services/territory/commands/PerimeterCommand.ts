@@ -127,14 +127,21 @@ export class PerimeterCommand implements CommandInterface {
     if (!options.name) {
       throw new Error("--name est obligatoire");
     }
+    const existing = await this.repository.findTerritoryByName(options.name);
+    if (existing) {
+      throw new Error(`Le territoire '${existing.name}' existe déjà (${existing._id}), utiliser -t ${existing._id}`);
+    }
     const { valid_from, valid_to } = this.validity({ ...options, from: options.from ?? CREATE_FROM });
     const arr = await this.resolve(codes);
 
     console.log(`Nouveau territoire '${options.name}'${options.siret ? ` (SIRET ${options.siret})` : ""}`);
     if (!await this.confirm([], arr, valid_from, valid_to, options)) return;
 
-    const territory_id = await this.repository.createTerritory(options.name, options.siret);
-    await this.repository.create(territory_id, { arr, valid_from, valid_to });
+    const territory_id = await this.repository.createTerritory(options.name, options.siret, {
+      arr,
+      valid_from,
+      valid_to,
+    });
     console.log(`Territoire ${territory_id} créé (version 1).`);
   }
 

@@ -34,7 +34,22 @@ export class PerimeterRepositoryProvider implements PerimeterRepositoryProviderI
     return rows[0];
   }
 
-  async createTerritory(name: string, siret?: string): Promise<number> {
+  async findTerritoryByName(name: string): Promise<{ _id: number; name: string } | undefined> {
+    const rows = await this.pgConnection.query<{ _id: number; name: string }>(sql`
+      SELECT _id, name
+      FROM ${raw(this.territoryTable)}
+      WHERE lower(name) = lower(trim(${name})) AND deleted_at IS NULL
+      ORDER BY _id
+      LIMIT 1
+    `);
+    return rows[0];
+  }
+
+  async createTerritory(
+    name: string,
+    siret: string | undefined,
+    data: Omit<TerritoryPerimeterInterface, "version">,
+  ): Promise<number> {
     let company_id: number | null = null;
     if (siret) {
       const companies = await this.pgConnection.query<{ _id: number }>(sql`
@@ -46,12 +61,24 @@ export class PerimeterRepositoryProvider implements PerimeterRepositoryProviderI
       company_id = companies[0]._id;
     }
 
-    const rows = await this.pgConnection.query<{ _id: number }>(sql`
-      INSERT INTO ${raw(this.territoryTable)} (name, company_id)
-      VALUES (${name}, ${company_id})
-      RETURNING _id
+    // single statement: a rejected version does not leave a territory without perimeter
+    const rows = await this.pgConnection.query<{ territory_id: number }>(sql`
+      WITH territory AS (
+        INSERT INTO ${raw(this.territoryTable)} (name, company_id)
+        VALUES (${name}, ${company_id})
+        RETURNING _id
+      )
+      INSERT INTO ${raw(this.table)} (territory_id, version, arr, valid_from, valid_to)
+      SELECT
+        _id,
+        1,
+        ${data.arr}::varchar[],
+        ${data.valid_from}::timestamptz,
+        ${data.valid_to}::timestamptz
+      FROM territory
+      RETURNING territory_id
     `);
-    return rows[0]._id;
+    return rows[0].territory_id;
   }
 
   async findTerritoriesWithVersions(): Promise<number[]> {

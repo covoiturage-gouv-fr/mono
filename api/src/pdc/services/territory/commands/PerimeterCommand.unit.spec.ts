@@ -32,9 +32,15 @@ class FakePerimeterRepository extends PerimeterRepositoryProviderInterfaceResolv
     return t ? { _id: territory_id, name: t.name } : undefined;
   }
 
-  async createTerritory(name: string, siret?: string) {
+  async findTerritoryByName(name: string) {
+    const found = [...this.territories].find(([, t]) => t.name.toLowerCase() === name.trim().toLowerCase());
+    return found ? { _id: found[0], name: found[1].name } : undefined;
+  }
+
+  async createTerritory(name: string, siret: string | undefined, data: Omit<TerritoryPerimeterInterface, "version">) {
     const _id = Math.max(...this.territories.keys()) + 1;
     this.territories.set(_id, { name, company: siret, selectors: [] });
+    await this.create(_id, data);
     return _id;
   }
 
@@ -102,6 +108,15 @@ describe("PerimeterCommand", () => {
 
   it("create requires a name", async () => {
     await assertRejects(() => command.call("create", ["com:91471"], { yes: true }), Error, "--name");
+  });
+
+  it("create refuses a name already used, ignoring case and spaces", async () => {
+    await assertRejects(
+      () => command.call("create", ["com:91471"], { name: " Custom ", yes: true }),
+      Error,
+      `${CUSTOM}`,
+    );
+    assertEquals(repository.territories.size, 2);
   });
 
   it("create does not write in dry-run", async () => {
