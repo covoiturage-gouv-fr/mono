@@ -16,6 +16,8 @@ sources:
       - name: policy_incentives
       - name: operator_operators
       - name: territory_territory_group
+      - name: territory_territory_group_selector
+      - name: territory_territory_perimeters
       - name: fraudcheck_labels
       - name: company_companies
       - name: anomaly_labels
