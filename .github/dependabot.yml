@@ -54,6 +54,18 @@ updates:
       docker-minor-patch:
         update-types: [minor, patch]
 
+  - package-ecosystem: docker-compose
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: build(deps)
+    groups:
+      docker-compose-minor-patch:
+        update-types: [minor, patch]
+
   - package-ecosystem: github-actions
     directories:
       - /
