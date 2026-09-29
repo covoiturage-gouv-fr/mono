@@ -61,6 +61,6 @@ Use MCP tools when available:
 ### Git
 
 Never code or commit on a branch directly. Always work in a worktree + PR (skill /prep-pr); the main working dir must always stay on `main`.
-Always rebase onto main before pushing PR
+Rebase onto the PR base (`next` or `main`, see `docs/GITFLOW.md`) before pushing
 Claude cannot commit. Human review required before commit.
 PRs are concise. Context, debrief, analysis go on Notion only — not in the PR.

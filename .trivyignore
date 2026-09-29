@@ -1,0 +1,3 @@
+# Exceptions Trivy acceptées pour le scan bloquant des images (.github/actions/build-image).
+# Une ligne par CVE, précédée d'un commentaire : image, raison, date de revue.
+# Syntaxe : https://trivy.dev/latest/docs/configuration/filtering/#trivyignore
