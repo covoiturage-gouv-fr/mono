@@ -5,7 +5,7 @@ name: rpc
 
 services:
   dex:
-    image: dexidp/dex:v2.44.0-alpine
+    image: dexidp/dex:v2.45.1-alpine
     environment:
       # DEX configuration calling back to the API
       DEX_ISSUER_URL: http://dex:8090/
