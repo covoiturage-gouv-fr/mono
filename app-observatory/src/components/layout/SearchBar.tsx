@@ -66,7 +66,6 @@ export default function SearchBar(props: SearchBarProps) {
         (response.results ?? [])
           .map((r: any) =>
             (r.hits ?? []).map((h: any) => {
-              // eslint-disable-next-line no-unused-vars
               const { tags, content, ...hit } = h;
               void content;
               void tags;

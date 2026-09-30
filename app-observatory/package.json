@@ -6,7 +6,7 @@
     "dev": "NEXT_TELEMETRY_DISABLED=1 next dev -p 4200",
     "build": "NEXT_TELEMETRY_DISABLED=1 next build",
     "start": "NEXT_TELEMETRY_DISABLED=1 next start",
-    "lint": "NEXT_TELEMETRY_DISABLED=1 next lint",
+    "lint": "eslint .",
     "test": "vitest run",
     "predev": "only-include-used-icons",
     "prebuild": "only-include-used-icons"
@@ -25,7 +25,8 @@
     "h3-js": "^4.5.0",
     "maplibre-gl": "^6.11.2",
     "meilisearch": "^0.62.0",
-    "next": "^15.1.5",
+    "next": "^16.3.8",
+    "postcss": "^8.5.28",
     "qs": "^6.16.0",
     "react": "^19.3.0",
     "react-chartjs-2": "^5.3.0",
@@ -48,7 +49,7 @@
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "eslint": "^9.18.0",
-    "eslint-config-next": "^15.1.5",
+    "eslint-config-next": "^16.3.8",
     "jsdom": "^29.1.1",
     "sass": "^1.104.1",
     "sharp": "^0.35.4",
@@ -56,6 +57,6 @@
     "vitest": "^5.0.1"
   },
   "overrides": {
-    "postcss": "^8.5.10"
+    "postcss": "^8.5.28"
   }
 }
