@@ -142,8 +142,8 @@ source:
 
 # Import the perimeters millesimes and com_evolution dumped by the datalake (`just export-perimeters`),
 # in one transaction.
-# Each goes to its own geo.perimeters_<year> partition; geo.perimeters then points to the latest
-# (the first import renames the former table to geo.perimeters_legacy and creates that view).
+# Each goes to its own geo.perimeters_<year> partition. The first import renames the former table
+# to geo.perimeters_legacy and the partitioned geo.perimeters_all to geo.perimeters.
 # replace=true overwrites millesimes already there (the datalake re-exports the previous one).
 # ex: just geo-import perimeters_2025-2026.20260929T080503Z.pgdump <sha256> true
 [group('database')]

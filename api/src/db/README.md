@@ -48,25 +48,27 @@ pg_dump --no-owner --no-acl --no-comments -s \
 
 | Objet | Contenu |
 | ----- | ------- |
-| `geo.perimeters_all` | millésimes importés du datalake, partitionnés par `year` |
+| `geo.perimeters_all` | millésimes importés du datalake, partitionnés par `year` (avant la bascule) |
 | `geo.perimeters_<année>` | une partition par millésime importé |
 
 `geo.perimeters` reste la table actuelle jusqu'au premier `geo-import`. À la fin de celui-ci, dans
-la même transaction, `src/db/geo/switch-to-millesimes.sql` (sans effet ensuite) :
+la même transaction, `src/db/geo/switch-to-millesimes.sql` (sans effet ensuite) renomme :
 
-- renomme la table en `geo.perimeters_legacy` (sauvegarde, plus jamais lue) ;
-- crée la vue `geo.perimeters` sur le dernier millésime de `geo.perimeters_all` ;
-- repointe vers `geo.perimeters_all` les fonctions SQL qui lisaient `geo.perimeters`.
+- `geo.perimeters` en `geo.perimeters_legacy` (sauvegarde, plus jamais lue) ;
+- `geo.perimeters_all` en `geo.perimeters`.
 
-Les recherches sur une année passée (date du trajet, APDF, campagnes) passent par les fonctions
-`geo.*` (`geo.get_by_code`, `geo.get_latest_millesime_or`), qui lisent la bonne table avant comme
-après la bascule. `valid_from` / `valid_until` viennent du datalake (`zone_trusted.perimeters`).
+`geo.perimeters` contient alors tous les millésimes importés : le code et les fonctions `geo.*` ne
+changent pas (`year = geo.get_latest_millesime()` pour le dernier, `geo.get_latest_millesime_or`
+pour l'année d'un trajet). `valid_from` / `valid_until` viennent du datalake
+(`zone_trusted.perimeters`).
 
-Import depuis le datalake. L'export contient les 2 derniers millésimes : le précédent reçoit ainsi
-son `valid_until` à jour, d'où `replace` = true. Tout le dump est attaché en une transaction.
+Premier import : tout l'historique, pour que les recherches sur une année passée (campagnes, APDF)
+trouvent leur millésime après la bascule. Imports suivants : les 2 derniers millésimes (défaut de
+l'export), le précédent recevant ainsi son `valid_until` à jour, d'où `replace` = true. Tout le dump
+est attaché en une transaction.
 
 ```shell
-# datalake
+# datalake — premier import : --year 2019 … --year 2026 ; ensuite : sans argument
 just export-perimeters
 # api (psql, pg_restore >= version du serveur)
 just geo-import perimeters_2025-2026.<ts>.pgdump <sha256> true

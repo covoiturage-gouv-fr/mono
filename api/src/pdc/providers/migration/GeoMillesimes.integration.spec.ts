@@ -32,10 +32,12 @@ describe("geo.perimeters millésimes", () => {
       SELECT relkind::text AS kind FROM pg_class WHERE oid = 'geo.perimeters'::regclass
     `))[0].kind;
 
+  // geo.perimeters_all avant la bascule, geo.perimeters après.
+  let parent = "geo.perimeters_all";
   const partitions = async () =>
     (await mig.testConn.query<{ partition: string; count: number }>(sql`
       SELECT tableoid::regclass::text AS partition, count(*)::int AS count
-      FROM geo.perimeters_all GROUP BY 1 ORDER BY 1
+      FROM ${raw(parent)} GROUP BY 1 ORDER BY 1
     `)).map((r) => `${r.partition}:${r.count}`);
 
   beforeAll(async () => {
@@ -67,15 +69,20 @@ describe("geo.perimeters millésimes", () => {
     assertEquals({ kind: await kind(), year }, { kind: "r", year: 2021 });
   });
 
-  it("switches geo.perimeters to a view on the latest imported millesime", async () => {
+  it("renames the partitioned table to geo.perimeters and keeps the former one as backup", async () => {
     await switchToMillesimes();
     await switchToMillesimes();
-    assertEquals(await kind(), "v");
+    parent = "geo.perimeters";
+    assertEquals(await kind(), "p");
+    assertEquals(await partitions(), ["geo.perimeters_2021:17", "geo.perimeters_2022:17"]);
 
-    const view = await mig.testConn.query<{ year: number; valid_from: string; valid_until: string }>(sql`
-      SELECT DISTINCT year, valid_from::text, valid_until::text FROM geo.perimeters
+    const years = await mig.testConn.query<{ year: number; valid_from: string; valid_until: string }>(sql`
+      SELECT DISTINCT year, valid_from::text, valid_until::text FROM geo.perimeters ORDER BY year
     `);
-    assertEquals(view, [{ year: 2022, valid_from: "2022-01-01", valid_until: "2023-01-01" }]);
+    assertEquals(years, [
+      { year: 2021, valid_from: "2021-01-01", valid_until: "2022-01-01" },
+      { year: 2022, valid_from: "2022-01-01", valid_until: "2023-01-01" },
+    ]);
 
     const [{ count }] = await mig.testConn.query<{ count: number }>(sql`
       SELECT count(*)::int AS count FROM geo.perimeters_legacy
@@ -83,7 +90,7 @@ describe("geo.perimeters millésimes", () => {
     assertEquals(count, 17);
   });
 
-  it("repoints historical lookups to the imported millesimes", async () => {
+  it("serves historical lookups from the imported millesimes", async () => {
     const [years] = await mig.testConn.query<{ latest: number; year: number }>(sql`
       SELECT geo.get_latest_millesime() AS latest, geo.get_latest_millesime_or(2021::smallint) AS year
     `);
