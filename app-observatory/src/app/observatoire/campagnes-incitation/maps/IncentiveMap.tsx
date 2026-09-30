@@ -5,7 +5,7 @@ import bbox from "@turf/bbox";
 import { FeatureCollection } from "geojson";
 import { LngLatBoundsLike, MapLayerMouseEvent } from "maplibre-gl";
 import { ReactNode, useCallback, useMemo, useState } from "react";
-import { FillLayer, Layer, Popup, Source } from "react-map-gl/maplibre";
+import { LayerProps, Layer, Popup, Source } from "react-map-gl/maplibre";
 
 import DownloadButton from "@/components/observatoire/DownloadButton";
 import { getUrl } from "@/helpers/search";
@@ -26,7 +26,7 @@ export default function IncentiveMap({
   sidebar?: ReactNode;
 }) {
   const router = useRouter();
-  const countryLayer: FillLayer = {
+  const countryLayer: LayerProps = {
     id: "country",
     source: "campaigns",
     type: "fill",
@@ -36,7 +36,7 @@ export default function IncentiveMap({
     },
     filter: ["all", ["==", "type", "country"]],
   };
-  const regLayer: FillLayer = {
+  const regLayer: LayerProps = {
     id: "reg",
     source: "campaigns",
     type: "fill",
@@ -46,7 +46,7 @@ export default function IncentiveMap({
     },
     filter: ["all", ["==", "type", "reg"]],
   };
-  const depLayer: FillLayer = {
+  const depLayer: LayerProps = {
     id: "dep",
     source: "campaigns",
     type: "fill",
@@ -56,7 +56,7 @@ export default function IncentiveMap({
     },
     filter: ["all", ["==", "type", "dep"]],
   };
-  const aomLayer: FillLayer = {
+  const aomLayer: LayerProps = {
     id: "aom",
     source: "campaigns",
     type: "fill",
@@ -66,7 +66,7 @@ export default function IncentiveMap({
     },
     filter: ["all", ["==", "type", "aom"]],
   };
-  const epciLayer: FillLayer = {
+  const epciLayer: LayerProps = {
     id: "epci",
     source: "campaigns",
     type: "fill",

@@ -1,6 +1,6 @@
 import AppMap from '@/components/observatoire/maps/Map';
 import { Config } from '@/config';
-import { LineLayer, Layer, Source, Popup } from 'react-map-gl/maplibre';
+import { LayerProps, Layer, Source, Popup } from 'react-map-gl/maplibre';
 import { LngLatBoundsLike } from 'maplibre-gl';
 import { useJson } from '@/hooks/useJson';
 import { Feature, FeatureCollection } from 'geojson';
@@ -33,7 +33,7 @@ export default function VrMap({ title}: { title: string }) {
     setSelectedData(geojson ? geojson.features[value-1] : undefined);
     setBounds((selectedData ? bbox(selectedData?.geometry) : [-5.225, 41.333, 9.55, 51.2]) as LngLatBoundsLike);
   },[geojson, selectedData]);
-  const layer: LineLayer = {
+  const layer: LayerProps = {
     id: 'vr',
     source:'vr',
     type: 'line',
