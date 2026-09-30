@@ -24,25 +24,12 @@ const objectToMap = (obj: ConfigObject): Map<string, ConfigObject> => {
   return map;
 };
 
-const nextEnvironmentVariables = (): ConfigObject => {
-  return Object.entries(process.env)
-    .filter(([key]) => key.startsWith("NEXT_"))
-    .filter(([key]) => typeof process.env[key] !== "undefined")
-    .reduce(
-      (acc, [key]) => {
-        const k = key.replace("NEXT_", "").toLowerCase();
-        acc[k] = process.env[key];
-        return acc;
-      },
-      {} as Record<string, ConfigObject>,
-    );
-};
-
 const _configuration = objectToMap({
   analytics,
   search,
   auth,
-  next: nextEnvironmentVariables(),
+  // Turbopack n'inline que les accès statiques à process.env.NEXT_PUBLIC_*
+  next: { public_api_url: process.env.NEXT_PUBLIC_API_URL },
 });
 
 // ---------------------------------------------------------------------------------------
