@@ -1,7 +1,7 @@
 ARG DENO_VERSION=2.9.6
 ARG BIN_IMAGE=denoland/deno:bin-${DENO_VERSION}
 FROM ${BIN_IMAGE} AS bin
-FROM ubuntu:24.04
+FROM ubuntu:26.04
 
 RUN useradd --uid 1993 --user-group deno \
   && mkdir /app/ \
