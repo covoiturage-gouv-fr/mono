@@ -14,7 +14,7 @@ import { feature, featureCollection } from '@turf/helpers';
 import { FeatureCollection } from 'geojson';
 import { LngLatBoundsLike } from 'maplibre-gl';
 import { useCallback, useMemo, useState } from 'react';
-import { CircleLayer, Layer, Popup, Source } from 'react-map-gl/maplibre';
+import { LayerProps, Layer, Popup, Source } from 'react-map-gl/maplibre';
 import { useDashboardContext } from '../../../../context/DashboardProvider';
 
 export default function AiresCovoiturageMap({ title }: { title: string }) {
@@ -44,7 +44,7 @@ export default function AiresCovoiturageMap({ title }: { title: string }) {
     return featureCollection(features.filter(f => activeFilters.includes(f.properties.type))) as unknown as FeatureCollection;
   }, [switchFilters, data]);
 
-  const layer: CircleLayer = {
+  const layer: LayerProps = {
     id: 'aires',
     source:'aires',
     type: 'circle',

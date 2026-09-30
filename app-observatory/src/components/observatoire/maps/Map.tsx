@@ -52,7 +52,7 @@ const AppMap = (props: MapInterface) => {
               height: props.height ? props.height : '60vh',
             }}
             mapStyle={props.mapStyle}
-            RTLTextPlugin={false}
+            workerUrl="/maplibre-gl-worker.mjs"
             onLoad={() => fitBounds(mapRef.current, props.bounds)}
             scrollZoom={props.scrollZoom}
             cursor={props.cursor ? props.cursor : cursor}
