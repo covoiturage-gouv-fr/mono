@@ -12,7 +12,10 @@ const _configuration = objectToMap({
   observatoire,
   analytics,
   search,
-  next: nextEnvironmentVariables(),
+  next: {
+    public_datalake_base_url: process.env.NEXT_PUBLIC_DATALAKE_BASE_URL,
+    public_url: process.env.NEXT_PUBLIC_URL,
+  },
 });
 
 // ---------------------------------------------------------------------------------------
@@ -20,17 +23,6 @@ const _configuration = objectToMap({
 // ---------------------------------------------------------------------------------------
 
 export type ConfigObject = string | number | boolean | null | { [key: string]: ConfigObject } | undefined;
-
-function nextEnvironmentVariables(): ConfigObject {
-  return Object.entries(process.env)
-    .filter(([key]) => key.startsWith('NEXT_'))
-    .filter(([key]) => typeof process.env[key] !== 'undefined')
-    .reduce((acc, [key]) => {
-      const k = key.replace('NEXT_', '').toLowerCase();
-      acc[k] = process.env[key];
-      return acc;
-    }, {} as Record<string, ConfigObject>);
-}
 
 function objectToMap(obj: ConfigObject): Map<string, ConfigObject> {
   const map = new Map();

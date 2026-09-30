@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "NEXT_TELEMETRY_DISABLED=1 next dev --webpack -p 4200",
-    "build": "NEXT_TELEMETRY_DISABLED=1 next build --webpack",
+    "dev": "NEXT_TELEMETRY_DISABLED=1 next dev -p 4200",
+    "build": "NEXT_TELEMETRY_DISABLED=1 next build",
     "start": "NEXT_TELEMETRY_DISABLED=1 next start",
     "lint": "eslint .",
     "test": "vitest run",
