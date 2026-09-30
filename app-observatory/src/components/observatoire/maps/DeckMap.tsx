@@ -59,6 +59,7 @@ const DeckMap = (props: DeckMapInterface) => {
               height: props.height ? props.height : '60vh',
             }}
             mapStyle={props.mapStyle}
+            RTLTextPlugin={false}
             onLoad={() => fitBounds(mapRef.current, props.bounds)}
             scrollZoom={props.scrollZoom}
           >

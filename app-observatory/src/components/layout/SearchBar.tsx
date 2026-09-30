@@ -85,12 +85,11 @@ export default function SearchBar(props: SearchBarProps) {
     }
     clearTimeout(searchEventTimer.current);
     searchEventTimer.current = setTimeout(() => {
-      if (v !== "") {
+      if (v) {
         void sendEvent({
           category: "recherche",
           action: "Recherche transverse",
-          name: "string",
-          value: v ?? "",
+          name: v,
         });
       }
     }, 500);

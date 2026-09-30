@@ -49,7 +49,7 @@ export default function APDFTable(props: { title: string; campaignId: number; op
                 category: "apdf",
                 action: "Téléchargement APDF",
                 name: "Campaign ID",
-                value: `${props.campaignId}`,
+                value: Number(props.campaignId),
               });
             },
           }}

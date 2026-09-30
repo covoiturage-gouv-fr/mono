@@ -208,7 +208,7 @@ export default function TerritoriesTable(props: { title: string; id: number | nu
         />
       )}
       <h3 className={fr.cx("fr-callout__title")}>{props.title}</h3>
-      {user && user.role === "registry.admin" && (
+      {user?.role === "registry.admin" && (
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "1rem" }}>
           <Button
             iconId="fr-icon-add-circle-line"
