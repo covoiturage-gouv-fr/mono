@@ -1,0 +1,13 @@
+# DevOps : CI, images, release, sécurité de la chaîne
+/.github/                 @jonathanfallon
+/docker/                  @jonathanfallon
+/docker-compose*.yml      @jonathanfallon
+.dockerignore             @jonathanfallon
+/.trivyignore             @jonathanfallon
+/.releaserc               @jonathanfallon
+/.gitguardian.yaml        @jonathanfallon
+/.talismanrc              @jonathanfallon
+/.pre-commit-config.yaml  @jonathanfallon
+/flake.nix                @jonathanfallon
+/flake.lock               @jonathanfallon
+/docs/GITFLOW.md          @jonathanfallon
