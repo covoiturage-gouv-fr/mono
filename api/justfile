@@ -140,6 +140,27 @@ seed:
 source:
   deno run {{ deno_flags }} --v8-flags=--max-old-space-size=4096 src/db/cmd-source.ts
 
+# Replace geo.perimeters with the millesimes dumped by the datalake (`just export-perimeters`) and
+# refresh geo.com_evolution, in one transaction (src/db/geo/import.sql).
+# ex: just geo-import perimeters_2025-2026.20260929T080503Z.pgdump <sha256>
+[group('database')]
+geo-import source sha:
+  #!/usr/bin/env bash
+  set -euo pipefail
+  [[ "{{ sha }}" =~ ^[0-9a-f]{64}$ ]] || { echo "sha must be a sha256 hex digest" >&2; exit 1; }
+  cd "{{ invocation_directory() }}"
+  file="{{ source }}"
+  if [[ "$file" == https://* ]]; then
+    file="$(mktemp --suffix=.pgdump)"
+    trap 'rm -f "$file"' EXIT
+    curl -fsSL -o "$file" "{{ source }}"
+  fi
+  echo "{{ sha }}  $file" | sha256sum --check --quiet
+  psql "{{ pgurl }}" -v ON_ERROR_STOP=1 -q -c "DROP SCHEMA IF EXISTS geo_export CASCADE; CREATE SCHEMA geo_export"
+  pg_restore --no-owner --no-acl --exit-on-error -n geo_export -d "{{ pgurl }}" "$file"
+  psql "{{ pgurl }}" -v ON_ERROR_STOP=1 --single-transaction -f "{{ justfile_directory() }}/src/db/geo/import.sql"
+  psql "{{ pgurl }}" -v ON_ERROR_STOP=1 -q -c "DROP SCHEMA geo_export CASCADE"
+
 # Run external data migrations
 [group('database')]
 external_data_migrate:
