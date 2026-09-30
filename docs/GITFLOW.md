@@ -38,7 +38,7 @@ Jamais de rebase de `next` sur `main` : le force-push est bloqué, et les tags `
 
 Deux conditions, toutes les deux nécessaires (squash : le titre de la PR devient le message du commit) :
 
-1. **Fichiers** : le diff touche `api/`, `app-partners/`, `app-observatory/`, `shared/` ou `docker/api/` (job `changes` de `quality.yml`).
+1. **Fichiers** : le diff touche `api/`, `app-partners/`, `app-observatory/`, `shared/` ou `docker/api/` (job `changes` de `quality.yml`). Sur un push, le diff part du dernier tag de release, et non du push précédent : un run annulé par un push suivant ne perd pas sa release.
 2. **Type de commit** : `feat` (mineure), `fix` / `perf` / `revert` (corrective), `!` ou `BREAKING CHANGE` (majeure). Les scopes `dbt`, `datalake` et `cms` ne publient jamais.
 
 La CI doit être verte : un job en échec bloque le job `release`.
