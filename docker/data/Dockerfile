@@ -1,4 +1,4 @@
-FROM python:3.11.6-slim-bullseye AS build
+FROM python:3.13.6-slim-bullseye AS build
 
 WORKDIR /usr/src/
 
@@ -10,7 +10,7 @@ RUN jupyter nbconvert --to script /usr/src/*.ipynb
 
 RUN rm /usr/src/*.ipynb
 
-FROM python:3.11.6-slim-bullseye AS run
+FROM python:3.13.6-slim-bullseye AS run
 
 WORKDIR /usr/src/
 
