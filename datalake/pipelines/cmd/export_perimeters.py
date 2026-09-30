@@ -13,9 +13,10 @@ from pipelines.helpers.s3 import s3_client, s3_upload
 load_dotenv()
 app = typer.Typer()
 
-# Schéma attendu par geo.attach_millesime() côté API : colonnes de geo.perimeters sauf id.
+# Mêmes colonnes et types que geo.perimeters (prod) : la table remplace geo.perimeters à l'import.
 STAGING_SCHEMA = "geo_export"
 _COLUMNS = [
+  "(ROW_NUMBER() OVER (ORDER BY year, arr))::integer AS id",
   "year::smallint AS year",
   "centroid::geometry(Point, 4326) AS centroid",
   "ST_Multi(geom)::geometry(MultiPolygon, 4326) AS geom",
@@ -50,14 +51,10 @@ COM_EVOLUTION_SQL = (
 )
 
 
-def staging_table(year: int) -> str:
-  return f"perimeters_{int(year)}"
-
-
-def staging_sql(source: str, year: int) -> str:
+def staging_sql(source: str, years: list[int]) -> str:
   return (
-    f"CREATE TABLE {STAGING_SCHEMA}.{staging_table(year)} AS "
-    f"SELECT {', '.join(_COLUMNS)} FROM {source} WHERE year = {int(year)}"
+    f"CREATE TABLE {STAGING_SCHEMA}.perimeters AS "
+    f"SELECT {', '.join(_COLUMNS)} FROM {source} WHERE year IN ({', '.join(str(int(y)) for y in years)})"
   )
 
 
@@ -91,10 +88,10 @@ def export(
 ):
   """Dump des millésimes de `{schema}.{table}` et de com_evolution au format du schéma geo (prod).
 
-  Par défaut les 2 derniers : le précédent est réexporté pour mettre à jour valid_from/valid_until.
-  Passe par des tables de staging `geo_export.perimeters_<année>` (pg_dump ne sait pas dumper une
-  requête), supprimées ensuite. Le fichier pg_dump custom est gardé en local et uploadé sur S3.
-  Import côté API : `just geo-import <fichier|url> <sha256> true`.
+  Par défaut les 2 derniers : geo.perimeters ne garde que ceux-là, le précédent avec son valid_until
+  à jour. Passe par `geo_export.perimeters` et `geo_export.com_evolution` (pg_dump ne sait pas dumper
+  une requête), supprimées ensuite. Le fichier pg_dump custom est gardé en local et uploadé sur S3.
+  Import côté API : `just geo-import <fichier|url> <sha256>`.
   """
   source = f'"{schema}"."{table}"'
   conn = pg.pg_connect()
@@ -104,23 +101,22 @@ def export(
   if not years:
     raise RuntimeError(f"❌ aucun millésime dans {source}")
 
-  stagings = [f"{STAGING_SCHEMA}.{staging_table(y)}" for y in years]
+  perimeters = f"{STAGING_SCHEMA}.perimeters"
   com_evolution = f"{STAGING_SCHEMA}.com_evolution"
   path = dump_name(years, datetime.now(timezone.utc))
 
   pg.create_schema(conn, STAGING_SCHEMA)
-  total = 0
   try:
-    for y, staging in zip(years, stagings):
-      print(f"▶️  {source} millésime {y} → {staging}")
-      conn.execute(f"DROP TABLE IF EXISTS {staging}")
-      conn.execute(staging_sql(source, y))
-      rows, missing_geo = conn.execute(
-        f"SELECT count(*), count(*) FILTER (WHERE geom IS NULL OR geom_simple IS NULL OR centroid IS NULL) FROM {staging}"
-      ).fetchone()
-      if rows == 0 or missing_geo:
-        raise RuntimeError(f"❌ millésime {y} : {rows} lignes dont {missing_geo} sans géométrie")
-      total += rows
+    print(f"▶️  {source} millésimes {sorted(years)} → {perimeters}")
+    conn.execute(f"DROP TABLE IF EXISTS {perimeters}")
+    conn.execute(staging_sql(source, years))
+    counts = dict(conn.execute(f"SELECT year, count(*) FROM {perimeters} GROUP BY year").fetchall())
+    missing_geo = conn.execute(
+      f"SELECT count(*) FROM {perimeters} WHERE geom IS NULL OR geom_simple IS NULL OR centroid IS NULL"
+    ).fetchone()[0]
+    if set(counts) != set(years) or missing_geo:
+      raise RuntimeError(f"❌ millésimes {counts} (attendus {sorted(years)}), {missing_geo} lignes sans géométrie")
+    total = sum(counts.values())
 
     print(f"▶️  zone_trusted.com_evolution → {com_evolution}")
     conn.execute(f"DROP TABLE IF EXISTS {com_evolution}")
@@ -128,10 +124,9 @@ def export(
     if conn.execute(f"SELECT count(*) FROM {com_evolution}").fetchone()[0] == 0:
       raise RuntimeError("❌ zone_trusted.com_evolution vide")
 
-    print(f"▶️  pg_dump {', '.join(stagings)} → {path}")
-    tables = [arg for staging in [*stagings, com_evolution] for arg in ("-t", staging)]
+    print(f"▶️  pg_dump {perimeters}, {com_evolution} → {path}")
     proc = subprocess.run(
-      ["pg_dump", "-Fc", "--no-owner", "--no-acl", *tables, "-f", path],
+      ["pg_dump", "-Fc", "--no-owner", "--no-acl", "-t", perimeters, "-t", com_evolution, "-f", path],
       env=_pg_env(), capture_output=True, text=True,
     )
     if proc.returncode != 0:
@@ -139,8 +134,8 @@ def export(
         os.unlink(path)
       raise RuntimeError(f"pg_dump a échoué ({proc.returncode}) : {proc.stderr.strip()[:500]}")
   finally:
-    for staging in [*stagings, com_evolution]:
-      conn.execute(f"DROP TABLE IF EXISTS {staging}")
+    conn.execute(f"DROP TABLE IF EXISTS {perimeters}")
+    conn.execute(f"DROP TABLE IF EXISTS {com_evolution}")
     conn.close()
 
   sha = hash_file(path)
@@ -152,7 +147,7 @@ def export(
     s3_upload(bucket, key, path, client=s3_client())
 
   print(f"sha256 : {sha}")
-  print(f"👉  Import prod : just geo-import {path} {sha} true")
+  print(f"👉  Import prod : just geo-import {path} {sha}")
 
 
 if __name__ == "__main__":

@@ -351,12 +351,7 @@ dépose CSV/description/rapport horodatés sous `datagouv/logs/` et imprime un v
 de cohérence (exit 1 si un invariant dur est cassé). À lancer dans le pod datalake pour debugguer
 sur de vraies données.
 
-`just export-perimeters [--year N …] [--last 2]` dump des millésimes de `zone_trusted.perimeters`
-(défaut : les 2 derniers, pour remettre à jour `valid_from`/`valid_until` du précédent) au format de
-`geo.perimeters` de la prod, avec `zone_trusted.com_evolution` : `pg_dump` custom des tables
-`geo_export.perimeters_<N>` et `geo_export.com_evolution`,
-gardé en local et uploadé sous `S3_BUCKET/geo/`. Requiert `pg_dump` ≥ version du serveur (`nix develop`).
-Import côté API : `just geo-import <fichier> <sha256> true` (voir `api/src/db/README.md`).
+`just export-perimeters [--year N …] [--last 2]` dump les 2 derniers millésimes de `zone_trusted.perimeters` (ou ceux passés en `--year`) et `zone_trusted.com_evolution` au format du schéma `geo` de la prod : `pg_dump` custom de `geo_export.perimeters` et `geo_export.com_evolution`, gardé en local et uploadé sous `S3_BUCKET/geo/`. Requiert `pg_dump` ≥ version du serveur (`nix develop`). Import côté API : `just geo-import <fichier> <sha256>`, qui remplace `geo.perimeters` (voir `api/src/db/README.md`).
 
 ---
 

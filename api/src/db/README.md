@@ -13,7 +13,7 @@
 - `just migrate` : joue toutes les migrations et flashe les données depuis le cache
 - `just seed` : joue toutes les migrations et charge les données de test de `providers/migration/seeds`
 - `just source` : importe les jeux de données de `db/geo` dans `geo.perimeters` (legacy, remplacé par le datalake)
-- `just geo-import <fichier|url> <sha256> [replace]` : importe les millésimes et `com_evolution` exportés du datalake
+- `just geo-import <fichier|url> <sha256>` : remplace `geo.perimeters` et met à jour `com_evolution` depuis le datalake
 - `just external_data_migrate` : importe les jeux de données externes
 
 ## Migrations
@@ -46,53 +46,33 @@ pg_dump --no-owner --no-acl --no-comments -s \
 
 ## Périmètres géographiques et millésimes
 
-| Objet | Contenu |
-| ----- | ------- |
-| `geo.perimeters_all` | millésimes importés du datalake, partitionnés par `year` (avant la bascule) |
-| `geo.perimeters_<année>` | une partition par millésime importé |
-
-`geo.perimeters` reste la table actuelle jusqu'au premier `geo-import`. À la fin de celui-ci, dans
-la même transaction, `src/db/geo/switch-to-millesimes.sql` (sans effet ensuite) renomme :
-
-- `geo.perimeters` en `geo.perimeters_legacy` (sauvegarde, plus jamais lue) ;
-- `geo.perimeters_all` en `geo.perimeters`.
-
-`geo.perimeters` contient alors tous les millésimes importés : le code et les fonctions `geo.*` ne
-changent pas (`year = geo.get_latest_millesime()` pour le dernier, `geo.get_latest_millesime_or`
-pour l'année d'un trajet). `valid_from` / `valid_until` viennent du datalake
-(`zone_trusted.perimeters`).
-
-Premier import : tout l'historique, pour que les recherches sur une année passée (campagnes, APDF)
-trouvent leur millésime après la bascule. Imports suivants : les 2 derniers millésimes (défaut de
-l'export), le précédent recevant ainsi son `valid_until` à jour, d'où `replace` = true. Tout le dump
-est attaché en une transaction.
+`geo.perimeters` contient les 2 derniers millésimes exportés du datalake (`zone_trusted.perimeters`),
+avec `valid_from` / `valid_until`. Une recherche sur une année plus ancienne
+(`geo.get_latest_millesime_or`) retombe sur le dernier millésime.
 
 ```shell
-# datalake — premier import : --year 2019 … --year 2026 ; ensuite : sans argument
+# datalake : 2 derniers millésimes (--year pour choisir) + com_evolution
 just export-perimeters
 # api (psql, pg_restore >= version du serveur)
-just geo-import perimeters_2025-2026.<ts>.pgdump <sha256> true
+just geo-import perimeters_2025-2026.<ts>.pgdump <sha256>
 ```
 
-La même transaction met à jour `geo.com_evolution` (sans versions) : les lignes des années couvertes
-par l'export (depuis 2020) sont remplacées, les plus anciennes (2019) sont conservées
-(`src/db/geo/import-com-evolution.sql`).
+`geo-import` restaure le dump dans le schéma `geo_export`, puis joue `src/db/geo/import.sql` en une
+transaction :
 
-`geo.attach_millesime(source, year, replace)` copie les lignes `year` de la table de transit
-`source` dans `geo.perimeters_<année>` et l'attache. Elle refuse :
-
-- d'écraser un millésime existant, sauf si `replace` vaut true ;
-- d'attacher un dernier millésime qui a moins de 90 % des lignes de celui en service.
-
-`just source` (pipeline géo legacy) écrit dans la table `geo.perimeters` : ne plus l'utiliser après
-la bascule.
+- `geo_export.perimeters` remplace `geo.perimeters`. Au premier import, l'ancienne table est gardée
+  en `geo.perimeters_legacy` (sauvegarde, plus jamais lue) ; ensuite elle est supprimée ;
+- refus si le dernier millésime importé est plus ancien que celui en service ou a moins de 90 % de
+  ses lignes ;
+- `geo.com_evolution` (sans versions) : les années couvertes par l'export (depuis 2020) sont
+  remplacées, les plus anciennes (2019) conservées.
 
 ## Dump des données pour le flash
 
 La table `geo.perimeters` peut être alimentée par `just source` ou flashée depuis un dump de données.
 
-L'archive actuelle remplit la table `geo.perimeters` (avant la bascule). Ne pas la régénérer depuis
-une base déjà basculée : lancer plutôt `geo-import` sur la base neuve.
+L'archive actuelle remplit `geo.perimeters` avec les millésimes d'avant le datalake : lancer ensuite
+`geo-import` sur la base neuve.
 
 ```shell
 # dump des données geo pour le flash

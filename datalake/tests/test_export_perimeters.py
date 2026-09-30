@@ -4,13 +4,13 @@ from datetime import datetime, timezone
 from pipelines.cmd.export_perimeters import COM_EVOLUTION_SQL, dump_name, staging_sql
 
 
-def test_staging_sql_matches_prod_columns_without_id():
-  sql = staging_sql('"zone_trusted"."perimeters"', 2026)
-  assert sql.startswith("CREATE TABLE geo_export.perimeters_2026 AS SELECT year::smallint AS year,")
-  assert sql.endswith('FROM "zone_trusted"."perimeters" WHERE year = 2026')
+def test_staging_sql_matches_prod_columns():
+  sql = staging_sql('"zone_trusted"."perimeters"', [2026, 2025])
+  assert sql.startswith("CREATE TABLE geo_export.perimeters AS SELECT (ROW_NUMBER() OVER (ORDER BY year, arr))::integer AS id,")
+  assert sql.endswith('FROM "zone_trusted"."perimeters" WHERE year IN (2026, 2025)')
   aliases = re.findall(r" AS (\w+)", sql.split(" SELECT ", 1)[1])
   assert aliases == [
-    "year", "centroid", "geom", "geom_simple", "l_arr", "arr", "l_com", "com", "l_epci", "epci",
+    "id", "year", "centroid", "geom", "geom_simple", "l_arr", "arr", "l_com", "com", "l_epci", "epci",
     "l_dep", "dep", "l_reg", "reg", "l_country", "country", "l_aom", "aom", "l_reseau", "reseau",
     "pop", "surface", "valid_from", "valid_until",
   ]
@@ -18,7 +18,7 @@ def test_staging_sql_matches_prod_columns_without_id():
 
 def test_staging_sql_rejects_non_integer_year():
   try:
-    staging_sql("t", "2026; DROP TABLE x")
+    staging_sql("t", ["2026); DROP TABLE x; --"])
   except ValueError:
     return
   raise AssertionError("année non entière acceptée")
