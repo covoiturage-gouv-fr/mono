@@ -19,7 +19,8 @@ _COLUMNS = [
   "(ROW_NUMBER() OVER (ORDER BY year, arr))::integer AS id",
   "year::smallint AS year",
   # L'import IGN force le multi (PROMOTE_TO_MULTI) : centroïdes en MultiPoint, voire collections.
-  "ST_Centroid(centroid)::geometry(Point, 4326) AS centroid",
+  # Les 6 villages détruits de la Meuse (sans chef-lieu) n'ont pas de centroïde IGN.
+  "COALESCE(ST_Centroid(centroid), ST_PointOnSurface(ST_CollectionExtract(geom, 3)))::geometry(Point, 4326) AS centroid",
   "ST_Multi(ST_CollectionExtract(geom, 3))::geometry(MultiPolygon, 4326) AS geom",
   "ST_Multi(ST_CollectionExtract(geom_simple, 3))::geometry(MultiPolygon, 4326) AS geom_simple",
   "l_arr::varchar(256) AS l_arr",
