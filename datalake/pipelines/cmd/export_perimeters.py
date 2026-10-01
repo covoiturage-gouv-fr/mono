@@ -18,9 +18,10 @@ STAGING_SCHEMA = "geo_export"
 _COLUMNS = [
   "(ROW_NUMBER() OVER (ORDER BY year, arr))::integer AS id",
   "year::smallint AS year",
-  "centroid::geometry(Point, 4326) AS centroid",
-  "ST_Multi(geom)::geometry(MultiPolygon, 4326) AS geom",
-  "ST_Multi(geom_simple)::geometry(MultiPolygon, 4326) AS geom_simple",
+  # L'import IGN force le multi (PROMOTE_TO_MULTI) : centroïdes en MultiPoint, voire collections.
+  "ST_Centroid(centroid)::geometry(Point, 4326) AS centroid",
+  "ST_Multi(ST_CollectionExtract(geom, 3))::geometry(MultiPolygon, 4326) AS geom",
+  "ST_Multi(ST_CollectionExtract(geom_simple, 3))::geometry(MultiPolygon, 4326) AS geom_simple",
   "l_arr::varchar(256) AS l_arr",
   "arr::varchar(5) AS arr",
   "l_com::varchar(256) AS l_com",
