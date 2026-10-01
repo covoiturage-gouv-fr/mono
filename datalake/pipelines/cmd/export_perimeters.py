@@ -87,12 +87,13 @@ def export(
   bucket: Optional[str] = typer.Option(default=None, envvar="S3_BUCKET"),
   folder: str = "geo",
   upload: bool = True,
+  out_dir: str = typer.Option(default="tmp/geo", help="Dossier du dump (tmp/ est ignoré par git)"),
 ):
   """Dump des millésimes de `{schema}.{table}` et de com_evolution au format du schéma geo (prod).
 
   Par défaut les 2 derniers : geo.perimeters ne garde que ceux-là, le précédent avec son valid_until
   à jour. Passe par `geo_export.perimeters` et `geo_export.com_evolution` (pg_dump ne sait pas dumper
-  une requête), supprimées ensuite. Le fichier pg_dump custom est gardé en local et uploadé sur S3.
+  une requête), supprimées ensuite. Le fichier pg_dump custom est gardé dans `--out-dir` (tmp/geo, ignoré par git) pour `just geo-import` et uploadé sur S3.
   Import côté API : `just geo-import <fichier|url> <sha256>`.
   """
   source = f'"{schema}"."{table}"'
@@ -105,7 +106,9 @@ def export(
 
   perimeters = f"{STAGING_SCHEMA}.perimeters"
   com_evolution = f"{STAGING_SCHEMA}.com_evolution"
-  path = dump_name(years, datetime.now(timezone.utc))
+  os.makedirs(out_dir, exist_ok=True)
+  name = dump_name(years, datetime.now(timezone.utc))
+  path = os.path.abspath(os.path.join(out_dir, name))
 
   pg.create_schema(conn, STAGING_SCHEMA)
   try:
@@ -144,7 +147,7 @@ def export(
   print(f"✅ {path} — {_fmt(total)} lignes, {_fmt(os.path.getsize(path))} octets")
 
   if upload:
-    key = f"{folder}/{path}" if folder else path
+    key = f"{folder}/{name}" if folder else name
     print(f"▶️  Upload s3://{bucket}/{key}")
     s3_upload(bucket, key, path, client=s3_client())
 
