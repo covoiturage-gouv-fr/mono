@@ -106,6 +106,10 @@ pass-env gh pr checks <n> --watch
 
 Body: one line of context + the list of merged PRs (`- #n titre`) + the closed / skipped ones.
 
+`deps/**` is unprotected: before merging, check that `pass-env gh pr diff <n> --name-only` only
+lists manifests / lockfiles and that `git log origin/main..origin/$BATCH` only holds the squashes
+of the merged PRs (+ the signed conflict resolutions). Anything else -> stop and report.
+
 Red CI (rare, each PR was green on the batch): find the guilty PR from the failing job and its dir
 (`pass-env gh run view <run> --log-failed`), revert its squash commit on `$BATCH`
 (`git revert -S <sha>`, signed) and report it. Never merge with a red required check.
