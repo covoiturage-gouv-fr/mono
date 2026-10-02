@@ -86,7 +86,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Build stack
-        uses: ./.github/actions/build-stack
+        uses: $/.github/actions/build-stack
       - name: Run integration tests
         working-directory: api
         run: deno test --quiet --no-check -A --unsafely-ignore-certificate-errors '**/*.integration.spec.ts'
@@ -115,7 +115,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Build stack
-        uses: ./.github/actions/build-stack
+        uses: $/.github/actions/build-stack
       - name: Run e2e tests
         working-directory: api/e2e
         run: |

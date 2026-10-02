@@ -28,7 +28,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Build and Push API Docker Image
-        uses: ./.github/actions/build-image
+        uses: $/.github/actions/build-image
         with:
           name: api
           context: .
