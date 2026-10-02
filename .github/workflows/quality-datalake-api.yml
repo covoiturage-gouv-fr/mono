@@ -12,6 +12,7 @@ on:
     branches:
       - main
       - datalake
+      - "deps/**"
     paths:
       - "api-datalake/**"
       - "docker/datalake-api/**"
