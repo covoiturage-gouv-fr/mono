@@ -57,15 +57,19 @@ just export-perimeters
 just geo-import perimeters_2025-2026.<ts>.pgdump <sha256>
 ```
 
-`geo-import` restaure le dump dans le schéma `geo_export`, puis joue `src/db/geo/import.sql` en une
-transaction :
+`geo-import` appelle `src/db/geo/import.sh run` : restauration du dump dans le schéma `geo_export`
+(`stage`), garde-fou et rapport (`check.sql`), puis `import.sql` dans la même transaction (`apply`) :
 
 - `geo_export.perimeters` remplace `geo.perimeters`. Au premier import, l'ancienne table est gardée
-  en `geo.perimeters_legacy` (sauvegarde, plus jamais lue) ; ensuite elle est supprimée ;
+  en `geo.perimeters_legacy` (sauvegarde, plus jamais lue) ; ensuite la table remplacée est gardée en
+  `geo.perimeters_prev` (retour arrière = deux `RENAME`) ;
 - refus si le dernier millésime importé est plus ancien que celui en service ou a moins de 90 % de
   ses lignes ;
 - `geo.com_evolution` (sans versions) : les années couvertes par l'export (depuis 2020) sont
   remplacées, les plus anciennes (2019) conservées.
+
+En prod, le script tourne depuis l'image `docker/geo-import/prod` (psql + pg_restore 17), étape par
+étape : voir `src/db/geo/RUNBOOK.md`.
 
 ## Dump des données pour le flash
 
