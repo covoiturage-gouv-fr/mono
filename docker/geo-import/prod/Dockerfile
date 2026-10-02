@@ -9,6 +9,9 @@ RUN apk add --no-cache bash curl postgresql17-client
 COPY api/src/db/geo/check.sql api/src/db/geo/report.sql api/src/db/geo/import.sql api/src/db/geo/import.sh api/src/db/geo/RUNBOOK.md /opt/geo-import/
 RUN ln -s /opt/geo-import/import.sh /usr/local/bin/geo-import
 
+# Origine du bucket des dumps (`just export-perimeters`) ; le chemin geo/ est dans import.sh.
+ENV GEO_IMPORT_S3_BASE_URL=https://datalake-production.s3.fr-par.scw.cloud
+
 USER postgres
 WORKDIR /opt/geo-import
 ENTRYPOINT ["/bin/bash"]
