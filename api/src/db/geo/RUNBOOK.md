@@ -5,8 +5,10 @@ Remplace `geo.perimeters` par les 2 derniers millésimes exportés du datalake e
 bucket S3 `geo-datasets-archives`, dossier `geo/`, sha256 affiché par l'export).
 
 Outils : image `ghcr.io/covoiturage-gouv-fr/geo-import` (`psql` + `pg_restore` 17, `curl`,
-`sha256sum`, ce dossier dans `/opt/geo-import`). Connexion via `APP_POSTGRES_URL` (utilisateur de
-l'API : propriétaire des tables `geo`). Le script est `geo-import` dans le PATH.
+`sha256sum`, ce dossier dans `/opt/geo-import`). Connexion par les variables libpq `PGHOST`, `PGPORT`,
+`PGUSER`, `PGPASSWORD`, `PGDATABASE` (et `PGSSLMODE`), avec l'utilisateur de l'API (propriétaire des
+tables `geo`) ; à défaut `APP_POSTGRES_URL`, que le script éclate dans ces variables. Le mot de passe ne
+passe jamais en argument de commande. Le script est `geo-import` dans le PATH.
 
 ## Déroulé
 
@@ -39,7 +41,8 @@ geo-import cleanup
 - `valid_until` du dernier millésime = 1er janvier de l'année suivante ;
 - `com_evolution` : une ligne par année depuis 2020.
 
-Entre `stage` et `apply`, `geo_export.perimeters` est consultable en lecture (Metabase, `psql`).
+Entre `stage` et `apply`, `geo_export.perimeters` est consultable en lecture (Metabase, ou `psql` sans
+argument depuis le pod : les variables `PG*` suffisent).
 
 ## Vérifications après `apply`
 
