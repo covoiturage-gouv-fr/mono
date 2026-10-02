@@ -8,6 +8,19 @@ set -euo pipefail
 # readlink -f : dans l'image, le script est appelé via un lien symbolique dans le PATH.
 here="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
 
+usage() {
+  cat >&2 <<USAGE
+usage: import.sh <commande> [args]
+  stage <fichier|url> <sha256>   télécharge, vérifie, restaure le dump dans geo_export (ne touche pas geo)
+  check                          garde-fou + rapport sur geo_export, sans rien modifier
+  apply                          remplace geo.perimeters et rafraîchit geo.com_evolution (une transaction)
+  cleanup                        supprime le schéma geo_export
+  run <fichier|url> <sha256>     stage + check + apply + cleanup
+USAGE
+  exit 2
+}
+[[ "${1:-}" =~ ^(stage|check|apply|cleanup|run)$ ]] || usage
+
 urldecode() { local s="${1//+/ }"; printf '%b' "${s//%/\\x}"; }
 if [[ -n "${APP_POSTGRES_URL:-}" ]]; then
   [[ "$APP_POSTGRES_URL" =~ ^postgres(ql)?://([^:@/]*)(:([^@/]*))?@([^:/?]+)(:([0-9]+))?/([^?]+)(\?(.*))?$ ]] \
@@ -20,18 +33,6 @@ fi
 : "${PGHOST:?PGHOST ou APP_POSTGRES_URL requis}" "${PGDATABASE:?PGDATABASE ou APP_POSTGRES_URL requis}"
 
 sql() { psql -v ON_ERROR_STOP=1 "$@"; }
-
-usage() {
-  cat >&2 <<USAGE
-usage: import.sh <commande> [args]
-  stage <fichier|url> <sha256>   télécharge, vérifie, restaure le dump dans geo_export (ne touche pas geo)
-  check                          garde-fou + rapport sur geo_export, sans rien modifier
-  apply                          remplace geo.perimeters et rafraîchit geo.com_evolution (une transaction)
-  cleanup                        supprime le schéma geo_export
-  run <fichier|url> <sha256>     stage + check + apply + cleanup
-USAGE
-  exit 2
-}
 
 stage() {
   local source="${1:-}" sha="${2:-}" file
@@ -53,11 +54,10 @@ check() { sql -f "$here/check.sql" -f "$here/report.sql"; }
 apply() { sql --single-transaction -f "$here/check.sql" -f "$here/import.sql" && echo "geo.perimeters remplacé"; }
 cleanup() { sql -q -c "DROP SCHEMA geo_export CASCADE"; }
 
-case "${1:-}" in
+case "$1" in
   stage) shift; stage "$@" ;;
   check) check ;;
   apply) apply ;;
   cleanup) cleanup ;;
   run) shift; stage "$@"; check; apply; cleanup ;;
-  *) usage ;;
 esac
