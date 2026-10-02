@@ -1,5 +1,8 @@
 node_modules
 db/*
+.git
+.claude
+tmp
 dist
 .env
 coverage

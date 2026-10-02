@@ -30,8 +30,10 @@ describe("geo import", () => {
     `);
   };
 
-  const runImport = async () =>
-    mig.testConn.query(raw(await Deno.readTextFile(new URL("../../../db/geo/import.sql", import.meta.url))));
+  // Même enchaînement que `import.sh apply` : check.sql puis import.sql, une seule transaction
+  // (implicite : plusieurs ordres dans une même requête simple).
+  const geoSql = (name: string) => Deno.readTextFile(new URL(`../../../db/geo/${name}`, import.meta.url));
+  const runImport = async () => mig.testConn.query(raw(`${await geoSql("check.sql")}\n${await geoSql("import.sql")}`));
 
   const years = async (table: string) =>
     (await mig.testConn.query<{ year: number; count: number }>(sql`
@@ -89,21 +91,31 @@ describe("geo import", () => {
     ]);
   });
 
-  it("replaces geo.perimeters again on the next import, backup untouched", async () => {
+  it("replaces geo.perimeters again on the next import, keeps the previous table and the backup", async () => {
     await stage([2022, 2023]);
     await runImport();
 
     assertEquals(await years("geo.perimeters"), ["2022:17", "2023:17"]);
+    assertEquals(await years("geo.perimeters_prev"), ["2021:17", "2022:17"]);
     assertEquals(await years("geo.perimeters_legacy"), ["2021:17"]);
   });
 
+  it("rotates geo.perimeters_prev on the following import", async () => {
+    await stage([2023, 2024]);
+    await runImport();
+
+    assertEquals(await years("geo.perimeters"), ["2023:17", "2024:17"]);
+    assertEquals(await years("geo.perimeters_prev"), ["2022:17", "2023:17"]);
+  });
+
   it("refuses an older or truncated latest millesime and changes nothing", async () => {
-    await stage([2021, 2022]);
+    await stage([2022, 2023]);
     await assertRejects(() => runImport(), Error);
 
-    await stage([2023, 2024], 10);
+    await stage([2024, 2025], 10);
     await assertRejects(() => runImport(), Error);
 
-    assertEquals(await years("geo.perimeters"), ["2022:17", "2023:17"]);
+    assertEquals(await years("geo.perimeters"), ["2023:17", "2024:17"]);
+    assertEquals(await years("geo.perimeters_prev"), ["2022:17", "2023:17"]);
   });
 });
