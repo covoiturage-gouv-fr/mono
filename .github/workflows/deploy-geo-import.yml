@@ -65,7 +65,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Build and Push geo-import Docker Image
-        uses: ./.github/actions/build-image
+        uses: $/.github/actions/build-image
         with:
           name: geo-import
           context: .
