@@ -47,8 +47,12 @@ sha256 passé en second argument (`geo-import stage "$DUMP" <sha256>`) l'emporte
 - deux millésimes, le dernier = l'année en cours ;
 - `rows` du dernier millésime ≥ 90 % de celui en service (sinon `apply` refuse) ;
 - `sans_geometrie` = 0 ;
-- `valid_until` du dernier millésime = 1er janvier de l'année suivante ;
-- `com_evolution` : une ligne par année depuis 2020.
+- `valid_until` : 1er janvier de l'année suivante pour le millésime précédent, 31 décembre de l'année
+  suivante pour le dernier (il couvre aussi l'année en cours jusqu'au prochain export, voir
+  `datalake/models/trusted/perimeters.sql`) ; l'API ne lit pas ces colonnes ;
+- `com_evolution` : des lignes pour les années exportées ; une année sans fusion de communes peut
+  manquer (2026, gel avant les municipales). Seules les années ≥ la première exportée sont
+  remplacées, les plus anciennes restent en place.
 
 Entre `stage` et `apply`, `geo_export.perimeters` est consultable en lecture (Metabase, ou `psql` sans
 argument depuis le pod : les variables `PG*` suffisent).
