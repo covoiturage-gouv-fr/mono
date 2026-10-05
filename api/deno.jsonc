@@ -52,7 +52,7 @@
     "dep:prom-client": "npm:prom-client@^15.1",
     "dep:cors": "npm:cors@^2.8",
     "dep:jsonwebtoken": "npm:jsonwebtoken@^9",
-    "dep:mjml": "npm:mjml@^4.15",
+    "dep:mjml": "npm:mjml@^5.4.1",
     "dep:helmet": "npm:helmet@^7.1",
     "dep:nodemailer": "npm:nodemailer@^6.9",
     "dep:semver": "jsr:@std/semver@^1",
