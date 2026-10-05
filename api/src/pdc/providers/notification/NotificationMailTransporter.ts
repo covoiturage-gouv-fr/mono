@@ -76,9 +76,9 @@ export class NotificationMailTransporter
     }
   }
 
-  protected render(template: TemplateInterface, mjml = false): string {
+  protected async render(template: TemplateInterface, mjml = false): Promise<string> {
     const result = this.templateProvider.render(template);
-    return !mjml ? result : mjml2html(result).html;
+    return !mjml ? result : (await mjml2html(result)).html;
   }
 
   protected moustache(str: string, data: Record<string, unknown>, escape = (s: string) => s): string {
@@ -103,8 +103,8 @@ export class NotificationMailTransporter
       from: this.options.from,
       to: this.options.debug ? this.options.debugToOverride : mail.to,
       subject: mailCtor.subject,
-      html: mailCtor.templateMJML ? this.render(new mailCtor.templateMJML(mail.data), true) : undefined,
-      text: this.render(new mailCtor.templateText(mail.data)),
+      html: mailCtor.templateMJML ? await this.render(new mailCtor.templateMJML(mail.data), true) : undefined,
+      text: await this.render(new mailCtor.templateText(mail.data)),
     });
   }
 }
