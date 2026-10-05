@@ -31,7 +31,7 @@
     "dep:csv-stringify": "npm:csv-stringify@^6.5",
     "dep:date-fns-tz": "npm:date-fns-tz@^3.1",
     "dep:date-fns": "npm:date-fns@^3.6",
-    "dep:meilisearch": "npm:meilisearch@^0.40",
+    "dep:meilisearch": "npm:meilisearch@^0.62",
     "dep:turf-boolean-point-in-polygon": "npm:@turf/boolean-point-in-polygon",
     "dep:turf-distance": "npm:@turf/distance",
     "dep:date-fns-locale": "npm:date-fns@^3.6/locale",

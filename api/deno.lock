@@ -61,7 +61,7 @@
     "npm:jsonwebtoken@9": "9.0.3",
     "npm:libphonenumber-js@^1.11.0": "1.12.38",
     "npm:mapshaper@0.6": "0.6.113",
-    "npm:meilisearch@0.40": "0.40.0",
+    "npm:meilisearch@0.62": "0.62.0",
     "npm:mjml@^4.15.0": "4.18.0",
     "npm:node-7z@3": "3.0.0",
     "npm:nodemailer@^6.9.0": "6.10.1",
@@ -1216,12 +1216,6 @@
         "readable-stream@3.6.2"
       ]
     },
-    "cross-fetch@3.2.0": {
-      "integrity": "sha512-Q+xVJLoGOeIMXZmbUK4HYk+69cQH6LudR0Vu/pRm2YlU/hDV9CiS0gKUMaWY5f2NeUH9C1nV3bsTlCo0FsTV1Q==",
-      "dependencies": [
-        "node-fetch"
-      ]
-    },
     "cross-spawn@7.0.6": {
       "integrity": "sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==",
       "dependencies": [
@@ -2174,11 +2168,8 @@
     "media-typer@0.3.0": {
       "integrity": "sha512-dq+qelQ9akHpcOl/gUVRTxVIOkAJ1wR3QAvb4RsVjS8oVoFjDGTc679wJYmUmknUF5HwMLOgb5O+a3KxfWapPQ=="
     },
-    "meilisearch@0.40.0": {
-      "integrity": "sha512-BoRhQMr2mBFLEeCfsvPluksGb01IaOiWvV3Deu3iEY+yYJ4jdGTu+IQi5FCjKlNQ7/TMWSN2XUToSgvH1tj0BQ==",
-      "dependencies": [
-        "cross-fetch"
-      ]
+    "meilisearch@0.62.0": {
+      "integrity": "sha512-/ETDW7mmWI2NcSmtJdTPhbjsIbs3VcuapszX5X6JhdHB0XbszPOhqd3EB2bEylL0HK7dgwh/4Z3MdyuycWVf5A=="
     },
     "mensch@0.3.4": {
       "integrity": "sha512-IAeFvcOnV9V0Yk+bFhYR07O3yNina9ANIN5MoXBKYJ/RLYPurd2d0yw14MDhpr9/momp0WofT1bPUh3hkzdi/g=="
@@ -3613,7 +3604,7 @@
       "npm:jsonwebtoken@9",
       "npm:libphonenumber-js@^1.11.0",
       "npm:mapshaper@0.6",
-      "npm:meilisearch@0.40",
+      "npm:meilisearch@0.62",
       "npm:mjml@^4.15.0",
       "npm:node-7z@3",
       "npm:nodemailer@^6.9.0",
