@@ -14,11 +14,11 @@ runs:
           ~/.cache/deno
         key: ${{ runner.os }}-deno-${{ hashFiles('**/deno.lock') }}
 
-    - uses: denoland/setup-deno@667a34cdef165d8d2b2e98dde39547c9daac7282 # v2.0.4
+    - uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2.0.5
       with:
         deno-version: v2.9.6
 
-    - uses: taiki-e/install-action@0631aa6515c7d545823c67cfae7ef4fc7f490154 # v2.81.8
+    - uses: taiki-e/install-action@4cef1412cce204788f482e778a0b9187f9626a29 # v2.87.21
       with:
         tool: just@1.40.0
 
