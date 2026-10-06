@@ -1,0 +1,76 @@
+name: "Deploy geo-import"
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "api/src/db/geo/**"
+      - "docker/geo-import/**"
+  push:
+    branches:
+      - main
+    paths:
+      - "api/src/db/geo/**"
+      - "docker/geo-import/**"
+
+jobs:
+  # Sur PR : build sans push, pour ne pas découvrir un Dockerfile cassé au merge.
+  check:
+    name: Build geo-import Docker Image (no push)
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+      - name: Build
+        run: docker build -f docker/geo-import/prod/Dockerfile -t geo-import:ci .
+      - name: Smoke
+        run: docker run --rm --entrypoint pg_restore geo-import:ci --version
+      - name: Test import.sh (BusyBox de l'image)
+        run: docker run --rm -v "$PWD/api/src/db/geo:/t:ro" --entrypoint bash geo-import:ci /t/import.test.sh
+
+  tag:
+    name: Set deployment tag
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    outputs:
+      value: ${{ steps.set_tag.outputs.value }}
+    steps:
+      - id: set_tag
+        shell: bash
+        # Tag = horodatage (ordre lisible) + SHA court (traçabilité build -> commit).
+        run: echo "value=$(date +'%F.%H%M')-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+
+  build:
+    name: Build and Push geo-import Docker Image
+    needs: tag
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
+      security-events: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+      - name: Build and Push geo-import Docker Image
+        uses: $/.github/actions/build-image
+        with:
+          name: geo-import
+          context: .
+          tag: ${{ needs.tag.outputs.value }}
+          dockerfile: ./docker/geo-import/prod/Dockerfile
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

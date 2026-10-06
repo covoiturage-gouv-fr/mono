@@ -10,9 +10,9 @@ concurrency:
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: [main, next]
   pull_request:
-    branches: [main]
+    branches: [main, next]
 
 jobs:
   # ###########################################################################################
@@ -39,7 +39,7 @@ jobs:
           key: ${{ runner.os }}-deno-${{ hashFiles('**/deno.lock') }}
       - uses: denoland/setup-deno@667a34cdef165d8d2b2e98dde39547c9daac7282 # v2.0.4
         with:
-          deno-version: v2.6.4
+          deno-version: v2.9.6
       - name: Run lint
         working-directory: ./api
         # FIXME
@@ -64,7 +64,7 @@ jobs:
           key: ${{ runner.os }}-deno-${{ hashFiles('**/deno.lock') }}
       - uses: denoland/setup-deno@667a34cdef165d8d2b2e98dde39547c9daac7282 # v2.0.4
         with:
-          deno-version: v2.6.4
+          deno-version: v2.9.6
       - uses: taiki-e/install-action@0631aa6515c7d545823c67cfae7ef4fc7f490154 # v2.81.8
         with:
           tool: just@1.44.1
@@ -86,7 +86,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Build stack
-        uses: ./.github/actions/build-stack
+        uses: $/.github/actions/build-stack
       - name: Run integration tests
         working-directory: api
         run: deno test --quiet --no-check -A --unsafely-ignore-certificate-errors '**/*.integration.spec.ts'
@@ -115,7 +115,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Build stack
-        uses: ./.github/actions/build-stack
+        uses: $/.github/actions/build-stack
       - name: Run e2e tests
         working-directory: api/e2e
         run: |
@@ -331,7 +331,7 @@ jobs:
           persist-credentials: false
 
       - name: Run zizmor 🌈
-        uses: zizmorcore/zizmor-action@5f14fd08f7cf1cb1609c1e344975f152c7ee938d # v0.5.6
+        uses: zizmorcore/zizmor-action@cc914d7f3750a2d13d75c7f184a1060aa0e9d482 # v0.6.4
 
   # ###########################################################################################
   #
@@ -358,14 +358,18 @@ jobs:
         id: filter
         uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.0.1
         with:
+          # push on next: diff vs the previous commit, not vs main (default base)
+          base: ${{ github.event_name == 'push' && github.ref_name || '' }}
           filters: |
             app:
               - 'api/**'
+              - 'docker/api/**'
               - 'app-partners/**'
               - 'app-observatory/**'
               - 'shared/**'
             api:
               - 'api/**'
+              - 'docker/api/**'
               - 'shared/**'
             partners:
               - 'app-partners/**'
@@ -381,7 +385,7 @@ jobs:
     # (e.g. partners-only) still releases; a real failure in any need blocks it.
     if: >-
       ${{ always()
-      && github.ref == 'refs/heads/main'
+      && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/next')
       && needs.changes.outputs.app == 'true'
       && !contains(needs.*.result, 'failure')
       && !contains(needs.*.result, 'cancelled') }}
@@ -413,7 +417,6 @@ jobs:
       - name: Semantic Release
         uses: cycjimmy/semantic-release-action@b12c8f6015dc215fe37bc154d4ad456dd3833c90 # v6.0.0
         with:
-          branch: main
           # Required by the conventionalcommits preset used in .releaserc
           # (semantic-release 24 ships only the angular preset by default).
           extra_plugins: |

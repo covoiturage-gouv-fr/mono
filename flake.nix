@@ -44,6 +44,32 @@
             maintainers = with maintainers; [ ];
           };
         };
+
+        # NixOS : les wheels manylinux des venv uv cherchent libz, libstdc++ et libpq
+        # dans les chemins système, absents sur NixOS. On les fournit au seul
+        # interpréteur Python (wrapper) et non au shell entier : un LD_LIBRARY_PATH
+        # global impose ces bibliothèques à tous les binaires du système, qui
+        # plantent dès que leur glibc diffère (GLIBC_x.y not found, stack smashing).
+        # --inherit-argv0 : le venv uv (.venv/bin/python -> wrapper) reste détecté.
+        python313Nixos = pkgs.symlinkJoin {
+          name = "python313-nixos";
+          paths = [ pkgs.python313 ];
+          nativeBuildInputs = [ pkgs.makeWrapper ];
+          postBuild = ''
+            for p in python python3 python3.13; do
+              rm "$out/bin/$p"
+              makeWrapper ${pkgs.python313}/bin/python3.13 "$out/bin/$p" \
+                --inherit-argv0 \
+                --prefix LD_LIBRARY_PATH : ${
+                  pkgs.lib.makeLibraryPath [
+                    pkgs.postgresql_17
+                    pkgs.stdenv.cc.cc.lib
+                    pkgs.zlib
+                  ]
+                }
+            done
+          '';
+        };
       in
       {
         devShells.default = pkgs.mkShell {
@@ -94,7 +120,7 @@
             export SEVEN_ZIP_BIN_PATH=$(which 7z)
             export LESS="-SRXF"
             if [ -L /run/current-system ]; then
-              export LD_LIBRARY_PATH="${pkgs.lib.getLib pkgs.postgresql_17}/lib:${pkgs.stdenv.cc.cc.lib.outPath}/lib:${pkgs.pythonManylinuxPackages.manylinux2014Package}/lib:$LD_LIBRARY_PATH"
+              export PATH="${python313Nixos}/bin:$PATH"
             fi
           '';
         };

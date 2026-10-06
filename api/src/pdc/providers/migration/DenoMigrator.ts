@@ -145,6 +145,10 @@ export class DenoMigrator {
       this.verbose && logger.debug(`Seeding territory group ${territory_group.name}`);
       await this.seedTerritoryGroup(territory_group);
     }
+    // seeds use explicit ids: move the sequence past them for later inserts
+    await this.testConn.query(sql`
+      SELECT setval('territory.territory_group__id_seq', (SELECT MAX(_id) FROM territory.territory_group))
+    `);
 
     for (const carpool of carpoolsV2) {
       this.verbose && logger.debug(`Seeding carpool ${carpool[0].acquisition_id}`);

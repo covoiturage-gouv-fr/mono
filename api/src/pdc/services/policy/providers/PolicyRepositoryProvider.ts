@@ -35,10 +35,10 @@ export class PolicyRepositoryProvider implements PolicyRepositoryProviderInterfa
         pp.territory_id,
         pp.incentive_sum,
         pp.max_amount
-      FROM ${raw(this.table)} as pp,
-      LATERAL (
+      FROM ${raw(this.table)} as pp
+      LEFT JOIN LATERAL (
         SELECT * FROM ${raw(this.getTerritorySelectorFn)}(ARRAY[pp.territory_id])
-      ) as sel
+      ) as sel ON true
       WHERE pp._id = ${id}
       AND pp.deleted_at IS NULL
       ${territoryFilter}
@@ -190,9 +190,9 @@ export class PolicyRepositoryProvider implements PolicyRepositoryProviderInterfa
         pp.max_amount
       FROM ${raw(this.table)} as pp
       LEFT JOIN ${raw(this.tableTerritory)} as tg ON tg._id = pp.territory_id
-      CROSS JOIN LATERAL (
+      LEFT JOIN LATERAL (
         SELECT * FROM ${raw(this.getTerritorySelectorFn)}(ARRAY[pp.territory_id])
-      ) as sel
+      ) as sel ON true
       WHERE ${join(filters, " AND ")}
     `);
   }

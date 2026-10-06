@@ -36,7 +36,7 @@ export default function AlertMessage(props: AlertProps) {
       className="fr-container"
       style={{
         position: "fixed",
-        backgroundColor: "#fff",
+        backgroundColor: "var(--background-default-grey)",
         top: "1rem",
         left: 0,
         right: 0,

@@ -134,7 +134,7 @@ export class TerritoryRepositoryProvider implements TerritoryRepositoryProviderI
       );
     }
     const countQuery = `SELECT count(*) as territory_count from ${this.table} as tg
-      JOIN company.companies cc ON cc._id = tg.company_id
+      LEFT JOIN company.companies cc ON cc._id = tg.company_id
       ${whereClauses.length ? ` WHERE ${whereClauses.join(" AND ")}` : ""}`;
 
     const total = parseFloat(
@@ -151,7 +151,7 @@ export class TerritoryRepositoryProvider implements TerritoryRepositoryProviderI
     const query = {
       text: `
         SELECT tg._id, tg.name, cc.siret FROM ${this.table} as tg
-        JOIN company.companies cc ON cc._id = tg.company_id
+        LEFT JOIN company.companies cc ON cc._id = tg.company_id
         WHERE tg.deleted_at IS NULL ${whereClauses.length ? `AND ${whereClauses.join(" AND ")}` : ""}
         ORDER BY tg.name ASC
         LIMIT $${whereClauses.length + 1}
@@ -374,11 +374,8 @@ export class TerritoryRepositoryProvider implements TerritoryRepositoryProviderI
     const query = {
       text: `
       SELECT
-        ARRAY_AGG(com) AS com
-      FROM territory.get_com_by_territory_id(
-        $1::int,
-        (select * from geo.get_latest_millesime())
-      )
+        ARRAY_AGG(arr) AS com
+      FROM territory.get_arr($1::int, now())
       `,
       values: [params._id],
     };

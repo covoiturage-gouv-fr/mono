@@ -140,6 +140,18 @@ seed:
 source:
   deno run {{ deno_flags }} --v8-flags=--max-old-space-size=4096 src/db/cmd-source.ts
 
+# Replace geo.perimeters with the millesimes dumped by the datalake (`just export-perimeters`) and
+# refresh geo.com_evolution (src/db/geo/import.sh, step by step in src/db/geo/RUNBOOK.md).
+# ex: just geo-import ../datalake/tmp/geo/perimeters_2025-2026.20260929T080503Z.pgdump
+# (sha256 lu dans <dump>.sha256 si omis)
+[group('database')]
+[positional-arguments]
+geo-import source sha="":
+  #!/usr/bin/env bash
+  set -euo pipefail
+  cd "{{ invocation_directory() }}"
+  APP_POSTGRES_URL="{{ pgurl }}" "{{ justfile_directory() }}/src/db/geo/import.sh" run "$1" "$2"
+
 # Run external data migrations
 [group('database')]
 external_data_migrate:
@@ -276,7 +288,7 @@ generate_certs skip=path_exists(join(cert_dir,"cert.key")):
 # Create a new bucket
 [private]
 create_bucket name:
-  just dc_e2e run --rm -e BUCKET={{name}} s3-init
+  just dc_e2e run --rm s3-init mb --ignore-existing minio/{{name}}
 
 # Wait for app
 [private]

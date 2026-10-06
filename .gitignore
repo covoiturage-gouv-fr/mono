@@ -42,4 +42,4 @@ dbt/edr_target
 .claude/mcp/
 .mcp.json
 .worktrees
-
+*.pgdump

@@ -280,6 +280,14 @@ just analyze-sources
 
 `ANALYZE` les foreign tables `dlk_import.*`. Autovacuum ne les analyse jamais (elles n'ont pas de tuples locaux), donc sans ce pas leurs stats locales restent vides (`reltuples = -1`). À lancer une fois avant le backfill lourd : le planner s'appuie dessus pour les fragments de requête non délégués au serveur distant. Les stats côté serveur distant (base de l'API, ce que lit `use_remote_estimate`) sont, elles, entretenues par l'autovacuum de l'API.
 
+Une vue ajoutée à `dlk_export` côté API n'apparaît pas toute seule dans `dlk_import` : le bootstrap FDW est manuel (dépôt infra, `tf/datalake.tf`). Une fois l'API déployée, importer la nouvelle vue connecté en `datalake` (propriétaire du serveur et de `dlk_import` ; serveur `covoiturage_production_srv` en prod, `SELECT srvname FROM pg_foreign_server` ailleurs), puis `just analyze-sources` :
+
+```sql
+IMPORT FOREIGN SCHEMA dlk_export
+  LIMIT TO (territory_territory_group_selector, territory_territory_perimeters)
+  FROM SERVER covoiturage_production_srv INTO dlk_import;
+```
+
 ### Étape 3 — Backfill de la couche trusted (FDW)
 
 ```bash
@@ -344,11 +352,14 @@ just pipeline-daily
 | Lint SQL                             | `just lint`                                                  |
 | Générer les YAMLs d'un layer         | `just osmosis-refactor trusted`                              |
 | Export data.gouv (debug, sans publier) | `just datagouv --debug --start 2026-07-01 --end 2026-08-01` |
+| Export des millésimes vers la prod   | `just export-perimeters`                                     |
 
 `just datagouv --debug [--start … --end …]` exécute l'export **sans publier** sur data.gouv :
 dépose CSV/description/rapport horodatés sous `datagouv/logs/` et imprime un verdict d'invariants
 de cohérence (exit 1 si un invariant dur est cassé). À lancer dans le pod datalake pour debugguer
 sur de vraies données.
+
+`just export-perimeters [--year N …] [--last 2]` dump les 2 derniers millésimes de `zone_trusted.perimeters` (ou ceux passés en `--year`) et `zone_trusted.com_evolution` au format du schéma `geo` de la prod : `pg_dump` custom de `geo_export.perimeters` et `geo_export.com_evolution`, écrit dans `tmp/geo/` (ignoré par git, option `--out-dir`) et uploadé sous `S3_BUCKET/geo/` avec son `.sha256`. Requiert `pg_dump` ≥ version du serveur (`nix develop`). Import : `geo-import stage <nom du dump>` dans le pod geo-import, ou `just geo-import tmp/geo/<nom du dump>` en local, qui remplace `geo.perimeters` (voir `api/src/db/README.md`).
 
 ---
 

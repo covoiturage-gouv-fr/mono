@@ -2,6 +2,7 @@ import { ConfigInterfaceResolver, provider } from "@/ilos/common/index.ts";
 import { logger } from "@/lib/logger/index.ts";
 import { exit } from "@/lib/process/index.ts";
 import { TemplateInterface, TemplateProviderInterfaceResolver } from "@/pdc/providers/template/index.ts";
+import Handlebars from "dep:handlebars";
 import mjml2html from "dep:mjml";
 import mailer, { MailOptions } from "dep:nodemailer";
 import {
@@ -80,10 +81,8 @@ export class NotificationMailTransporter
     return !mjml ? result : mjml2html(result).html;
   }
 
-  protected moustache(str: string, data: Record<string, unknown>): string {
-    return str.replace(/\{\{([^}]+)\}\}/g, (_, key) => {
-      return data[key.trim()] as string;
-    });
+  protected moustache(str: string, data: Record<string, unknown>, escape = (s: string) => s): string {
+    return str.replace(/\{\{([^}]+)\}\}/g, (_, key) => escape(String(data[key.trim()] ?? "")));
   }
 
   async send(mail: MailTemplateNotificationInterface, options = {}): Promise<void> {
@@ -93,7 +92,7 @@ export class NotificationMailTransporter
     const mailCtor = mail.constructor as StaticMailTemplateNotificationInterface;
 
     if ("message_html" in mail.data && typeof mail.data.message_html === "string") {
-      mail.data.message_html = this.moustache(mail.data.message_html, mail.data);
+      mail.data.message_html = this.moustache(mail.data.message_html, mail.data, Handlebars.escapeExpression);
     }
     if ("message_text" in mail.data && typeof mail.data.message_text === "string") {
       mail.data.message_text = this.moustache(mail.data.message_text, mail.data);

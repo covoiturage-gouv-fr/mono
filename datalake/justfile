@@ -74,6 +74,11 @@ checksum config *args:
 archive-old-perimeters *args:
   python -m pipelines.cmd.archive_perimeters {{args}}
 
+# Dump les millésimes de zone_trusted.perimeters et com_evolution au format du schéma geo (prod), upload S3.
+# Défaut : les 2 derniers ; --year N (répétable) pour choisir. Import : `geo-import stage <nom du dump>` (pod)
+export-perimeters *args:
+  python -m pipelines.cmd.export_perimeters {{args}}
+
 # Réconcilie les sources d'une config avec notre S3 : recopie les manquantes accessibles, signale les manuelles
 mirror config *args:
   python -m pipelines.cmd.mirror pipelines/config/{{config}} {{args}}

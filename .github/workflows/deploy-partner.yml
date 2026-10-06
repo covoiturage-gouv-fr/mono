@@ -17,7 +17,8 @@ jobs:
     name: Deploy Espace Partenaires
     strategy:
       matrix:
-        env: [demo, production]
+        # prerelease (-rc.N) = demo only
+        env: ${{ github.event.release.prerelease && fromJSON('["demo"]') || fromJSON('["demo", "production"]') }}
     environment: ${{ matrix.env }}
     runs-on: ubuntu-latest
     steps:
@@ -43,6 +44,7 @@ jobs:
           NEXT_PUBLIC_MATOMO_URL: ${{ vars.MATOMO_URL }}
           NEXT_PUBLIC_MATOMO_SITE_ID: ${{ vars.PARTNER_MATOMO_SITE_ID }}
           NEXT_PUBLIC_MATOMO_ORG_DIMENSION_ID: ${{ vars.PARTNER_MATOMO_ORG_DIMENSION_ID }}
+          NEXT_PUBLIC_FEATURE_MULTI_SIRET: ${{ vars.PARTNER_FEATURE_MULTI_SIRET }}
         run: |
           cd app-partners
           npm ci
