@@ -247,18 +247,26 @@ export class SlicesWorksheetWriter extends AbstractWorksheetWriter {
   }
 
   // ==================================================================================
-  // GEN-643 — Layout dédié « delta déclaré vs calculé » (campagnes avec
-  // extras.declared_incentives, ex. Covoit IDFM). Colonnes de l'onglet Trajets :
-  // M distance · R rpc_incentive (calculé) · S incentive_type · T passenger_contribution
-  // · U operator_declared_incentive (déclaré).
+  // GEN-643 — Layout des campagnes exposant le montant déclaré par l'opérateur
+  // (extras.declared_incentives, ex. Covoit IDFM). La synthèse résume le calculé et
+  // la contribution passagers via le même tableau que le layout générique ; le déclaré
+  // n'est exposé qu'au trajet (colonne U de l'onglet Trajets) et documenté ci-dessous.
   // ==================================================================================
 
-  private readonly BAND_CALCULATED = "Données calculées par covoiturage.beta";
-  private readonly BAND_DECLARED = "Données déclarées par les opérateurs";
-  private readonly DELTA_NOTE =
-    "un écart de données peut exister du fait d'application de règles métier différentes entre l'opérateur et covoiturage.beta.gouv";
-  private readonly CALC_FILL = "FFDDEBF7"; // bleu clair
-  private readonly DECL_FILL = "FFFCE4D6"; // orange clair
+  private readonly COLUMN_HEADERS_DECLARED_NORMAL = [
+    'Tranche "période normale"',
+    "Montant d'incitation",
+    "Tous les trajets",
+    "Trajets incités",
+    "Contribution passagers",
+  ];
+  private readonly COLUMN_HEADERS_DECLARED_BOOSTER = [
+    'Tranche "période booster"',
+    "Montant d'incitation",
+    "Tous les trajets",
+    "Trajets incités",
+    "Contribution passagers",
+  ];
 
   private async callDeclared(
     wbWriter: excel.stream.xlsx.WorkbookWriter,
@@ -267,144 +275,22 @@ export class SlicesWorksheetWriter extends AbstractWorksheetWriter {
     const options: Partial<excel.AddWorksheetOptions> = { views: [{ showGridLines: false }] };
     const ws: excel.Worksheet = this.initWorkSheet(wbWriter, this.WORKSHEET_NAME, undefined, options);
 
-    // Column styling A..G (B/E/G en euros)
+    // Column styling A..E (B/E en euros)
     const font = { name: "Arial", size: 12 };
     ws.getColumn("A").width = 26;
     ws.getColumn("A").font = font;
-    for (const col of ["B", "C", "D", "E", "F", "G"]) {
+    for (const col of ["B", "C", "D", "E"]) {
       ws.getColumn(col).width = 20;
       ws.getColumn(col).font = font;
     }
-    for (const col of ["B", "E", "G"]) {
-      ws.getColumn(col).numFmt = "# ##0.00€";
-    }
+    ws.getColumn("B").numFmt = "# ##0.00€";
+    ws.getColumn("E").numFmt = "# ##0.00€";
 
-    // Le déclaré (E/F + bandeau) n'est exposé que sur la période normale. Le booster
-    // ne porte que les colonnes calculées (B/C/D) + la contribution passagers (G).
-    const normaleTotal = this.drawDeclaredSliceTable(ws, slices, 'Tranche "période normale"', "normale", true);
-    this.drawDeclaredSliceTable(ws, slices, 'Tranche "période booster"', "booster", false);
-
-    this.drawDeltaBlock(ws, normaleTotal);
+    this.drawSliceTable(ws, slices, this.COLUMN_HEADERS_DECLARED_NORMAL, "normale");
+    this.drawSliceTable(ws, slices, this.COLUMN_HEADERS_DECLARED_BOOSTER, "booster");
     this.drawDeclaredDocumentation(ws);
 
     ws.commit();
-  }
-
-  /**
-   * Dessine un tableau de tranches à 7 colonnes (A tranche ; B/C/D calculé ;
-   * E/F/G déclaré) surmonté d'une ligne de bandeaux colorés. Renvoie le numéro
-   * de la ligne de total (pour les références du bloc Delta).
-   */
-  private drawDeclaredSliceTable(
-    ws: excel.Worksheet,
-    slices: SliceStatInterface[],
-    trancheLabel: string,
-    mode: "normale" | "booster",
-    withDeclaredColumns: boolean,
-  ): number {
-    if (ws.lastRow) this.pad(ws, 2);
-
-    // Ligne de bandeaux (code couleur). Le bandeau « déclaré » (E:G) n'apparaît que
-    // sur la période normale.
-    const bandeau = ws.addRow([]);
-    const bRow = bandeau.number;
-    ws.mergeCells(`B${bRow}:D${bRow}`);
-    ws.getCell(`B${bRow}`).value = this.BAND_CALCULATED;
-    for (const col of ["B", "C", "D"]) this.fillCell(ws, `${col}${bRow}`, this.CALC_FILL);
-    ws.getCell(`B${bRow}`).font = { name: "Arial", size: 11, bold: true };
-    ws.getCell(`B${bRow}`).alignment = { horizontal: "center", vertical: "middle" };
-    if (withDeclaredColumns) {
-      ws.mergeCells(`E${bRow}:G${bRow}`);
-      ws.getCell(`E${bRow}`).value = this.BAND_DECLARED;
-      for (const col of ["E", "F", "G"]) this.fillCell(ws, `${col}${bRow}`, this.DECL_FILL);
-      ws.getCell(`E${bRow}`).font = { name: "Arial", size: 11, bold: true };
-      ws.getCell(`E${bRow}`).alignment = { horizontal: "center", vertical: "middle" };
-    }
-
-    // En-têtes (le booster masque les colonnes déclarées E/F)
-    const headers = ws.addRow(
-      withDeclaredColumns
-        ? [trancheLabel, "Montant d'incitation", "Tous les trajets", "Trajets incités", "Montant d'incitation",
-          "Trajets incités", "Contribution passagers"]
-        : [trancheLabel, "Montant d'incitation", "Tous les trajets", "Trajets incités", null, null,
-          "Contribution passagers"],
-    );
-    headers.font = { name: "Arial", size: 12, bold: true };
-    headers.height = 24;
-    headers.eachCell((c, colNumber) => {
-      c.alignment = colNumber > 1 ? { vertical: "middle", horizontal: "right" } : { vertical: "middle" };
-      c.border = { bottom: { style: "thin" } };
-    });
-
-    // Données
-    for (const s of slices) {
-      const { start, end } = s.slice;
-      const mode_criteria = `Trajets!S:S,"${mode}"`;
-      const slice_criteria = `Trajets!M:M,">=${start}"${end ? `,Trajets!M:M,"<${end}"` : ""}`;
-      const calc = [
-        this.formatSliceLabel(s.slice),
-        { date1904: false, formula: `SUMIFS(Trajets!R:R,${mode_criteria},${slice_criteria})` },
-        { date1904: false, formula: `COUNTIFS(${mode_criteria},${slice_criteria})` },
-        { date1904: false, formula: `COUNTIFS(Trajets!R:R,">0",${mode_criteria},${slice_criteria})` },
-      ];
-      const contribution = { date1904: false, formula: `SUMIFS(Trajets!T:T,${mode_criteria},${slice_criteria})` };
-      const r = ws.addRow(
-        withDeclaredColumns
-          ? [
-            ...calc,
-            { date1904: false, formula: `SUMIFS(Trajets!U:U,${mode_criteria},${slice_criteria})` },
-            { date1904: false, formula: `COUNTIFS(Trajets!U:U,">0",${mode_criteria},${slice_criteria})` },
-            contribution,
-          ]
-          : [...calc, null, null, contribution],
-      );
-      r.height = 20;
-      r.alignment = { vertical: "middle" };
-    }
-
-    // Ligne de total (somme des colonnes présentes uniquement)
-    const first = headers.number + 1;
-    const last = headers.number + slices.length;
-    const totalRow = last + 1;
-    const border: Partial<excel.Borders> = { top: { style: "thin" } };
-    const totalCols = withDeclaredColumns ? ["B", "C", "D", "E", "F", "G"] : ["B", "C", "D", "G"];
-    for (const col of ["A", "B", "C", "D", "E", "F", "G"]) {
-      const cell = ws.getCell(`${col}${totalRow}`);
-      if (slices.length > 0 && totalCols.includes(col)) {
-        cell.value = { date1904: false, formula: `SUM(${col}${first}:${col}${last})` };
-      }
-      cell.border = border;
-    }
-    return totalRow;
-  }
-
-  /**
-   * Bloc « Delta » = calculé − déclaré (montant et volume de trajets incités).
-   * Comparaison sur la seule période normale, seule à porter le déclaré.
-   */
-  private drawDeltaBlock(ws: excel.Worksheet, normaleTotal: number): void {
-    this.pad(ws, 2);
-    const label = ws.addRow(["Delta données covoiturage.beta / opérateurs"]);
-    ws.mergeCells(`A${label.number}:G${label.number}`);
-    ws.getCell(`A${label.number}`).font = { name: "Arial", size: 12, bold: true };
-    ws.getCell(`A${label.number}`).border = { bottom: { style: "thin" } };
-
-    const amount = ws.addRow([
-      "Montant d'incitation",
-      { date1904: false, formula: `B${normaleTotal}-E${normaleTotal}` },
-    ]);
-    ws.getCell(`B${amount.number}`).numFmt = "# ##0.00€";
-
-    ws.addRow([
-      "Trajets incités",
-      { date1904: false, formula: `D${normaleTotal}-F${normaleTotal}` },
-    ]);
-
-    this.pad(ws, 1);
-    const note = ws.addRow([this.DELTA_NOTE]);
-    ws.mergeCells(`A${note.number}:G${note.number}`);
-    ws.getCell(`A${note.number}`).font = { name: "Arial", size: 10, italic: true };
-    ws.getCell(`A${note.number}`).alignment = { wrapText: true, vertical: "top" };
   }
 
   /** Définitions des champs (dont le déclaré + périmètre SIREN) placées sous les tableaux. */
@@ -439,14 +325,6 @@ export class SlicesWorksheetWriter extends AbstractWorksheetWriter {
       ws.getCell(`B${r.number}`).value = description;
       ws.getCell(`B${r.number}`).alignment = { wrapText: true, vertical: "top" };
     }
-  }
-
-  private fillCell(ws: excel.Worksheet, address: string, argb: string): void {
-    ws.getCell(address).fill = {
-      type: "pattern",
-      pattern: "solid",
-      fgColor: { argb },
-    };
   }
 
   private drawSliceTable(
