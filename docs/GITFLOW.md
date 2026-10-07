@@ -7,6 +7,7 @@
 | `main` | code en production | stable `vX.Y.Z` | demo + production |
 | `next` | évolutions à valider en demo | prérelease `vX.Y.Z-rc.N` | demo seulement (API, espace partenaires, observatoire) |
 | `feature` | travail en cours (worktree) | aucune | aucun |
+| `deps/dependabot-<date>` | fournée de PR Dependabot (skill `pr-bot`), CI active sur les PR qui la ciblent | aucune | aucun |
 
 ```text
 feature ──squash──▶ next ──merge commit──▶ main
@@ -20,6 +21,7 @@ feature ──squash──▶ next ──merge commit──▶ main
 | -- | ------- |
 | `feature` → `main` | squash |
 | `feature` → `next` | squash |
+| `dependabot/*` → `deps/dependabot-<date>` → `main` | squash |
 | `next` → `main` | **merge commit** |
 | `main` → `next` | **merge commit** |
 
