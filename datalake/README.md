@@ -171,6 +171,29 @@ Les modèles `aggregated` et `exposed` sont déclinés selon **trois directions*
 
 ---
 
+## Territoires custom
+
+Territoires définis en prod avec `just api territory:perimeter` (versions de `territory.territory_perimeters`, lues via FDW). `code` = `territory_id` prod.
+
+| Modèle                                               | Rôle                                                                                                                               |
+| ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `trusted.custom_perimeters`                          | `(code, arr, valid_from, valid_until)` en intervalles disjoints, même règle de version que `territory.get_arr`                     |
+| `trusted.custom_perimeters_agg`                      | Pendant de `perimeters_agg` (`type = 'custom'`, libellé = nom du territoire), un millésime par année où une version est en vigueur |
+| `aggregated.territory_{grain}_custom_{from,to,both}` | `territory_model('custom', …)` : un trajet compté une seule fois par territoire, `is_intra` = départ et arrivée dans le territoire |
+| `aggregated.location_{grain}_custom`                  | `location_model('custom', …)` : heatmap H3 des trajets touchant le territoire                                                     |
+| `aggregated.od_{grain}_custom`                        | `(code, code)` = trajets internes, `(code, 'ext')` = entrants/sortants : pour les chiffres clés, pas de flux entre territoires custom |
+| `exposed.observatory_custom_perimeters`              | `(code, year, arr)` : communes de chaque territoire par millésime, lu par l'API (pendant de `observatory_perimeters`)            |
+
+L'appartenance trajet × territoire est résolue par côté dans `filtered_carpools` (les territoires peuvent se recouvrir). Les agrégats sont incrémentaux comme les autres : la fenêtre est globale à la table, donc **la création ou la modification d'un périmètre ne s'applique pas à l'historique toute seule**. Recalculer depuis le `valid_from` de la version concernée :
+
+```bash
+just custom-recompute 2024-01-01
+```
+
+La recette reconstruit aussi l'exposé observatoire (users, occupation, distribution, incentive, location, od), dont la fenêtre incrémentale ne remonte qu'à la dernière période.
+
+---
+
 ## Macros
 
 Toute la génération de code des 467 modèles agrégés repose sur des macros Jinja organisées en trois familles.

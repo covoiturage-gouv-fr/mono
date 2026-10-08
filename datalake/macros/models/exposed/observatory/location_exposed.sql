@@ -24,7 +24,8 @@
     ('aomreg', 'aom'),
     ('dep',    'dep'),
     ('reg',    'reg'),
-    ('country','country')
+    ('country','country'),
+    ('custom', 'custom')
   ] %}
 
   {# Clé de tri de période, pour un lookback incrémental (comme od_month). #}

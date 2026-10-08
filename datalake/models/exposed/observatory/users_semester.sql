@@ -15,7 +15,8 @@
   ('aomreg', 'aom'),
   ('dep',    'dep'),
   ('reg',    'reg'),
-  ('country','country')
+  ('country','country'),
+  ('custom', 'custom')
 ] %}
 
 WITH
@@ -59,6 +60,6 @@ SELECT
   t.unique_passengers,
   t.new_passengers
 FROM territory AS t
-LEFT JOIN {{ ref('perimeters_agg') }}
+LEFT JOIN {{ perimeters_agg_all() }}
   AS p ON t.code = p.code AND t.type = p.type
 AND p.year = least(t.year, (SELECT y FROM max_perim_year))

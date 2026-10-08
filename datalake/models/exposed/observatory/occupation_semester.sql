@@ -15,7 +15,8 @@
   ('aomreg', 'aom'),
   ('dep',    'dep'),
   ('reg',    'reg'),
-  ('country','country')
+  ('country','country'),
+  ('custom', 'custom')
 ] %}
 
 WITH
@@ -64,7 +65,7 @@ SELECT
   -- centroïde (point) : la carte trace un cercle par zone, pas le contour
   st_asgeojson(p.centroid, 6)::json AS geom
 FROM territory AS t
-LEFT JOIN {{ ref('perimeters_agg') }} AS p
+LEFT JOIN {{ perimeters_agg_all() }} AS p
   ON
     t.code = p.code AND t.type = p.type
     AND p.year = least(t.year, (SELECT y FROM max_perim_year))

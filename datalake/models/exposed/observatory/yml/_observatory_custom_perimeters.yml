@@ -1,0 +1,20 @@
+version: 2
+models:
+  - name: observatory_custom_perimeters
+    description: >
+      Communes (arr) des territoires custom par millésime, lues par api-datalake pour
+      résoudre un territoire custom en communes (flux, occupation, aires).
+    columns:
+      - name: code
+        data_type: character varying
+        description: territory_id du territoire prod
+        data_tests:
+          - not_null
+      - name: year
+        data_type: integer
+        data_tests:
+          - not_null
+      - name: arr
+        data_type: character varying
+        data_tests:
+          - not_null
