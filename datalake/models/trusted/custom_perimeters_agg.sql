@@ -11,16 +11,21 @@
 -- Pendant de perimeters_agg pour les territoires custom (mêmes colonnes) :
 -- hors de perimeters_agg, rebâtie au seul millésime, alors que les territoires
 -- custom changent à tout moment.
--- Une ligne par millésime où le territoire a une version en vigueur ; membres =
--- arr de toutes les versions qui chevauchent l'année, géométrie de ce millésime.
+-- Une ligne par millésime où le territoire a une version en vigueur ;
+-- membres = arr de toutes les versions qui chevauchent l'année, géométrie de
+-- ce millésime.
 
-WITH members AS (
+WITH millesimes AS (
+  SELECT DISTINCT year FROM {{ ref('perimeters') }}
+),
+
+members AS (
   SELECT DISTINCT
     y.year,
     cp.code,
     cp.arr
   FROM {{ ref('custom_perimeters') }} AS cp
-  INNER JOIN (SELECT DISTINCT year FROM {{ ref('perimeters') }}) AS y
+  INNER JOIN millesimes AS y
     ON
       cp.valid_from < MAKE_DATE(y.year + 1, 1, 1)
       AND cp.valid_until > MAKE_DATE(y.year, 1, 1)

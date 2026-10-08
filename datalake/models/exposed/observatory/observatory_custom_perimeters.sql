@@ -8,16 +8,21 @@
 
 -- Communes des territoires custom par millésime, pour la résolution
 -- territoire -> communes de l'API (pendant de observatory_perimeters).
--- Table et non vue : custom_perimeters est rebâtie chaque jour (DROP … CASCADE).
+-- Table et non vue : custom_perimeters est rebâtie chaque jour
+-- (DROP … CASCADE).
 -- Même règle que custom_perimeters_agg : arr de toutes les versions qui
 -- chevauchent l'année.
+
+WITH millesimes AS (
+  SELECT DISTINCT year FROM {{ ref('perimeters') }}
+)
 
 SELECT DISTINCT
   cp.code,
   y.year,
   cp.arr
 FROM {{ ref('custom_perimeters') }} AS cp
-INNER JOIN (SELECT DISTINCT year FROM {{ ref('perimeters') }}) AS y
+INNER JOIN millesimes AS y
   ON
     cp.valid_from < MAKE_DATE(y.year + 1, 1, 1)
     AND cp.valid_until > MAKE_DATE(y.year, 1, 1)

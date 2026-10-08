@@ -34,7 +34,8 @@
 --   * l'artefact « pays agrégé en type=com » que `perimeters_agg` ajoute
 --     pour les modèles od_* — il ferait un doublon de `code` avec la
 --     ligne `type=country`.
--- + `custom_perimeters_agg` (territoires custom, `id` = territory_id || '_custom').
+-- + `custom_perimeters_agg` : territoires custom,
+--   `id` = territory_id || '_custom'.
 --
 -- La recherche insensible aux accents s'appuie sur l'index GIN trigram
 -- `immutable_unaccent(lower(l_territory))` (cf. migration
