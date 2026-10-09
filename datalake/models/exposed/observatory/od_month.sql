@@ -5,7 +5,8 @@
   indexes=[
     {'columns': ['year', 'month', 'type', 'territory_1', 'territory_2'], 'unique': true}
   ],
-  tags=['exposed', 'observatory', 'od']
+  tags=['exposed', 'observatory', 'od'],
+  pre_hook=(['{{ exposed_types_delete() }}'] if exposed_types() else [])
 ) }}
 
 {% set type_map = [
@@ -20,7 +21,7 @@
 ] %}
 
 WITH
-{% if is_incremental() %}
+{% if exposed_incremental() %}
   lookback AS (
     SELECT max(year * 12 + month) - 1 AS min_ym FROM {{ this }}
   ),
@@ -31,7 +32,7 @@ max_perim_year AS (
 ),
 
 od AS (
-  {% for model_type, exposed_type in type_map %}
+  {% for model_type, exposed_type in exposed_type_map(type_map) %}
     SELECT
       '{{ exposed_type }}' AS type,
       territory_1,
@@ -43,7 +44,7 @@ od AS (
       distance,
       duration
     FROM {{ ref('od_month_' ~ model_type) }}
-    {% if is_incremental() %}
+    {% if exposed_incremental() %}
       WHERE year * 12 + month >= (SELECT lookback.min_ym FROM lookback)
     {% endif %}
     {% if not loop.last %}UNION ALL{% endif %}

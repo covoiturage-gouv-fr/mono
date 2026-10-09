@@ -5,7 +5,8 @@
   indexes=[
     {'columns': ['year', 'quarter', 'type', 'code', 'direction'], 'unique': true}
   ],
-  tags=['exposed', 'observatory', 'distribution']
+  tags=['exposed', 'observatory', 'distribution'],
+  pre_hook=(['{{ exposed_types_delete() }}'] if exposed_types() else [])
 ) }}
 
 {% set type_direction_map = [
@@ -36,7 +37,7 @@
 ] %}
 
 WITH
-{% if is_incremental() %}
+{% if exposed_incremental() %}
   lookback AS (
     SELECT max(year * 4 + quarter) - 1 AS min_yq FROM {{ this }}
   ),
@@ -47,7 +48,8 @@ max_perim_year AS (
 ),
 
 distribution AS (
-  {% for model_type, exposed_type, direction in type_direction_map %}
+  {% for model_type, exposed_type, direction
+    in exposed_type_map(type_direction_map) %}
     SELECT
       '{{ exposed_type }}' AS type,
       '{{ direction }}'    AS direction,
@@ -57,7 +59,7 @@ distribution AS (
       hours_distribution,
       dist_distribution
     FROM {{ ref('territory_quarter_' ~ model_type ~ '_' ~ direction) }}
-    {% if is_incremental() %}
+    {% if exposed_incremental() %}
       WHERE year * 4 + quarter >= (SELECT lookback.min_yq FROM lookback)
     {% endif %}
     {% if not loop.last %}UNION ALL{% endif %}
