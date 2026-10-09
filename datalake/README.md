@@ -190,7 +190,7 @@ L'appartenance trajet × territoire est résolue par côté dans `filtered_carpo
 just custom-recompute 2024-01-01
 ```
 
-La recette reconstruit aussi l'exposé observatoire (users, occupation, distribution, incentive, location, od), dont la fenêtre incrémentale ne remonte qu'à la dernière période.
+La recette recalcule aussi l'exposé observatoire (users, occupation, distribution, incentive, location, od), dont la fenêtre incrémentale ne remonte qu'à la dernière période : `--vars '{exposed_types: [custom]}'` supprime puis réécrit tout l'historique des seuls territoires custom, sans relire les autres types (macro `exposed_types`). Exige des tables exposées existantes, sans `--full-refresh`.
 
 ---
 
