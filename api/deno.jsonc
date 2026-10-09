@@ -39,7 +39,7 @@
     "dep:sentry": "npm:@sentry/node@^8.2",
     "dep:express-rate-limit": "npm:express-rate-limit@^7.3",
     "dep:h3-js": "npm:h3-js@^4.1",
-    "dep:handlebars": "npm:handlebars@^4.7.9",
+    "dep:handlebars": "npm:handlebars@^4.7.10",
     "dep:ibantools": "npm:ibantools@^4.5", // useless : remove use and clear
     "dep:libphonenumber-js": "npm:libphonenumber-js@^1.11",
     "dep:xss": "npm:xss@^1",

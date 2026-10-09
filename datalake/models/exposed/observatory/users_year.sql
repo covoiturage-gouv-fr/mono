@@ -5,7 +5,8 @@
   indexes=[
     {'columns': ['year', 'type', 'code'], 'unique': true}
   ],
-  tags=['exposed', 'observatory', 'users']
+  tags=['exposed', 'observatory', 'users'],
+  pre_hook=(['{{ exposed_types_delete() }}'] if exposed_types() else [])
 ) }}
 
 {% set type_map = [
@@ -15,11 +16,12 @@
   ('aomreg', 'aom'),
   ('dep',    'dep'),
   ('reg',    'reg'),
-  ('country','country')
+  ('country','country'),
+  ('custom', 'custom')
 ] %}
 
 WITH
-{% if is_incremental() %}
+{% if exposed_incremental() %}
   lookback AS (
     SELECT max(year) - 1 AS min_year FROM {{ this }}
   ),
@@ -30,7 +32,7 @@ max_perim_year AS (
 ),
 
 territory AS (
-  {% for model_type, exposed_type in type_map %}
+  {% for model_type, exposed_type in exposed_type_map(type_map) %}
     SELECT
       '{{ exposed_type }}' AS type,
       code,
@@ -40,7 +42,7 @@ territory AS (
       unique_passengers,
       new_passengers
     FROM {{ ref('territory_year_' ~ model_type ~ '_both') }}
-    {% if is_incremental() %}
+    {% if exposed_incremental() %}
       WHERE year >= (SELECT lookback.min_year FROM lookback)
     {% endif %}
     {% if not loop.last %}UNION ALL{% endif %}
@@ -57,6 +59,6 @@ SELECT
   t.unique_passengers,
   t.new_passengers
 FROM territory AS t
-LEFT JOIN {{ ref('perimeters_agg') }}
+LEFT JOIN {{ perimeters_agg_all() }}
   AS p ON t.code = p.code AND t.type = p.type
 AND p.year = least(t.year, (SELECT y FROM max_perim_year))

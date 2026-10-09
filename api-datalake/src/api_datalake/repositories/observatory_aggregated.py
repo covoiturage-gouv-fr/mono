@@ -14,7 +14,7 @@ Différences structurelles avec le legacy, assumées et documentées :
 - Le grain `trimester` (param API) mappe la table `_quarter` (colonne `quarter`).
 """
 
-from ..helpers import check_territory_param
+from ..helpers import check_observe_param, check_territory_param
 from ..observatory_sql import perimeter_in_subquery, resolve_grain
 
 # indics interpolés (noms de colonnes) -> allowlist par famille, fallback legacy.
@@ -49,7 +49,7 @@ def build_flux(type_: str, observe: str, code: str, year: int,
                month: int | None = None, trimester: int | None = None,
                semester: int | None = None) -> tuple[str, dict]:
     """Flux OD entre territoires (porté de getFlux)."""
-    observe = check_territory_param(observe)
+    observe = check_observe_param(observe)
     type_ = check_territory_param(type_)
     suffix, tcol, tval = resolve_grain(month, trimester, semester)
     perim = perimeter_in_subquery(observe, type_)
@@ -144,7 +144,7 @@ def build_occupation(type_: str, observe: str, code: str, year: int,
 
     Le modèle exposé est `both`-only : le filtre `direction` legacy est ignoré.
     """
-    observe = check_territory_param(observe)
+    observe = check_observe_param(observe)
     type_ = check_territory_param(type_)
     suffix, tcol, tval = resolve_grain(month, trimester, semester)
     perim = perimeter_in_subquery(observe, type_)
@@ -171,7 +171,7 @@ def build_best_territories(type_: str, observe: str, code: str, year: int,
                            trimester: int | None = None,
                            semester: int | None = None) -> tuple[str, dict]:
     """Meilleurs territoires par trajets (porté de getBestTerritories, direction=both)."""
-    observe = check_territory_param(observe)
+    observe = check_observe_param(observe)
     type_ = check_territory_param(type_)
     suffix, tcol, tval = resolve_grain(month, trimester, semester)
     perim = perimeter_in_subquery(observe, type_)
@@ -348,10 +348,14 @@ def build_aires_covoiturage(type_: str, code: str | None = None) -> tuple[str, d
     where = ["true"]
     params: dict = {}
     if code:
+        table, match = (
+            ("zone_exposed.observatory_custom_perimeters", "code")
+            if type_ == "custom" else ("zone_exposed.observatory_perimeters", type_)
+        )
         where.append(f"""insee IN (
-          SELECT arr FROM zone_exposed.observatory_perimeters
+          SELECT arr FROM {table}
           WHERE year = (SELECT max(year) FROM zone_exposed.observatory_perimeters)
-            AND {type_} = %(code)s
+            AND {match} = %(code)s
         )""")
         params["code"] = code
     sql = f"""

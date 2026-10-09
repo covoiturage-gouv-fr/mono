@@ -60,6 +60,14 @@ export const territoryList = [
   { id: "country", name: "Pays" },
 ];
 
+// Niveaux observables dans un territoire : ceux plus fins que lui. Un territoire
+// custom n'a pas de rang : il peut chevaucher plusieurs départements.
+export const observeList = (type: string) => {
+  if (type === "custom") return territoryList.filter((d) => ["com", "epci", "aom", "dep"].includes(d.id));
+  const index = territoryList.findIndex((d) => d.id === type);
+  return index === -1 ? [] : territoryList.slice(0, index);
+};
+
 export const mapList = [
   { id: 1, name: "Flux de trajets" },
   { id: 2, name: "Densité de départs et arrivées dans une zone" },

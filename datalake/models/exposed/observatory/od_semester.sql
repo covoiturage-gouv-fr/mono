@@ -5,7 +5,8 @@
   indexes=[
     {'columns': ['year', 'semester', 'type', 'territory_1', 'territory_2'], 'unique': true}
   ],
-  tags=['exposed', 'observatory', 'od']
+  tags=['exposed', 'observatory', 'od'],
+  pre_hook=(['{{ exposed_types_delete() }}'] if exposed_types() else [])
 ) }}
 
 {% set type_map = [
@@ -15,11 +16,12 @@
   ('aomreg', 'aom'),
   ('dep',    'dep'),
   ('reg',    'reg'),
-  ('country','country')
+  ('country','country'),
+  ('custom', 'custom')
 ] %}
 
 WITH
-{% if is_incremental() %}
+{% if exposed_incremental() %}
   lookback AS (
     SELECT max(year * 2 + semester) - 1 AS min_ys FROM {{ this }}
   ),
@@ -30,7 +32,7 @@ max_perim_year AS (
 ),
 
 od AS (
-  {% for model_type, exposed_type in type_map %}
+  {% for model_type, exposed_type in exposed_type_map(type_map) %}
     SELECT
       '{{ exposed_type }}' AS type,
       territory_1,
@@ -42,7 +44,7 @@ od AS (
       distance,
       duration
     FROM {{ ref('od_semester_' ~ model_type) }}
-    {% if is_incremental() %}
+    {% if exposed_incremental() %}
       WHERE year * 2 + semester >= (SELECT lookback.min_ys FROM lookback)
     {% endif %}
     {% if not loop.last %}UNION ALL{% endif %}
@@ -66,10 +68,10 @@ SELECT
   st_x(p2.centroid)              AS lng_2,
   st_y(p2.centroid)              AS lat_2
 FROM od
-LEFT JOIN {{ ref('perimeters_agg') }} AS p1
+LEFT JOIN {{ perimeters_agg_all() }} AS p1
   ON
     od.territory_1 = p1.code AND od.type = p1.type
     AND p1.year = least(od.year, (SELECT y FROM max_perim_year))
-LEFT JOIN {{ ref('perimeters_agg') }}
+LEFT JOIN {{ perimeters_agg_all() }}
   AS p2 ON od.territory_2 = p2.code AND od.type = p2.type
 AND p2.year = least(od.year, (SELECT y FROM max_perim_year))

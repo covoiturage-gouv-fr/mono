@@ -18,7 +18,7 @@ models:
           - not_null
       - name: territory
         data_type: character varying
-        description: Code du territoire (INSEE commune, code EPCI / AOM / département / région, code pays).
+        description: Code du territoire (INSEE commune, code EPCI / AOM / département / région, code pays, territory_id d'un territoire custom).
         data_tests:
           - not_null
       - name: l_territory
@@ -32,7 +32,7 @@ models:
         data_tests:
           - not_null
           - accepted_values:
-              values: ['com', 'epci', 'aom', 'dep', 'reg', 'country']
+              values: ['com', 'epci', 'aom', 'dep', 'reg', 'country', 'custom']
       - name: year
         data_type: integer
         data_tests:

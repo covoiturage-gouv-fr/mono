@@ -142,10 +142,11 @@ source:
 
 # Replace geo.perimeters with the millesimes dumped by the datalake (`just export-perimeters`) and
 # refresh geo.com_evolution (src/db/geo/import.sh, step by step in src/db/geo/RUNBOOK.md).
-# ex: just geo-import perimeters_2025-2026.20260929T080503Z.pgdump <sha256>
+# ex: just geo-import ../datalake/tmp/geo/perimeters_2025-2026.20260929T080503Z.pgdump
+# (sha256 lu dans <dump>.sha256 si omis)
 [group('database')]
 [positional-arguments]
-geo-import source sha:
+geo-import source sha="":
   #!/usr/bin/env bash
   set -euo pipefail
   cd "{{ invocation_directory() }}"

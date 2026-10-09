@@ -20,7 +20,10 @@ ruleset cannot filter on the source branch, so the method is always passed expli
 ## Hard rules
 
 - **Never** squash or rebase these PRs, never rebase or force-push `main` / `next`, never create a
-  tag by hand, never `--admin`, never self-approve.
+  tag by hand, never self-approve.
+- `--admin` only on an explicit yes from the user, asked at the end once the checks are green (see
+  step 4). It guarantees the merge method; a human merge pre-selects the last method used (a squash
+  of `main` -> `next` happened that way, PR #3497).
 - Remediations (squash done by mistake, re-aligning `next` on `main`): **not** automated. Point to
   the "Remédiations" section of `docs/GITFLOW.md` and stop.
 - Confirm with the user before opening a PR and again before merging it (outward-facing).
@@ -38,6 +41,7 @@ tell them to pick **"Create a merge commit"**, and stop.
 | create | `create_pull_request` | `gh pr create --head <head> --base <base> --title … -F <body>` |
 | checks | `get_pull_request_status` | `gh pr checks <n> --watch` |
 | merge | `merge_pull_request` with `merge_method: "merge"` | `gh pr merge <n> --merge` |
+| merge past the ruleset (after the user's yes) | — | `gh pr merge <n> --merge --admin` |
 
 ## Common start
 
@@ -68,8 +72,9 @@ Always quote `"$STABLE"` / `"$RC"` in the commands below.
    ($STABLE)`. Body: the stable tag, the number of commits brought back, and "fusion en merge
    commit, jamais en squash".
 4. **Merge**: wait for the checks, confirm, merge with `merge_method: "merge"` / `--merge`. If the
-   ruleset refuses (review required, missing permission): stop and tell the user to merge with
-   **"Create a merge commit"**.
+   ruleset refuses (review required, auto-merge disabled): ask the user, with `AskUserQuestion`,
+   for permission to run `gh pr merge <n> --merge --admin`. Yes -> run it. No -> tell the user to
+   merge with **"Create a merge commit"** and stop.
 5. **Verify**: `git fetch origin next --tags && git merge-base --is-ancestor "$STABLE" origin/next`.
 
 ## Mode `next-to-main`
@@ -89,8 +94,9 @@ Always quote `"$STABLE"` / `"$RC"` in the commands below.
 4. **Open PR** head `next`, base `main`. Title: `chore(release): livraison de next en production
    (<version attendue>)`. semantic-release reads the individual commits brought by the merge
    commit, so the title does not decide the version. Body: the report of step 2.
-5. **Merge**: checks green, confirm, `merge_method: "merge"` / `--merge`. Never squash: only the PR
-   title would remain and the `feat`/`fix` of the `rc` would be lost.
+5. **Merge**: checks green, confirm, `merge_method: "merge"` / `--merge`. If the ruleset refuses:
+   same `--admin` permission request as in `main-to-next` step 4. Never squash: only the PR title
+   would remain and the `feat`/`fix` of the `rc` would be lost.
 6. **Afterwards**: once the stable tag appears on `main` (`release` job), `main-to-next` is
    required. Offer to run it; check with `git fetch --tags` +
    `git describe --tags --abbrev=0 --match 'v[0-9]*' --exclude '*-*' origin/main`.

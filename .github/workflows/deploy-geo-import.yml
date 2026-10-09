@@ -36,6 +36,8 @@ jobs:
         run: docker build -f docker/geo-import/prod/Dockerfile -t geo-import:ci .
       - name: Smoke
         run: docker run --rm --entrypoint pg_restore geo-import:ci --version
+      - name: Test import.sh (BusyBox de l'image)
+        run: docker run --rm -v "$PWD/api/src/db/geo:/t:ro" --entrypoint bash geo-import:ci /t/import.test.sh
 
   tag:
     name: Set deployment tag
@@ -65,7 +67,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Build and Push geo-import Docker Image
-        uses: ./.github/actions/build-image
+        uses: $/.github/actions/build-image
         with:
           name: geo-import
           context: .

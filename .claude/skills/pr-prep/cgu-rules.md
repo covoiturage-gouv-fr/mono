@@ -2,7 +2,8 @@
 name: cgu-rules
 description: Cached, machine-checkable distillation of the RPC CGU - read by the pr-preparer cgu-guard check.
 canonical_url: https://doc.covoiturage.beta.gouv.fr/nos-services/le-registre-de-preuve-de-covoiturage/cgu-conditions-generales-dutilisation-de-covoiturage.beta.gouv
-last_synced: 2026-09-28
+last_synced: 2026-10-08
+cgu_version: 2026-02-17
 ttl_days: 7
 ---
 
