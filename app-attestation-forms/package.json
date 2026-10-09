@@ -15,7 +15,7 @@
     "@codegouvfr/react-dsfr": "^1.35.0",
     "@hookform/resolvers": "^5.9.1",
     "file-saver": "^2.0.5",
-    "next": "16.3.5",
+    "next": "16.3.8",
     "pdf-lib": "^1.17.1",
     "react": "19.3.0",
     "react-dom": "19.3.0",
