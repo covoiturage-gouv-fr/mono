@@ -16,10 +16,16 @@ export abstract class TerritoryRepositoryInterfaceResolver {
   public async getTerritorySelectors(_territoryId: number): Promise<TerritorySelectorsInterface> {
     throw new Error("Not implemented");
   }
+  public async getTerritoryPerimeterArr(_territoryId: number, _from: Date, _to: Date): Promise<string[] | null> {
+    throw new Error("Not implemented");
+  }
   public async getTerritoryName(_type: string, _code: string): Promise<string | null> {
     throw new Error("Not implemented");
   }
   public async getTerritoryNamesBatch(_type: string, _codes: string[]): Promise<string[]> {
+    throw new Error("Not implemented");
+  }
+  public async getTerritoryGroupNames(_ids: number[]): Promise<string[]> {
     throw new Error("Not implemented");
   }
 }
@@ -31,6 +37,7 @@ export class TerritoryRepository {
   public readonly territoryTable = "territory.territory_group";
   public readonly pivotTable = "territory.territory_group_selector";
   public readonly geoTable = "geo.perimeters";
+  public readonly perimeterTable = "territory.territory_perimeters";
 
   constructor(protected connection: DenoPostgresConnection) {}
 
@@ -45,6 +52,23 @@ export class TerritoryRepository {
     const rows = await this.connection.query<PivotTerritorySelector>(q);
 
     return rows.length ? this.formatSelectors(rows) : {};
+  }
+
+  /**
+   * Arrondissements of a territory over [from, to), for territories with perimeter versions
+   * (custom territories). `null` when the territory has none: it follows its selectors.
+   *
+   * `get_arr_range` unions the versions overlapping the period: an export over a perimeter
+   * change includes the trips of both versions.
+   */
+  public async getTerritoryPerimeterArr(territoryId: number, from: Date, to: Date): Promise<string[] | null> {
+    const q = sql`
+      SELECT array_agg(r.arr ORDER BY r.arr) AS arr
+      FROM territory.get_arr_range(${territoryId}::int, ${from}::timestamptz, ${to}::timestamptz) r
+      WHERE EXISTS (SELECT 1 FROM ${raw(this.perimeterTable)} WHERE territory_id = ${territoryId})
+    `;
+    const rows = await this.connection.query<{ arr: string[] | null }>(q);
+    return rows[0]?.arr ?? null;
   }
 
   /**
@@ -104,6 +128,18 @@ export class TerritoryRepository {
       AND year = geo.get_latest_millesime()
     `;
 
+    const rows = await this.connection.query<{ name: string }>(q);
+    return rows.map((r) => r.name);
+  }
+
+  public async getTerritoryGroupNames(ids: number[]): Promise<string[]> {
+    if (!ids.length) return [];
+    const q = sql`
+      SELECT name
+      FROM ${raw(this.territoryTable)}
+      WHERE _id IN (${join(ids.map((id) => sql`${id}::int`))})
+      ORDER BY name
+    `;
     const rows = await this.connection.query<{ name: string }>(q);
     return rows.map((r) => r.name);
   }

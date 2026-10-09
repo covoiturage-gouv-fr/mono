@@ -106,7 +106,8 @@ export class CreateCommand implements CommandInterface {
           operator_id: operator_id.map((s) => parseInt(s as unknown as string, 10)),
           // TODO add support for the territory_id (territory_group._id)
           // TODO add support for the SIREN to select the territory
-          geo_selector: await this.territoryService.resolve({ geo_selector }),
+          geo_selector: await this.territoryService.resolve({ geo_selector, start_at, end_at }),
+          display_selector: this.territoryService.displaySelector({ geo_selector, start_at, end_at }),
           tz,
           target: optionTarget,
         }),

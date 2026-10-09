@@ -2,13 +2,16 @@ import { Timezone } from "@/pdc/providers/validator/types.ts";
 import { ExportStatus, ExportTarget } from "@/pdc/services/export/models/Export.ts";
 import { TerritorySelectorsInterface } from "@/pdc/services/territory/contracts/common/interfaces/TerritoryCodeInterface.ts";
 
+// `custom` : territory_id of custom territories, resolved to their arrondissements on creation.
+export type ExportGeoSelectorInterface = TerritorySelectorsInterface & { custom?: string[] };
+
 export type ParamsInterface = {
   tz: Timezone;
   start_at: Date;
   end_at: Date;
   created_by: number;
   operator_id?: number[];
-  geo_selector?: TerritorySelectorsInterface;
+  geo_selector?: ExportGeoSelectorInterface;
   territory_id?: number[];
 };
 

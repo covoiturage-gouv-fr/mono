@@ -1,14 +1,17 @@
-import { provider } from "@/ilos/common/index.ts";
+import { NotFoundException, provider } from "@/ilos/common/index.ts";
+import { ExportGeoSelectorInterface } from "@/pdc/services/export/contracts/create.contract.ts";
 import { TerritoryRepositoryInterfaceResolver } from "@/pdc/services/export/repositories/TerritoryRepository.ts";
 import {
   TerritoryCodeEnum,
   TerritorySelectorsInterface,
 } from "@/pdc/services/territory/contracts/common/interfaces/TerritoryCodeInterface.ts";
-export type ResolveParams = Partial<{
-  territory_id: number[];
-  geo_selector: TerritorySelectorsInterface;
-}>;
-export type ResolveResults = TerritorySelectorsInterface;
+export type ResolveParams =
+  & { start_at: Date; end_at: Date }
+  & Partial<{
+    territory_id: number[];
+    geo_selector: ExportGeoSelectorInterface;
+  }>;
+export type ResolveResults = TerritorySelectorsInterface | null;
 
 export abstract class TerritoryServiceInterfaceResolver {
   public geoStringToObject(geo: string[]): TerritorySelectorsInterface {
@@ -22,7 +25,10 @@ export abstract class TerritoryServiceInterfaceResolver {
   ): TerritorySelectorsInterface {
     throw new Error("Not implemented");
   }
-  public async getTerritoryNames(_geoSelector: TerritorySelectorsInterface | null): Promise<string[]> {
+  public displaySelector(_params: ResolveParams): ExportGeoSelectorInterface | null {
+    throw new Error("Not implemented");
+  }
+  public async getTerritoryNames(_geoSelector: ExportGeoSelectorInterface | null): Promise<string[]> {
     throw new Error("Not implemented");
   }
 }
@@ -96,22 +102,29 @@ export class TerritoryService {
     }
 
     if (!params.geo_selector) {
-      // get an array of selectors for each territory_id
-      const territorySelectors = await Promise.all(
-        (params.territory_id || []).map((id) => this.territoryRepository.getTerritorySelectors(id)),
-      );
-
-      // merge all selectors into one
-      const merge = this.mergeSelectors(territorySelectors);
-      if (Object.keys(merge).length > 0) {
-        return merge;
-      }
-
-      // fallback to the default country
-      return this.defaultResolveResult;
+      const ids = params.territory_id || [];
+      if (!ids.length) return this.defaultResolveResult;
+      return this.resolveTerritories(ids, params);
     }
 
-    return params.geo_selector;
+    const { custom, ...selectors } = params.geo_selector;
+    if (!custom?.length) return selectors;
+
+    const customSelectors = await this.resolveTerritories(custom.map(Number), params);
+    return this.mergeSelectors([selectors, customSelectors]);
+  }
+
+  /**
+   * A territory without selectors nor perimeter would export the whole country: refused.
+   */
+  protected async resolveTerritories(ids: number[], period: ResolveParams): Promise<TerritorySelectorsInterface> {
+    const selectors = await Promise.all(ids.map(async (id) => {
+      const arr = await this.territoryRepository.getTerritoryPerimeterArr(id, period.start_at, period.end_at);
+      const resolved = arr?.length ? { arr } : await this.territoryRepository.getTerritorySelectors(id);
+      if (!Object.keys(resolved).length) throw new NotFoundException(`Territory ${id} has no perimeter`);
+      return resolved;
+    }));
+    return this.mergeSelectors(selectors);
   }
 
   public mergeSelectors(
@@ -127,23 +140,39 @@ export class TerritoryService {
   }
 
   /**
+   * Perimeter as requested, for display: `resolve()` turns territories into their arr,
+   * which would list every commune instead of the territory name.
+   * A `territory_id` is shown as its territory group (`custom` key).
+   */
+  public displaySelector(params: ResolveParams): ExportGeoSelectorInterface | null {
+    if (params.geo_selector) return params.geo_selector;
+    if (params.territory_id?.length) return { custom: params.territory_id.map(String) };
+    return null;
+  }
+
+  /**
    * Get all territory names from a geo_selector
    *
    * @param geoSelector
    * @returns Array of territory names
    */
-  public async getTerritoryNames(geoSelector: TerritorySelectorsInterface | null): Promise<string[]> {
+  public async getTerritoryNames(geoSelector: ExportGeoSelectorInterface | null): Promise<string[]> {
     if (!geoSelector) return [];
 
+    const { custom, ...selectors } = geoSelector;
     const names: string[] = [];
-    const types = Object.keys(geoSelector) as (keyof TerritorySelectorsInterface)[];
+    const types = Object.keys(selectors) as (keyof TerritorySelectorsInterface)[];
 
     for (const type of types) {
-      const codes = geoSelector[type];
+      const codes = selectors[type];
       if (!codes || !codes.length) continue;
 
       const batchNames = await this.territoryRepository.getTerritoryNamesBatch(type as string, codes);
       names.push(...batchNames);
+    }
+
+    if (custom?.length) {
+      names.push(...await this.territoryRepository.getTerritoryGroupNames(custom.map(Number)));
     }
 
     return names;

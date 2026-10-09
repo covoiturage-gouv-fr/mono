@@ -1,6 +1,7 @@
 import { subMonthsTz, today } from "@/pdc/helpers/dates.helper.ts";
 import { Timezone } from "@/pdc/providers/validator/index.ts";
 import { ExportTarget } from "@/pdc/services/export/models/Export.ts";
+import { ExportGeoSelectorInterface } from "@/pdc/services/export/contracts/create.contract.ts";
 import { TerritorySelectorsInterface } from "@/pdc/services/territory/contracts/common/interfaces/TerritoryCodeInterface.ts";
 
 export type Config = Partial<Params>;
@@ -10,6 +11,9 @@ export type Params = {
   end_at: Date;
   operator_id: number[];
   geo_selector: TerritorySelectorsInterface | null;
+  // perimeter as requested (custom territories not resolved), for the exports list only;
+  // null on exports created before it, which fall back to geo_selector
+  display_selector: ExportGeoSelectorInterface | null;
   tz: Timezone;
   target: ExportTarget;
 };
@@ -31,6 +35,7 @@ export class ExportParams {
     end_at: today(),
     operator_id: [],
     geo_selector: null,
+    display_selector: null,
     tz: this.tz,
     target: ExportTarget.DATAGOUV,
   };
