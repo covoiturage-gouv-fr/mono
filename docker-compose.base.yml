@@ -147,7 +147,7 @@ services:
 
   s3-init:
     # image sans shell : alias passé par MC_HOST_<alias>, commande fournie par `just create_bucket`
-    image: cgr.dev/chainguard/minio-client:latest@sha256:b2bd7824d23d3e3b15bedd7e87fbc3be29d2e213307b4f901e4a1d92356dc20f
+    image: cgr.dev/chainguard/minio-client:latest@sha256:b20bdc339b3f2596c8f731793f861d2445fd13a9a3cfb517ff020969f4e4bf71
     environment:
       MC_HOST_minio: http://minioadmin:minioadmin@s3:9000
     networks:
