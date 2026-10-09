@@ -37,6 +37,14 @@ dbt-recompute path start end *args:
     --vars "{\"start\":\"{{start}}\",\"end\":\"{{end}}\"}" \
     {{args}}
 
+# Territoires custom créés ou modifiés : recalcule leurs agrégats depuis `start`, puis
+# reconstruit l'exposé qui les lit (sa fenêtre incrémentale ne remonte qu'à la dernière période).
+# ex: just custom-recompute 2024-01-01
+custom-recompute start end="2100-01-01" *args:
+  just dbt-recompute models/aggregated/custom_territory {{start}} {{end}} {{args}}
+  just dbt run --full-refresh --select "tag:exposed,tag:users" "tag:exposed,tag:occupation" "tag:exposed,tag:distribution" "tag:exposed,tag:incentive" "tag:exposed,tag:location" "tag:exposed,tag:od" {{args}}
+  just cache-bump
+
 # Run dbt-osmosis command
 dbt-osmosis cmd *args:
   dbt-osmosis {{cmd}} {{args}} --profiles-dir profiles --project-dir .

@@ -14,7 +14,7 @@ from ..cache import (
 )
 from ..config import settings
 from ..db import connection
-from ..helpers import check_code_param, check_territory_param
+from ..helpers import check_code_param, check_observe_param, check_territory_param
 from ..period import is_published, last_record_cutoff
 from ..repositories import observatory as repo
 from ..repositories import observatory_aggregated as agg
@@ -194,7 +194,7 @@ async def flux(
     check_code_param(code)
     sql, sp = agg.build_flux(type, observe, code, year, month, trimester, semester)
     params = {"code": code, "type": check_territory_param(type),
-              "observe": check_territory_param(observe), "year": year,
+              "observe": check_observe_param(observe), "year": year,
               "month": month, "trimester": trimester, "semester": semester}
     return await _serve_rows(redis, "/observatory/flux", params, sql, sp, acquire)
 
@@ -275,7 +275,7 @@ async def occupation(
     check_code_param(code)
     sql, sp = agg.build_occupation(type, observe, code, year, month, trimester, semester)
     params = {"code": code, "type": check_territory_param(type),
-              "observe": check_territory_param(observe), "year": year,
+              "observe": check_observe_param(observe), "year": year,
               "month": month, "trimester": trimester, "semester": semester}
     return await _serve_rows(redis, "/observatory/occupation", params, sql, sp, acquire)
 
@@ -298,7 +298,7 @@ async def best_territories(
     sql, sp = agg.build_best_territories(type, observe, code, year, limit,
                                          month, trimester, semester)
     params = {"code": code, "type": check_territory_param(type),
-              "observe": check_territory_param(observe), "year": year, "limit": limit,
+              "observe": check_observe_param(observe), "year": year, "limit": limit,
               "month": month, "trimester": trimester, "semester": semester}
     return await _serve_rows(redis, "/observatory/best-territories", params, sql, sp, acquire)
 

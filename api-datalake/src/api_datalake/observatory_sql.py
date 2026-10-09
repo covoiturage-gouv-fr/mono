@@ -16,6 +16,7 @@ sont passées en paramètres psycopg `%(...)s`.
 """
 
 PERIMETERS_TABLE = "zone_exposed.observatory_perimeters"
+CUSTOM_PERIMETERS_TABLE = "zone_exposed.observatory_custom_perimeters"
 
 
 def resolve_grain(month: int | None, trimester: int | None,
@@ -42,13 +43,10 @@ def perimeter_in_subquery(observe_col: str, type_col: str) -> str:
     demandée s'il existe, sinon le plus récent (get_latest_millesime_or).
 
     `observe_col`/`type_col` doivent être pré-validés (allowlist territoire).
+    `custom` n'est pas une colonne : ses communes sont lues dans
+    `observatory_custom_perimeters`, au même millésime.
     """
-    return f"""(
-      SELECT t.{observe_col}
-      FROM (
-        SELECT arr AS com, epci, aom, dep, reg, country
-        FROM {PERIMETERS_TABLE}
-        WHERE year = (
+    millesime = f"""(
           SELECT year FROM (
             SELECT max(year) AS year FROM {PERIMETERS_TABLE} WHERE year = %(year)s
             UNION ALL
@@ -56,7 +54,20 @@ def perimeter_in_subquery(observe_col: str, type_col: str) -> str:
             ORDER BY year
             LIMIT 1
           ) m
-        )
+        )"""
+    if type_col == "custom":
+        match = f"""t.com IN (
+        SELECT arr FROM {CUSTOM_PERIMETERS_TABLE}
+        WHERE year = {millesime} AND code = %(code)s
+      )"""
+    else:
+        match = f"t.{type_col} = %(code)s"
+    return f"""(
+      SELECT t.{observe_col}
+      FROM (
+        SELECT arr AS com, epci, aom, dep, reg, country
+        FROM {PERIMETERS_TABLE}
+        WHERE year = {millesime}
       ) t
-      WHERE t.{type_col} = %(code)s
+      WHERE {match}
     )"""

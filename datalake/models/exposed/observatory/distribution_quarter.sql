@@ -30,6 +30,9 @@
   ('country', 'country', 'from'),
   ('country', 'country', 'to'),
   ('country', 'country', 'both'),
+  ('custom',  'custom',  'from'),
+  ('custom',  'custom',  'to'),
+  ('custom',  'custom',  'both'),
 ] %}
 
 WITH
@@ -117,7 +120,7 @@ SELECT
     )
   ) AS distances
 FROM distribution AS d
-LEFT JOIN {{ ref('perimeters_agg') }} AS p
+LEFT JOIN {{ perimeters_agg_all() }} AS p
   ON
     d.code = p.code AND d.type = p.type
     AND p.year = least(d.year, (SELECT y FROM max_perim_year))

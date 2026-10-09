@@ -15,7 +15,8 @@
   ('aomreg', 'aom'),
   ('dep',    'dep'),
   ('reg',    'reg'),
-  ('country','country')
+  ('country','country'),
+  ('custom', 'custom')
 ] %}
 
 WITH
@@ -66,10 +67,10 @@ SELECT
   st_x(p2.centroid)              AS lng_2,
   st_y(p2.centroid)              AS lat_2
 FROM od
-LEFT JOIN {{ ref('perimeters_agg') }} AS p1
+LEFT JOIN {{ perimeters_agg_all() }} AS p1
   ON
     od.territory_1 = p1.code AND od.type = p1.type
     AND p1.year = least(od.year, (SELECT y FROM max_perim_year))
-LEFT JOIN {{ ref('perimeters_agg') }}
+LEFT JOIN {{ perimeters_agg_all() }}
   AS p2 ON od.territory_2 = p2.code AND od.type = p2.type
 AND p2.year = least(od.year, (SELECT y FROM max_perim_year))

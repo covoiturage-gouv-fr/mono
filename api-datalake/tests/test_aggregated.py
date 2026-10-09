@@ -55,6 +55,29 @@ def test_perimeter_subquery_reads_exposed_perimeters():
     assert "t.epci" in sub and "t.reg = %(code)s" in sub
 
 
+def test_perimeter_subquery_custom_resolves_member_communes():
+    sub = perimeter_in_subquery("epci", "custom")
+    assert "zone_exposed.observatory_custom_perimeters" in sub
+    assert "t.epci" in sub and "t.com IN" in sub
+    assert "t.custom" not in sub
+
+
+def test_custom_is_a_type_but_not_an_observe_level():
+    sql, p = agg.build_flux("custom", "custom", "12", 2022, month=6)
+    assert p["observe"] == "com"
+    assert "zone_exposed.observatory_custom_perimeters" in sql
+    sql, p = agg.build_occupation("custom", "epci", "12", 2022, month=6)
+    assert p["observe"] == "epci"
+    assert "zone_exposed.observatory_custom_perimeters" in sql
+
+
+def test_aires_custom_filters_on_member_communes():
+    sql, p = agg.build_aires_covoiturage("custom", "12")
+    assert "zone_exposed.observatory_custom_perimeters" in sql
+    assert "custom =" not in sql
+    assert p == {"code": "12"}
+
+
 # --- structure des requêtes (grain + filtres clés) ---
 
 
