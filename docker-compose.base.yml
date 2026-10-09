@@ -138,7 +138,7 @@ services:
 
   s3:
     # MinIO a retiré ses images publiques (Docker Hub puis quay.io) : image Chainguard épinglée par digest.
-    image: cgr.dev/chainguard/minio:latest@sha256:6a1d0b45c8669726bba580ced0bfa4cb9fdeed1ed636dfabd81d1577beb6937b
+    image: cgr.dev/chainguard/minio:latest@sha256:4cf4831a2bbcf13ddca09c1cbcc9faff716dd3c4247e0babc32864b8ee8e0034
     environment:
       MINIO_DOMAIN: s3
     command: ['server', '/data']
