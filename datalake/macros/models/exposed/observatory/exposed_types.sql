@@ -6,7 +6,18 @@
 
 {% macro exposed_types() %}
   {%- set types = var('exposed_types', none) -%}
-  {{ return([types] if types is string else types) }}
+  {%- if not types -%}
+    {{ return(none) }}
+  {%- endif -%}
+  {%- set types = [types] if types is string else types -%}
+  {#- Les valeurs sont interpolées dans le DELETE du pre_hook : liste fermée. -#}
+  {%- set allowed = ['com', 'epci', 'aom', 'dep', 'reg', 'country', 'custom'] -%}
+  {%- for t in types -%}
+    {%- if t not in allowed -%}
+      {{ exceptions.raise_compiler_error("exposed_types : type inconnu " ~ t ~ " (attendus : " ~ allowed | join(', ') ~ ")") }}
+    {%- endif -%}
+  {%- endfor -%}
+  {{ return(types) }}
 {% endmacro %}
 
 {% macro exposed_incremental() %}
@@ -26,9 +37,12 @@
   {%- for t in type_map -%}
     {%- if t[1] in types -%}{%- do kept.append(t) -%}{%- endif -%}
   {%- endfor -%}
-  {%- if not kept -%}
-    {{ exceptions.raise_compiler_error("exposed_types " ~ types ~ " : aucun type exposé par " ~ this) }}
-  {%- endif -%}
+  {%- set exposed = kept | map(attribute=1) | list -%}
+  {%- for t in types -%}
+    {%- if t not in exposed -%}
+      {{ exceptions.raise_compiler_error("exposed_types : " ~ t ~ " n'est pas exposé par " ~ this) }}
+    {%- endif -%}
+  {%- endfor -%}
   {{ return(kept) }}
 {% endmacro %}
 
