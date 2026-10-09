@@ -5,11 +5,6 @@ export const perimeterTypes = [
   "dep",
   "reg",
   "country",
+  "custom",
 ] as const;
 export type PerimeterType = (typeof perimeterTypes)[number];
-
-export interface TerritoryListInterface {
-  territory: string;
-  l_territory: string;
-  type: PerimeterType;
-}

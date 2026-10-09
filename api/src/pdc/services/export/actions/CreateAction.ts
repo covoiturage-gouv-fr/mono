@@ -63,6 +63,8 @@ export class CreateAction extends AbstractAction {
   private scopedGeo(params: ParamsInterface, context: ContextType) {
     const ownTerritory = context?.call?.user?.territory_id;
     return {
+      start_at: params.start_at,
+      end_at: params.end_at,
       territory_id: params.territory_id,
       geo_selector: ownTerritory ? undefined : params.geo_selector,
     };
@@ -79,6 +81,8 @@ export class CreateAction extends AbstractAction {
       throw new ForbiddenException("Export creation requires a user session");
     }
 
+    const geo = this.scopedGeo(params, context);
+
     // Create the export request
     const {
       uuid,
@@ -93,7 +97,8 @@ export class CreateAction extends AbstractAction {
         start_at: params.start_at,
         end_at: params.end_at,
         operator_id: params.operator_id,
-        geo_selector: await this.territoryService.resolve(this.scopedGeo(params, context)),
+        geo_selector: await this.territoryService.resolve(geo),
+        display_selector: this.territoryService.displaySelector(geo),
       }),
     });
 

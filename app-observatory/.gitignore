@@ -36,3 +36,7 @@ next-env.d.ts
 
 # assets
 /public/dsfr/
+
+# maplibre-gl worker (copié depuis node_modules par predev/prebuild)
+/public/maplibre-gl-worker.mjs
+/public/maplibre-gl-shared.mjs

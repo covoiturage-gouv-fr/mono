@@ -66,7 +66,6 @@ export default function SearchBar(props: SearchBarProps) {
         (response.results ?? [])
           .map((r: any) =>
             (r.hits ?? []).map((h: any) => {
-              // eslint-disable-next-line no-unused-vars
               const { tags, content, ...hit } = h;
               void content;
               void tags;
@@ -85,12 +84,11 @@ export default function SearchBar(props: SearchBarProps) {
     }
     clearTimeout(searchEventTimer.current);
     searchEventTimer.current = setTimeout(() => {
-      if (v !== "") {
+      if (v) {
         void sendEvent({
           category: "recherche",
           action: "Recherche transverse",
-          name: "string",
-          value: v ?? "",
+          name: v,
         });
       }
     }, 500);

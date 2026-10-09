@@ -51,6 +51,8 @@ export interface TerritorySelectorsInterface {
   [TerritoryCodeEnum.CityGroup]?: string[];
   [TerritoryCodeEnum.Region]?: string[];
   [TerritoryCodeEnum.Country]?: string[];
+  // territory_id d'un territoire custom, résolu en arrondissements par l'API d'export
+  custom?: string[];
 }
 
 export interface Territory extends Record<string, unknown> {
