@@ -27,7 +27,10 @@ const _configuration = objectToMap({
   analytics,
   auth,
   // Turbopack n'inline que les accès statiques à process.env.NEXT_PUBLIC_*
-  next: { public_api_url: process.env.NEXT_PUBLIC_API_URL },
+  next: {
+    public_api_url: process.env.NEXT_PUBLIC_API_URL,
+    public_datalake_base_url: process.env.NEXT_PUBLIC_DATALAKE_BASE_URL,
+  },
 });
 
 // ---------------------------------------------------------------------------------------
