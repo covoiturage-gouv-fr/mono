@@ -14,5 +14,7 @@ export const castPerimeterType = (value: PerimeterType) => {
       return "Région";
     case "country":
       return "Pays";
+    case "custom":
+      return "Territoire personnalisé";
   }
 };

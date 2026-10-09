@@ -31,6 +31,7 @@ import {
 import { ExportServiceProvider as ExportSP } from "@/pdc/services/export/ExportServiceProvider.ts";
 import { Export, ExportStatus, ExportTarget } from "@/pdc/services/export/models/Export.ts";
 import { ExportParams } from "@/pdc/services/export/models/ExportParams.ts";
+import { PerimeterRepositoryProvider } from "@/pdc/services/territory/providers/PerimeterRepositoryProvider.ts";
 import { handlerConfig, ParamsInterface, ResultInterface } from "../contracts/create.contract.ts";
 
 const { before: kernelBefore, after: kernelAfter } = makeKernelBeforeAfter(ExportSP);
@@ -201,6 +202,34 @@ describe("CreateAction V3", () => {
         // assertEquals(last?.params.get().geo_selector, { aom: ["TODO"] });
       },
     );
+  });
+
+  it("should resolve a custom territory of the geo_selector to its arr", async () => {
+    const custom_id = await new PerimeterRepositoryProvider(db.connection).createTerritory("Custom export", undefined, {
+      arr: ["91471", "91477"],
+      valid_from: new Date("2023-01-01T00:00:00Z"),
+      valid_to: null,
+    });
+
+    const params: AJVParamsInterface<ParamsInterface, "start_at" | "end_at"> = {
+      tz: "Europe/Paris",
+      start_at: "2024-01-01T00:00:00+0100",
+      end_at: "2024-01-02T00:00:00+0100",
+      created_by: adminUser._id,
+      geo_selector: { com: ["75056"], custom: [String(custom_id)] },
+    };
+
+    // `set()` des tests précédents mute defaultContext (territory_id) : contexte admin propre
+    const adminContext: ContextType = {
+      call: { user: { permissions: ["common.export.create"] } },
+      channel: { service: "proxy" },
+    };
+
+    await assertHandler(kc, adminContext, handlerConfig, params, async () => {
+      const last = (await fetchExports()).pop();
+      assertEquals(last?.params.get().geo_selector, { com: ["75056"], arr: ["91471", "91477"] });
+      assertEquals(last?.params.get().display_selector, { com: ["75056"], custom: [String(custom_id)] });
+    });
   });
 
   it("should create an operator export as operator", async () => {

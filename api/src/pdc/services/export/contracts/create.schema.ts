@@ -1,4 +1,17 @@
+import { TerritoryCodeEnum } from "@/pdc/services/territory/contracts/common/interfaces/TerritoryCodeInterface.ts";
 import { territoryCodeSchema } from "@/pdc/services/territory/contracts/common/schema.ts";
+
+const geoSelectorSchema = {
+  ...territoryCodeSchema,
+  propertyNames: { enum: [...Object.values(TerritoryCodeEnum), "custom"] },
+  properties: {
+    custom: {
+      type: "array",
+      maxItems: 64,
+      items: { type: "string", pattern: "^[1-9][0-9]{0,9}$" },
+    },
+  },
+};
 
 export const schemaV3 = {
   type: "object",
@@ -29,7 +42,7 @@ export const schemaV3 = {
       maxItems: 1024,
       items: { macro: "serial" },
     },
-    geo_selector: territoryCodeSchema,
+    geo_selector: geoSelectorSchema,
   },
 };
 
