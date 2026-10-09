@@ -17,9 +17,10 @@ default:
 dbt-env:
   set -a; source .env; set +a
 
-# Run dbt command
+# Run dbt command ("$@" garde les arguments tels quels, ex. --vars '{exposed_types: [custom]}')
+[positional-arguments]
 dbt cmd *args:
-  dbt {{cmd}} {{args}} --profiles-dir profiles
+  dbt "$@" --profiles-dir profiles
 
 # Apply datalake DB migrations (custom functions, grants). Idempotent — run at each deploy.
 migrate *args:
@@ -36,6 +37,15 @@ dbt-recompute path start end *args:
     --select "{{path}}" \
     --vars "{\"start\":\"{{start}}\",\"end\":\"{{end}}\"}" \
     {{args}}
+
+# Territoires custom créés ou modifiés : recalcule leurs agrégats depuis `start`, puis tout
+# leur historique dans l'exposé (sa fenêtre incrémentale ne remonte qu'à la dernière période),
+# sans toucher aux autres types (cf. macro exposed_types).
+# ex: just custom-recompute 2024-01-01
+custom-recompute start end="2100-01-01" *args:
+  just dbt-recompute models/aggregated/custom_territory {{start}} {{end}} {{args}}
+  just dbt run --select "tag:exposed,tag:users" "tag:exposed,tag:occupation" "tag:exposed,tag:distribution" "tag:exposed,tag:incentive" "tag:exposed,tag:location" "tag:exposed,tag:od" --vars '{exposed_types: [custom]}' {{args}}
+  just cache-bump
 
 # Run dbt-osmosis command
 dbt-osmosis cmd *args:
@@ -75,7 +85,7 @@ archive-old-perimeters *args:
   python -m pipelines.cmd.archive_perimeters {{args}}
 
 # Dump les millésimes de zone_trusted.perimeters et com_evolution au format du schéma geo (prod), upload S3.
-# Défaut : les 2 derniers ; --year N (répétable) pour choisir. Import côté API : `just geo-import <fichier|url> <sha256>`
+# Défaut : les 2 derniers ; --year N (répétable) pour choisir. Import : `geo-import stage <nom du dump>` (pod)
 export-perimeters *args:
   python -m pipelines.cmd.export_perimeters {{args}}
 

@@ -64,6 +64,11 @@ def dump_name(years: list[int], now: datetime) -> str:
   return f"perimeters_{'-'.join(str(int(y)) for y in sorted(years))}.{now.strftime('%Y%m%dT%H%M%SZ')}.pgdump"
 
 
+def sha256_line(sha: str, name: str) -> str:
+  """Contenu du fichier `<dump>.sha256`, au format sha256sum, lu par `geo-import`."""
+  return f"{sha}  {name}\n"
+
+
 def _fmt(n: int) -> str:
   return f"{n:_}".replace("_", " ")
 
@@ -93,8 +98,9 @@ def export(
 
   Par défaut les 2 derniers : geo.perimeters ne garde que ceux-là, le précédent avec son valid_until
   à jour. Passe par `geo_export.perimeters` et `geo_export.com_evolution` (pg_dump ne sait pas dumper
-  une requête), supprimées ensuite. Le fichier pg_dump custom est gardé dans `--out-dir` (tmp/geo, ignoré par git) pour `just geo-import` et uploadé sur S3.
-  Import côté API : `just geo-import <fichier|url> <sha256>`.
+  une requête), supprimées ensuite. Le fichier pg_dump custom et son `.sha256` sont gardés dans `--out-dir`
+  (tmp/geo, ignoré par git) et uploadés sur S3.
+  Import : `geo-import stage <nom du dump>` dans le pod, `just geo-import <chemin>` en local.
   """
   source = f'"{schema}"."{table}"'
   conn = pg.pg_connect()
@@ -144,15 +150,21 @@ def export(
     conn.close()
 
   sha = hash_file(path)
+  with open(f"{path}.sha256", "w") as f:
+    f.write(sha256_line(sha, name))
   print(f"✅ {path} — {_fmt(total)} lignes, {_fmt(os.path.getsize(path))} octets")
 
   if upload:
+    # geo-import lit le dump et son .sha256 sous geo/ : garder --folder à sa valeur par défaut.
     key = f"{folder}/{name}" if folder else name
-    print(f"▶️  Upload s3://{bucket}/{key}")
-    s3_upload(bucket, key, path, client=s3_client())
+    client = s3_client()
+    print(f"▶️  Upload s3://{bucket}/{key} (+ .sha256)")
+    s3_upload(bucket, key, path, client=client)
+    s3_upload(bucket, f"{key}.sha256", f"{path}.sha256", client=client)
 
   print(f"sha256 : {sha}")
-  print(f"👉  Import prod : just geo-import {path} {sha}")
+  print(f"👉  Import (pod geo-import) : geo-import stage {name}")
+  print(f"    Import local : just geo-import {path}")
 
 
 if __name__ == "__main__":

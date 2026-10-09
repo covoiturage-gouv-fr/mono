@@ -5,7 +5,8 @@
   indexes=[
     {'columns': ['year', 'semester', 'type', 'code'], 'unique': true}
   ],
-  tags=['exposed', 'observatory', 'incentive']
+  tags=['exposed', 'observatory', 'incentive'],
+  pre_hook=(['{{ exposed_types_delete() }}'] if exposed_types() else [])
 ) }}
 
 {% set type_map = [
@@ -15,11 +16,12 @@
   ('aomreg', 'aom'),
   ('dep',    'dep'),
   ('reg',    'reg'),
-  ('country','country')
+  ('country','country'),
+  ('custom', 'custom')
 ] %}
 
 WITH
-{% if is_incremental() %}
+{% if exposed_incremental() %}
   lookback AS (
     SELECT max(year * 2 + semester) - 1 AS min_ys FROM {{ this }}
   ),
@@ -30,7 +32,7 @@ max_perim_year AS (
 ),
 
 territory AS (
-  {% for model_type, exposed_type in type_map %}
+  {% for model_type, exposed_type in exposed_type_map(type_map) %}
     SELECT
       '{{ exposed_type }}' AS type,
       code,
@@ -41,7 +43,7 @@ territory AS (
       oi_other             AS autres,
       no_oi                AS no_incentive
     FROM {{ ref('territory_semester_' ~ model_type ~ '_both') }}
-    {% if is_incremental() %}
+    {% if exposed_incremental() %}
       WHERE year * 2 + semester >= (SELECT lookback.min_ys FROM lookback)
     {% endif %}
     {% if not loop.last %}UNION ALL{% endif %}
@@ -59,6 +61,6 @@ SELECT
   t.autres,
   t.no_incentive
 FROM territory AS t
-LEFT JOIN {{ ref('perimeters_agg') }}
+LEFT JOIN {{ perimeters_agg_all() }}
   AS p ON t.code = p.code AND t.type = p.type
 AND p.year = least(t.year, (SELECT y FROM max_perim_year))

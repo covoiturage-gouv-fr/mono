@@ -1,0 +1,23 @@
+version: 2
+models:
+  - name: custom_perimeters
+    description: >
+      Périmètre des territoires custom (territory.territory_perimeters via FDW) en intervalles
+      disjoints : arr membres de la version en vigueur sur [valid_from, valid_until).
+    columns:
+      - name: code
+        data_type: character varying
+        description: territory_id du territoire prod (territory.territory_group._id)
+        data_tests:
+          - not_null
+      - name: version
+        data_type: integer
+      - name: arr
+        data_type: character varying
+        data_tests:
+          - not_null
+      - name: valid_from
+        data_type: timestamp with time zone
+      - name: valid_until
+        data_type: timestamp with time zone
+        description: exclue, 'infinity' si sans fin

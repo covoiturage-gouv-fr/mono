@@ -24,7 +24,8 @@
     ('aomreg', 'aom'),
     ('dep',    'dep'),
     ('reg',    'reg'),
-    ('country','country')
+    ('country','country'),
+    ('custom', 'custom')
   ] %}
 
   {# Clé de tri de période, pour un lookback incrémental (comme od_month). #}
@@ -42,16 +43,17 @@
   indexes=[
     {'columns': ['type', 'code'] + grain_cols[grain]}
   ],
-  tags=['exposed', 'observatory', 'location']
+  tags=['exposed', 'observatory', 'location'],
+  pre_hook=(['{{ exposed_types_delete() }}'] if exposed_types() else [])
 ) }}
 
-{% if is_incremental() %}
+{% if exposed_incremental() %}
 WITH lookback AS (
   SELECT max({{ period_key }}) - 1 AS min_key FROM {{ this }}
 )
 {% endif %}
 
-{% for model_type, exposed_type in type_map %}
+{% for model_type, exposed_type in exposed_type_map(type_map) %}
 SELECT
   '{{ exposed_type }}'::text AS type,
   territory AS code,
@@ -59,7 +61,7 @@ SELECT
   {% endfor %}hex_z8,
   count
 FROM {{ ref('location_' ~ grain ~ '_' ~ model_type) }}
-{% if is_incremental() %}WHERE {{ period_key }} >= (SELECT min_key FROM lookback){% endif %}
+{% if exposed_incremental() %}WHERE {{ period_key }} >= (SELECT min_key FROM lookback){% endif %}
 {% if not loop.last %}UNION ALL{% endif %}
 {% endfor %}
 

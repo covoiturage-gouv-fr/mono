@@ -48,8 +48,16 @@ WITH filtered_carpools AS (
 )
 
 SELECT
+  {% if perim == 'custom' %}
+  {#- Une ligne par territoire touché, l'autre côté est NULL : least/greatest en ferait un
+      intra. Hors territoire = 'ext' (pas l'arr : un territory_id peut valoir un code INSEE,
+      et NULL casserait la clé delete+insert). -#}
+  COALESCE(start_code, end_code) AS territory_1,
+  CASE WHEN is_intra THEN COALESCE(start_code, end_code) ELSE 'ext' END AS territory_2,
+  {% else %}
   least(start_code, end_code) AS territory_1,
   greatest(start_code, end_code) AS territory_2,
+  {% endif %}
   {{ incremental_columns('carpool_datetime', grain) }},
   {{ od_agg_columns() }}
 FROM filtered_carpools

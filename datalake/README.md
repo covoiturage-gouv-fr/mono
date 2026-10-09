@@ -171,6 +171,29 @@ Les modèles `aggregated` et `exposed` sont déclinés selon **trois directions*
 
 ---
 
+## Territoires custom
+
+Territoires définis en prod avec `just api territory:perimeter` (versions de `territory.territory_perimeters`, lues via FDW). `code` = `territory_id` prod.
+
+| Modèle                                               | Rôle                                                                                                                               |
+| ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `trusted.custom_perimeters`                          | `(code, arr, valid_from, valid_until)` en intervalles disjoints, même règle de version que `territory.get_arr`                     |
+| `trusted.custom_perimeters_agg`                      | Pendant de `perimeters_agg` (`type = 'custom'`, libellé = nom du territoire), un millésime par année où une version est en vigueur |
+| `aggregated.territory_{grain}_custom_{from,to,both}` | `territory_model('custom', …)` : un trajet compté une seule fois par territoire, `is_intra` = départ et arrivée dans le territoire |
+| `aggregated.location_{grain}_custom`                  | `location_model('custom', …)` : heatmap H3 des trajets touchant le territoire                                                     |
+| `aggregated.od_{grain}_custom`                        | `(code, code)` = trajets internes, `(code, 'ext')` = entrants/sortants : pour les chiffres clés, pas de flux entre territoires custom |
+| `exposed.observatory_custom_perimeters`              | `(code, year, arr)` : communes de chaque territoire par millésime, lu par l'API (pendant de `observatory_perimeters`)            |
+
+L'appartenance trajet × territoire est résolue par côté dans `filtered_carpools` (les territoires peuvent se recouvrir). Les agrégats sont incrémentaux comme les autres : la fenêtre est globale à la table, donc **la création ou la modification d'un périmètre ne s'applique pas à l'historique toute seule**. Recalculer depuis le `valid_from` de la version concernée :
+
+```bash
+just custom-recompute 2024-01-01
+```
+
+La recette recalcule aussi l'exposé observatoire (users, occupation, distribution, incentive, location, od), dont la fenêtre incrémentale ne remonte qu'à la dernière période : `--vars '{exposed_types: [custom]}'` supprime puis réécrit tout l'historique des seuls territoires custom, sans relire les autres types (macro `exposed_types`). Exige des tables exposées existantes, sans `--full-refresh`.
+
+---
+
 ## Macros
 
 Toute la génération de code des 467 modèles agrégés repose sur des macros Jinja organisées en trois familles.
@@ -351,7 +374,7 @@ dépose CSV/description/rapport horodatés sous `datagouv/logs/` et imprime un v
 de cohérence (exit 1 si un invariant dur est cassé). À lancer dans le pod datalake pour debugguer
 sur de vraies données.
 
-`just export-perimeters [--year N …] [--last 2]` dump les 2 derniers millésimes de `zone_trusted.perimeters` (ou ceux passés en `--year`) et `zone_trusted.com_evolution` au format du schéma `geo` de la prod : `pg_dump` custom de `geo_export.perimeters` et `geo_export.com_evolution`, écrit dans `tmp/geo/` (ignoré par git, option `--out-dir`) et uploadé sous `S3_BUCKET/geo/`. Requiert `pg_dump` ≥ version du serveur (`nix develop`). Import côté API : `just geo-import <fichier> <sha256>`, qui remplace `geo.perimeters` (voir `api/src/db/README.md`).
+`just export-perimeters [--year N …] [--last 2]` dump les 2 derniers millésimes de `zone_trusted.perimeters` (ou ceux passés en `--year`) et `zone_trusted.com_evolution` au format du schéma `geo` de la prod : `pg_dump` custom de `geo_export.perimeters` et `geo_export.com_evolution`, écrit dans `tmp/geo/` (ignoré par git, option `--out-dir`) et uploadé sous `S3_BUCKET/geo/` avec son `.sha256`. Requiert `pg_dump` ≥ version du serveur (`nix develop`). Import : `geo-import stage <nom du dump>` dans le pod geo-import, ou `just geo-import tmp/geo/<nom du dump>` en local, qui remplace `geo.perimeters` (voir `api/src/db/README.md`).
 
 ---
 

@@ -1,0 +1,23 @@
+version: 2
+models:
+  - name: custom_perimeters_agg
+    description: >
+      Libellé et géométrie des territoires custom par millésime, mêmes colonnes que
+      perimeters_agg (type = 'custom'). Géométrie = union des arr membres pendant l'année.
+    columns:
+      - name: year
+        data_type: integer
+      - name: code
+        data_type: character varying
+        description: territory_id du territoire prod
+        data_tests:
+          - not_null
+      - name: type
+        data_type: text
+      - name: libelle
+        data_type: character varying
+        description: territory_group.name
+      - name: geom
+        data_type: USER-DEFINED
+      - name: centroid
+        data_type: USER-DEFINED

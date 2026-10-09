@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { fetchSearchAPI, getUrl } from "./search";
+import { castPerimeterType, fetchSearchAPI, getUrl } from "./search";
 
 // Corps réel renvoyé par Meilisearch quand la clé est absente ou invalide.
 const invalidApiKey = {
@@ -40,6 +40,12 @@ describe("fetchSearchAPI", () => {
     await expect(fetchSearchAPI("indexes/geo/search")).resolves.toEqual({
       hits: [{ l_territory: "France" }],
     });
+  });
+});
+
+describe("castPerimeterType", () => {
+  test("nomme les territoires custom", () => {
+    expect(castPerimeterType("custom")).toBe("Territoire personnalisé");
   });
 });
 

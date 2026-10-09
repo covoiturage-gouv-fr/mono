@@ -44,7 +44,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Build CMS
-        uses: ./.github/actions/build-image
+        uses: $/.github/actions/build-image
         with:
           name: cms
           context: ./cms

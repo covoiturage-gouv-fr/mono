@@ -6,7 +6,10 @@ from fastapi import HTTPException
 
 # Allowlist des types de territoire (défense en profondeur : `type` peut être
 # interpolé dans des noms de colonnes selon l'endpoint). Fallback = "com".
-PERIMETER_TYPES = ("com", "epci", "aom", "dep", "reg", "country")
+PERIMETER_TYPES = ("com", "epci", "aom", "dep", "reg", "country", "custom")
+# Niveaux observables (colonnes de observatory_perimeters) : un territoire custom
+# peut être sélectionné, mais on n'observe pas de flux entre territoires custom.
+OBSERVE_TYPES = ("com", "epci", "aom", "dep", "reg", "country")
 
 # Codes territoire : INSEE commune (dont Corse 2A/2B), SIREN EPCI/AOM, dep, reg.
 # Alphanumérique borné — rejette les entrées absurdes (clés de cache infinies,
@@ -17,6 +20,10 @@ _CODE_RE = re.compile(r"[0-9A-Za-z]{1,15}")
 
 def check_territory_param(territory: str | None) -> str:
     return territory if territory in PERIMETER_TYPES else "com"
+
+
+def check_observe_param(observe: str | None) -> str:
+    return observe if observe in OBSERVE_TYPES else "com"
 
 
 def check_code_param(code: str) -> str:

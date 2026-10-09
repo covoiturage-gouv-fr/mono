@@ -13,6 +13,36 @@
 
   {%- set perim_join = carpools_perim_join() -%}
   {%- set aom_region_ref = ref('aom_region') -%}
+  {# Territoires custom : une ligne par territoire touché par le trajet (ils peuvent se
+     recouvrir), résolue par côté pour ne pas croiser départ × arrivée. Appartenances
+     calculées en ensembliste sur la fenêtre : un LATERAL par trajet est ~5x plus lent.
+     Rendu conditionnel : sinon tous les modèles appelant la macro dépendraient de custom_perimeters. #}
+  {%- set custom_join = '' -%}
+  {%- if perim == 'custom' -%}
+  {%- set custom_ref = ref('custom_perimeters') -%}
+  {%- set custom_window = time_filter('c2.start_datetime_tz', model_column, type, default_start, lookback_nb, lookback_unit) -%}
+  {%- set custom_join -%}
+INNER JOIN (
+  SELECT m._id, m.code, BOOL_OR(m.in_start) AS in_start, BOOL_OR(m.in_end) AS in_end
+  FROM (
+    SELECT c2._id, cp.code, TRUE AS in_start, FALSE AS in_end
+    FROM {{ ref('carpools') }} c2
+    INNER JOIN {{ custom_ref }} cp
+      ON cp.arr = c2.start_geo_code
+      AND c2.start_datetime_tz >= cp.valid_from AND c2.start_datetime_tz < cp.valid_until
+    WHERE {{ custom_window }}
+    UNION ALL
+    SELECT c2._id, cp.code, FALSE AS in_start, TRUE AS in_end
+    FROM {{ ref('carpools') }} c2
+    INNER JOIN {{ custom_ref }} cp
+      ON cp.arr = c2.end_geo_code
+      AND c2.start_datetime_tz >= cp.valid_from AND c2.start_datetime_tz < cp.valid_until
+    WHERE {{ custom_window }}
+  ) m
+  GROUP BY m._id, m.code
+) cc ON cc._id = c._id
+  {%- endset -%}
+  {%- endif -%}
 
   {# En mode strict (territory, fraud) : les codes hors-périmètre sont NULL
      En mode non-strict (od) : fallback sur le geo_code brut #}
@@ -102,11 +132,18 @@
       'joins':      perim_join ~ " LEFT JOIN " ~ aom_region_ref ~ " aomr_s ON aomr_s.reg = ps.reg LEFT JOIN " ~ aom_region_ref ~ " aomr_e ON aomr_e.reg = pe.reg",
       'is_intra':   '(ps.reg IS NOT NULL AND pe.reg IS NOT NULL AND ps.reg = pe.reg)',
       'where_geo':  '((aomr_s.aom IS NOT NULL OR aomr_e.aom IS NOT NULL) AND NOT (ps.aom IS NOT NULL AND pe.aom IS NOT NULL AND ps.aom = pe.aom))'
+    },
+    'custom': {
+      'start_col':  'CASE WHEN cc.in_start THEN cc.code END',
+      'end_col':    'CASE WHEN cc.in_end THEN cc.code END',
+      'joins':      custom_join,
+      'is_intra':   '(cc.in_start AND cc.in_end)',
+      'where_geo':  'TRUE'
     }
   } %}
 
   {% if perim not in perimeters %}
-    {{ exceptions.raise_compiler_error("Invalid perimeter: " ~ perim ~ ". Expected: arr, h3z9, h3z8, dep, reg, epci, country, aom, plm, aomreg") }}
+    {{ exceptions.raise_compiler_error("Invalid perimeter: " ~ perim ~ ". Expected: arr, h3z9, h3z8, dep, reg, epci, country, aom, plm, aomreg, custom") }}
   {% endif %}
 
   {%- set cfg = perimeters[perim] -%}

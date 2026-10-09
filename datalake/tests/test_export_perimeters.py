@@ -1,7 +1,7 @@
 import re
 from datetime import datetime, timezone
 
-from pipelines.cmd.export_perimeters import COM_EVOLUTION_SQL, dump_name, staging_sql
+from pipelines.cmd.export_perimeters import COM_EVOLUTION_SQL, dump_name, sha256_line, staging_sql
 
 
 def test_staging_sql_matches_prod_columns():
@@ -35,3 +35,10 @@ def test_com_evolution_matches_prod_columns():
   assert re.findall(r" AS (\w+)", COM_EVOLUTION_SQL.split(" SELECT ", 1)[1]) == [
     "year", "mod", "old_com", "new_com", "l_mod",
   ]
+
+
+def test_sha256_line_is_sha256sum_format():
+  sha = "a" * 64
+  assert sha256_line(sha, "perimeters_2025-2026.20261001T080536Z.pgdump") == (
+    f"{sha}  perimeters_2025-2026.20261001T080536Z.pgdump\n"
+  )
