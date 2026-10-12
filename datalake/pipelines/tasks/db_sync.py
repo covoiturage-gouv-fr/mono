@@ -17,7 +17,7 @@ def import_table(
   columns: Optional[list] = None,
   conn=None,
 ) -> int:
-  """Seed (Postgres via psycopg) : géo par ogr2ogr, tabulaire par COPY natif. Pas de DuckDB."""
+  """Seed (Postgres via psycopg) : géo par ogr2ogr, csv/parquet par COPY natif. Pas de DuckDB."""
   own = conn is None
   _conn = conn or pg.pg_connect()
   pg.create_schema(_conn, schema)
@@ -30,6 +30,8 @@ def import_table(
       rows = pg.count_rows(_conn, schema, table)
     elif ext == "csv":
       rows = pg.load_csv(_conn, schema, table, path, columns=columns, select=select)
+    elif ext == "parquet":
+      rows = pg.load_parquet(_conn, schema, table, path, columns=columns, select=select)
     else:
       raise ValueError(f"Extension non supportée pour le seed : {ext}")
   except Exception:

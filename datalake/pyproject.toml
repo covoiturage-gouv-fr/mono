@@ -16,6 +16,7 @@ dependencies = [
     "typer>=0.24.1",
     "psycopg[binary]>=3.2",
     "redis>=6",
+    "pyarrow>=25.0.1",
 ]
 
 [dependency-groups]
