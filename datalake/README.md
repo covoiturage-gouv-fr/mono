@@ -236,6 +236,7 @@ Grains longs (`quarter`, `semester`, `year`) : `territory`, `operators`, `fraud`
 - `unique_drivers` / `unique_passengers` ne se somment pas. Pour `territory_*`, `rollup_uniques` les recompte en `COUNT(DISTINCT)` sur `user_arr_month` (présence mensuelle par arrondissement et côté du trajet) projeté sur le périmètre, ou `user_aomreg_month` pour aomreg both. Les grains longs de `operators` et `od` n'ont pas ces colonnes (migration 0007) : personne ne les lit.
 - `territory` garde le calcul depuis les trajets pour `custom` (validité des versions à l'horodatage, pas au mois) et `aomreg` from/to (règle sur les deux extrémités du trajet).
 - `trips` compte deux fois un trajet dont les passagers sont répartis sur deux mois.
+- `user_arr_month` est bâti sur le périmètre `arr` : les `unique_*` des grains longs ignorent les trajets géocodés sur un code commune PLM (75056, 69123, 13055).
 
 Le backfill (passe mensuelle puis annuelle) respecte déjà cet ordre.
 

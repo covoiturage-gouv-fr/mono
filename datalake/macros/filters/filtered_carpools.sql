@@ -133,13 +133,6 @@ INNER JOIN (
       'is_intra':   '(ps.reg IS NOT NULL AND pe.reg IS NOT NULL AND ps.reg = pe.reg)',
       'where_geo':  '((aomr_s.aom IS NOT NULL OR aomr_e.aom IS NOT NULL) AND NOT (ps.aom IS NOT NULL AND pe.aom IS NOT NULL AND ps.aom = pe.aom))'
     },
-    'geo': {
-      'start_col':  'c.start_geo_code',
-      'end_col':    'c.end_geo_code',
-      'joins':      '',
-      'is_intra':   'c.is_intra',
-      'where_geo':  'TRUE'
-    },
     'custom': {
       'start_col':  'CASE WHEN cc.in_start THEN cc.code END',
       'end_col':    'CASE WHEN cc.in_end THEN cc.code END',
@@ -150,7 +143,7 @@ INNER JOIN (
   } %}
 
   {% if perim not in perimeters %}
-    {{ exceptions.raise_compiler_error("Invalid perimeter: " ~ perim ~ ". Expected: arr, geo, h3z9, h3z8, dep, reg, epci, country, aom, plm, aomreg, custom") }}
+    {{ exceptions.raise_compiler_error("Invalid perimeter: " ~ perim ~ ". Expected: arr, h3z9, h3z8, dep, reg, epci, country, aom, plm, aomreg, custom") }}
   {% endif %}
 
   {%- set cfg = perimeters[perim] -%}

@@ -3,8 +3,8 @@
   présences mensuelles (une personne active plusieurs mois ne compte qu'une fois).
   aomreg (both) : user_aomreg_month, sa règle dépend des deux extrémités du trajet.
   Autres : user_arr_month projeté sur le périmètre, avec les règles de filtered_carpools
-  (arr exclut les trajets touchant un code commune PLM, aom strict exclut les AOM régionales,
-  millésime de perimeters par date) ; from / to ne gardent que le côté start / end.
+  (aom strict exclut les AOM régionales, millésime de perimeters par date) ; from / to ne
+  gardent que le côté start / end.
 #}
 {% macro rollup_uniques(perim, grain, direction) %}
 
@@ -19,7 +19,7 @@
     {% set presence %}
       SELECT u.arr AS code, u.user_id, u.role, u.incremental_date
       FROM {{ ref('user_arr_month') }} AS u
-      WHERE NOT u.city_trip {{ side }}
+      WHERE TRUE {{ side }}
     {% endset %}
   {% elif perim == 'plm' %}
     {% set presence %}

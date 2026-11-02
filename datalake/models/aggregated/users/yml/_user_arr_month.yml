@@ -14,9 +14,6 @@ models:
       - name: side
         data_type: text
         description: Côté du trajet (start / end), pour les directions from / to.
-      - name: city_trip
-        data_type: boolean
-        description: Trajet touchant un code commune PLM (75056, 13055, 69123), exclu du périmètre arr.
       - name: incremental_date
         data_type: date
       - name: year
