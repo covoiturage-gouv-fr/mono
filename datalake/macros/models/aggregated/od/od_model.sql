@@ -28,6 +28,12 @@ SELECT * FROM {{ ref('od_' ~ grain ~ '_plm') }}
   tags=['aggregated', 'od', grain, perim, 'daily']
 ) }}
 
+{% if grain in ['quarter', 'semester', 'year'] %}
+
+{{ rollup_model(ref('od_month_' ~ perim), grain, ['territory_1', 'territory_2']) }}
+
+{% else %}
+
 WITH filtered_carpools AS (
   {{ filtered_carpools(perim, lookback_nb=lb.nb, lookback_unit=lb.unit) }}
 )
@@ -52,5 +58,6 @@ WHERE start_code IN ('75056', '69123', '13055')
 {% endif %}
 GROUP BY 1, 2, {{ group_by_grain(grain, 3) }}
 
+{% endif %}
 {% endif %}
 {% endmacro %}

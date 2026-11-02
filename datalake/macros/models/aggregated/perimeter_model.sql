@@ -62,6 +62,19 @@ SELECT {{ select_list }} FROM {{ ref(kind ~ '_' ~ grain ~ '_plm_' ~ direction) }
   **schema_change
 ) }}
 
+{# territory garde le calcul depuis les trajets quand les unique_* ne se projettent pas d'une
+   présence mensuelle par arrondissement : custom (validité des versions à l'horodatage) et
+   aomreg from/to (règle sur les deux extrémités du trajet). #}
+{% set from_trips = kind == 'territory' and (perim == 'custom' or (perim == 'aomreg' and direction != 'both')) %}
+{% if grain in ['quarter', 'semester', 'year'] and not from_trips %}
+
+{{ rollup_model(
+  ref(kind ~ '_month_' ~ perim ~ '_' ~ direction), grain, keys + ['code'],
+  uniques=rollup_uniques(perim, grain, direction) if kind == 'territory' else none
+) }}
+
+{% else %}
+
 WITH filtered_carpools AS (
   {{ filtered_carpools(perim, lookback_nb=lb.nb, lookback_unit=lb.unit, **filtered_args) }}
 )
@@ -107,6 +120,7 @@ WITH filtered_carpools AS (
   FROM exploded
   WHERE code IS NOT NULL
   GROUP BY {{ group_by }}
+{% endif %}
 {% endif %}
 {% endif %}
 {% endmacro %}

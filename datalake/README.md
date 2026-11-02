@@ -101,13 +101,15 @@ Remplace les projet legacy `sqlmesh/` et `dbt/`. Ingère les données brutes de 
 │  └────────────────────────────────────────────────────────────────┘     │
 │                                                                         │
 │  ┌────────────────────────────────────────────────────────────────┐     │
-│  │  Users · 10 modèles                                            │     │
+│  │  Users · 11 modèles                                            │     │
 │  │  users              user_id · 1re/dernière date conducteur     │     │
 │  │                     et passager · geo_code de 1re activité     │     │
 │  │  user_od_day        activité journalière par rôle              │     │
 │  │                     avec métriques OD (distance, revenus, CI…) │     │
 │  │  user_<aom|aomreg>_<day|month>  carpools par user/rôle/        │     │
 │  │                     territoire (grain day ou month)            │     │
+│  │  user_arr_month     présence mensuelle par arrondissement      │     │
+│  │                     et côté du trajet (unique_* grains longs)  │     │
 │  │  user_<aom|aomreg>_acquisition_month  nouveaux/actifs          │     │
 │  │                     mensuels (role-agnostique via role='any')  │     │
 │  │  user_<aom|aomreg>_carpools_distribution_month  quartiles      │     │
@@ -228,6 +230,14 @@ Fenêtre de recalcul incrémental par grain, commune à toutes les macros (`grai
 | `quarter`  | 1 trimestre                       |
 | `semester` | 1 semestre                        |
 | `year`     | 1 an                              |
+
+Grains longs (`quarter`, `semester`, `year`) : `territory`, `operators`, `fraud`, `od` et `location` ne relisent pas les trajets, `rollup_model` somme les lignes du modèle `_month_` correspondant sur la fenêtre. Exceptions :
+
+- `unique_drivers` / `unique_passengers` ne se somment pas. Pour `territory_*`, `rollup_uniques` les recompte en `COUNT(DISTINCT)` sur `user_arr_month` (présence mensuelle par arrondissement et côté du trajet) projeté sur le périmètre, ou `user_aomreg_month` pour aomreg both. Les grains longs de `operators` et `od` n'ont pas ces colonnes (migration 0007) : personne ne les lit.
+- `territory` garde le calcul depuis les trajets pour `custom` (validité des versions à l'horodatage, pas au mois) et `aomreg` from/to (règle sur les deux extrémités du trajet).
+- `trips` compte deux fois un trajet dont les passagers sont répartis sur deux mois.
+
+Le backfill (passe mensuelle puis annuelle) respecte déjà cet ordre.
 
 ### Macros des modèles exposés
 
