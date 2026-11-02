@@ -52,7 +52,7 @@ files the branch itself changes, diffed from where it started (`origin/next` if 
 | ---- | ------- | ---------------- |
 | touches `api/`, `app-partners/`, `app-observatory/` or `docker/api/` | **`next`** (default) | prerelease `vX.Y.Z-rc.N`, **demo only** |
 | same, but the user asks for a hotfix / direct delivery | `main` | stable `vX.Y.Z`, demo + **production** |
-| data-only (`datalake/`, `dbt/`, `cms/`), other `docker/` dirs, `.github/`, `docs/`, `.claude/` | **`main`** | none (no demo env for these) |
+| data-only (`datalake/`, `cms/`), other `docker/` dirs, `.github/`, `docs/`, `.claude/` | **`main`** | none (no demo env for these) |
 
 - Mixed app + data diff -> `next` (the app code decides), or split the data part into its own PR
   to `main`.

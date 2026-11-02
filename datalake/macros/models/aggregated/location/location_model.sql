@@ -6,19 +6,7 @@
      SES DEUX extrémités (start_h3index_z8 et end_h3index_z8). Le garde-fou
      `end_code IS DISTINCT FROM start_code` évite le double comptage des intra-T. #}
 
-  {% set lookbacks = {
-    'day':      {'nb': 3, 'unit': 'day'},
-    'month':    {'nb': 1, 'unit': 'month'},
-    'quarter':  {'nb': 1, 'unit': 'quarter'},
-    'semester': {'nb': 1, 'unit': 'semester'},
-    'year':     {'nb': 1, 'unit': 'year'}
-  } %}
-
-  {% if grain not in lookbacks %}
-    {{ exceptions.raise_compiler_error("Invalid grain: " ~ grain) }}
-  {% endif %}
-
-  {% set lb = lookbacks[grain] %}
+  {% set lb = grain_lookback(grain) %}
 
 {% if perim == 'com' %}
 

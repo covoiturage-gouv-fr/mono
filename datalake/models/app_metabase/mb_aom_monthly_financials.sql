@@ -9,14 +9,14 @@ WITH monthly AS (
     code,
     incremental_date,
     {{ mb_aom_financials_columns() | join(',\n    ') }}
-  FROM {{ ref('territory_month_aom_both') }}
+  FROM {{ ref('aom_financials_month_aom') }}
   UNION ALL
   SELECT
     'aomreg'                                            AS perim,
     code,
     incremental_date,
     {{ mb_aom_financials_columns() | join(',\n    ') }}
-  FROM {{ ref('territory_month_aomreg_both') }}
+  FROM {{ ref('aom_financials_month_aomreg') }}
 )
 
 SELECT
