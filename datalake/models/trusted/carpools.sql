@@ -86,15 +86,6 @@ collectivites AS (
     WHERE type IN ('epci', 'aom')
 ),
 
--- sous-ensemble des collectivites de type aom, pour distinguer dans oi_details
--- une incitation aom d'une incitation epci (territory_collectivite_siret_filter
--- s'appuie dessus pour ne classer en self/other-aom que les vraies aom)
-aoms AS (
-    SELECT DISTINCT code
-    FROM {{ ref('perimeters_agg') }}
-    WHERE type = 'aom'
-),
-
 operator_incentives_agg AS (
     SELECT
         oi.carpool_id,
@@ -109,9 +100,6 @@ operator_incentives_agg AS (
             jsonb_build_object(
                 'siret', oi.siret,
                 'type', CASE WHEN c.code IS NOT NULL THEN 'collectivite' WHEN op.code IS NOT NULL THEN 'operator' ELSE 'other' END,
-                -- distingue une collectivite aom d'une collectivite epci sans
-                -- changer 'type' (consomme par territory_collectivite_siret_filter)
-                'is_aom', (aom.code IS NOT NULL),
                 'name', comp.legal_name,
                 'amount', oi.amount
             )
@@ -120,7 +108,6 @@ operator_incentives_agg AS (
     FROM {{ ref('operator_incentives') }} oi
     LEFT JOIN operators op ON op.code = left(oi.siret, 9)
     LEFT JOIN collectivites c ON c.code = left(oi.siret, 9)
-    LEFT JOIN aoms aom ON aom.code = left(oi.siret, 9)
     LEFT JOIN {{ source('dlk_import', 'company_companies') }} comp ON comp.siret = oi.siret
     WHERE {{ time_filter('oi.start_datetime', 'start_datetime', lookback_nb=3) }}
         AND oi.amount > 0
@@ -240,23 +227,13 @@ SELECT
     *,
     EXTRACT('hour' FROM start_datetime_tz)::int AS hour,
     CASE
-        WHEN distance <  5000 THEN '00-05'
-        WHEN distance < 10000 THEN '05-10'
-        WHEN distance < 15000 THEN '10-15'
-        WHEN distance < 20000 THEN '15-20'
-        WHEN distance < 25000 THEN '20-25'
-        WHEN distance < 30000 THEN '25-30'
-        WHEN distance < 35000 THEN '30-35'
-        WHEN distance < 40000 THEN '35-40'
-        WHEN distance < 45000 THEN '40-45'
-        WHEN distance < 50000 THEN '45-50'
-        WHEN distance < 55000 THEN '50-55'
-        WHEN distance < 60000 THEN '55-60'
-        WHEN distance < 65000 THEN '60-65'
-        WHEN distance < 70000 THEN '65-70'
-        WHEN distance < 75000 THEN '70-75'
-        WHEN distance < 80000 THEN '75-80'
-        ELSE '80+'
+        {% for label, max_m in dist_classes() %}
+            {% if max_m %}
+        WHEN distance < {{ max_m }} THEN '{{ label }}'
+            {% else %}
+        ELSE '{{ label }}'
+            {% endif %}
+        {% endfor %}
     END AS dist_class,
     (start_geo_code = end_geo_code) AS is_intra
 FROM base_carpools
