@@ -328,10 +328,17 @@ Construit les 5 modèles incrémentaux lus via FDW (`carpools_geo_correction`, `
 ### Étape 4 — Agrégations historiques complètes
 
 ```bash
-just backfill aggregated         # chunk mensuel, 2019 → 2027 par défaut
+just backfill aggregated         # 2019 → 2027 par défaut
 ```
 
-Lance les ~470 modèles agrégés sur toute la période. Lectures **locales** (les modèles trusted sont désormais matérialisés localement, plus de FDW) → **multi-thread** (`DBT_THREADS=6`) sous le même profil mémoire borné. Même fenêtrage mensuel : `filtered_carpools` → `time_filter` honore `--vars start/end`.
+Lance les ~470 modèles agrégés sur toute la période. Lectures **locales** (les modèles trusted sont désormais matérialisés localement, plus de FDW) → **multi-thread** (`DBT_THREADS=6`) sous le même profil mémoire borné. `filtered_carpools` → `time_filter` honore `--vars start/end`, en deux passes :
+
+- **mensuelle** pour les grains jour et mois, bornes étendues au 1er du mois ;
+- **annuelle** pour trimestre, semestre et année, bornes étendues au 1er janvier.
+
+Une tranche plus courte que le grain remplacerait sa ligne par le seul morceau calculé (`delete+insert` par clé) : lancé en mensuel, un modèle annuel ne garderait que décembre. Les deux passes tournent même si la première a des échecs.
+
+`backfill-batch` va jusqu'au bout de la période même si une tranche échoue, puis sort en erreur en listant les commandes de reprise des tranches en échec.
 
 ### Étape 5 — Zone exposed
 
@@ -371,17 +378,17 @@ just pipeline-daily
 
 ## Commandes clés
 
-| Action                               | Commande                                                     |
-| ------------------------------------ | ------------------------------------------------------------ |
-| Lister toutes les commandes          | `just`                                                       |
-| Pipeline du jour                     | `just pipeline-daily`                                        |
-| Backfill d'un modèle sur une période | `just backfill-batch trusted.carpools month 2024-01 2024-12` |
-| Recompute d'une fenêtre précise      | `just dbt-recompute trusted.carpools 2024-06-01 2024-06-30`  |
-| Docs dbt en local                    | `just docs-serve`                                            |
-| Lint SQL                             | `just lint`                                                  |
-| Générer les YAMLs d'un layer         | `just osmosis-refactor trusted`                              |
-| Export data.gouv (debug, sans publier) | `just datagouv --debug --start 2026-07-01 --end 2026-08-01` |
-| Export des millésimes vers la prod   | `just export-perimeters`                                     |
+| Action                                 | Commande                                                           |
+| -------------------------------------- | ------------------------------------------------------------------ |
+| Lister toutes les commandes            | `just`                                                             |
+| Pipeline du jour                       | `just pipeline-daily`                                              |
+| Backfill d'un modèle sur une période   | `just backfill-batch trusted.carpools month 2024-01-01 2025-01-01` |
+| Recompute d'une fenêtre précise        | `just dbt-recompute trusted.carpools 2024-06-01 2024-06-30`        |
+| Docs dbt en local                      | `just docs-serve`                                                  |
+| Lint SQL                               | `just lint`                                                        |
+| Générer les YAMLs d'un layer           | `just osmosis-refactor trusted`                                    |
+| Export data.gouv (debug, sans publier) | `just datagouv --debug --start 2026-07-01 --end 2026-08-01`        |
+| Export des millésimes vers la prod     | `just export-perimeters`                                           |
 
 `just datagouv --debug [--start … --end …]` exécute l'export **sans publier** sur data.gouv :
 dépose CSV/description/rapport horodatés sous `datagouv/logs/` et imprime un verdict d'invariants
