@@ -1,21 +1,6 @@
 {% macro od_model(perim, grain) %}
 
-  {# --------------------------------------------------------
-     Lookback par grain
-  -------------------------------------------------------- #}
-  {% set lookbacks = {
-    'day':      {'nb': 3, 'unit': 'day'},
-    'month':    {'nb': 1, 'unit': 'month'},
-    'quarter':  {'nb': 1, 'unit': 'quarter'},
-    'semester': {'nb': 1, 'unit': 'semester'},
-    'year':     {'nb': 1, 'unit': 'year'}
-  } %}
-
-  {% if grain not in lookbacks %}
-    {{ exceptions.raise_compiler_error("Invalid grain: " ~ grain ~ ". Expected: day, month, quarter, semester, year") }}
-  {% endif %}
-
-  {% set lb = lookbacks[grain] %}
+  {% set lb = grain_lookback(grain) %}
 
 {# --------------------------------------------------------
    Cas 'com' : vue UNION ALL des models arr + plm déjà calculés

@@ -213,20 +213,25 @@ Ces macros constituent le corps entier d'un fichier `.sql` — un appel suffit �
 | Macro             | Signature                   | Rôle                                                                                                                                                                      |
 | ----------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `od_model`        | `(perim, grain)`            | Agrégation OD : paire `(territory_1, territory_2)` ordonnée par LEAST/GREATEST pour éviter les doublons directionnels. `com` = vue UNION ALL de `arr` + `plm`.            |
-| `territory_model` | `(perim, grain, direction)` | Agrégation par territoire. `both` = UNION ALL start + end en excluant les intra sur le second membre. Mode strict : les codes hors-périmètre sont NULL (pas de fallback). |
-| `fraud_model`     | `(perim, grain, direction)` | Identique à `territory_model` mais sans filtre `valid_acquisition_status` — comptabilise tous les statuts pour mesurer fraudes et anomalies.                              |
-| `operators_model` | `(perim, grain, direction)` | Identique à `territory_model` avec `operator_id` et `operator_name` en clés supplémentaires.                                                                              |
+| `perimeter_model` | `(kind, perim, grain, direction, columns, keys, key_ids, filtered_args, on_schema_change)` | Squelette commun de `territory_model`, `fraud_model` et `operators_model`. `both` = UNION ALL start + end en excluant les intra sur le second membre. `com` = vue UNION ALL de `arr` + `plm`, colonnes énumérées par nom depuis `arr`. |
+| `territory_model` | `(perim, grain, direction)` | Agrégation par territoire. Mode strict : les codes hors-périmètre sont NULL (pas de fallback). |
+| `fraud_model`     | `(perim, grain, direction)` | Par opérateur, sans filtre `valid_acquisition_status` — comptabilise tous les statuts pour mesurer fraudes et anomalies. |
+| `operators_model` | `(perim, grain, direction)` | Comme `territory_model` avec `operator_id` et `operator_name` en clés supplémentaires. |
 | `aom_financials_model` | `(perim, grain)` | Stats financières des vues `mb_aom_*` (aom/aomreg, day/month, direction both) : incitations de l'AOM du périmètre (self) ou d'une autre AOM (other), ventilations intra/inter, quantiles de distance. Self/other lus sur les lignes `operator_incentives` / `incentives`, pas sur les jsonb de `carpools`. |
 
-Chaque macro embarque sa propre table de lookbacks :
+Fenêtre de recalcul incrémental par grain, commune à toutes les macros (`grain_lookback(grain)`) :
 
 | Grain      | Lookback                          |
 | ---------- | --------------------------------- |
 | `day`      | 3 jours                           |
 | `month`    | 1 mois                            |
 | `quarter`  | 1 trimestre                       |
-| `semester` | 0 (full depuis début du semestre) |
-| `year`     | 0 (full depuis début de l'année)  |
+| `semester` | 1 semestre                        |
+| `year`     | 1 an                              |
+
+### Macros des modèles exposés
+
+Chaque famille de `exposed/observatory/` (`od`, `occupation`, `distribution`, `users`, `incentive`, `location`) est générée par une macro `<famille>_exposed(grain)` : les quatre fichiers `<famille>_{month,quarter,semester,year}.sql` n'en sont qu'un appel. `exposed_period(grain)` fournit la colonne de période, la clé de tri du lookback incrémental et son alias. `incentive` lit toujours `territory_month_*` et somme les mois (compteurs additifs).
 
 ### Macros de colonnes agrégées
 
@@ -481,11 +486,11 @@ dbt run-operation generate_model_yaml --args '{"model_names": ["interoperators_l
 ```
 
 1. Répéter pour les 5 grains × 3 directions = 15 fichiers (utiliser un script shell ou copier depuis un périmètre existant)
-1. Ajouter le périmètre dans les `type_map` des modèles `exposed/observatory/`
+1. Ajouter le périmètre dans les `type_map` (`type_direction_map` pour `distribution`) des macros `macros/models/exposed/observatory/*_exposed.sql`
 
 ### Nouveau grain temporel
 
-1. Ajouter l'entrée dans le dict `lookbacks` de chaque macro (`od_model`, `fraud_model`, `territory_model`, `operators_model`)
+1. Ajouter l'entrée dans `grain_lookback` (`macros/helpers/grain_lookback.sql`)
 2. Ajouter le grain dans la macro `incremental_columns` (`macros/helpers/incremental_columns.sql`) et `group_by_grain`
 3. Créer les fichiers modèles (un par périmètre × direction) dans le sous-dossier correspondant
 

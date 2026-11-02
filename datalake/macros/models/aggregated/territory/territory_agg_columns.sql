@@ -1,6 +1,3 @@
-{# Les alias ici doivent rester synchro a la main avec la liste statique de
-   territory_agg_column_names(). Verifie par
-   tests/aggregated/territory_day_arr_both/column_names_macro_sync.sql. #}
 {% macro territory_agg_columns() %}
   COUNT(*) AS carpools,
   COUNT(*) FILTER (WHERE is_intra) AS intra_carpools,

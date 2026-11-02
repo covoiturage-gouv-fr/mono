@@ -1,13 +1,6 @@
 {% macro user_territory_model(perim, grain, direction) %}
 
-  {% set lookbacks = {
-    'day':   {'nb': 3, 'unit': 'day'},
-    'month': {'nb': 1, 'unit': 'month'}
-  } %}
-
-  {% if grain not in lookbacks %}
-    {{ exceptions.raise_compiler_error("Invalid grain: " ~ grain ~ ". Expected: day, month") }}
-  {% endif %}
+  {% set lb = grain_lookback(grain, ['day', 'month']) %}
 
   {% if perim not in ['aom', 'aomreg'] %}
     {{ exceptions.raise_compiler_error("Invalid perim: " ~ perim ~ ". Expected: aom, aomreg") }}
@@ -16,8 +9,6 @@
   {% if direction not in ['from', 'to', 'both'] %}
     {{ exceptions.raise_compiler_error("Invalid direction: " ~ direction ~ ". Expected: from, to, both") }}
   {% endif %}
-
-  {% set lb = lookbacks[grain] %}
 
 {{ config(
   materialized='incremental',
