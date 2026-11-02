@@ -4,10 +4,23 @@ const log = taggedLogger("[http]");
 
 type RouteError = { httpCode?: number; rpcError?: { data?: unknown }; message?: string; stack?: string };
 
-type TermsViolation = { terms_violation_labels: string[]; terms_violation_error_details?: unknown[] };
+type TermsViolationDetail = { label: string; metas?: Record<string, number> };
+type TermsViolation = { terms_violation_labels: string[]; terms_violation_error_details?: TermsViolationDetail[] };
 
 const isStringList = (v: unknown): v is string[] =>
   Array.isArray(v) && v.length > 0 && v.every((s) => typeof s === "string");
+
+function termsViolationDetails(details: unknown[]): TermsViolationDetail[] {
+  return details.flatMap((d) => {
+    const { label, metas } = (d ?? {}) as { label?: unknown; metas?: Record<string, unknown> };
+    if (typeof label !== "string") return [];
+    if (!metas) return [{ label }];
+    const counts = Object.fromEntries(
+      ["driver", "passenger", "limit"].filter((k) => typeof metas[k] === "number").map((k) => [k, metas[k] as number]),
+    );
+    return [{ label, metas: counts }];
+  });
+}
 
 // Ne relaie du détail d'une erreur 4xx que des messages de violation,
 // ou le motif de refus d'un trajet (contrat 422 de POST /journeys).
@@ -17,7 +30,7 @@ export function violationMessages(data: unknown): string | string[] | TermsViola
   const { terms_violation_labels, terms_violation_error_details } = (data ?? {}) as Partial<TermsViolation>;
   if (isStringList(terms_violation_labels)) {
     return Array.isArray(terms_violation_error_details)
-      ? { terms_violation_labels, terms_violation_error_details }
+      ? { terms_violation_labels, terms_violation_error_details: termsViolationDetails(terms_violation_error_details) }
       : { terms_violation_labels };
   }
   return undefined;

@@ -103,6 +103,24 @@ describe("formatRouteError", () => {
     });
   });
 
+  it("ne relaie que label et les compteurs de metas dans les détails du refus", () => {
+    const data = violationMessages({
+      terms_violation_labels: ["too_many_trips_by_day"],
+      terms_violation_error_details: [
+        { label: "too_many_trips_by_day", metas: { driver: 5, passenger: 1, limit: 4, phone: "+33" }, phone: "+33" },
+        { label: "expired", identity_key: "abc" },
+        { metas: { driver: 1 } },
+      ],
+    });
+    assertEquals(data, {
+      terms_violation_labels: ["too_many_trips_by_day"],
+      terms_violation_error_details: [
+        { label: "too_many_trips_by_day", metas: { driver: 5, passenger: 1, limit: 4 } },
+        { label: "expired" },
+      ],
+    });
+  });
+
   it("violationMessages: chaîne, liste de chaînes, rien d'autre", () => {
     assertEquals(violationMessages("Start should be before end"), "Start should be before end");
     assertEquals(violationMessages(["a", "b"]), ["a", "b"]);
