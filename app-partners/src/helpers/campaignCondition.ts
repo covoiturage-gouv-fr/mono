@@ -35,7 +35,6 @@ export const campaignConditionSchema = z
       { message: "Sélectionnez un territoire" },
     ),
     operator_ids: z.array(z.number()).min(1, { message: "Sélectionnez au moins un opérateur" }),
-    email_contact: z.string().trim().toLowerCase().email({ message: "L'adresse mail n'est pas valide" }),
     premiere_campagne: z.boolean(),
     date_debut: z.string().date("Date de début requise"),
     date_fin: z.string().date("Date invalide").nullable(),
@@ -108,7 +107,6 @@ export const emptyCampaignCondition = (): Omit<CampaignConditionForm, "territory
 } => ({
   territory: null,
   operator_ids: [],
-  email_contact: "",
   premiere_campagne: false,
   date_debut: "",
   date_fin: null,
@@ -144,9 +142,8 @@ export const canEditCampaign = (
   user: { role: string; operator_id: number | null; territory_id?: number | null },
 ) => {
   if (user.role === "registry.admin") return true;
-  if (user.role === "territory.admin") {
-    return user.territory_id != null && campaign.created_by_territory_id === user.territory_id;
-  }
+  // L'API ne liste à un territoire que les campagnes qu'il a saisies ou qui portent sur lui : il a la main dessus.
+  if (user.role === "territory.admin") return user.territory_id != null;
   return (
     user.role === "operator.admin" &&
     user.operator_id !== null &&

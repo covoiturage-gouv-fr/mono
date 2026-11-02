@@ -3,6 +3,7 @@ import { Action as AbstractAction } from "@/ilos/core/index.ts";
 import { copyGroupIdAndApplyGroupPermissionMiddlewares } from "@/pdc/providers/middleware/index.ts";
 import { CampaignConditionId } from "@/pdc/services/dashboard/dto/CampaignConditions.ts";
 import { assertCanWrite, callerOf } from "@/pdc/services/dashboard/helpers/campaignConditionAccess.ts";
+import { withCallerTerritory } from "@/pdc/services/dashboard/helpers/campaignConditionTerritory.ts";
 import { CampaignConditionsRepositoryInterfaceResolver } from "@/pdc/services/dashboard/interfaces/CampaignConditionsRepositoryInterface.ts";
 
 @handler({
@@ -30,7 +31,8 @@ export class DeleteCampaignConditionAction extends AbstractAction {
   public override async handle(params: CampaignConditionId, context: ContextType): Promise<{ success: boolean }> {
     const existing = await this.repository.find(params.id);
     if (!existing) throw new NotFoundException(`campaign condition not found: (${params.id})`);
-    assertCanWrite(existing, null, callerOf(context, "registry.campaign_condition.delete"));
+    const caller = await withCallerTerritory(this.repository, callerOf(context, "registry.campaign_condition.delete"));
+    assertCanWrite(existing, null, caller);
     await this.repository.delete(params.id);
     return { success: true };
   }

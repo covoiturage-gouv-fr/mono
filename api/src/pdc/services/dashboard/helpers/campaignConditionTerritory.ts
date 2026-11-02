@@ -1,4 +1,5 @@
 import { InvalidRequestException } from "@/ilos/common/index.ts";
+import { Caller, withTerritory } from "@/pdc/services/dashboard/helpers/campaignConditionAccess.ts";
 import type { ResolvedTerritory } from "@/pdc/services/dashboard/interfaces/CampaignConditionsRepositoryInterface.ts";
 
 export type TerritoryGroupShape = {
@@ -35,4 +36,13 @@ export async function resolveOwnTerritory(
     );
   }
   return resolved;
+}
+
+// Complète un appelant territoire avec son couple type/code du datalake (null si sans équivalent).
+export async function withCallerTerritory(
+  repository: { resolveTerritory(id: number): Promise<ResolvedTerritory | null> },
+  caller: Caller,
+): Promise<Caller> {
+  if (caller.registry || caller.territory_id === null) return caller;
+  return withTerritory(caller, await repository.resolveTerritory(caller.territory_id));
 }

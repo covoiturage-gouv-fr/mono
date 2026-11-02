@@ -5,10 +5,8 @@ import type {
 
 export type CampaignConditionStatus = "draft" | "validated";
 
-export type CampaignConditionRow = Omit<CreateCampaignCondition, "email_contact"> & {
+export type CampaignConditionRow = CreateCampaignCondition & {
   id: number;
-  // null quand l'appelant n'est ni l'auteur ni admin RPC
-  email_contact: string | null;
   created_by_operator_id: number | null;
   created_by_territory_id: number | null;
   status: CampaignConditionStatus;
@@ -26,7 +24,7 @@ export type CampaignConditionsFilter = {
   // campagnes où cet opérateur est listé
   operator_id?: number;
   // campagnes saisies par ce territoire ou portant sur lui
-  territory?: { id: number; resolved: ResolvedTerritory | null };
+  territory?: { id: number; resolved: Pick<ResolvedTerritory, "territory_type" | "territory_code"> | null };
 };
 
 export interface CampaignConditionsRepositoryInterface {

@@ -21,7 +21,7 @@ feature ──squash──▶ next ──merge commit──▶ main
 | -- | ------- |
 | `feature` → `main` | squash |
 | `feature` → `next` | squash |
-| `dependabot/*` → `deps/dependabot-<date>` → `main` | squash |
+| `dependabot/*` → `deps/dependabot-<date>` → `next` (versions) ou `main` (sécurité) | squash |
 | `next` → `main` | **merge commit** |
 | `main` → `next` | **merge commit** |
 

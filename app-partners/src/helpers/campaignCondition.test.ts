@@ -13,7 +13,6 @@ const valid = {
   ...emptyCampaignCondition(),
   territory: { type: "custom", code: "36709", label: "PETR Alsace du Nord" },
   operator_ids: [3],
-  email_contact: "mobilite@example.org",
   date_debut: "2026-01-01",
   date_fin: "2026-12-31",
   trajet_classe_preuve: ["C"],
@@ -123,10 +122,9 @@ describe("canEditCampaign", () => {
     expect(canEditCampaign(mono, { role: "operator.admin", operator_id: 5 })).toBe(false);
   });
 
-  it("laisse un admin territoire modifier les campagnes qu'il a saisies, pas les autres", () => {
+  it("laisse un admin territoire modifier les campagnes que l'API lui liste, quel qu'en soit l'auteur", () => {
     expect(canEditCampaign(byTerritory, territory("territory.admin", 7))).toBe(true);
-    expect(canEditCampaign(byTerritory, territory("territory.admin", 8))).toBe(false);
-    expect(canEditCampaign(multi, territory("territory.admin", 7))).toBe(false);
+    expect(canEditCampaign(mono, territory("territory.admin", 7))).toBe(true);
     expect(canEditCampaign(byTerritory, territory("territory.user", 7))).toBe(false);
   });
 

@@ -13,7 +13,7 @@ import {
   size,
   string,
 } from "@/lib/superstruct/index.ts";
-import { Email, Id, PlainText, Serial } from "@/pdc/providers/superstruct/shared/index.ts";
+import { Id, PlainText, Serial } from "@/pdc/providers/superstruct/shared/index.ts";
 
 const TerritoryType = enums(["com", "epci", "aom", "dep", "reg", "country", "custom"]);
 const Eligibilite = enums(["tous", "jeunes_18_25", "demandeurs_emploi", "mineurs", "autre"]);
@@ -32,7 +32,6 @@ const fields = {
   territory_code: pattern(string(), /^[0-9A-Za-z]{1,20}$/),
   territory_label: PlainText,
   operator_ids: size(array(Serial), 1, 50),
-  email_contact: Email,
   premiere_campagne: boolean(),
   date_debut: IsoDate,
   date_fin: nullable(IsoDate),

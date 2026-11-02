@@ -16,7 +16,6 @@ describe("dto/CampaignConditions", () => {
     territory_code: "36709",
     territory_label: "PETR Alsace du Nord",
     operator_ids: [3],
-    email_contact: "mobilite@example.org",
     premiere_campagne: false,
     date_debut: "2026-01-01",
     date_fin: "2026-12-31",

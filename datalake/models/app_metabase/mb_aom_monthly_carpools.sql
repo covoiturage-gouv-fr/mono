@@ -27,7 +27,7 @@ SELECT
   q1_distance,
   median_distance,
   q3_distance
-FROM {{ ref('territory_month_aom_both') }}
+FROM {{ ref('aom_financials_month_aom') }}
 UNION ALL
 SELECT
   'aomreg'                                                   AS perim,
@@ -53,4 +53,4 @@ SELECT
   q1_distance,
   median_distance,
   q3_distance
-FROM {{ ref('territory_month_aomreg_both') }}
+FROM {{ ref('aom_financials_month_aomreg') }}

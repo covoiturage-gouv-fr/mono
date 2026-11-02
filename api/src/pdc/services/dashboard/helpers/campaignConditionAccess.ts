@@ -1,7 +1,16 @@
 import { ContextType, ForbiddenException } from "@/ilos/common/index.ts";
+import type { ResolvedTerritory } from "@/pdc/services/dashboard/interfaces/CampaignConditionsRepositoryInterface.ts";
 
-export type Caller = { registry: boolean; operator_id: number | null; territory_id: number | null };
+export type Caller = {
+  registry: boolean;
+  operator_id: number | null;
+  territory_id: number | null;
+  // couple type/code du datalake du territoire appelant, résolu par withTerritory
+  territory: Pick<ResolvedTerritory, "territory_type" | "territory_code"> | null;
+};
 type Owned = {
+  territory_type: string;
+  territory_code: string;
   operator_ids: number[];
   created_by_operator_id: number | null;
   created_by_territory_id: number | null;
@@ -20,11 +29,27 @@ export function callerOf(
     registry: permissions.includes(registryPermission),
     operator_id,
     territory_id: operator_id === null ? user?.territory_id ?? null : null,
+    territory: null,
   };
 }
 
+export const withTerritory = (caller: Caller, resolved: ResolvedTerritory | null): Caller => ({
+  ...caller,
+  territory: resolved ? { territory_type: resolved.territory_type, territory_code: resolved.territory_code } : null,
+});
+
 const isOnly = (ids: number[], operatorId: number | null) =>
   operatorId !== null && ids.length === 1 && ids[0] === operatorId;
+
+// Un territoire a la main sur les campagnes qu'il a saisies et sur toutes celles qui portent sur lui
+// (y compris celles d'un opérateur : il peut corriger ou retirer un brouillon qui bloque sa date).
+const territoryOwns = (row: Owned, caller: Caller) =>
+  caller.territory_id !== null && (
+    row.created_by_territory_id === caller.territory_id ||
+    (caller.territory !== null &&
+      row.territory_type === caller.territory.territory_type &&
+      row.territory_code === caller.territory.territory_code)
+  );
 
 // Un opérateur ne déclare que des campagnes dont il est le seul opérateur (multi-opérateurs = équipe RPC
 // ou territoire). Un territoire choisit ses opérateurs ; son territoire est imposé par l'API.
@@ -38,18 +63,8 @@ export function assertCanCreate(operatorIds: number[], caller: Caller): void {
 export function assertCanWrite(existing: Owned, nextOperatorIds: number[] | null, caller: Caller): void {
   if (caller.registry) return;
   const owns = caller.territory_id !== null
-    ? existing.created_by_territory_id === caller.territory_id
+    ? territoryOwns(existing, caller)
     : existing.created_by_operator_id === caller.operator_id && isOnly(existing.operator_ids, caller.operator_id);
   if (!owns) throw new ForbiddenException("Campagne en lecture seule : contactez l'équipe RPC");
   if (nextOperatorIds) assertCanCreate(nextOperatorIds, caller);
-}
-
-const isAuthor = (row: Owned, caller: Caller) =>
-  caller.territory_id !== null
-    ? row.created_by_territory_id === caller.territory_id
-    : caller.operator_id !== null && row.created_by_operator_id === caller.operator_id;
-
-// L'email de contact n'est pas publié : seuls l'auteur et les admins RPC le reçoivent.
-export function withContactFor<T extends Owned & { email_contact: string | null }>(row: T, caller: Caller): T {
-  return caller.registry || isAuthor(row, caller) ? row : { ...row, email_contact: null };
 }

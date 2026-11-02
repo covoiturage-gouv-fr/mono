@@ -24,7 +24,6 @@ const COLUMNS = [
   "territory_code",
   "territory_label",
   "operator_ids",
-  "email_contact",
   "premiere_campagne",
   "date_debut",
   "date_fin",

@@ -2,7 +2,8 @@ import { ContextType, ForbiddenException, handler } from "@/ilos/common/index.ts
 import { Action as AbstractAction } from "@/ilos/core/index.ts";
 import { copyGroupIdAndApplyGroupPermissionMiddlewares } from "@/pdc/providers/middleware/index.ts";
 import { CampaignConditions } from "@/pdc/services/dashboard/dto/CampaignConditions.ts";
-import { Caller, callerOf, withContactFor } from "@/pdc/services/dashboard/helpers/campaignConditionAccess.ts";
+import { Caller, callerOf } from "@/pdc/services/dashboard/helpers/campaignConditionAccess.ts";
+import { withCallerTerritory } from "@/pdc/services/dashboard/helpers/campaignConditionTerritory.ts";
 import {
   CampaignConditionRow,
   CampaignConditionsRepositoryInterfaceResolver,
@@ -32,17 +33,19 @@ export class CampaignConditionsAction extends AbstractAction {
 
   // Un opérateur voit les campagnes où il est listé ; un territoire, celles qu'il a saisies ou qui le concernent.
   public override async handle(params: CampaignConditions, context: ContextType): Promise<CampaignConditionRow[]> {
-    const rows = await this.rowsFor(params, callerOf(context, "registry.campaign_condition.list"));
-    // registry.user lit tout mais, comme les non-auteurs, ne reçoit pas l'email de contact
-    const writer = callerOf(context);
-    return rows.map((row) => withContactFor(row, writer));
+    return this.rowsFor(
+      params,
+      await withCallerTerritory(this.repository, callerOf(context, "registry.campaign_condition.list")),
+    );
   }
 
   private async rowsFor(params: CampaignConditions, caller: Caller): Promise<CampaignConditionRow[]> {
     if (caller.registry) return this.repository.list({ id: params.id });
     if (caller.territory_id !== null) {
-      const resolved = await this.repository.resolveTerritory(caller.territory_id);
-      return this.repository.list({ id: params.id, territory: { id: caller.territory_id, resolved } });
+      return this.repository.list({
+        id: params.id,
+        territory: { id: caller.territory_id, resolved: caller.territory },
+      });
     }
     if (caller.operator_id === null) throw new ForbiddenException("Invalid permissions");
     return this.repository.list({ id: params.id, operator_id: caller.operator_id });
