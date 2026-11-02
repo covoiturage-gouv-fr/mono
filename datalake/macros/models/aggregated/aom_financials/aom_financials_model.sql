@@ -8,16 +8,11 @@
 #}
 {% macro aom_financials_model(perim, grain) %}
 
-  {% set lookbacks = {
-    'day':   {'nb': 3, 'unit': 'day'},
-    'month': {'nb': 1, 'unit': 'month'}
-  } %}
+  {% set lb = grain_lookback(grain, ['day', 'month']) %}
 
-  {% if perim not in ['aom', 'aomreg'] or grain not in lookbacks %}
-    {{ exceptions.raise_compiler_error("aom_financials_model : perim aom|aomreg et grain day|month attendus, reçu " ~ perim ~ "/" ~ grain) }}
+  {% if perim not in ['aom', 'aomreg'] %}
+    {{ exceptions.raise_compiler_error("aom_financials_model : perim aom|aomreg attendu, reçu " ~ perim) }}
   {% endif %}
-
-  {% set lb = lookbacks[grain] %}
 
 {{ config(
   materialized='incremental',
