@@ -37,7 +37,7 @@
     "npm:ajv-formats@3": "3.0.1_ajv@8.18.0",
     "npm:ajv-keywords@5": "5.1.0_ajv@8.18.0",
     "npm:ajv@^8.12.0": "8.18.0",
-    "npm:body-parser@^1.20.0": "1.20.4",
+    "npm:body-parser@^1.20.9": "1.20.9",
     "npm:commander@^12.1.0": "12.1.0",
     "npm:connect-redis@^7.1.0": "7.1.1_express-session@1.19.0",
     "npm:cors@^2.8.0": "2.8.6",
@@ -520,7 +520,8 @@
         "@opentelemetry/core",
         "@opentelemetry/resources",
         "@opentelemetry/semantic-conventions@1.28.0"
-      ]
+      ],
+      "deprecated": true
     },
     "@opentelemetry/semantic-conventions@1.27.0": {
       "integrity": "sha512-sAay1RrB+ONOem0OZanAR1ZI/k7yDpnOQSQmTMuGImUQb2y8EbSaCJ94FQluM74xoU03vlb2d2U90hZluL6nQg=="
@@ -855,8 +856,8 @@
     "bluebird@3.4.7": {
       "integrity": "sha512-iD3898SR7sWVRHbiQv+sHUtHnMvC1o3nW5rAcqnq3uOn07DSAppZYUkIGslDz6gXC7HfunPe7YVBgoEJASPcHA=="
     },
-    "body-parser@1.20.4": {
-      "integrity": "sha512-ZTgYYLMOXY9qKU/57FAo8F+HA2dGX7bqGc71txDRC1rS4frdFI5R7NhluHxH6M0YItAP0sHB4uqAOcYKxO6uGA==",
+    "body-parser@1.20.9": {
+      "integrity": "sha512-FISIQxV5u91Y9gvuFq3q/tA/qTqLJn3AhRcEvyozyhJTh5OBFFtv827AdHU7Rbyct4r+Ba1/99oFa1Y3yuFsdw==",
       "dependencies": [
         "bytes",
         "content-type",
@@ -866,7 +867,7 @@
         "http-errors",
         "iconv-lite@0.4.24",
         "on-finished",
-        "qs",
+        "qs@6.16.2",
         "raw-body",
         "type-is",
         "unpipe"
@@ -1480,7 +1481,7 @@
         "parseurl",
         "path-to-regexp@0.1.12",
         "proxy-addr",
-        "qs",
+        "qs@6.14.2",
         "range-parser",
         "safe-buffer@5.2.1",
         "send",
@@ -2761,6 +2762,13 @@
         "side-channel"
       ]
     },
+    "qs@6.16.2": {
+      "integrity": "sha512-VYdnB5S7/0IeXzBacUtwNAaM6d7Y/PgYnNC7bJCI6meqA/OgnsQbZMtVW8Dt2D1PHgbHGtYmhSoEIgvt7xZ2ZA==",
+      "dependencies": [
+        "es-define-property",
+        "side-channel"
+      ]
+    },
     "random-bytes@1.0.0": {
       "integrity": "sha512-iv7LhNVO047HzYR3InF6pUcUsPQiHTM1Qal51DcGSuZFBil1aBBWG5eHPNek7bvILMaYJ/8RU1e8w1AMdHmLQQ=="
     },
@@ -2918,8 +2926,8 @@
     "shimmer@1.2.1": {
       "integrity": "sha512-sQTKC1Re/rM6XyFM6fIAGHRPVGvyXfgzIDvzoq608vM+jeyVD0Tu1E6Np0Kc2zAIFWIj963V2800iF/9LPieQw=="
     },
-    "side-channel-list@1.0.0": {
-      "integrity": "sha512-FCLHtRD/gnpCiCHEiJLOwdmFP+wzCmDEkc9y7NsYxeF4u7Btsn1ZuwgwJGxImImHicJArLP4R0yX4c2KCrMrTA==",
+    "side-channel-list@1.0.1": {
+      "integrity": "sha512-mjn/0bi/oUURjc5Xl7IaWi/OJJJumuoJFQJfDDyO46+hBWsfaVM65TBHq2eoZBhzl9EchxOijpkbRC8SVBQU0w==",
       "dependencies": [
         "es-errors",
         "object-inspect"
@@ -2944,8 +2952,8 @@
         "side-channel-map"
       ]
     },
-    "side-channel@1.1.0": {
-      "integrity": "sha512-ZX99e6tRweoUXqR+VBrslhda51Nh5MTQwou5tnUDgbtyM0dBgmhEDtWGP/xbKn6hqfPRHujUNwz5fy/wbbhnpw==",
+    "side-channel@1.1.1": {
+      "integrity": "sha512-6x6dK6zJdpTzF4sQeNYxwtvBzf6Eg4GtlesS94HOvTudUeyK2WXAaIfmDgsyslYrRBeFIlsi54AYsFGUuhmvrQ==",
       "dependencies": [
         "es-errors",
         "object-inspect",
@@ -3442,7 +3450,7 @@
       "npm:ajv-formats@3",
       "npm:ajv-keywords@5",
       "npm:ajv@^8.12.0",
-      "npm:body-parser@^1.20.0",
+      "npm:body-parser@^1.20.9",
       "npm:commander@^12.1.0",
       "npm:connect-redis@^7.1.0",
       "npm:cors@^2.8.0",

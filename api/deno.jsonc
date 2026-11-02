@@ -38,7 +38,7 @@
     "dep:ibantools": "npm:ibantools@^4.5", // useless : remove use and clear
     "dep:libphonenumber-js": "npm:libphonenumber-js@^1.11",
     "dep:xss": "npm:xss@^1",
-    "dep:body-parser": "npm:body-parser@^1.20",
+    "dep:body-parser": "npm:body-parser@^1.20.9",
     "dep:connect-redis": "npm:connect-redis@^7.1",
     "dep:express-mung": "npm:express-mung@^0.5",
     "dep:rate-limit-redis": "npm:rate-limit-redis@^6.0",
