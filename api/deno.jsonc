@@ -19,7 +19,7 @@
     "dep:csv-parse": "npm:csv-parse@^5.5",
     "dep:redis": "npm:ioredis@^5.3",
     "dep:pg": "npm:pg@^8.12", // migrate to DenoPostgresConnection
-    "dep:express": "npm:express@^4",
+    "dep:express": "npm:express@^4.22.3",
     "dep:node-7z": "npm:node-7z@^3.0",
     "dep:excel": "npm:exceljs@^4.4",
     "dep:ajverrors": "npm:ajv-errors@^3",
@@ -38,7 +38,7 @@
     "dep:ibantools": "npm:ibantools@^4.5", // useless : remove use and clear
     "dep:libphonenumber-js": "npm:libphonenumber-js@^1.11",
     "dep:xss": "npm:xss@^1",
-    "dep:body-parser": "npm:body-parser@^1.20",
+    "dep:body-parser": "npm:body-parser@^1.20.9",
     "dep:connect-redis": "npm:connect-redis@^7.1",
     "dep:express-mung": "npm:express-mung@^0.5",
     "dep:rate-limit-redis": "npm:rate-limit-redis@^6.0",
