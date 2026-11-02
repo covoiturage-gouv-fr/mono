@@ -29,10 +29,6 @@ __pycache__
 # direnv
 .direnv/
 
-#dbt
-logs/dbt.log
-dbt/target
-dbt/edr_target
 .aider*
 .claude/settings.local.json
 .claude/scheduled_tasks.lock
