@@ -57,7 +57,7 @@ Per PR, `pass-env gh pr view <n> --json title,body,files,labels` and
 | bump type (title / body) | **major** -> read the changelog in the body, look for breaking changes |
 | files | anything other than manifest + lockfile (`package*.json`, `pyproject.toml`, `uv.lock`, `Dockerfile`, `compose*.yml`, workflows) -> suspicious, do not merge |
 | security | `security` label or advisory in the body -> priority |
-| directory | `cms/`, `docker/cms/`, `app-attestation/`: close (see hard rules); a group mixing them with another dir is closed too, its fix for the other dir is redone by hand (say so); `dbt/` (deprecated, absent from `dependabot.yml`): skip unless critical advisory |
+| directory | `cms/`, `docker/cms/`, `app-attestation/`: close (see hard rules); a group mixing them with another dir is closed too, its fix for the other dir is redone by hand (say so) |
 | overlap | two PRs bumping the same package in the same dir (e.g. a single bump + a group) -> keep the superset, close the other |
 | CI coverage | `quality.yml` covers `api/`, `app-partners/`, `app-observatory/`, `docker/api/`; `quality-datalake*.yml` cover `datalake/` and `api-datalake/` -> other dirs have no CI, say so |
 

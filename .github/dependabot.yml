@@ -70,7 +70,6 @@ updates:
       - /docker/data
       - /docker/datalake/prod
       - /docker/datalake-api/prod
-      - /docker/dbt/prod
       - /docker/geo-import/prod
       - /docker/postgres
       - /docker/redis
