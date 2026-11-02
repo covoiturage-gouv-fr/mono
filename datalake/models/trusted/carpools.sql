@@ -227,23 +227,13 @@ SELECT
     *,
     EXTRACT('hour' FROM start_datetime_tz)::int AS hour,
     CASE
-        WHEN distance <  5000 THEN '00-05'
-        WHEN distance < 10000 THEN '05-10'
-        WHEN distance < 15000 THEN '10-15'
-        WHEN distance < 20000 THEN '15-20'
-        WHEN distance < 25000 THEN '20-25'
-        WHEN distance < 30000 THEN '25-30'
-        WHEN distance < 35000 THEN '30-35'
-        WHEN distance < 40000 THEN '35-40'
-        WHEN distance < 45000 THEN '40-45'
-        WHEN distance < 50000 THEN '45-50'
-        WHEN distance < 55000 THEN '50-55'
-        WHEN distance < 60000 THEN '55-60'
-        WHEN distance < 65000 THEN '60-65'
-        WHEN distance < 70000 THEN '65-70'
-        WHEN distance < 75000 THEN '70-75'
-        WHEN distance < 80000 THEN '75-80'
-        ELSE '80+'
+        {% for label, max_m in dist_classes() %}
+            {% if max_m %}
+        WHEN distance < {{ max_m }} THEN '{{ label }}'
+            {% else %}
+        ELSE '{{ label }}'
+            {% endif %}
+        {% endfor %}
     END AS dist_class,
     (start_geo_code = end_geo_code) AS is_intra
 FROM base_carpools

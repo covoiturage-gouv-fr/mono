@@ -180,86 +180,23 @@ SELECT
   -- '1'/'' reproduit le rendu csv-stringify de l'API (cast booleen -> "1"/"")
   CASE WHEN cee._id IS NOT NULL THEN '1' ELSE '' END
     AS cee_application,
-  c.oi_details[0]
-  ->> 'siret'
-    AS incentive_0_siret,
-
-  c.oi_details[0]
-  ->> 'name'
-    AS incentive_0_name,
-  c.oi_details[0]
-  ->> 'amount'
-    AS incentive_0_amount,
-  c.oi_details[1]
-  ->> 'siret'
-    AS incentive_1_siret,
-
-  c.oi_details[1]
-  ->> 'name'
-    AS incentive_1_name,
-  c.oi_details[1]
-  ->> 'amount'
-    AS incentive_1_amount,
-  c.oi_details[2]
-  ->> 'siret'
-    AS incentive_2_siret,
-
-  -- RPC incentives (spread from JSONB array)
-  c.oi_details[2]
-  ->> 'name'
-    AS incentive_2_name,
-  c.oi_details[2]
-  ->> 'amount'
-    AS incentive_2_amount,
-  c.campaigns[0]
-  ->> 'campaign_id'
-    AS incentive_rpc_0_campaign_id,
-  c.campaigns[0]
-  ->> 'campaign_name'
-    AS incentive_rpc_0_campaign_name,
-  c.campaigns[0]
-  ->> 'siret'
-    AS incentive_rpc_0_siret,
-
-  c.campaigns[0]
-  ->> 'name'
-    AS incentive_rpc_0_name,
-  c.campaigns[0]
-  ->> 'amount'
-    AS incentive_rpc_0_amount,
-  c.campaigns[1]
-  ->> 'campaign_id'
-    AS incentive_rpc_1_campaign_id,
-  c.campaigns[1]
-  ->> 'campaign_name'
-    AS incentive_rpc_1_campaign_name,
-  c.campaigns[1]
-  ->> 'siret'
-    AS incentive_rpc_1_siret,
-
-  c.campaigns[1]
-  ->> 'name'
-    AS incentive_rpc_1_name,
-  c.campaigns[1]
-  ->> 'amount'
-    AS incentive_rpc_1_amount,
-  c.campaigns[2]
-  ->> 'campaign_id'
-    AS incentive_rpc_2_campaign_id,
-  c.campaigns[2]
-  ->> 'campaign_name'
-    AS incentive_rpc_2_campaign_name,
-  c.campaigns[2]
-  ->> 'siret'
-    AS incentive_rpc_2_siret,
-
-  -- offer (placeholders)
-  c.campaigns[2]
-  ->> 'name'
-    AS incentive_rpc_2_name,
-  c.campaigns[2]
-  ->> 'amount'
-    AS incentive_rpc_2_amount
+  -- 3 premières incitations opérateur (oi_details) puis RPC (campaigns)
+  {% for i in range(3) %}
+    {% for f in ['siret', 'name', 'amount'] %}
+      c.oi_details[{{ i }}]
+      ->> '{{ f }}'
+        AS incentive_{{ i }}_{{ f }},
+    {% endfor %}
+  {% endfor %}
+  {% for i in range(3) %}
+    {% set last_i = loop.last %}
+    {% for f in ['campaign_id', 'campaign_name', 'siret', 'name', 'amount'] %}
+      c.campaigns[{{ i }}]
+      ->> '{{ f }}'
+        AS incentive_rpc_{{ i }}_{{ f }}
+      {%- if not (last_i and loop.last) %},{% endif %}
+    {% endfor %}
+  {% endfor %}
 
 FROM {{ ref('carpools') }} AS c
 LEFT JOIN

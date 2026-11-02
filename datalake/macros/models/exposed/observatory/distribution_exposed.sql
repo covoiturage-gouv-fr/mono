@@ -40,6 +40,17 @@
   ('custom',  'custom',  'both'),
 ] %}
 
+{# dist_distribution : une case par tranche de dist_classes() (17 de 5 km, la 17e = 80+).
+   Classe exposée : (libellé, première tranche, dernière tranche), indices 1-based. #}
+{% set exposed_classes = [
+  ('0-10',  1, 2),
+  ('10-20', 3, 4),
+  ('20-30', 5, 6),
+  ('30-40', 7, 8),
+  ('40-50', 9, 10),
+  ('>50',   11, 17),
+] %}
+
 WITH
 {% if exposed_incremental() %}
   lookback AS (
@@ -85,45 +96,14 @@ SELECT
     FROM generate_series(1, 24) AS gs
   ) AS hours,
   jsonb_build_array(
-    jsonb_build_object(
-      'dist_classes',
-      '0-10',
-      'journeys',
-      d.dist_distribution[1] + d.dist_distribution[2]
-    ),
-    jsonb_build_object(
-      'dist_classes',
-      '10-20',
-      'journeys',
-      d.dist_distribution[3] + d.dist_distribution[4]
-    ),
-    jsonb_build_object(
-      'dist_classes',
-      '20-30',
-      'journeys',
-      d.dist_distribution[5] + d.dist_distribution[6]
-    ),
-    jsonb_build_object(
-      'dist_classes',
-      '30-40',
-      'journeys',
-      d.dist_distribution[7] + d.dist_distribution[8]
-    ),
-    jsonb_build_object(
-      'dist_classes',
-      '40-50',
-      'journeys',
-      d.dist_distribution[9] + d.dist_distribution[10]
-    ),
-    jsonb_build_object(
-      'dist_classes',
-      '>50',
-      'journeys',
-      d.dist_distribution[11] + d.dist_distribution[12]
-      + d.dist_distribution[13] + d.dist_distribution[14]
-      + d.dist_distribution[15] + d.dist_distribution[16]
-      + d.dist_distribution[17]
-    )
+    {% for label, first, last in exposed_classes %}
+      jsonb_build_object(
+        'dist_classes',
+        '{{ label }}',
+        'journeys',
+        {% for i in range(first, last + 1) %}d.dist_distribution[{{ i }}]{% if not loop.last %} + {% endif %}{% endfor %}
+      ){% if not loop.last %},{% endif %}
+    {% endfor %}
   ) AS distances
 FROM distribution AS d
 LEFT JOIN {{ perimeters_agg_all() }} AS p
