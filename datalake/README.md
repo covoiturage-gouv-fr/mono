@@ -161,7 +161,7 @@ Remplace les projet legacy `sqlmesh/` et `dbt/`. Ingère les données brutes de 
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
-Hors diagramme : `models/app_metabase/` (schéma `app_metabase`, 19 vues `mb_*`) expose des retraitements ad hoc au grain attendu par chaque dashboard Metabase — pas de convention de nommage générique comme les zones ci-dessus.
+Hors diagramme : `models/app_metabase/` (schéma `app_metabase`, 22 vues `mb_*`) expose des retraitements ad hoc au grain attendu par chaque dashboard Metabase — pas de convention de nommage générique comme les zones ci-dessus.
 
 ---
 
@@ -216,6 +216,7 @@ Ces macros constituent le corps entier d'un fichier `.sql` — un appel suffit �
 | `territory_model` | `(perim, grain, direction)` | Agrégation par territoire. `both` = UNION ALL start + end en excluant les intra sur le second membre. Mode strict : les codes hors-périmètre sont NULL (pas de fallback). |
 | `fraud_model`     | `(perim, grain, direction)` | Identique à `territory_model` mais sans filtre `valid_acquisition_status` — comptabilise tous les statuts pour mesurer fraudes et anomalies.                              |
 | `operators_model` | `(perim, grain, direction)` | Identique à `territory_model` avec `operator_id` et `operator_name` en clés supplémentaires.                                                                              |
+| `aom_financials_model` | `(perim, grain)` | Stats financières des vues `mb_aom_*` (aom/aomreg, day/month, direction both) : incitations de l'AOM du périmètre (self) ou d'une autre AOM (other), ventilations intra/inter, quantiles de distance. Self/other lus sur les lignes `operator_incentives` / `incentives`, pas sur les jsonb de `carpools`. |
 
 Chaque macro embarque sa propre table de lookbacks :
 
