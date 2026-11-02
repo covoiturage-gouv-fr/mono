@@ -32,20 +32,23 @@ max_perim_year AS (
 ),
 
 territory AS (
+  {# Compteurs additifs : sommés depuis les mois, les grains longs n'ont pas
+     à être recalculés quand une correction ne touche que les mois. #}
   {% for model_type, exposed_type in exposed_type_map(type_map) %}
     SELECT
       '{{ exposed_type }}' AS type,
       code,
       year,
-      quarter,
-      oi_collectivite      AS collectivite,
-      oi_operator          AS operateur,
-      oi_other             AS autres,
-      no_oi                AS no_incentive
-    FROM {{ ref('territory_quarter_' ~ model_type ~ '_both') }}
+      (month + 2) / 3      AS quarter,  -- noqa: RF04
+      sum(oi_collectivite) AS collectivite,
+      sum(oi_operator)     AS operateur,
+      sum(oi_other)        AS autres,
+      sum(no_oi)::bigint   AS no_incentive
+    FROM {{ ref('territory_month_' ~ model_type ~ '_both') }}
     {% if exposed_incremental() %}
-      WHERE year * 4 + quarter >= (SELECT lookback.min_yq FROM lookback)
+      WHERE year * 4 + (month + 2) / 3 >= (SELECT lookback.min_yq FROM lookback)
     {% endif %}
+    GROUP BY code, year, (month + 2) / 3
     {% if not loop.last %}UNION ALL{% endif %}
   {% endfor %}
 )

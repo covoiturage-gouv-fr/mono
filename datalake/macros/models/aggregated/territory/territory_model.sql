@@ -21,9 +21,6 @@
 
   {% set lb = lookbacks[grain] %}
 
-  {# cas ou le perim est une aom(r) ; on regarde si les incitations sont portées par l aom du perim ou alors une autre aom.
-     borne a day/month + both. Pour l instant, limite à ce qui est réellement consommé. #}
-  {% set with_incentive_split = perim in ['aom', 'aomreg'] and grain in ['day', 'month'] and direction == 'both' %}
 
 {# --------------------------------------------------------
    Cas 'com' : vue UNION ALL des models arr + plm déjà calculés
@@ -66,68 +63,26 @@ SELECT {{ com_columns | join(', ') }} FROM {{ ref('territory_' ~ grain ~ '_plm_'
 ) }}
 
 WITH filtered_carpools AS (
-  {{ filtered_carpools(perim, lookback_nb=lb.nb, lookback_unit=lb.unit, with_oi_details=with_incentive_split, strict=true) }}
+  {{ filtered_carpools(perim, lookback_nb=lb.nb, lookback_unit=lb.unit, strict=true) }}
 )
 
 {% if direction == 'from' %}
 
-  {% if with_incentive_split %}
-  , split AS (
-    SELECT
-      filtered_carpools.*,
-      oi_split.oi_collectivite_self_amount,
-      oi_split.oi_collectivite_other_amount,
-      oi_split.oi_collectivite_self_exists,
-      oi_split.oi_collectivite_other_exists,
-      oi_split.is_operator_only_incentive,
-      ci_split.ci_amount_self,
-      ci_split.ci_amount_other,
-      ci_split.ci_result_self,
-      ci_split.ci_result_other
-    FROM filtered_carpools
-    {{ territory_incentive_split_lateral('start_code') }}
-  )
-  {% endif %}
   SELECT
     start_code AS code,
     {{ incremental_columns('carpool_datetime', grain) }},
-    {{ territory_agg_columns(with_incentive_split) }}
-    {% if with_incentive_split %}
-    ,
-    {{ territory_incentive_split_columns() }}
-    {% endif %}
-  FROM {{ 'split' if with_incentive_split else 'filtered_carpools' }}
+    {{ territory_agg_columns() }}
+  FROM filtered_carpools
   WHERE start_code IS NOT NULL
   GROUP BY 1, {{ group_by_grain(grain, 2) }}
 
 {% elif direction == 'to' %}
 
-  {% if with_incentive_split %}
-  , split AS (
-    SELECT
-      filtered_carpools.*,
-      oi_split.oi_collectivite_self_amount,
-      oi_split.oi_collectivite_other_amount,
-      oi_split.oi_collectivite_self_exists,
-      oi_split.oi_collectivite_other_exists,
-      oi_split.is_operator_only_incentive,
-      ci_split.ci_amount_self,
-      ci_split.ci_amount_other,
-      ci_split.ci_result_self,
-      ci_split.ci_result_other
-    FROM filtered_carpools
-    {{ territory_incentive_split_lateral('end_code') }}
-  )
-  {% endif %}
   SELECT
     end_code AS code,
     {{ incremental_columns('carpool_datetime', grain) }},
-    {{ territory_agg_columns(with_incentive_split) }}
-    {% if with_incentive_split %}
-    ,
-    {{ territory_incentive_split_columns() }}
-    {% endif %}
-  FROM {{ 'split' if with_incentive_split else 'filtered_carpools' }}
+    {{ territory_agg_columns() }}
+  FROM filtered_carpools
   WHERE end_code IS NOT NULL
   GROUP BY 1, {{ group_by_grain(grain, 2) }}
 
@@ -142,32 +97,11 @@ WITH filtered_carpools AS (
     WHERE end_code IS NOT NULL
     AND NOT is_intra
   )
-  {% if with_incentive_split %}
-  , split AS (
-    SELECT
-      exploded.*,
-      oi_split.oi_collectivite_self_amount,
-      oi_split.oi_collectivite_other_amount,
-      oi_split.oi_collectivite_self_exists,
-      oi_split.oi_collectivite_other_exists,
-      oi_split.is_operator_only_incentive,
-      ci_split.ci_amount_self,
-      ci_split.ci_amount_other,
-      ci_split.ci_result_self,
-      ci_split.ci_result_other
-    FROM exploded
-    {{ territory_incentive_split_lateral('code') }}
-  )
-  {% endif %}
   SELECT
     code,
     {{ incremental_columns('carpool_datetime', grain) }},
-    {{ territory_agg_columns(with_incentive_split) }}
-    {% if with_incentive_split %}
-    ,
-    {{ territory_incentive_split_columns() }}
-    {% endif %}
-  FROM {{ 'split' if with_incentive_split else 'exploded' }}
+    {{ territory_agg_columns() }}
+  FROM exploded
   WHERE code IS NOT NULL
   GROUP BY 1, {{ group_by_grain(grain, 2) }}
 {% endif %}
