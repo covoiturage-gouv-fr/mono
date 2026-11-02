@@ -4,10 +4,22 @@ const log = taggedLogger("[http]");
 
 type RouteError = { httpCode?: number; rpcError?: { data?: unknown }; message?: string; stack?: string };
 
-// Ne relaie du détail d'une erreur 4xx que des messages de violation.
-export function violationMessages(data: unknown): string | string[] | undefined {
+type TermsViolation = { terms_violation_labels: string[]; terms_violation_error_details?: unknown[] };
+
+const isStringList = (v: unknown): v is string[] =>
+  Array.isArray(v) && v.length > 0 && v.every((s) => typeof s === "string");
+
+// Ne relaie du détail d'une erreur 4xx que des messages de violation,
+// ou le motif de refus d'un trajet (contrat 422 de POST /journeys).
+export function violationMessages(data: unknown): string | string[] | TermsViolation | undefined {
   if (typeof data === "string") return data;
-  if (Array.isArray(data) && data.length > 0 && data.every((v) => typeof v === "string")) return data as string[];
+  if (isStringList(data)) return data;
+  const { terms_violation_labels, terms_violation_error_details } = (data ?? {}) as Partial<TermsViolation>;
+  if (isStringList(terms_violation_labels)) {
+    return Array.isArray(terms_violation_error_details)
+      ? { terms_violation_labels, terms_violation_error_details }
+      : { terms_violation_labels };
+  }
   return undefined;
 }
 
