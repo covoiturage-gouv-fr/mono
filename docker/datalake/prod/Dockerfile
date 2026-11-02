@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.7
 
 # Stage 1 -- just: pin the `just` binary, no curl/bash needed in runtime
-FROM ghcr.io/casey/just:1.55.1 AS just
+FROM ghcr.io/casey/just:1.59.0 AS just
 
 # Stage 2 -- builder: compile native wheels into /data/.venv
 FROM ghcr.io/astral-sh/uv:python3.13-bookworm-slim AS builder
