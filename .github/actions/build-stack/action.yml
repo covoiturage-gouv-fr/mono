@@ -18,7 +18,7 @@ runs:
       with:
         deno-version: v2.9.8
 
-    - uses: taiki-e/install-action@183e4297cca2404691e9380e1307288dced5c82a # v2.87.25
+    - uses: taiki-e/install-action@5488ac5a951645ce95062214902ac4b6bc1a1037 # v2.87.32
       with:
         tool: just@1.40.0
 
