@@ -51,13 +51,29 @@ trusted start="2019-01-01" end="2027-01-01" *args:
   just backfill-batch "models/trusted --exclude tag:geo" month {{start}} {{end}} {{args}}
 
 # Couche agrégée (~470 modèles) : lectures LOCALES (plus de FDW) => MULTI-THREAD sûr.
-# Même fenêtrage MENSUEL (filtered_carpools -> time_filter honore --vars start/end).
+# Deux passes (filtered_carpools -> time_filter honore --vars start/end), bornes étendues
+# à des périodes entières : une tranche plus courte que le grain remplacerait sa ligne par
+# le seul morceau calculé (delete+insert par clé).
+# - MENSUELLE (au 1er du mois) pour jour/mois ;
+# - ANNUELLE (au 1er janvier) pour trimestre/semestre/année.
+# Les passes sont indépendantes : la seconde tourne même si la première a des échecs.
 aggregated start="2019-01-01" end="2027-01-01" *args:
   #!/usr/bin/env bash
   set -euo pipefail
   export PGOPTIONS="{{PGOPTIONS_BOUNDED}}"
   export DBT_THREADS=6
-  just backfill-batch "models/aggregated" month {{start}} {{end}} {{args}}
+  last_day=$(date -d "{{end}} -1 day" +%F)
+  month_start="$(date -d "{{start}}" +%Y-%m)-01"
+  month_end=$(date -d "$(date -d "$last_day" +%Y-%m)-01 +1 month" +%F)
+  year_start="$(date -d "{{start}}" +%Y)-01-01"
+  year_end="$(( $(date -d "$last_day" +%Y) + 1 ))-01-01"
+  rc=0
+  just backfill-batch "models/aggregated --exclude tag:quarter tag:semester tag:year" \
+    month "$month_start" "$month_end" {{args}} || rc=1
+  just backfill-batch \
+    "models/aggregated,tag:quarter models/aggregated,tag:semester models/aggregated,tag:year" \
+    year "$year_start" "$year_end" {{args}} || rc=1
+  exit $rc
 
 # Couche exposée (~23 modèles, lectures locales) : bâtie en une passe (multi-thread).
 exposed *args:

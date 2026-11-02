@@ -1,101 +1,12 @@
+{# Comme territory_model par opérateur, sans filtre valid_acquisition_status : tous les
+   statuts sont comptés pour mesurer fraudes et anomalies. #}
 {% macro fraud_model(perim, grain, direction, with_incentives=false) %}
-
-  {# --------------------------------------------------------
-     Lookback par grain
-  -------------------------------------------------------- #}
-  {% set lookbacks = {
-    'day':      {'nb': 3, 'unit': 'day'},
-    'month':    {'nb': 1, 'unit': 'month'},
-    'quarter':  {'nb': 1, 'unit': 'quarter'},
-    'semester': {'nb': 1, 'unit': 'semester'},
-    'year':     {'nb': 1, 'unit': 'year'}
-  } %}
-
-  {% if grain not in lookbacks %}
-    {{ exceptions.raise_compiler_error("Invalid grain: " ~ grain ~ ". Expected: day, month, quarter, semester, year") }}
-  {% endif %}
-
-  {% if direction not in ['from', 'to', 'both'] %}
-    {{ exceptions.raise_compiler_error("Invalid direction: " ~ direction ~ ". Expected: from, to, both") }}
-  {% endif %}
-
-  {% set lb = lookbacks[grain] %}
-
-{# --------------------------------------------------------
-   Cas 'com' : vue UNION ALL des models arr + plm déjà calculés
--------------------------------------------------------- #}
-{% if perim == 'com' %}
-
-{{ config(
-  materialized='view',
-  tags=['aggregated', 'fraud', grain, 'com', direction, 'daily']
-) }}
-
-SELECT * FROM {{ ref('fraud_' ~ grain ~ '_arr_' ~ direction) }}
-UNION ALL
-SELECT * FROM {{ ref('fraud_' ~ grain ~ '_plm_' ~ direction) }}
-
-{% else %}
-
-{{ config(
-  materialized='incremental',
-  incremental_strategy='delete+insert',
-  unique_key=['operator_id', 'code', 'incremental_date'],
-  on_schema_change='append_new_columns',
-  indexes=[
-    {'columns': ['operator_id', 'code', 'incremental_date'], 'unique': true}
-  ],
-  tags=['aggregated', 'fraud', grain, perim, direction, 'daily']
-) }}
-
-WITH filtered_carpools AS (
-  {{ filtered_carpools(perim, lookback_nb=lb.nb, lookback_unit=lb.unit, with_valid=false, strict=true) }}
-)
-
-{% if direction == 'from' %}
-
-  SELECT
-    operator_id,
-    operator_name,
-    start_code AS code,
-    {{ incremental_columns('carpool_datetime', grain) }},
-    {{ fraud_agg_columns(with_incentives=with_incentives) }}
-  FROM filtered_carpools
-  WHERE start_code IS NOT NULL
-  GROUP BY 1, 2, 3, {{ group_by_grain(grain, 4) }}
-
-{% elif direction == 'to' %}
-
-  SELECT
-    operator_id,
-    operator_name,
-    end_code AS code,
-    {{ incremental_columns('carpool_datetime', grain) }},
-    {{ fraud_agg_columns(with_incentives=with_incentives) }}
-  FROM filtered_carpools
-  WHERE end_code IS NOT NULL
-  GROUP BY 1, 2, 3, {{ group_by_grain(grain, 4) }}
-
-{% elif direction == 'both' %}
-  , exploded AS (
-    SELECT *, start_code AS code
-    FROM filtered_carpools
-    WHERE start_code IS NOT NULL
-    UNION ALL
-    SELECT *, end_code AS code
-    FROM filtered_carpools
-    WHERE end_code IS NOT NULL
-    AND NOT is_intra
-  )
-  SELECT
-    operator_id,
-    operator_name,
-    code,
-    {{ incremental_columns('carpool_datetime', grain) }},
-    {{ fraud_agg_columns(with_incentives=with_incentives) }}
-  FROM exploded
-  WHERE code IS NOT NULL
-  GROUP BY 1, 2, 3, {{ group_by_grain(grain, 4) }}
-{% endif %}
-{% endif %}
+  {{ perimeter_model(
+    'fraud', perim, grain, direction,
+    columns=fraud_agg_columns(with_incentives=with_incentives),
+    keys=['operator_id', 'operator_name'],
+    key_ids=['operator_id'],
+    filtered_args={'with_valid': false, 'strict': true},
+    on_schema_change='append_new_columns'
+  ) }}
 {% endmacro %}
