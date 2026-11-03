@@ -31,6 +31,12 @@ SELECT * FROM {{ ref('location_' ~ grain ~ '_plm') }}
   tags=['aggregated', 'location', grain, perim, 'daily']
 ) }}
 
+{% if grain in ['quarter', 'semester', 'year'] %}
+
+{{ rollup_model(ref('location_month_' ~ perim), grain, ['territory', 'hex_z8']) }}
+
+{% else %}
+
 {% set plm_filter = "IN ('75056', '69123', '13055')" if perim == 'plm' else '' %}
 
 WITH filtered_carpools AS (
@@ -66,5 +72,6 @@ SELECT
 FROM exploded
 GROUP BY 1, {{ group_by_grain(grain, 2) }}, hex_z8
 
+{% endif %}
 {% endif %}
 {% endmacro %}

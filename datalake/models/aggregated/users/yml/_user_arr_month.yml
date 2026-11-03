@@ -1,0 +1,22 @@
+version: 2
+models:
+  - name: user_arr_month
+    description: >
+      Présence mensuelle des utilisateurs par arrondissement et côté du trajet. Source
+      des unique_drivers / unique_passengers des grains longs de territory_*.
+    columns:
+      - name: arr
+        data_type: character varying
+      - name: user_id
+        data_type: text
+      - name: role
+        data_type: text
+      - name: side
+        data_type: text
+        description: Côté du trajet (start / end), pour les directions from / to.
+      - name: incremental_date
+        data_type: date
+      - name: year
+        data_type: integer
+      - name: month
+        data_type: integer
