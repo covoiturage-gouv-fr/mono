@@ -1,6 +1,6 @@
 import { assertEquals } from "dep:assert";
 import { describe, it } from "dep:testing-bdd";
-import { NotFoundException, UnexpectedException } from "@/ilos/common/index.ts";
+import { NotFoundException, UnexpectedException, UnprocessableRequestException } from "@/ilos/common/index.ts";
 import { formatRouteError, violationMessages } from "./formatRouteError.ts";
 
 describe("formatRouteError", () => {
@@ -77,6 +77,47 @@ describe("formatRouteError", () => {
     assertEquals(formatRouteError(err, true), {
       status: 400,
       body: { jsonrpc: "2.0", id: 1, error: { code: -32602, message: "Invalid params", data: undefined } },
+    });
+  });
+
+  it("relaie le motif de refus d'un trajet (422 JSON-RPC)", () => {
+    const data = {
+      terms_violation_labels: ["too_many_trips_by_day"],
+      terms_violation_error_details: [
+        { label: "too_many_trips_by_day", metas: { driver: 5, passenger: 1, limit: 4 } },
+      ],
+    };
+    const err = new UnprocessableRequestException(data);
+    assertEquals(formatRouteError(err, true), {
+      status: 422,
+      body: { jsonrpc: "2.0", id: 1, error: { code: -32422, message: "Unprocessable Request", data } },
+    });
+  });
+
+  it("ne relaie que les champs du motif de refus", () => {
+    const err = new UnprocessableRequestException({ terms_violation_labels: ["expired"], driver: { phone: "+33" } });
+    assertEquals(formatRouteError(err, true).body, {
+      jsonrpc: "2.0",
+      id: 1,
+      error: { code: -32422, message: "Unprocessable Request", data: { terms_violation_labels: ["expired"] } },
+    });
+  });
+
+  it("ne relaie que label et les compteurs de metas dans les détails du refus", () => {
+    const data = violationMessages({
+      terms_violation_labels: ["too_many_trips_by_day"],
+      terms_violation_error_details: [
+        { label: "too_many_trips_by_day", metas: { driver: 5, passenger: 1, limit: 4, phone: "+33" }, phone: "+33" },
+        { label: "expired", identity_key: "abc" },
+        { metas: { driver: 1 } },
+      ],
+    });
+    assertEquals(data, {
+      terms_violation_labels: ["too_many_trips_by_day"],
+      terms_violation_error_details: [
+        { label: "too_many_trips_by_day", metas: { driver: 5, passenger: 1, limit: 4 } },
+        { label: "expired" },
+      ],
     });
   });
 

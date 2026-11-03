@@ -52,8 +52,6 @@ fileignoreconfig:
     ignore_detectors: [filecontent]
   - filename: api/src/ilos/connection-postgres/DenoPostgresConnection.ts
     allowed_patterns: [username, password]
-  - filename: dbt/models/export/dbt_trips.sql
-    checksum: 484baa24d66833f4c2ee45a86e7e62c8a677e519a8b5ef6a40b13185721804f2
   - filename: api/src/pdc/providers/migration/*Migrator.ts
     allowed_patterns: [pass]
   - filename: api/e2e/lib/API.ts

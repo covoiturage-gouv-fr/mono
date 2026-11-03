@@ -32,7 +32,7 @@ models:
         description: >
           Nombre de trajets avec une incitation versée par une autre aom que celle du
           territoire (les incitations epci ne sont pas comptées ici, cf.
-          territory_collectivite_siret_filter). Non exclusif avec carpools_with_aom_incentive :
+          aom_financials_model). Non exclusif avec carpools_with_aom_incentive :
           voir sa description pour le détail du chevauchement.
       - name: carpools_with_other_incentive
         data_type: bigint

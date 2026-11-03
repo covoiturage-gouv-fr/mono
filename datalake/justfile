@@ -117,19 +117,32 @@ analyze-sources:
 # le pic mémoire (sinon work_mem × workers parallèles × threads → OOM, backend tué =
 # « SSL SYSCALL error: EOF »). synchronous_commit=off : sans risque pour un backfill
 # rejouable. DBT_THREADS surchargeable (défaut 3 : concurrence sûre une fois bornée).
+# Une tranche en échec n'arrête pas la boucle (un incident ponctuel ne perd pas la nuit),
+# mais la recette sort en erreur en listant les tranches à relancer.
+# Grains quarter/semester/year : tranches annuelles seulement. Une tranche plus courte
+# remplace la ligne de la période par le seul morceau calculé (delete+insert par clé).
 backfill-batch model period start end *args:
   #!/usr/bin/env bash
+  set -euo pipefail
   current="{{ start }}"
   period="{{ period }}"
+  failed=()
   export PGOPTIONS="${PGOPTIONS:--c work_mem=96MB -c max_parallel_workers_per_gather=1 -c synchronous_commit=off}"
   export DBT_THREADS="${DBT_THREADS:-3}"
   while [[ "$current" < "{{ end }}" ]]; do
     next=$(date -d "$current +1 $period" +%Y-%m-%d)
     echo "▶️  Processing $current → $next"
-    vars="{start: $current, end: $next}"
-    dbt run --profiles-dir profiles --select {{model}} --vars "{start: \"$current\", end: \"$next\"}" {{ args }}
+    dbt run --profiles-dir profiles --select {{model}} --vars "{start: \"$current\", end: \"$next\"}" {{ args }} \
+      || failed+=("$current")
     current=$next
   done
+  if (( ${#failed[@]} )); then
+    echo "❌ ${#failed[@]} tranche(s) $period en échec, à relancer :" >&2
+    for f in "${failed[@]}"; do
+      echo "   just backfill-batch \"{{ model }}\" $period $f $(date -d "$f +1 $period" +%Y-%m-%d) {{ args }}" >&2
+    done
+    exit 1
+  fi
 
 # Backfill historique complet : module `backfill` (voir backfill.justfile) => `just backfill …`
 # (`just backfill all`, `backfill trusted`, `backfill aggregated`, `backfill exposed`).
