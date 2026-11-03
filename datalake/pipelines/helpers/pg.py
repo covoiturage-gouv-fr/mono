@@ -4,6 +4,10 @@ import re
 from typing import Optional
 
 import psycopg
+import pyarrow as pa
+import pyarrow.compute
+import pyarrow.csv
+import pyarrow.parquet as pq
 
 # Types Postgres autorisés dans le DDL de seed. Le champ `type` de la config n'est pas
 # paramétrable en SQL (il est interpolé brut) : cette allowlist est le seul rempart contre
@@ -112,4 +116,42 @@ def _load_csv_transform(conn, schema: str, table: str, path: str, select: list) 
     drop_table(conn, schema, table)
     conn.execute(f"CREATE TABLE {_qualified(schema, table)} AS SELECT {proj} FROM {_ident(staging)}")
     conn.execute(f"DROP TABLE {_ident(staging)}")
+    return count_rows(conn, schema, table)
+
+
+def _null_empty_strings(batch):
+    """Aligne la sémantique NULL du Parquet sur celle du CSV (FORCE_NULL/NULLIF)"""
+    arrays = [
+        pyarrow.compute.if_else(pyarrow.compute.equal(col, ""), pa.scalar(None, type=field.type), col)
+        if pa.types.is_string(field.type) or pa.types.is_large_string(field.type) else col
+        for field, col in zip(batch.schema, batch.columns)
+    ]
+    return pa.RecordBatch.from_arrays(arrays, schema=batch.schema)
+
+
+def load_parquet(conn, schema: str, table: str, path: str,
+                  columns: Optional[list] = None, select: Optional[list] = None) -> int:
+    """Charge un Parquet via COPY natif Postgres
+    `columns` = [[nom, type], ...] (colonnes reprises telles quelles) ;
+    `select` = [[source, type, cible], ...] (sous-ensemble/renommage). 
+    Réencodage en CSV par lot - plus efficace que write_row()"""
+    cols = [(src, typ, tgt) for src, typ, tgt in select] if select else [(n, t, n) for n, t in columns]
+    coldefs = ", ".join(f"{_ident(tgt)} {_check_type(typ)}" for _, typ, tgt in cols)
+    collist = ", ".join(_ident(tgt) for _, _, tgt in cols)
+    src_names = [src for src, _, _ in cols]
+
+    drop_table(conn, schema, table)
+    conn.execute(f"CREATE TABLE {_qualified(schema, table)} ({coldefs})")
+
+    pf = pq.ParquetFile(path)
+    write_options = pyarrow.csv.WriteOptions(include_header=False)
+    with conn.cursor() as cur, cur.copy(
+        f"COPY {_qualified(schema, table)} ({collist}) FROM STDIN WITH (FORMAT csv)"
+    ) as cp:
+        for batch in pf.iter_batches(columns=src_names):
+            batch = _null_empty_strings(batch.select(src_names))
+            buf = pa.BufferOutputStream()
+            pyarrow.csv.write_csv(batch, buf, write_options=write_options)
+            cp.write(buf.getvalue().to_pybytes())
+
     return count_rows(conn, schema, table)
