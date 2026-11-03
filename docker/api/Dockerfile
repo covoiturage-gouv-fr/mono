@@ -14,7 +14,7 @@ ARG DENO_VERSION
 ENV DENO_VERSION=${DENO_VERSION}
 COPY --from=bin /deno /usr/bin/deno
 
-RUN apt update && apt install -y p7zip bash curl
+RUN apt update && apt install -y bash curl
 
 # Install just from a specific version
 RUN mkdir -p /usr/local/bin

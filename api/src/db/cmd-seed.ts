@@ -9,6 +9,6 @@ import { LegacyMigrator } from "../pdc/providers/migration/LegacyMigrator.ts";
  */
 const migrator = new LegacyMigrator(env_or_fail("APP_POSTGRES_URL"), false);
 await migrator.up();
-await migrator.migrate({ skip: false, flash: false });
+await migrator.migrate({ skip: false });
 await migrator.seed();
 await migrator.down();
