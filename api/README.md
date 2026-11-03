@@ -114,8 +114,6 @@ Commandes principales :
 | --- | --- |
 | `just api http $PORT` | Démarrer le serveur HTTP |
 | `just api export:create` | Créer une demande d'export |
-| `just api export:process` | Traiter les exports en attente |
-| `just api export:datagouv` | Exporter et uploader sur data.gouv.fr |
 | `just api campaign:apply` | Appliquer les règles de campagne |
 | `just api campaign:finalize` | Finaliser les règles stateful |
 | `just api campaign:sync` | Synchroniser les sommes d'incitation |

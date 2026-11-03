@@ -74,14 +74,6 @@ services:
       APP_CEE_PRIVATE_KEY_PATH: ${APP_CEE_PRIVATE_KEY_PATH:-/app/certs/privateKey.pem}
       APP_CEE_PUBLIC_KEY_PATH: ${APP_CEE_PUBLIC_KEY_PATH:-/app/certs/publicKey.pem}
 
-      # Datagouv API
-      APP_DATAGOUV_ENABLED: ${APP_DATAGOUV_ENABLED:-false}
-      APP_DATAGOUV_UPLOAD: ${APP_DATAGOUV_UPLOAD:-false}
-      APP_DATAGOUV_KEY: ${APP_DATAGOUV_KEY:-}
-      APP_DATAGOUV_ORG: ${APP_DATAGOUV_ORG:-61937d50e54eade2bbf8e8df}
-      APP_DATAGOUV_DATASET: ${APP_DATAGOUV_DATASET:-5e8ee97c16601da4ee24ffb7}
-      APP_DATAGOUV_URL: ${APP_DATAGOUV_URL:-https://www.data.gouv.fr/api/1/}
-
       # INSEE API
       APP_INSEE_API_KEY: ${APP_INSEE_API_KEY:-}
 
