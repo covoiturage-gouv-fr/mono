@@ -5,7 +5,6 @@ import { Options as ParseOptions, parse } from "dep:csv-parse";
 import { add as addDate } from "dep:date-fns";
 import { createReadStream } from "dep:fs";
 import { URL } from "dep:url";
-import { FlashDBData } from "./FlashDBData.ts";
 import { migrateSQL } from "./migrations.ts";
 import { Carpool, carpoolsV2 } from "./seeds/carpools.ts";
 import { companies, Company } from "./seeds/companies.ts";
@@ -18,12 +17,7 @@ const log = taggedLogger("[migrator]", { maxLength: 512 });
 export type MigratorMigrateParams = {
   path: string;
   skip: boolean;
-  flash: boolean;
   verbose: boolean;
-  cache: {
-    url: string;
-    sha: string;
-  };
 };
 
 /**
@@ -95,10 +89,9 @@ export class LegacyMigrator {
   }
 
   async migrate(params: Partial<MigratorMigrateParams> = {}) {
-    const { path, skip, flash, verbose, cache } = {
+    const { path, skip, verbose } = {
       path: join(basePath(), "db", "migrations"),
       skip: false,
-      flash: true,
       verbose: true,
       ...params,
     };
@@ -110,21 +103,6 @@ export class LegacyMigrator {
 
     verbose && log.info("migrate database schema");
     await migrateSQL(this.currentConnectionString, path, verbose);
-
-    if (flash) {
-      if (!cache) {
-        throw new Error("[migrator] cache configuration is required to flash data");
-      }
-
-      verbose && log.info("flash data");
-      const flash = new FlashDBData({
-        connectionString: this.currentConnectionString,
-        cache,
-        verbose,
-      });
-
-      await flash.missing() && await flash.exec();
-    }
   }
 
   async seed() {

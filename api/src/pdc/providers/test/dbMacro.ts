@@ -51,7 +51,7 @@ export function makeLegacyDbBeforeAfter(cfg?: Config): LegacyDbBeforeAfter {
       const connectionString = cfg?.connectionString || env_or_fail("APP_POSTGRES_URL");
       const db = new LegacyMigrator(connectionString);
       await db.create();
-      await db.migrate({ flash: false, verbose: false });
+      await db.migrate({ verbose: false });
       await db.seed();
 
       return { db, connection: db.testConn };
@@ -93,7 +93,7 @@ export function makeDenoDbBeforeAfter(cfg?: Config): DenoDbBeforeAfter {
       const connectionString = cfg?.connectionString || env_or_fail("APP_POSTGRES_URL");
       const mig = new DenoMigrator(connectionString);
       await mig.create();
-      await mig.migrate({ flash: false, verbose: false });
+      await mig.migrate({ verbose: false });
       await mig.seed();
 
       return { db: mig, connection: mig.testConn };

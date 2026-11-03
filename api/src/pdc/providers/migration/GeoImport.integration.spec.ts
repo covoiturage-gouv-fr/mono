@@ -43,7 +43,7 @@ describe("geo import", () => {
   beforeAll(async () => {
     await mig.create();
     await mig.up();
-    await mig.migrate({ flash: false, verbose: false });
+    await mig.migrate({ verbose: false });
     await mig.seed();
     await mig.testConn.query(sql`CREATE TABLE public.seeded_perimeters AS SELECT * FROM geo.perimeters`);
     await mig.testConn.query(sql`

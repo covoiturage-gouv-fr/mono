@@ -20,7 +20,6 @@
     "dep:redis": "npm:ioredis@^5.3",
     "dep:pg": "npm:pg@^8.12", // migrate to DenoPostgresConnection
     "dep:express": "npm:express@^4.22.3",
-    "dep:node-7z": "npm:node-7z@^3.0",
     "dep:excel": "npm:exceljs@^4.4",
     "dep:ajverrors": "npm:ajv-errors@^3",
     "dep:ajvformats": "npm:ajv-formats@^3",

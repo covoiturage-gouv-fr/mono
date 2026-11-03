@@ -9,7 +9,7 @@ describe("seed", () => {
   beforeAll(async () => {
     await mig.create();
     await mig.up();
-    await mig.migrate({ flash: false, verbose: false });
+    await mig.migrate({ verbose: false });
     await mig.seed();
   });
 
