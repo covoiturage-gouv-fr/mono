@@ -123,6 +123,10 @@ export class LegacyMigrator {
       this.verbose && log.debug("seed operator", { name: operator.name });
       await this.seedOperator(operator);
     }
+    // explicit _id leaves the sequence behind: the next INSERT would collide
+    await this.testConn.getClient().query(
+      `SELECT setval('operator.operators__id_seq', (SELECT max(_id) FROM operator.operators))`,
+    );
 
     let seededUsers = 0;
     for (const user of users) {
@@ -148,7 +152,7 @@ export class LegacyMigrator {
     const filepath = join(new URL(".", import.meta.url).pathname, filename);
     const parser = createReadStream(filepath).pipe(
       parse({
-        cast: (v: any) => (v === "" ? null : v),
+        cast: (v: string) => (v === "" ? null : v),
         ...options,
       }),
     );
@@ -468,7 +472,7 @@ export class LegacyMigrator {
       "company_id",
     ];
 
-    const values: any[] = [
+    const values: unknown[] = [
       territory_group._id,
       territory_group.name,
       "",
@@ -479,7 +483,7 @@ export class LegacyMigrator {
     const query = {
       text: `
         INSERT INTO territory.territory_group (${fields.join(",")})
-        VALUES (${fields.map((data, ind) => `$${ind + 1}`).join(",")})
+        VALUES (${fields.map((_, ind) => `$${ind + 1}`).join(",")})
         RETURNING *
       `,
       values,
