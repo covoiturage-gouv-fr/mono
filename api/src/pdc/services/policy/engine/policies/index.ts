@@ -55,6 +55,7 @@ import { MontluconCommunaute2026 } from "./20260101_Montlucon_2026.ts";
 import { Occitanie20262027 } from "./20260101_Occitanie.ts";
 import { PMGF2026 } from "./20260101_PMGF.ts";
 import { CCSPSL2026 } from "./20260301_CCSPSL_2026.ts";
+import { PMGFxSM4CC2026 } from "./20261101_PMGFxSM4CC_2026.ts";
 import { EcovIDFM2026 } from "./20250428_ECOV_IDFM.ts";
 
 export const policies: Map<string, PolicyHandlerStaticInterface> = new Map(
@@ -101,6 +102,7 @@ export const policies: Map<string, PolicyHandlerStaticInterface> = new Map(
     PMGFxATMB2024,
     PMGFxATMB2025,
     PMGFxATMBxSM4CCx2025,
+    PMGFxSM4CC2026,
     PaysBasque20232024,
     PaysBasque2025,
     PaysDeLaLoire2021,
