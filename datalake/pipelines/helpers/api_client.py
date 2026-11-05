@@ -1,8 +1,8 @@
 """HTTP client for the export control plane.
 
 Talks to the API's authenticated endpoints (claim/complete/fail). Fetches a
-Bearer token via `POST /auth/access_token` and retries on 5xx / connection
-errors with exponential backoff.
+Bearer token via `POST /auth/access_token`, renews it once on 401, retries on
+5xx / connection errors with exponential backoff and raises on other 4xx.
 
 Response envelope: these endpoints are registered via `apiRoute` without
 `rpcAnswerOnSuccess`, so the API returns the raw action result JSON directly
@@ -39,7 +39,16 @@ class ApiClient:
     def _headers(self):
         return {"Authorization": f"Bearer {self._auth()}"}
 
-    def _post(self, path, body, retries=3):
+    def _post(self, path, body):
+        r = self._post_with_retries(path, body)
+        if r.status_code == 401:
+            # Dex tokens are short-lived (5 min): renew and replay once
+            self._token = None
+            r = self._post_with_retries(path, body)
+        r.raise_for_status()
+        return r
+
+    def _post_with_retries(self, path, body, retries=3):
         for attempt in range(retries):
             try:
                 r = requests.post(
