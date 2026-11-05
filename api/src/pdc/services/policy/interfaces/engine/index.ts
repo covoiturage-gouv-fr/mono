@@ -74,4 +74,5 @@ export interface CarpoolInterface {
   end: TerritoryCodeInterface;
   end_lat: number;
   end_lon: number;
+  operator_incentives?: Array<{ siret: string; amount: number }>;
 }
