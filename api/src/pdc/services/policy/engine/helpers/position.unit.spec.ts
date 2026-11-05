@@ -54,3 +54,12 @@ it("should return true if ends in list", async () => {
   const res = endsAt(ctx, { epci: ["200056232"] });
   assertEquals(res, true);
 });
+
+it("should return false if a position has no territory", () => {
+  const ctx = setup(
+    { aom: "217500016", com: "91471", reg: "11", epci: "200056232" },
+    null as unknown as TerritoryCodeInterface,
+  );
+  assertEquals(endsAt(ctx, { aom: ["217500016"] }), false);
+  assertEquals(startsAt(ctx, { aom: ["217500016"] }), true);
+});

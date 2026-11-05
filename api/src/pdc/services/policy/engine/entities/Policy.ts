@@ -17,6 +17,7 @@ import {
 } from "../../interfaces/index.ts";
 import { NotEligibleTargetException } from "../exceptions/NotEligibleTargetException.ts";
 import { UnknownHandlerException } from "../exceptions/UnknownHandlerException.ts";
+import { UnknownTerritoryException } from "../exceptions/UnknownTerritoryException.ts";
 import { findVersionAt } from "@/pdc/services/territory/helpers/perimeters.ts";
 import { TerritoryPerimeterInterface } from "@/pdc/services/territory/contracts/common/interfaces/TerritoryPerimeterInterface.ts";
 import { isSelected } from "../helpers/index.ts";
@@ -97,6 +98,10 @@ export class Policy implements PolicyInterface {
     );
     context.policy_territory_selector = this.territory_selector;
     if (this.guard(carpool)) {
+      // an end without territory (e.g. obsolete INSEE code) cannot be checked against exclusion rules
+      if (!carpool.start || !carpool.end) {
+        throw new UnknownTerritoryException();
+      }
       try {
         this.handler.processStateless(context);
       } catch (e) {
@@ -104,11 +109,6 @@ export class Policy implements PolicyInterface {
           context.incentive.set(0);
           return context.incentive;
         }
-        log.error("process stateless failed", {
-          operator_id: carpool.operator_id,
-          operator_journey_id: carpool.operator_journey_id,
-          error: errorCode(e),
-        });
         throw e;
       }
     }

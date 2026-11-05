@@ -1,12 +1,18 @@
+import { assertRejects } from "dep:assert";
 import { it } from "dep:testing-bdd";
+import { PolicyStatusEnum } from "../../contracts/common/interfaces/PolicyInterface.ts";
 import {
+  CarpoolInterface,
   PolicyHandlerInterface,
   PolicyHandlerParamsInterface,
   StatefulContextInterface,
   StatelessContextInterface,
 } from "../../interfaces/index.ts";
 import { applyLimitOnStatefulStage, isOperatorClassOrThrow, perKm, watchForGlobalMaxAmount } from "../helpers/index.ts";
+import { UnknownTerritoryException } from "../exceptions/UnknownTerritoryException.ts";
+import { generateCarpool } from "../tests/helpers.ts";
 import { process } from "../tests/macro.ts";
+import { Policy } from "./Policy.ts";
 
 class TestHandler implements PolicyHandlerInterface {
   async load(): Promise<void> {
@@ -266,3 +272,20 @@ it(
       },
     ),
 );
+
+it("should refuse a carpool with an unknown territory", async () => {
+  const policy = new Policy(
+    1,
+    1,
+    { aom: ["217500016"] },
+    "test",
+    new Date("2019-01-01"),
+    new Date("2019-12-31"),
+    "Europe/Paris",
+    new TestHandler(),
+    PolicyStatusEnum.ACTIVE,
+    0,
+  );
+  const carpool = generateCarpool({ end: null as unknown as CarpoolInterface["end"] });
+  await assertRejects(() => policy.processStateless(carpool), UnknownTerritoryException);
+});
