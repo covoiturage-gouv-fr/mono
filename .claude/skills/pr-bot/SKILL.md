@@ -136,8 +136,11 @@ Red CI (rare, each PR was green on the batch): find the guilty PR from the faili
 
 ## 6. Merge into `$BASE`
 
-Green CI + user go -> `pass-env gh pr merge <n> --squash --delete-branch`. Ruleset refuses
-(review required) -> give the PR URL, the user merges in **squash**, wait for it.
+Green CI + user go ->
+`pass-env gh pr merge <n> --squash --delete-branch --subject "<title> (#<n>)"`. Without
+`--subject`, a squash of several commits takes the first commit's title (`build(deps): …`), which
+cuts no release. Ruleset refuses (review required) -> give the PR URL, the user merges in
+**squash** and keeps the PR title as the commit title, wait for it.
 
 ## 7. `main` -> `next` (`main` batch only)
 

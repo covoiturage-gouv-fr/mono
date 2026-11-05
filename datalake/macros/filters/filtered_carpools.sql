@@ -150,10 +150,7 @@ INNER JOIN (
 
 {% if perim == 'plm' %}
 WITH plm_perim AS (
-  SELECT DISTINCT arr, com
-  FROM {{ ref('perimeters') }}
-  WHERE com IS NOT NULL AND arr <> com
-  UNION VALUES ('75056','75056'), ('69123','69123'), ('13055','13055')
+  {{ plm_perim() }}
 )
 SELECT
 {% else %}
