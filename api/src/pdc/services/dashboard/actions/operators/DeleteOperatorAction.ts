@@ -1,6 +1,7 @@
 import { handler } from "@/ilos/common/index.ts";
 import { Action as AbstractAction } from "@/ilos/core/index.ts";
 import { copyGroupIdAndApplyGroupPermissionMiddlewares } from "@/pdc/providers/middleware/helpers.ts";
+import { DexClient } from "@/pdc/services/auth/providers/DexClient.ts";
 import { DeleteOperator } from "@/pdc/services/dashboard/dto/Operators.ts";
 import { OperatorsRepositoryInterfaceResolver } from "@/pdc/services/dashboard/interfaces/OperatorsRepositoryInterface.ts";
 export type ResultInterface = {
@@ -25,11 +26,13 @@ export type ResultInterface = {
   },
 })
 export class DeleteOperatorAction extends AbstractAction {
-  constructor(private repository: OperatorsRepositoryInterfaceResolver) {
+  constructor(private repository: OperatorsRepositoryInterfaceResolver, private dexClient: DexClient) {
     super();
   }
 
   public override async handle(params: DeleteOperator): Promise<ResultInterface> {
+    // Soft delete keeps the row: the operator's API keys must go explicitly
+    await this.dexClient.deleteAllByOperator(params.id);
     return this.repository.deleteOperator(params);
   }
 }

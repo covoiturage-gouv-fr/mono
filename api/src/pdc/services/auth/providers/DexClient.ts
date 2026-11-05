@@ -10,12 +10,16 @@ import {
   DexClientDeleteResult,
   DexClientReadResult,
 } from "../dto/Credentials.ts";
+import { RevokedCredentialsRepository } from "./RevokedCredentialsRepository.ts";
 
 @provider()
 export class DexClient implements InitHookInterface {
   #client: (GrpcClient & Dex) | undefined;
 
-  constructor(protected config: ConfigInterfaceResolver) {}
+  constructor(
+    protected config: ConfigInterfaceResolver,
+    protected revoked: RevokedCredentialsRepository,
+  ) {}
 
   async init(): Promise<void> {
     await this.getClient();
@@ -76,6 +80,20 @@ export class DexClient implements InitHookInterface {
       throw new NotFoundException(`[DexClient] Token with id ${token_id} not found for operator ${operator_id}`);
     }
 
-    await (await this.getClient()).DeletePassword({ email: token_id });
+    await this.revokeAndDelete([token_id]);
+  }
+
+  async deleteAllByOperator(operator_id: number): Promise<void> {
+    const tokens = await this.readByOperator(operator_id);
+    await this.revokeAndDelete(tokens.flatMap((t) => t.token_id ? [t.token_id] : []));
+  }
+
+  // Revoke first: if Dex fails, issued tokens are already refused
+  protected async revokeAndDelete(tokenIds: string[]): Promise<void> {
+    await this.revoked.revoke(tokenIds);
+    const client = await this.getClient();
+    for (const email of tokenIds) {
+      await client.DeletePassword({ email });
+    }
   }
 }

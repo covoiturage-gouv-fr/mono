@@ -1,5 +1,6 @@
 import { ConfigInterfaceResolver, InitHookInterface, provider, UnauthorizedException } from "@/ilos/common/index.ts";
 import { taggedLogger } from "@/lib/logger/tagged.ts";
+import { RevokedCredentialsRepository } from "@/pdc/services/auth/providers/RevokedCredentialsRepository.ts";
 import { encodeBase64 } from "dep:encoding";
 import { createRemoteJWKSet, errors, jwtVerify } from "dep:jose";
 
@@ -44,7 +45,10 @@ export function parseTokenSubject(name: string | undefined): { role: string; ope
 export class DexOIDCProvider implements InitHookInterface {
   protected JWKS: ReturnType<typeof createRemoteJWKSet> | undefined;
 
-  constructor(protected config: ConfigInterfaceResolver) {}
+  constructor(
+    protected config: ConfigInterfaceResolver,
+    protected revoked: RevokedCredentialsRepository,
+  ) {}
 
   async init(): Promise<void> {
     this.getJWKS();
@@ -69,6 +73,10 @@ export class DexOIDCProvider implements InitHookInterface {
       });
 
       const { role, operator_id } = parseTokenSubject(payload.name);
+      // Redis down rejects the call (500) rather than letting a revoked key through
+      if (await this.revoked.isRevoked(payload.email)) {
+        throw new UnauthorizedException("Revoked credentials");
+      }
 
       return {
         operator_id,
