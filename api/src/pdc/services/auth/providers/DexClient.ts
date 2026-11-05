@@ -94,6 +94,7 @@ export class DexClient implements InitHookInterface {
     const client = await this.getClient();
     for (const email of tokenIds) {
       await client.DeletePassword({ email });
+      await this.revoked.expire([email]);
     }
   }
 }

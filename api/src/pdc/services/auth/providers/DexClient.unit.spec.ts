@@ -15,6 +15,9 @@ function setup(passwords: { email: string; username: string }[], failDelete = fa
     revoke: async (ids: string[]) => {
       calls.push(`revoke:${ids.join(",")}`);
     },
+    expire: async (ids: string[]) => {
+      calls.push(`expire:${ids.join(",")}`);
+    },
   };
   class TestDexClient extends DexClient {
     // deno-lint-ignore no-explicit-any
@@ -33,19 +36,19 @@ const passwords = [
 ];
 
 describe("DexClient", () => {
-  it("revokes a key before deleting it", async () => {
+  it("revokes a key before deleting it, expires the mark after", async () => {
     const { calls, client } = setup(passwords);
     await client.deleteByOperator(7, "k2");
-    assertEquals(calls, ["revoke:k2", "delete:k2"]);
+    assertEquals(calls, ["revoke:k2", "delete:k2", "expire:k2"]);
   });
 
   it("deletes every key of an operator, and only those", async () => {
     const { calls, client } = setup(passwords);
     await client.deleteAllByOperator(7);
-    assertEquals(calls, ["revoke:k1,k2", "delete:k1", "delete:k2"]);
+    assertEquals(calls, ["revoke:k1,k2", "delete:k1", "expire:k1", "delete:k2", "expire:k2"]);
   });
 
-  it("keeps the revocation when Dex fails", async () => {
+  it("keeps a permanent revocation when Dex fails", async () => {
     const { calls, client } = setup(passwords, true);
     await assertRejects(() => client.deleteAllByOperator(7), Error, "dex down");
     assertEquals(calls, ["revoke:k1,k2"]);

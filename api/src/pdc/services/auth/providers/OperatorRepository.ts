@@ -8,11 +8,14 @@ export class OperatorRepository {
 
   constructor(protected denoConnection: DenoPostgresConnection) {}
 
-  async exists(operator_id: number): Promise<boolean> {
+  // Soft-deleted operators still exist: their leftover keys must stay readable and deletable
+  async exists(operator_id: number, { active = false } = {}): Promise<boolean> {
     if (!operator_id) return false;
 
     const rows = await this.denoConnection.query<{ _id: number }>(sql`
-      SELECT _id FROM ${raw(this.table)} WHERE _id = ${operator_id} AND deleted_at IS NULL LIMIT 1
+      SELECT _id FROM ${raw(this.table)}
+      WHERE _id = ${operator_id} ${active ? sql`AND deleted_at IS NULL` : sql``}
+      LIMIT 1
     `);
 
     return rows.length > 0;

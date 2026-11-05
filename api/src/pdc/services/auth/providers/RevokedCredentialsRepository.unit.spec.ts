@@ -2,17 +2,21 @@ import { assertEquals, assertRejects } from "dep:assert";
 import { describe, it } from "dep:testing-bdd";
 import { REVOCATION_TTL_SECONDS, RevokedCredentialsRepository } from "./RevokedCredentialsRepository.ts";
 
+// key -> TTL in seconds, null = no expiry
 function fakeRedis(execResult: [Error | null, unknown][] | null = []) {
-  const store = new Map<string, number>();
+  const store = new Map<string, number | null>();
   const client = {
     multi() {
-      const queued: [string, number][] = [];
+      const queued: (() => void)[] = [];
       return {
-        set(key: string, _v: string, _ex: string, ttl: number) {
-          queued.push([key, ttl]);
+        set(key: string) {
+          queued.push(() => store.set(key, null));
+        },
+        expire(key: string, ttl: number) {
+          queued.push(() => store.has(key) && store.set(key, ttl));
         },
         async exec() {
-          for (const [k, ttl] of queued) store.set(k, ttl);
+          queued.forEach((run) => run());
           return execResult;
         },
       };
@@ -21,33 +25,32 @@ function fakeRedis(execResult: [Error | null, unknown][] | null = []) {
       return store.has(key) ? 1 : 0;
     },
   };
-  return { store, connection: { getClient: () => client } };
+  // deno-lint-ignore no-explicit-any
+  return { store, repo: new RevokedCredentialsRepository({ getClient: () => client } as any) };
 }
 
 describe("RevokedCredentialsRepository", () => {
-  it("marks revoked keys with a TTL and reports them", async () => {
-    const { store, connection } = fakeRedis();
-    // deno-lint-ignore no-explicit-any
-    const repo = new RevokedCredentialsRepository(connection as any);
+  it("marks revoked keys without expiry, then expires them", async () => {
+    const { store, repo } = fakeRedis();
 
     await repo.revoke(["a", "b"]);
-
-    assertEquals(store.get("auth:revoked:a"), REVOCATION_TTL_SECONDS);
+    assertEquals(store.get("auth:revoked:a"), null);
     assertEquals(await repo.isRevoked("b"), true);
     assertEquals(await repo.isRevoked("c"), false);
+
+    await repo.expire(["a"]);
+    assertEquals(store.get("auth:revoked:a"), REVOCATION_TTL_SECONDS);
+    assertEquals(store.get("auth:revoked:b"), null);
   });
 
   it("does nothing on an empty list", async () => {
-    const { store, connection } = fakeRedis();
-    // deno-lint-ignore no-explicit-any
-    await new RevokedCredentialsRepository(connection as any).revoke([]);
+    const { store, repo } = fakeRedis();
+    await repo.revoke([]);
     assertEquals(store.size, 0);
   });
 
   it("throws when Redis rejects a command", async () => {
-    const { connection } = fakeRedis([[new Error("OOM"), null]]);
-    // deno-lint-ignore no-explicit-any
-    const repo = new RevokedCredentialsRepository(connection as any);
+    const { repo } = fakeRedis([[new Error("OOM"), null]]);
     await assertRejects(() => repo.revoke(["a"]), Error, "OOM");
   });
 });

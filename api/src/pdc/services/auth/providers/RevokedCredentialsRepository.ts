@@ -2,8 +2,11 @@ import { provider } from "@/ilos/common/index.ts";
 import { RedisConnection } from "@/ilos/connection-redis/index.ts";
 
 // Must outlive Dex `expiry.idTokens` (5 min, infra cluster/extensions/dex/*/config.yaml).
+// DexOIDCProvider refuses older tokens, so the mark always outlives them.
 export const REVOCATION_TTL_SECONDS = 600;
 const KEY_PREFIX = "auth:revoked:";
+
+type Transaction = ReturnType<ReturnType<RedisConnection["getClient"]>["multi"]>;
 
 /**
  * Deleted access keys, kept until every token they issued has expired:
@@ -13,18 +16,28 @@ const KEY_PREFIX = "auth:revoked:";
 export class RevokedCredentialsRepository {
   constructor(private redis: RedisConnection) {}
 
+  // No TTL until the key is gone from Dex: a failed delete must not expire the mark
   async revoke(tokenIds: string[]): Promise<void> {
-    if (!tokenIds.length) return;
-    const tx = this.redis.getClient().multi();
-    for (const id of tokenIds) {
-      tx.set(`${KEY_PREFIX}${id}`, "1", "EX", REVOCATION_TTL_SECONDS);
-    }
-    // exec() reports per-command failures in its result instead of rejecting
-    const failed = (await tx.exec())?.find(([err]) => err);
-    if (failed) throw failed[0];
+    await this.exec(tokenIds, (tx, key) => tx.set(key, "1"));
+  }
+
+  async expire(tokenIds: string[]): Promise<void> {
+    await this.exec(tokenIds, (tx, key) => tx.expire(key, REVOCATION_TTL_SECONDS));
   }
 
   async isRevoked(tokenId: string): Promise<boolean> {
     return (await this.redis.getClient().exists(`${KEY_PREFIX}${tokenId}`)) === 1;
+  }
+
+  protected async exec(
+    tokenIds: string[],
+    command: (tx: Transaction, key: string) => void,
+  ): Promise<void> {
+    if (!tokenIds.length) return;
+    const tx = this.redis.getClient().multi();
+    for (const id of tokenIds) command(tx, `${KEY_PREFIX}${id}`);
+    // exec() reports per-command failures in its result instead of rejecting
+    const failed = (await tx.exec())?.find(([err]) => err);
+    if (failed) throw failed[0];
   }
 }

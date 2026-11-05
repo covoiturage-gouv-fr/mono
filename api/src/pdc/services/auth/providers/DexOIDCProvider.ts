@@ -1,6 +1,9 @@
 import { ConfigInterfaceResolver, InitHookInterface, provider, UnauthorizedException } from "@/ilos/common/index.ts";
 import { taggedLogger } from "@/lib/logger/tagged.ts";
-import { RevokedCredentialsRepository } from "@/pdc/services/auth/providers/RevokedCredentialsRepository.ts";
+import {
+  REVOCATION_TTL_SECONDS,
+  RevokedCredentialsRepository,
+} from "@/pdc/services/auth/providers/RevokedCredentialsRepository.ts";
 import { encodeBase64 } from "dep:encoding";
 import { createRemoteJWKSet, errors, jwtVerify } from "dep:jose";
 
@@ -70,10 +73,15 @@ export class DexOIDCProvider implements InitHookInterface {
       const { payload } = await jwtVerify<{ name: string; email: string }>(token, this.getJWKS(), {
         issuer: authBaseUrl,
         audience: clientId,
+        // a longer Dex expiry would outlive the revocation mark
+        maxTokenAge: REVOCATION_TTL_SECONDS,
       });
 
       const { role, operator_id } = parseTokenSubject(payload.name);
-      // Redis down rejects the call (500) rather than letting a revoked key through
+      if (typeof payload.email !== "string" || !payload.email) {
+        throw new UnauthorizedException("Malformed token");
+      }
+      // A Redis failure rejects the call rather than letting a revoked key through
       if (await this.revoked.isRevoked(payload.email)) {
         throw new UnauthorizedException("Revoked credentials");
       }
