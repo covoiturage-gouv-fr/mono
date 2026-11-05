@@ -23,6 +23,14 @@ function getContribution(ctx: StatelessContextInterface): number {
   return ctx.carpool.passenger_contribution || 0;
 }
 
+const BOOSTER_START = new Date("2026-10-01T00:00:00+0200");
+const BOOSTER_END = new Date("2026-11-01T00:00:00+0100");
+
+function isBooster(ctx: StatelessContextInterface): boolean {
+  const { datetime } = ctx.carpool;
+  return datetime >= BOOSTER_START && datetime < BOOSTER_END;
+}
+
 function startsOrEndsWithinArea(ctx: StatelessContextInterface) {
   const { areas } = occitanie2026Data;
   return startsOrEndsAt(ctx, { [TerritoryCodeEnum.Arr]: areas });
@@ -60,6 +68,11 @@ function filterInnerAOMOrThrow(ctx: StatelessContextInterface): void {
 //     Le ticket passager minimum est de 0,5 € par trajet.
 //   ● 2 trajets / jour / passager ;
 //   ● 6 trajets / jour / conducteur ;
+//
+// Booster du 1er au 31 octobre 2026 :
+//   ● Distance : 2 à 50 km inclus sur toutes les zones
+//   ● Contribution passager : 0,50 € à 2,00 €
+//   ● Incitation fixe par passager, sans déduction de la contribution ni plafond à 2 €
 //
 
 // Politique de la région Occitanie
@@ -112,6 +125,12 @@ export const Occitanie20262027 = class extends AbstractPolicyHandler implements 
     },
   ];
 
+  protected boosterSlices: RunnableSlices = [
+    { start: 2_000, end: 7_000, fn: (ctx: StatelessContextInterface) => perSeat(ctx, 250) },
+    // max exclusif : 50 km inclus
+    { start: 7_000, end: 50_001, fn: (ctx: StatelessContextInterface) => perSeat(ctx, 350) },
+  ];
+
   constructor(public max_amount: number) {
     super();
     this.limits = [
@@ -136,10 +155,16 @@ export const Occitanie20262027 = class extends AbstractPolicyHandler implements 
   }
 
   protected processExclusions(ctx: StatelessContextInterface) {
+    const booster = isBooster(ctx);
+
     // Exclusion des trajets dont la contribution passager est nulle
     // Le ticket passager minimum est de 0,5 € par trajet.
     if (getContribution(ctx) < 50) {
       throw new NotEligibleTargetException("Passenger contribution is too low");
+    }
+
+    if (booster && getContribution(ctx) > 200) {
+      throw new NotEligibleTargetException("Passenger contribution is too high");
     }
 
     // Opérateurs : BlaBlaCar Daily, Karos, Mobicoop
@@ -154,9 +179,9 @@ export const Occitanie20262027 = class extends AbstractPolicyHandler implements 
     // sont au minimum 2.000 et au maximum 50.000 inclus dont l’origine et/ou la destination est dans le bassin.
     set(ctx, "data.area", startsOrEndsWithinArea(ctx)); // boolean
     if (ctx.data!.area) {
-      onDistanceRangeOrThrow(ctx, { min: 2_000, max: 50_000 });
+      onDistanceRangeOrThrow(ctx, { min: 2_000, max: booster ? 50_001 : 50_000 });
     } else {
-      onDistanceRangeOrThrow(ctx, { min: 2_000, max: 30_000 });
+      onDistanceRangeOrThrow(ctx, { min: 2_000, max: booster ? 50_001 : 30_000 });
       // Départ ET arrivée dans la région Occitanie (limite max)
       startsAndEndsAtOrThrow(ctx, { [TerritoryCodeEnum.Region]: [occitanie2026Data.region[TerritoryCodeEnum.Region]] });
 
@@ -178,9 +203,11 @@ export const Occitanie20262027 = class extends AbstractPolicyHandler implements 
     this.processExclusions(ctx);
     super.processStateless(ctx);
 
+    const booster = isBooster(ctx);
+
     // Calcul de l'incitation pour la tranche cible
     let amount = 0;
-    for (const { start, end, fn } of this.slices) {
+    for (const { start, end, fn } of booster ? this.boosterSlices : this.slices) {
       if (onDistanceRange(ctx, { min: start, max: end })) {
         amount = fn(ctx);
       }
@@ -188,7 +215,7 @@ export const Occitanie20262027 = class extends AbstractPolicyHandler implements 
 
     // Application du seuil d'incitation maximal de 2,00 €
     // et minimal de 0,00 €
-    ctx.incentive.set(Math.max(Math.min(200, amount), 0));
+    ctx.incentive.set(Math.max(booster ? amount : Math.min(200, amount), 0));
   }
 
   params(): PolicyHandlerParamsInterface {

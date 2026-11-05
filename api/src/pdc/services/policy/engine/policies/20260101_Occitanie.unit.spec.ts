@@ -304,3 +304,73 @@ describe("Occitanie 2026 - Campaign global limit", () => {
     });
   });
 });
+
+describe("Occitanie 2026 - Booster octobre 2026", () => {
+  const booster = new Date("2026-10-05T10:00:00+0200"); // Monday
+  const bassin = { ...defaultPosition, arr: occitanie2026Data.areas[0] };
+
+  it("period bounds (Europe/Paris)", async () =>
+    await process({
+      policy: { handler: Handler.id },
+      carpool: [
+        { datetime: new Date("2026-09-30T23:59:59+0200"), passenger_identity_key: uuidV4() },
+        { datetime: new Date("2026-10-01T00:00:00+0200"), passenger_identity_key: uuidV4() },
+        { datetime: new Date("2026-10-31T23:59:59+0100"), passenger_identity_key: uuidV4() },
+        { datetime: new Date("2026-11-01T00:00:00+0100"), passenger_identity_key: uuidV4() },
+      ],
+    }, { incentive: [150, 250, 250, 150] }));
+
+  // 2-7 km : 2,50 € ; 7-50 km : 3,50 € par passager, sans déduire la contribution ni plafond à 2 €
+  it("slices", async () =>
+    await process({
+      policy: { handler: Handler.id },
+      carpool: [
+        { datetime: booster, distance: 2_000, passenger_identity_key: uuidV4() },
+        { datetime: booster, distance: 6_999, passenger_identity_key: uuidV4(), passenger_contribution: 150 },
+        { datetime: booster, distance: 7_000, passenger_identity_key: uuidV4() },
+        { datetime: booster, distance: 35_000, passenger_identity_key: uuidV4(), passenger_contribution: 200 },
+        { datetime: booster, distance: 50_000, passenger_identity_key: uuidV4() },
+        { datetime: booster, distance: 10_000, passenger_identity_key: uuidV4(), seats: 2 },
+      ],
+    }, { incentive: [250, 250, 350, 350, 350, 700] }));
+
+  it("distance limits apply to every zone", async () =>
+    await process({
+      policy: { handler: Handler.id },
+      carpool: [
+        { datetime: booster, distance: 1_999, passenger_identity_key: uuidV4() },
+        { datetime: booster, distance: 50_001, passenger_identity_key: uuidV4() },
+        { datetime: booster, distance: 50_001, passenger_identity_key: uuidV4(), start: bassin },
+        {
+          datetime: booster,
+          distance: 40_000,
+          passenger_identity_key: uuidV4(),
+          start: bassin,
+          end: { ...defaultPosition, reg: "84" },
+        },
+      ],
+    }, { incentive: [0, 0, 0, 350] }));
+
+  it("passenger contribution between 0,50 € and 2,00 €", async () =>
+    await process({
+      policy: { handler: Handler.id },
+      carpool: [
+        { datetime: booster, passenger_identity_key: uuidV4(), passenger_contribution: 49 },
+        { datetime: booster, passenger_identity_key: uuidV4(), passenger_contribution: 201 },
+      ],
+    }, { incentive: [0, 0] }));
+
+  it("geographic exclusions still apply", async () =>
+    await process({
+      policy: { handler: Handler.id },
+      carpool: [
+        {
+          datetime: booster,
+          passenger_identity_key: uuidV4(),
+          start: { ...defaultPosition, aom: occitanie2026Data.inner[0] },
+          end: { ...defaultPosition, aom: occitanie2026Data.inner[0] },
+        },
+        { datetime: booster, passenger_identity_key: uuidV4(), end: { ...defaultPosition, reg: "84" } },
+      ],
+    }, { incentive: [0, 0] }));
+});
