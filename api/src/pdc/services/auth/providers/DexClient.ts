@@ -1,5 +1,6 @@
 import { ConfigInterfaceResolver, InitHookInterface, NotFoundException, provider } from "@/ilos/common/index.ts";
 import { bcrypt_hash } from "@/lib/crypto/index.ts";
+import { errorCode, taggedLogger } from "@/lib/logger/tagged.ts";
 import { randomString, v4 } from "@/lib/uuid/index.ts";
 import { Dex } from "@/pdc/services/auth/dex/generated/api.ts";
 import { getDexClient } from "@/pdc/services/auth/dex/getDexClient.ts";
@@ -10,7 +11,9 @@ import {
   DexClientDeleteResult,
   DexClientReadResult,
 } from "../dto/Credentials.ts";
-import { RevokedCredentialsRepository } from "./RevokedCredentialsRepository.ts";
+import { keyRef, RevokedCredentialsRepository } from "./RevokedCredentialsRepository.ts";
+
+const log = taggedLogger("[credentials]");
 
 @provider()
 export class DexClient implements InitHookInterface {
@@ -80,21 +83,46 @@ export class DexClient implements InitHookInterface {
       throw new NotFoundException(`[DexClient] Token with id ${token_id} not found for operator ${operator_id}`);
     }
 
-    await this.revokeAndDelete([token_id]);
+    await this.revokeAndDelete(operator_id, [token_id]);
   }
 
   async deleteAllByOperator(operator_id: number): Promise<void> {
     const tokens = await this.readByOperator(operator_id);
-    await this.revokeAndDelete(tokens.flatMap((t) => t.token_id ? [t.token_id] : []));
+    await this.revokeAndDelete(operator_id, tokens.flatMap((t) => t.token_id ? [t.token_id] : []));
   }
 
   // Revoke first: if Dex fails, issued tokens are already refused
-  protected async revokeAndDelete(tokenIds: string[]): Promise<void> {
-    await this.revoked.revoke(tokenIds);
+  protected async revokeAndDelete(operator_id: number, tokenIds: string[]): Promise<void> {
+    log.info("revoke", { operator_id, keys: tokenIds.length });
+    try {
+      await this.revoked.revoke(tokenIds);
+    } catch (e) {
+      log.error("revoke failed", { operator_id, keys: tokenIds.length, error: errorCode(e) });
+      throw e;
+    }
+
     const client = await this.getClient();
-    for (const email of tokenIds) {
-      await client.DeletePassword({ email });
-      await this.revoked.expire([email]);
+    for (const [i, email] of tokenIds.entries()) {
+      try {
+        await client.DeletePassword({ email });
+      } catch (e) {
+        // the remaining keys stay revoked with no expiry until a retry deletes them
+        log.error("dex delete failed", {
+          operator_id,
+          key: keyRef(email),
+          remaining: tokenIds.length - i,
+          error: errorCode(e),
+        });
+        throw e;
+      }
+      log.info("key deleted", { operator_id, key: keyRef(email) });
+
+      try {
+        await this.revoked.expire([email]);
+      } catch (e) {
+        // the key is gone from Dex: a mark left without expiry is harmless
+        log.warn("revocation expiry failed", { operator_id, key: keyRef(email), error: errorCode(e) });
+      }
     }
   }
 }

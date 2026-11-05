@@ -6,6 +6,9 @@ import { RedisConnection } from "@/ilos/connection-redis/index.ts";
 export const REVOCATION_TTL_SECONDS = 600;
 const KEY_PREFIX = "auth:revoked:";
 
+// Enough to find the key in Dex without logging it whole
+export const keyRef = (tokenId: string): string => tokenId.slice(0, 8);
+
 type Transaction = ReturnType<ReturnType<RedisConnection["getClient"]>["multi"]>;
 
 /**

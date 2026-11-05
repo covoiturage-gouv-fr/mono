@@ -2,7 +2,7 @@ import { assertEquals, assertRejects } from "dep:assert";
 import { describe, it } from "dep:testing-bdd";
 import { DexClient } from "./DexClient.ts";
 
-function setup(passwords: { email: string; username: string }[], failDelete = false) {
+function setup(passwords: { email: string; username: string }[], failDelete = false, failExpire = false) {
   const calls: string[] = [];
   const grpc = {
     ListPasswords: async () => ({ passwords }),
@@ -16,6 +16,7 @@ function setup(passwords: { email: string; username: string }[], failDelete = fa
       calls.push(`revoke:${ids.join(",")}`);
     },
     expire: async (ids: string[]) => {
+      if (failExpire) throw new Error("redis down");
       calls.push(`expire:${ids.join(",")}`);
     },
   };
@@ -52,5 +53,11 @@ describe("DexClient", () => {
     const { calls, client } = setup(passwords, true);
     await assertRejects(() => client.deleteAllByOperator(7), Error, "dex down");
     assertEquals(calls, ["revoke:k1,k2"]);
+  });
+
+  it("goes on when the mark cannot be expired once the key is gone", async () => {
+    const { calls, client } = setup(passwords, false, true);
+    await client.deleteAllByOperator(7);
+    assertEquals(calls, ["revoke:k1,k2", "delete:k1", "delete:k2"]);
   });
 });

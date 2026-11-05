@@ -1,6 +1,7 @@
 import { ConfigInterfaceResolver, InitHookInterface, provider, UnauthorizedException } from "@/ilos/common/index.ts";
-import { taggedLogger } from "@/lib/logger/tagged.ts";
+import { errorCode, taggedLogger } from "@/lib/logger/tagged.ts";
 import {
+  keyRef,
   REVOCATION_TTL_SECONDS,
   RevokedCredentialsRepository,
 } from "@/pdc/services/auth/providers/RevokedCredentialsRepository.ts";
@@ -79,10 +80,19 @@ export class DexOIDCProvider implements InitHookInterface {
 
       const { role, operator_id } = parseTokenSubject(payload.name);
       if (typeof payload.email !== "string" || !payload.email) {
+        dexLog.warn("token rejected", { error: "missing_email", operator_id });
         throw new UnauthorizedException("Malformed token");
       }
       // A Redis failure rejects the call rather than letting a revoked key through
-      if (await this.revoked.isRevoked(payload.email)) {
+      let revoked: boolean;
+      try {
+        revoked = await this.revoked.isRevoked(payload.email);
+      } catch (e) {
+        dexLog.error("revocation check failed", { operator_id, error: errorCode(e) });
+        throw e;
+      }
+      if (revoked) {
+        dexLog.warn("token rejected", { error: "revoked", operator_id, key: keyRef(payload.email) });
         throw new UnauthorizedException("Revoked credentials");
       }
 
