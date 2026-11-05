@@ -112,6 +112,26 @@ it("uses the incentive declared by the operator for the PMGF SIREN", async () =>
     { incentive: [150, 275, 0, 200, 0, 0, 100, 150] },
   ));
 
+it("matches member EPCI whose AOM became the PMGF in 2026", async () =>
+  await process(
+    {
+      policy: { handler: Handler.id },
+      carpool: [
+        // CA Annemasse-Les Voirons
+        {
+          start: { ...outsidePosition },
+          end: { ...defaultPosition, aom: "200075372", epci: "200011773" },
+        },
+        // CC du Genevois
+        {
+          start: { ...defaultPosition, aom: "200075372", epci: "247400690" },
+          end: { ...outsidePosition },
+        },
+      ],
+    },
+    { incentive: [150, 150] },
+  ));
+
 it("should enforce driver monthly amount limit (50 EUR)", async () =>
   await process(
     {
