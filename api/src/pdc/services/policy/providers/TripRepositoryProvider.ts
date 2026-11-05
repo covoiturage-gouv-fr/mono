@@ -12,6 +12,7 @@ export class TripRepositoryProvider implements TripRepositoryProviderInterfaceRe
   public readonly statusTable = "carpool_v2.status";
   public readonly operatorTable = "operator.operators";
   public readonly incentiveTable = "policy.incentives";
+  public readonly operatorIncentiveTable = "carpool_v2.operator_incentives";
   public readonly getArrRangeFunction = "territory.get_arr_range";
 
   constructor(protected pgConnection: DenoPostgresConnection) {}
@@ -65,7 +66,12 @@ export class TripRepositoryProvider implements TripRepositoryProviderInterfaceRe
         ST_X(cc.start_position::geometry)::numeric as start_lon,
         ST_Y(cc.start_position::geometry)::numeric as start_lat,
         ST_X(cc.end_position::geometry)::numeric as end_lon,
-        ST_Y(cc.end_position::geometry)::numeric as end_lat
+        ST_Y(cc.end_position::geometry)::numeric as end_lat,
+        (
+          SELECT coalesce(json_agg(json_build_object('siret', oi.siret, 'amount', oi.amount) ORDER BY oi.idx), '[]')
+          FROM ${raw(this.operatorIncentiveTable)} oi
+          WHERE oi.carpool_id = cc._id
+        ) as operator_incentives
       FROM ${raw(this.table)} cc
       JOIN ${raw(this.geoTable)} co
         ON co.carpool_id = cc._id
