@@ -83,14 +83,13 @@ export const PMGFxSM4CC2026: PolicyHandlerStaticInterface = class extends Abstra
     },
   ];
 
+  // EPCI plutôt qu'AOM : en 2026, l'AOM d'Annemasse et du Genevois est le PMGF lui-même
   protected territorySelector: TerritorySelectorsInterface = {
-    [TerritoryCodeEnum.Mobility]: [
+    [TerritoryCodeEnum.CityGroup]: [
       "240100750", // CA du Pays de Gex
       "247400690", // CC du Genevois
       "200011773", // CA Annemasse-Les Voirons-Agglomération
       "200067551", // CA Thonon Agglomération
-    ],
-    [TerritoryCodeEnum.CityGroup]: [
       "240100891", // CC Terre Valserhône
       "247400724", // CC du Pays Rochois
       "200000172", // CC Faucigny-Glières
