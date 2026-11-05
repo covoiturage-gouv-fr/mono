@@ -104,11 +104,6 @@ export class Policy implements PolicyInterface {
           context.incentive.set(0);
           return context.incentive;
         }
-        log.error("process stateless failed", {
-          operator_id: carpool.operator_id,
-          operator_journey_id: carpool.operator_journey_id,
-          error: errorCode(e),
-        });
         throw e;
       }
     }
