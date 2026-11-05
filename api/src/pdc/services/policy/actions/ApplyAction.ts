@@ -3,7 +3,7 @@ import { ContextType, handler, InvalidParamsException, NotFoundException } from 
 import { Action as AbstractAction } from "@/ilos/core/index.ts";
 import { env_or_false } from "@/lib/env/index.ts";
 import { getPerformanceTimer } from "@/lib/logger/index.ts";
-import { taggedLogger } from "@/lib/logger/tagged.ts";
+import { errorCode, taggedLogger } from "@/lib/logger/tagged.ts";
 import { internalOnlyMiddlewares } from "@/pdc/providers/middleware/index.ts";
 import { isAfter, max as maxDate, min as minDate } from "dep:date-fns";
 import { handlerConfig, ParamsInterface, ResultInterface } from "../contracts/apply.contract.ts";
@@ -125,43 +125,60 @@ export class ApplyAction extends AbstractAction {
       override,
     );
     let done = false;
+    let failed = 0;
 
-    do {
-      if (total === 0) {
-        log.debug("apply fetch carpools", { policy_id });
-      }
-      const incentives: Array<StatelessIncentiveInterface> = [];
-      const results = await cursor.next();
-      done = !!results.done;
-
-      const bs = new Date(); // benchmark start
-      if (results.value) {
-        for (const carpool of results.value) {
-          // 3. For each trip, process
-          counter++;
-          incentives.push(await policy.processStateless(carpool));
+    try {
+      do {
+        if (total === 0) {
+          log.debug("apply fetch carpools", { policy_id });
         }
-      }
+        const incentives: Array<StatelessIncentiveInterface> = [];
+        const results = await cursor.next();
+        done = !!results.done;
 
-      // benchmark
-      const ms = new Date().getTime() - bs.getTime();
-      if (counter) {
-        const rate = ((counter / ms) * 1000).toFixed(0);
-        log.debug("apply trips done", { policy_id, count: counter, total, ms, rate: Number(rate) });
-      }
-      total += counter;
-      counter = 0;
+        const bs = new Date(); // benchmark start
+        if (results.value) {
+          for (const carpool of results.value) {
+            // 3. For each trip, process
+            counter++;
+            try {
+              incentives.push(await policy.processStateless(carpool));
+            } catch (e) {
+              // no incentive stored: the trip is retried on the next run
+              failed++;
+              log.error("process stateless failed", {
+                policy_id,
+                operator_id: carpool.operator_id,
+                operator_journey_id: carpool.operator_journey_id,
+                error: errorCode(e),
+              });
+            }
+          }
+        }
 
-      // 4. Save incentives
-      if (incentives.length) {
-        const timer = getPerformanceTimer();
-        await this.incentiveRepository.createOrUpdateMany(
-          incentives.map((i) => i.export()),
-        );
-        log.debug("apply stored incentives", { policy_id, count: incentives.length, ms: timer.stop() });
-      }
-    } while (!done);
+        // benchmark
+        const ms = new Date().getTime() - bs.getTime();
+        if (counter) {
+          const rate = ((counter / ms) * 1000).toFixed(0);
+          log.debug("apply trips done", { policy_id, count: counter, total, ms, rate: Number(rate) });
+        }
+        total += counter;
+        counter = 0;
 
-    log.info("apply finished", { policy_id, count: total, ms: new Date().getTime() - bench.getTime() });
+        // 4. Save incentives
+        if (incentives.length) {
+          const timer = getPerformanceTimer();
+          await this.incentiveRepository.createOrUpdateMany(
+            incentives.map((i) => i.export()),
+          );
+          log.debug("apply stored incentives", { policy_id, count: incentives.length, ms: timer.stop() });
+        }
+      } while (!done);
+    } finally {
+      // releases the pg cursor and its pooled connection when the loop throws
+      await cursor.return();
+    }
+
+    log.info("apply finished", { policy_id, count: total, failed, ms: new Date().getTime() - bench.getTime() });
   }
 }

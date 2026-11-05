@@ -9,7 +9,7 @@ export function inList(
   selectors: TerritorySelectorsInterface,
   territory: TerritoryCodeInterface,
 ): boolean {
-  if (!selectors || Object.keys(selectors).length === 0) {
+  if (!territory || !selectors || Object.keys(selectors).length === 0) {
     return false;
   }
   for (const selector of Object.keys(selectors)) {
