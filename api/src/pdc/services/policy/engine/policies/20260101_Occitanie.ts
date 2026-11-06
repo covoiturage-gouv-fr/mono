@@ -1,3 +1,4 @@
+import { formatInTimeZone } from "dep:date-fns-tz";
 import { set } from "@/lib/object/index.ts";
 import { RunnableSlices } from "../../interfaces/engine/PolicyInterface.ts";
 import {
@@ -29,11 +30,9 @@ const BOOSTER_DATES = [
   ...dateRange("2026-10-01", "2026-10-31"),
 ];
 
-// atDate depends on the host timezone; sv-SE formats as YYYY-MM-DD
-const parisDay = new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Paris" });
-
+// pas atDate : il dépend du fuseau de l'hôte
 function isBooster(ctx: StatelessContextInterface): boolean {
-  return BOOSTER_DATES.includes(parisDay.format(ctx.carpool.datetime));
+  return BOOSTER_DATES.includes(formatInTimeZone(ctx.carpool.datetime, "Europe/Paris", "yyyy-MM-dd"));
 }
 
 function startsOrEndsWithinArea(ctx: StatelessContextInterface) {
