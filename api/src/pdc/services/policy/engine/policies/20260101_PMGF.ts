@@ -174,19 +174,24 @@ export const PMGF2026: PolicyHandlerStaticInterface = class extends AbstractPoli
 
   // PMGF + SM4CC territory
   // EPCI plutôt qu'AOM : en 2026, l'AOM d'Annemasse et du Genevois est le PMGF lui-même
-  protected territorySelector: TerritorySelectorsInterface = {
-    [TerritoryCodeEnum.CityGroup]: [
-      "240100750", // CA du Pays de GEX
-      "247400690", // CC du Genevois
-      "200011773", // CC Annemasse-Les Voirons-Agglomération
-      "200067551", // CA Thonon Agglomération
-      "240100891", // CA du Pays Bellegardien
-      "247400724", // CC du Pays Rochois
-      "200000172", // CC Faucigny-Glières
-      "247400583", // CC Arve et Salève
-      "247400666", // CC des Quatre Rivières (74), pas son homonyme 200069730 (76)
-    ],
-  };
+  protected epci = [
+    "240100750", // CA du Pays de GEX
+    "247400690", // CC du Genevois
+    "200011773", // CC Annemasse-Les Voirons-Agglomération
+    "200067551", // CA Thonon Agglomération
+    "240100891", // CA du Pays Bellegardien
+    "247400724", // CC du Pays Rochois
+    "200000172", // CC Faucigny-Glières
+    "247400583", // CC Arve et Salève
+  ];
+
+  // CC des Quatre Rivières (74), pas son homonyme 200069730 (76) : ajoutée au SM4CC le 01/04/2026
+  protected quatreRivieres = { epci: "247400666", since: new Date("2026-04-01T00:00:00+0200") };
+
+  protected territorySelectorAt(datetime: Date): TerritorySelectorsInterface {
+    const epci = datetime >= this.quatreRivieres.since ? [...this.epci, this.quatreRivieres.epci] : this.epci;
+    return { [TerritoryCodeEnum.CityGroup]: epci };
+  }
 
   // Suisse (code COG INSEE)
   protected switzerlandSelector: TerritorySelectorsInterface = {
@@ -196,7 +201,7 @@ export const PMGF2026: PolicyHandlerStaticInterface = class extends AbstractPoli
   protected getSlices(ctx?: StatelessContextInterface): RunnableSlices {
     if (!ctx) return this.intraAOMSlices;
 
-    if (startsAndEndsAt(ctx, this.territorySelector)) {
+    if (startsAndEndsAt(ctx, this.territorySelectorAt(ctx.carpool.datetime))) {
       return this.intraAOMSlices;
     }
 
@@ -210,7 +215,7 @@ export const PMGF2026: PolicyHandlerStaticInterface = class extends AbstractPoli
   protected processExclusions(ctx: StatelessContextInterface) {
     isOperatorOrThrow(ctx, getOperatorsAt(this.operators, ctx.carpool.datetime));
     isOperatorClassOrThrow(ctx, this.operator_class);
-    startsOrEndsAtOrThrow(ctx, this.territorySelector);
+    startsOrEndsAtOrThrow(ctx, this.territorySelectorAt(ctx.carpool.datetime));
     onDistanceRangeOrThrow(ctx, { min: 4_999, max: 80_001 });
   }
 

@@ -210,13 +210,49 @@ it("Switzerland trips (one end in Switzerland)", async () =>
     },
   ));
 
-it("new EPCI 247400666 (CC des Quatre Rivieres, 74) is in territory", async () =>
+const quatreRivieres = { ...defaultPosition, arr: "74056", com: "74056", aom: "247400666", epci: "247400666" };
+const neydens = { ...defaultPosition, arr: "74201", com: "74201", aom: "200075372", epci: "247400690" };
+
+it("CC des Quatre Rivieres (74) is in territory from 2026-04-01 only", async () =>
+  await process(
+    {
+      policy: { handler: Handler.id },
+      carpool: [
+        // Lyon -> Quatre Rivières before April -> not eligible
+        { datetime: new Date("2026-03-15"), start: { ...outsideFrancePosition }, end: { ...quatreRivieres } },
+        // Same trip after April -> external France rate
+        { datetime: new Date("2026-04-15"), start: { ...outsideFrancePosition }, end: { ...quatreRivieres } },
+        // Quatre Rivières -> Neydens before April -> external France rate
+        { datetime: new Date("2026-03-15"), start: { ...quatreRivieres }, end: { ...neydens } },
+        // Same trip after April -> internal rate
+        { datetime: new Date("2026-04-15"), start: { ...quatreRivieres }, end: { ...neydens } },
+        // 2026-04-01 00:00 Europe/Paris is already April
+        {
+          datetime: new Date("2026-04-01T00:00:00+0200"),
+          start: { ...outsideFrancePosition },
+          end: { ...quatreRivieres },
+        },
+        // 2026-03-31 23:59 Europe/Paris is still March
+        {
+          datetime: new Date("2026-03-31T23:59:59+0200"),
+          start: { ...outsideFrancePosition },
+          end: { ...quatreRivieres },
+        },
+      ],
+    },
+    {
+      incentive: [0, 50, 50, 150, 50, 0],
+    },
+  ));
+
+it("new EPCI 247400666 (CC des Quatre Rivieres, 74) is in territory (from April)", async () =>
   await process(
     {
       policy: { handler: Handler.id },
       carpool: [
         // Internal trip within new EPCI -> internal rate
         {
+          datetime: new Date("2026-04-15"),
           distance: 5_000,
           driver_identity_key: "one",
           start: { ...defaultPosition, epci: "247400666", aom: "247400666" },
@@ -224,6 +260,7 @@ it("new EPCI 247400666 (CC des Quatre Rivieres, 74) is in territory", async () =
         },
         // External trip from new EPCI to outside France -> external France rate
         {
+          datetime: new Date("2026-04-15"),
           distance: 25_000,
           driver_identity_key: "one",
           passenger_identity_key: "two",
@@ -232,6 +269,7 @@ it("new EPCI 247400666 (CC des Quatre Rivieres, 74) is in territory", async () =
         },
         // CC des Quatre Rivières en Bray (76) homonym -> not eligible
         {
+          datetime: new Date("2026-04-15"),
           distance: 5_000,
           driver_identity_key: "one",
           passenger_identity_key: "three",
