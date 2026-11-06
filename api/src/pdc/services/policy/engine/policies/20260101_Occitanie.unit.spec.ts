@@ -1,3 +1,4 @@
+import { assertEquals } from "dep:assert";
 import { describe, it } from "dep:testing-bdd";
 import { v4 as uuidV4 } from "@/lib/uuid/index.ts";
 import { CarpoolInterface, OperatorsEnum, TerritoryCodeEnum } from "../../interfaces/index.ts";
@@ -308,6 +309,14 @@ describe("Occitanie 2026 - Campaign global limit", () => {
 describe("Occitanie 2026 - Booster octobre 2026", () => {
   const booster = new Date("2026-10-05T10:00:00+0200"); // Monday
   const bassin = { ...defaultPosition, arr: occitanie2026Data.areas[0] };
+
+  // read by the APDF export to split trips between normal and booster tables
+  it("exposes booster dates in params", () => {
+    const dates = new Handler(0).params().booster_dates ?? [];
+    assertEquals(dates.length, 31);
+    assertEquals(dates[0], "2026-10-01");
+    assertEquals(dates[30], "2026-10-31");
+  });
 
   it("period bounds (Europe/Paris)", async () =>
     await process({

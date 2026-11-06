@@ -23,12 +23,13 @@ function getContribution(ctx: StatelessContextInterface): number {
   return ctx.carpool.passenger_contribution || 0;
 }
 
-const BOOSTER_START = new Date("2026-10-01T00:00:00+0200");
-const BOOSTER_END = new Date("2026-11-01T00:00:00+0100");
+const BOOSTER_DATES = Array.from({ length: 31 }, (_, i) => `2026-10-${String(i + 1).padStart(2, "0")}`);
+
+// atDate and dateRange depend on the host timezone; sv-SE formats as YYYY-MM-DD
+const parisDay = new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Paris" });
 
 function isBooster(ctx: StatelessContextInterface): boolean {
-  const { datetime } = ctx.carpool;
-  return datetime >= BOOSTER_START && datetime < BOOSTER_END;
+  return BOOSTER_DATES.includes(parisDay.format(ctx.carpool.datetime));
 }
 
 function startsOrEndsWithinArea(ctx: StatelessContextInterface) {
@@ -224,6 +225,7 @@ export const Occitanie20262027 = class extends AbstractPolicyHandler implements 
       slices: this.slices,
       operators: getOperatorsAt(this.operators),
       limits: { glob: this.max_amount },
+      booster_dates: [...BOOSTER_DATES],
     };
   }
 };
