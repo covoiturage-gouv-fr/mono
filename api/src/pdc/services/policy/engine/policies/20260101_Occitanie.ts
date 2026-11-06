@@ -1,3 +1,4 @@
+import { formatInTimeZone } from "dep:date-fns-tz";
 import { set } from "@/lib/object/index.ts";
 import { RunnableSlices } from "../../interfaces/engine/PolicyInterface.ts";
 import {
@@ -8,6 +9,7 @@ import {
   TerritoryCodeEnum,
 } from "../../interfaces/index.ts";
 import { NotEligibleTargetException } from "../exceptions/NotEligibleTargetException.ts";
+import { dateRange } from "../helpers/dateRange.ts";
 import { getOperatorsAt, TimestampedOperators } from "../helpers/getOperatorsAt.ts";
 import { isOperatorClassOrThrow } from "../helpers/isOperatorClassOrThrow.ts";
 import { isOperatorOrThrow } from "../helpers/isOperatorOrThrow.ts";
@@ -23,12 +25,14 @@ function getContribution(ctx: StatelessContextInterface): number {
   return ctx.carpool.passenger_contribution || 0;
 }
 
-const BOOSTER_START = new Date("2026-10-01T00:00:00+0200");
-const BOOSTER_END = new Date("2026-11-01T00:00:00+0100");
+// Périodes booster : ajouter une plage dateRange(début, fin) par nouvelle période (bornes incluses)
+const BOOSTER_DATES = [
+  ...dateRange("2026-10-01", "2026-10-31"),
+];
 
+// pas atDate : il dépend du fuseau de l'hôte
 function isBooster(ctx: StatelessContextInterface): boolean {
-  const { datetime } = ctx.carpool;
-  return datetime >= BOOSTER_START && datetime < BOOSTER_END;
+  return BOOSTER_DATES.includes(formatInTimeZone(ctx.carpool.datetime, "Europe/Paris", "yyyy-MM-dd"));
 }
 
 function startsOrEndsWithinArea(ctx: StatelessContextInterface) {
@@ -69,7 +73,7 @@ function filterInnerAOMOrThrow(ctx: StatelessContextInterface): void {
 //   ● 2 trajets / jour / passager ;
 //   ● 6 trajets / jour / conducteur ;
 //
-// Booster du 1er au 31 octobre 2026 :
+// Booster (dates dans BOOSTER_DATES, 1re période : octobre 2026) :
 //   ● Distance : 2 à 50 km inclus sur toutes les zones
 //   ● Contribution passager : 0,50 € à 2,00 €
 //   ● Incitation fixe par passager, sans déduction de la contribution ni plafond à 2 €
@@ -224,6 +228,7 @@ export const Occitanie20262027 = class extends AbstractPolicyHandler implements 
       slices: this.slices,
       operators: getOperatorsAt(this.operators),
       limits: { glob: this.max_amount },
+      booster_dates: [...BOOSTER_DATES],
     };
   }
 };
