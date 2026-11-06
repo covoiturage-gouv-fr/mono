@@ -163,4 +163,26 @@ describe("CampaignConditionsRepository", () => {
       assertEquals((await repository.list({ territory: { id: customGroup, resolved: null } })).length, 0);
     });
   });
+
+  it("la vue dlk_export ne publie que les campagnes validées et non supprimées", async () => {
+    const author = { operator_id: null, territory_id: null };
+    const draft = await repository.create(campaign({ territory_code: "75056", territory_type: "com" }), author);
+    const validated = await repository.create(
+      campaign({ territory_code: "69123", territory_type: "com" }),
+      author,
+    );
+    const removed = await repository.create(campaign({ territory_code: "13055", territory_type: "com" }), author);
+    await repository.validate(validated.id, null);
+    await repository.validate(removed.id, null);
+    await repository.delete(removed.id);
+
+    const rows = await db.connection.query<{ _id: number }>(sql`
+      SELECT _id FROM dlk_export.policy_campaign_conditions WHERE _id = ANY(${[
+      draft.id,
+      validated.id,
+      removed.id,
+    ]}::int[])
+    `);
+    assertEquals(rows.map((r) => r._id), [validated.id]);
+  });
 });
