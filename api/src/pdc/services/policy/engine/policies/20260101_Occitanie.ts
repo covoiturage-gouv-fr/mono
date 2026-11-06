@@ -8,6 +8,7 @@ import {
   TerritoryCodeEnum,
 } from "../../interfaces/index.ts";
 import { NotEligibleTargetException } from "../exceptions/NotEligibleTargetException.ts";
+import { dateRange } from "../helpers/dateRange.ts";
 import { getOperatorsAt, TimestampedOperators } from "../helpers/getOperatorsAt.ts";
 import { isOperatorClassOrThrow } from "../helpers/isOperatorClassOrThrow.ts";
 import { isOperatorOrThrow } from "../helpers/isOperatorOrThrow.ts";
@@ -23,9 +24,12 @@ function getContribution(ctx: StatelessContextInterface): number {
   return ctx.carpool.passenger_contribution || 0;
 }
 
-const BOOSTER_DATES = Array.from({ length: 31 }, (_, i) => `2026-10-${String(i + 1).padStart(2, "0")}`);
+// Périodes booster : ajouter une plage dateRange(début, fin) par nouvelle période (bornes incluses)
+const BOOSTER_DATES = [
+  ...dateRange("2026-10-01", "2026-10-31"),
+];
 
-// atDate and dateRange depend on the host timezone; sv-SE formats as YYYY-MM-DD
+// atDate depends on the host timezone; sv-SE formats as YYYY-MM-DD
 const parisDay = new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Paris" });
 
 function isBooster(ctx: StatelessContextInterface): boolean {
@@ -70,7 +74,7 @@ function filterInnerAOMOrThrow(ctx: StatelessContextInterface): void {
 //   ● 2 trajets / jour / passager ;
 //   ● 6 trajets / jour / conducteur ;
 //
-// Booster du 1er au 31 octobre 2026 :
+// Booster (dates dans BOOSTER_DATES, 1re période : octobre 2026) :
 //   ● Distance : 2 à 50 km inclus sur toutes les zones
 //   ● Contribution passager : 0,50 € à 2,00 €
 //   ● Incitation fixe par passager, sans déduction de la contribution ni plafond à 2 €
