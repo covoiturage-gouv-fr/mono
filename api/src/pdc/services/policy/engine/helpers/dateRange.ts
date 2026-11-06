@@ -23,11 +23,12 @@ export function dateRange(...dates: Array<Date | string>): string[] {
 function castAndSort(range: Array<Date | string>): Set<Date> {
   return range
     .map((d) => {
-      const date = typeof d === "string" ? new Date(d) : d;
+      const date = new Date(typeof d === "string" ? d : d.getTime());
       if (Number.isNaN(date.getTime())) {
         throw new Error(`Invalid Date`);
       }
-      date.setHours(0, 0, 0, 0);
+      // UTC: "YYYY-MM-DD" is parsed as UTC midnight, local time would shift the day
+      date.setUTCHours(0, 0, 0, 0);
       return date;
     })
     .sort((a, b) => a.getTime() - b.getTime())
@@ -38,9 +39,9 @@ function castAndSort(range: Array<Date | string>): Set<Date> {
 }
 
 function format(d: Date): string {
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
+  const year = d.getUTCFullYear();
+  const month = String(d.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(d.getUTCDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
 }
 
@@ -49,7 +50,7 @@ function fill(first: Date, last: Date): Array<string> {
   const current = new Date(first);
   while (current <= last) {
     dates.add(format(current));
-    current.setDate(current.getDate() + 1);
+    current.setUTCDate(current.getUTCDate() + 1);
   }
 
   return [...dates];
