@@ -210,7 +210,7 @@ it("Switzerland trips (one end in Switzerland)", async () =>
     },
   ));
 
-it("new EPCI 200069730 (CC des 4 Rivieres) is in territory", async () =>
+it("new EPCI 247400666 (CC des Quatre Rivieres, 74) is in territory", async () =>
   await process(
     {
       policy: { handler: Handler.id },
@@ -219,8 +219,8 @@ it("new EPCI 200069730 (CC des 4 Rivieres) is in territory", async () =>
         {
           distance: 5_000,
           driver_identity_key: "one",
-          start: { ...defaultPosition, epci: "200069730", aom: "200069730" },
-          end: { ...defaultPosition, epci: "200069730", aom: "200069730" },
+          start: { ...defaultPosition, epci: "247400666", aom: "247400666" },
+          end: { ...defaultPosition, epci: "247400666", aom: "247400666" },
         },
         // External trip from new EPCI to outside France -> external France rate
         {
@@ -228,7 +228,42 @@ it("new EPCI 200069730 (CC des 4 Rivieres) is in territory", async () =>
           driver_identity_key: "one",
           passenger_identity_key: "two",
           start: { ...outsideFrancePosition },
-          end: { ...defaultPosition, epci: "200069730", aom: "200069730" },
+          end: { ...defaultPosition, epci: "247400666", aom: "247400666" },
+        },
+        // CC des Quatre Rivières en Bray (76) homonym -> not eligible
+        {
+          distance: 5_000,
+          driver_identity_key: "one",
+          passenger_identity_key: "three",
+          start: { ...outsideFrancePosition },
+          end: { ...outsideFrancePosition, arr: "76001", com: "76001", epci: "200069730", aom: "200069730" },
+        },
+      ],
+    },
+    {
+      incentive: [150, 100, 0],
+    },
+  ));
+
+it("Annemasse and CC du Genevois stay in territory with the 2026 AOM (PMGF)", async () =>
+  await process(
+    {
+      policy: { handler: Handler.id },
+      carpool: [
+        // Annemasse -> Neydens : internal rate
+        {
+          distance: 5_000,
+          driver_identity_key: "one",
+          start: { ...defaultPosition, arr: "74012", com: "74012", aom: "200075372", epci: "200011773" },
+          end: { ...defaultPosition, arr: "74201", com: "74201", aom: "200075372", epci: "247400690" },
+        },
+        // Lyon -> Neydens : external France rate
+        {
+          distance: 25_000,
+          driver_identity_key: "one",
+          passenger_identity_key: "two",
+          start: { ...outsideFrancePosition },
+          end: { ...defaultPosition, arr: "74201", com: "74201", aom: "200075372", epci: "247400690" },
         },
       ],
     },
