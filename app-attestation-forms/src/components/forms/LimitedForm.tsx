@@ -9,7 +9,7 @@ import { Button } from "@codegouvfr/react-dsfr/Button";
 import { Input } from "@codegouvfr/react-dsfr/Input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, DefaultValues, useForm } from "react-hook-form";
 
 const STORAGE_KEY = "formLtd";
 
@@ -31,7 +31,7 @@ export function LimitedForm() {
   useEffect(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) reset(JSON.parse(saved));
+      if (saved) reset(JSON.parse(saved) as DefaultValues<LimitedFormValues>);
     } catch {
       localStorage.removeItem(STORAGE_KEY);
     }
@@ -40,6 +40,7 @@ export function LimitedForm() {
   // auto-save (debounced) on every change
   useEffect(() => {
     let timeout: ReturnType<typeof setTimeout>;
+    // eslint-disable-next-line react-hooks/incompatible-library -- abonnement dans un effet, aucune valeur lue au rendu
     const subscription = watch((value) => {
       clearTimeout(timeout);
       timeout = setTimeout(() => {
@@ -56,7 +57,7 @@ export function LimitedForm() {
     try {
       setSubmitError(false);
       await generateLimitedPdf(data);
-      saveHonor("limited", data.employer);
+      void saveHonor("limited", data.employer);
     } catch (err) {
       console.error(err);
       setSubmitError(true);
@@ -70,11 +71,11 @@ export function LimitedForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} onReset={onReset}>
+    <form onSubmit={(e) => void handleSubmit(onSubmit)(e)} onReset={onReset}>
       <h4>Secteur privé</h4>
       <p className="fr-highlight fr-highlight--blue-ecume">
         <em>
-          Les champs marqués d'un{" "}
+          Les champs marqués d&apos;un{" "}
           <span aria-hidden="true" style={{ color: "var(--text-default-error)" }}>
             *
           </span>{" "}
@@ -105,7 +106,7 @@ export function LimitedForm() {
       />
 
       <Input
-        label={<RequiredLabel>Nom de l'employeur</RequiredLabel>}
+        label={<RequiredLabel>Nom de l&apos;employeur</RequiredLabel>}
         nativeInputProps={{ ...register("employer"), required: true }}
         state={errors.employer ? "error" : "default"}
         stateRelatedMessage={errors.employer?.message}

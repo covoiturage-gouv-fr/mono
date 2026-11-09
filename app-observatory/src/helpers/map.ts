@@ -36,8 +36,8 @@ export const downloadData = (filename:string, data:any[] | FeatureCollection, ty
   const fileURL = window.URL.createObjectURL(blob);
   const fileLink = document.createElement('a');
   fileLink.href = fileURL;
-  fileLink.title = `Télécharger le ficher ${filename}.${type ? type : 'json'}`;
-  fileLink.setAttribute('download', `${filename}.${type ? type : 'json'}`);
+  fileLink.title = `Télécharger le ficher ${filename}.${type ?? 'json'}`;
+  fileLink.setAttribute('download', `${filename}.${type ?? 'json'}`);
   document.body.appendChild(fileLink);
   fileLink.click();
 }

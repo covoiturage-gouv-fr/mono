@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 export const useApi = <T>(input: RequestInfo | URL, init?: RequestInit) => {
   const [data, setData] = useState<T>();
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   useEffect(() => {
+    const target = input instanceof Request ? input.url : String(input);
     const fetchData = async () => {
       setError(null);
       setLoading(true);
@@ -20,19 +21,19 @@ export const useApi = <T>(input: RequestInfo | URL, init?: RequestInit) => {
           } catch {
             errorMessage = text;
           }
-          console.error(`API ${response.status} on ${input}`, errorMessage);
+          console.error(`API ${response.status} on ${target}`, errorMessage);
           setError(errorMessage);
           setData(undefined);
         }
       } catch (e: any) {
-        console.error(`API request failed on ${input}`, e);
+        console.error(`API request failed on ${target}`, e);
         setError(e.message ?? "Network error");
         setData(undefined);
       } finally {
         setLoading(false);
       }
     };
-    fetchData();
+    void fetchData();
   }, [input, init]);
   return { data, error, loading };
 };

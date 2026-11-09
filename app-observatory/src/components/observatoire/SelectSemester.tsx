@@ -1,14 +1,13 @@
 'use client'
 import { semesterList } from '@/helpers/lists';
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import { useDashboardContext } from '../../context/DashboardProvider';
 import SelectInList from '../common/SelectInList';
 
 
 export default function SelectSemester() {
   const { dashboard } = useDashboardContext();
-  const [semesterAvailable, setSemesterAvailable] = useState<{id: number; name: string; disabled: boolean;}[]>([]);
-  useEffect(()=>{
+  const semesterAvailable = useMemo<{id: number; name: string; disabled: boolean;}[]>(()=>{
       const monthSemester = [6,12];
       const list = semesterList.map((m) => {
         if(new Date(dashboard.params.year, monthSemester[m.id-1],1).getTime() > dashboard.lastPeriod) {
@@ -17,7 +16,7 @@ export default function SelectSemester() {
           return {...m, disabled: false}
         }
       })
-      setSemesterAvailable(list)
+      return list
   },[dashboard.params.year, dashboard.lastPeriod]);
   return (
     <>

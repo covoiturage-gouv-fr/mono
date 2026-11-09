@@ -1,4 +1,4 @@
-export type Collections = {
+export interface Collections {
   articles: Article,
   ressources: Ressource,
   categories: Category,

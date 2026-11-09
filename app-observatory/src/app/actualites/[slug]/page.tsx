@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const data = response.data[0];
   return {
     title: `${data ? data.attributes.title : ''} | Observatoire.covoiturage.gouv.fr`,
-    description: shorten(`${data && data.attributes.description ? data.attributes.description : ''}`,150),
+    description: shorten(`${data?.attributes.description ?? ''}`,150),
   }
 }
 
@@ -92,8 +92,7 @@ export default async function ActuSingle({ params }: { params: Promise<{ slug: s
           <div className={fr.cx('fr-grid-row', 'fr-grid-row--gutters')}>
             <div className={fr.cx('fr-col','fr-col-md-9')}>
               <ul className={fr.cx('fr-tags-group')}>
-                {data.attributes.categories &&
-                  data.attributes.categories.data.map((c:any, i:number) => {
+                {data.attributes.categories?.data.map((c:any, i:number) => {
                     return (
                       <li key={i}>
                         <Tag
@@ -116,7 +115,7 @@ export default async function ActuSingle({ params }: { params: Promise<{ slug: s
           <figure style={{textAlign:'center'}}>
               <Image className={fr.cx('fr-responsive-img', 'fr-responsive-img--16x9')} 
                 src={data.attributes.img.data.attributes.formats.large ? data.attributes.img.data.attributes.formats.large.url: data.attributes.img.data.attributes.url } 
-                alt={data.attributes.legend ? data.attributes.legend : ''} 
+                alt={data.attributes.legend ?? ''} 
                 width={data.attributes.img.data.attributes.formats.large ? data.attributes.img.data.attributes.formats.large.width : data.attributes.img.data.attributes.width} 
                 height={data.attributes.img.data.attributes.formats.large ? data.attributes.img.data.attributes.formats.large.height : data.attributes.img.data.attributes.height} 
               />

@@ -11,7 +11,6 @@ import { fr } from '@codegouvfr/react-dsfr';
 import ToggleSwitch from '@codegouvfr/react-dsfr/ToggleSwitch';
 import bbox from '@turf/bbox';
 import { feature, featureCollection } from '@turf/helpers';
-import { FeatureCollection } from 'geojson';
 import { LngLatBoundsLike } from 'maplibre-gl';
 import { useCallback, useMemo, useState } from 'react';
 import { LayerProps, Layer, Popup, Source } from 'react-map-gl/maplibre';
@@ -41,7 +40,7 @@ export default function AiresCovoiturageMap({ title }: { title: string }) {
       feature(d.geom, { ...d, ...{ geom: undefined }}),
     ) : [];
     const activeFilters = switchFilters.filter(f => f.active === true).map(s => s.name);
-    return featureCollection(features.filter(f => activeFilters.includes(f.properties.type))) as unknown as FeatureCollection;
+    return featureCollection(features.filter(f => activeFilters.includes(f.properties.type)));
   }, [switchFilters, data]);
 
   const layer: LayerProps = {
@@ -171,7 +170,7 @@ export default function AiresCovoiturageMap({ title }: { title: string }) {
           download={
             <DownloadButton 
               title={'Télécharger les données de la carte'}
-              data={geojson as FeatureCollection}
+              data={geojson}
               type={'geojson'}
               filename='aires_de_covoiturage'
             />

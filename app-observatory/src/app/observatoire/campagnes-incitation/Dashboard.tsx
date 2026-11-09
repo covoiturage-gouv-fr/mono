@@ -26,7 +26,7 @@ export default function Dashboard() {
     : params.year ? `?year=${params.year}` : ''}`;
   const { data, error, loading } = useApi<any[]>(url);
   const geojson = useMemo(() => {
-    const campaignsData = data ? data : [];
+    const campaignsData = data ?? [];
     return featureCollection(
       campaignsData.map((d) =>
         feature(d.geom, {

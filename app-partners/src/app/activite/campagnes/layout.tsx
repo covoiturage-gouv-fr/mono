@@ -12,11 +12,6 @@ export default function CampaignsLayout({ children }: { children: React.ReactNod
     setExpanded(isExpanded);
   }
 
-  // load local storage value on mount
-  useEffect(() => {
-    setExpanded(localStorage.getItem(key) === "true");
-  }, []);
-
   // update local storage value
   useEffect(() => {
     localStorage.setItem(key, expanded ? "true" : "false");

@@ -12,7 +12,7 @@ export default function Share(props:{social:ShareProps[], location: string}) {
     <div className={fr.cx('fr-share')}>
       <p className={fr.cx('fr-share__title')}>Partager la page</p>
       <ul className={fr.cx('fr-share__group')}>
-        {props.social && props.social.map((s, i) => 
+        {props.social?.map((s, i) => 
           <li key={i}>
             <a className={fr.cx('fr-share__link',s.icon as FrCxArg)} 
               title={`Partager sur ${s.name} | nouvelle fenêtre`} 
@@ -29,7 +29,7 @@ export default function Share(props:{social:ShareProps[], location: string}) {
         <li>
           <button className={fr.cx('fr-share__link', 'fr-share__link--copy')}
             title="Copier dans le presse-papier" 
-            onClick={() => {navigator.clipboard.writeText(props.location);
+            onClick={() => {void navigator.clipboard.writeText(props.location);
             alert('Adresse copiée dans le presse papier.');}}>
             Copier dans le presse-papier
           </button>

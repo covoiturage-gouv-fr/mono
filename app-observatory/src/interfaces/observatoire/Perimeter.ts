@@ -25,11 +25,11 @@ export type IndicType = (typeof indicTypes)[number];
 export const directionTypes = ["from", "to", "both"] as const;
 export type Direction = (typeof directionTypes)[number];
 
-export type Distance = {
+export interface Distance {
   dist_classes: string;
   journeys: number;
-};
-export type Hour = {
+}
+export interface Hour {
   hour: number;
   journeys: number;
-};
+}

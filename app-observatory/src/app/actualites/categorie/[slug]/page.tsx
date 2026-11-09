@@ -69,8 +69,7 @@ export default async function ActuCategoryPage({ params }: { params: Promise<{ s
         {categories.data && <CategoryTags categories={categories.data} active={slug} />}
       </div>
       <div className={fr.cx('fr-grid-row', 'fr-grid-row--gutters')}>
-        {data &&
-          data.map((a:any, i:number) => {
+        {data?.map((a:any, i:number) => {
             return (
               <div key={i} className={fr.cx('fr-col-12','fr-col-md-6')}>
                 <ActuCard 

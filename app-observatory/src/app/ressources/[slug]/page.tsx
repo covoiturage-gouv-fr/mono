@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const data = response.data[0]
   return {
     title: `${data ? data.attributes.title : ''} | Observatoire.covoiturage.gouv.fr`,
-    description: shorten(`${data && data.attributes.content ? data.attributes.content : ''}`,150),
+    description: shorten(`${data?.attributes.content ?? ''}`,150),
   }
 }
 
@@ -92,8 +92,7 @@ export default async function ResourceSingle({ params }: { params: Promise<{ slu
           <div className={fr.cx('fr-grid-row', 'fr-grid-row--gutters')}>
             <div className={fr.cx('fr-col','fr-col-md-9')}>
               <ul className={fr.cx('fr-tags-group')}>
-                {data.attributes.categories &&
-                  data.attributes.categories.data.map((c:any, i:number) => {
+                {data.attributes.categories?.data.map((c:any, i:number) => {
                     return (
                       <li key={i}>
                         <Tag

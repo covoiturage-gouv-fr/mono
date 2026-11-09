@@ -100,13 +100,13 @@ export interface DistributionDistanceDataInterface {
   territory: INSEECode;
   l_territory: PerimeterLabel;
   direction: Direction;
-  distances: Array<Distance>;
+  distances: Distance[];
 }
 export interface DistributionHoraireDataInterface {
   territory: INSEECode;
   l_territory: PerimeterLabel;
   direction: Direction;
-  hours: Array<Hour>;
+  hours: Hour[];
 }
 
 export interface BestFluxDataInterface {

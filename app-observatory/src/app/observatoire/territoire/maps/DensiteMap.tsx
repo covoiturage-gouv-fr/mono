@@ -56,7 +56,7 @@ export default function DensiteMap({ title }: { title: string }) {
 
   const layer = new H3HexagonLayer({
     id: 'densite-layer',
-    data: data ? data : [],
+    data: data ?? [],
     opacity: OPACITY,
     pickable: true,
     extruded: false,
@@ -123,7 +123,7 @@ export default function DensiteMap({ title }: { title: string }) {
           download={
             <DownloadButton 
               title={'Télécharger les données de la carte'}
-              data={data!}
+              data={data}
               filename='densite'
             />
           }

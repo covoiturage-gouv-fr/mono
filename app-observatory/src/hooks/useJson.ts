@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 export const useJson = <T>(input: RequestInfo | URL, init?: RequestInit) => {
   const [data, setData] = useState<T | null>(null);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     const fetchData = async () => {
@@ -16,7 +16,7 @@ export const useJson = <T>(input: RequestInfo | URL, init?: RequestInit) => {
       }
       setLoading(false);
     };
-    fetchData();
+    void fetchData();
   }, [input, init]);
   return { data, error, loading };
 };

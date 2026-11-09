@@ -44,7 +44,7 @@ describe("searchTerritories", () => {
     vi.spyOn(globalThis, "fetch").mockRejectedValue(
       Object.assign(new Error("aborted"), { name: "AbortError" }),
     );
-    const logged = vi.spyOn(console, "error").mockImplementation(() => {});
+    const logged = vi.spyOn(console, "error").mockImplementation(() => undefined);
 
     await expect(searchTerritories("lyon")).resolves.toEqual([]);
     expect(logged).not.toHaveBeenCalled();
@@ -64,7 +64,7 @@ describe("searchTerritories", () => {
 
     await searchTerritories("saint-étienne & co");
 
-    expect(String(fetchSpy.mock.calls[0][0])).toContain(
+    expect(fetchSpy.mock.calls[0][0] as string).toContain(
       "q=saint-%C3%A9tienne+%26+co",
     );
   });
@@ -76,7 +76,7 @@ describe("searchTerritories", () => {
 
     await searchTerritories("a".repeat(80));
 
-    expect(String(fetchSpy.mock.calls[0][0])).toContain(`q=${"a".repeat(64)}&`);
+    expect(fetchSpy.mock.calls[0][0] as string).toContain(`q=${"a".repeat(64)}&`);
   });
 
   test("cible le millésime demandé quand `year` est fourni", async () => {
@@ -84,7 +84,7 @@ describe("searchTerritories", () => {
 
     await searchTerritories("lyon", 20, 2022);
 
-    expect(String(fetchSpy.mock.calls[0][0])).toContain("year=2022");
+    expect(fetchSpy.mock.calls[0][0] as string).toContain("year=2022");
   });
 
   test("laisse l'API servir le dernier millésime quand `year` est absent", async () => {
@@ -92,7 +92,7 @@ describe("searchTerritories", () => {
 
     await searchTerritories("lyon");
 
-    expect(String(fetchSpy.mock.calls[0][0])).not.toContain("year=");
+    expect(fetchSpy.mock.calls[0][0] as string).not.toContain("year=");
   });
 });
 
@@ -135,7 +135,7 @@ describe("fetchTerritoryName", () => {
 
     await fetchTerritoryName({ code: "69123", type: "com" }, 2022);
 
-    expect(String(fetchSpy.mock.calls[0][0])).toContain("year=2022");
+    expect(fetchSpy.mock.calls[0][0] as string).toContain("year=2022");
   });
 
   // Commune nouvelle absente d'un millésime ancien : sans repli, le tableau de
@@ -152,7 +152,7 @@ describe("fetchTerritoryName", () => {
     await expect(
       fetchTerritoryName({ code: "14654", type: "com" }, 2022),
     ).resolves.toBe("Souleuvre-en-Bocage");
-    expect(String(fetchSpy.mock.calls[1][0])).not.toContain("year=");
+    expect(fetchSpy.mock.calls[1][0] as string).not.toContain("year=");
   });
 
   test("ne retente pas quand aucun millésime n'était demandé", async () => {

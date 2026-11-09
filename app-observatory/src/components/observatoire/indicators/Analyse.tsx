@@ -3,14 +3,14 @@ import style from './Analyse.module.scss';
 import { fr } from '@codegouvfr/react-dsfr';
 import MDContent from "@/components/common/MDContent";
 
-export type AnalyseProps = {
+export interface AnalyseProps {
   title?: string;
   content: string;
   link?:{
     title: string;
     url: string;
   }
-};
+}
 export default function Analyse(props: AnalyseProps) {
   return (
     <div className={`${fr.cx('fr-col')} ${style.col}`}>

@@ -18,7 +18,7 @@ export default function VrMap({ title}: { title: string }) {
   const url = `https://static.covoiturage.beta.gouv.fr/voies_covoit_10ea0b9f65.json`;
   const { data } = useJson<FeatureCollection>(url);
   const geojson = useMemo(()=>{
-    return data ? data : ''
+    return data ?? ''
   }, [data]);
   const selectList = [{id:0, name:'Sélectionner une voie'}]
   if (geojson) {
@@ -81,7 +81,7 @@ export default function VrMap({ title}: { title: string }) {
               onChange={onChangeSelect}
             />
             {
-              selectedData && selectedData.properties && <Table data={[
+              selectedData?.properties && <Table data={[
                 ['Type', selectedData.properties.type],
                 ['Gestion', selectedData.properties.gestionnaire],
                 ['Localisation', selectedData.properties.localisation],

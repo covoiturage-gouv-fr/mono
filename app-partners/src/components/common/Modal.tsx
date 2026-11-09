@@ -33,6 +33,7 @@ export function Modal(props: ModalProps) {
         void props.onOpen();
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- onOpen n'est pas stable : ne déclencher qu'à l'ouverture
   }, [props.open]);
 
   useIsModalOpen(modal, {

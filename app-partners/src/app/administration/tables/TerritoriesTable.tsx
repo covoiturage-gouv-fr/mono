@@ -182,6 +182,7 @@ export default function TerritoriesTable(props: { title: string; id: number | nu
       }
     };
     void siretValidated();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- modal change à chaque rendu : recherche géo seulement quand le SIRET change
   }, [modal.errors?.siret, modal.currentRow.siret]);
 
   return (

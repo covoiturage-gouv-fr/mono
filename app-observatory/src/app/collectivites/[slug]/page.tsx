@@ -102,7 +102,7 @@ export default async function CollectiviteSinglePage({ params }: { params: Promi
           buttons={hero.buttons} 
         />
       }
-      {data && data.attributes.content && 
+      {data?.attributes.content && 
         <div className={fr.cx('fr-grid-row','fr-mt-5w')}>
           <div className={fr.cx('fr-col')}>
             <div className={fr.cx('fr-text--lg')}>

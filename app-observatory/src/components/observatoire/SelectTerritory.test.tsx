@@ -46,7 +46,7 @@ const typeSearch = (...values: string[]) => {
 };
 
 const searchCalls = (spy: ReturnType<typeof respondWith>) =>
-  spy.mock.calls.map((c) => String(c[0])).filter((u) => u.includes("territories/search"));
+  spy.mock.calls.map((c) => c[0] as string).filter((u) => u.includes("territories/search"));
 
 beforeEach(() => {
   year = 2026;
@@ -193,8 +193,8 @@ describe("sélection", () => {
     typeSearch("lyon");
     await waitFor(() => expect(searchCalls(fetchSpy)).toHaveLength(2));
 
-    expect((fetchSpy.mock.calls[0][1] as RequestInit).signal!.aborted).toBe(true);
-    expect((fetchSpy.mock.calls[1][1] as RequestInit).signal!.aborted).toBe(false);
+    expect((fetchSpy.mock.calls[0][1]!).signal!.aborted).toBe(true);
+    expect((fetchSpy.mock.calls[1][1]!).signal!.aborted).toBe(false);
   });
 
   // MUI réinjecte le libellé formaté dans le champ après sélection : sans le

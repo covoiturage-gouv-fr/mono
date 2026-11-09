@@ -2,11 +2,11 @@ import { ToggleSwitch } from "@codegouvfr/react-dsfr/ToggleSwitch";
 import { useSwitchFilters } from '@/hooks/useSwitchFilters';
 import { SwitchFilterInterface } from '../../../interfaces/observatoire/helpersInterfaces';
 
-type SwitchFilterProps = {
+interface SwitchFilterProps {
   filters: SwitchFilterInterface[];
   labelPosition?: 'left' | 'right';
   showCheckedHint?: boolean;
-};
+}
 
 export default function SwitchFilters(props: SwitchFilterProps) {
   const { switchFilters, onChangeSwitchFilter } = useSwitchFilters(props.filters)

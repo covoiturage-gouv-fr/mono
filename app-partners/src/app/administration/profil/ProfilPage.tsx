@@ -26,6 +26,7 @@ export default function ProfilPage() {
     if (user?.role === "registry.admin" && simulate === false) {
       onChangeSimulatedRole(undefined);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- ne réagir qu'à la bascule du mode simulate
   }, [simulate]);
 
   return (

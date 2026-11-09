@@ -43,6 +43,7 @@ export function useRestQuery<T, TParams = unknown>(
 
     const queryString = searchParams.toString();
     return queryString ? `${baseUrl}?${queryString}` : baseUrl;
+    // eslint-disable-next-line react-hooks/use-memo, react-hooks/exhaustive-deps -- deps fournies par l'appelant : params est recréé à chaque rendu
   }, deps);
 
   const init = useMemo(() => {
@@ -55,6 +56,7 @@ export function useRestQuery<T, TParams = unknown>(
       },
       body: JSON.stringify(params ?? {}),
     };
+    // eslint-disable-next-line react-hooks/use-memo, react-hooks/exhaustive-deps -- deps fournies par l'appelant : params est recréé à chaque rendu
   }, deps);
 
   return useApi<T>(url, paginate, init);

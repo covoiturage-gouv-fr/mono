@@ -156,8 +156,7 @@ flowchart TD
 ## Conventions de Code
 
 - **Hooks API** : `use[Feature][Action]` (ex: `useExportCreate`)
-- **Prettier** : 120 caractères, double quotes, trailing commas
-- **ESLint** : TypeScript strict
+- **ESLint** : config stricte commune aux apps Next (typescript-eslint typeChecked + next core-web-vitals)
 
 ## Lien avec l'API
 
@@ -176,7 +175,6 @@ App-Partners est un **frontend pur** : il ne possède aucune base de données pr
 | Extension         | ID                          | Description                    |
 | ----------------- | --------------------------- | ------------------------------ |
 | ESLint            | `dbaeumer.vscode-eslint`    | Linting TypeScript/JavaScript  |
-| Prettier          | `esbenp.prettier-vscode`    | Formatage automatique du code  |
 | SCSS IntelliSense | `mrmlnc.vscode-scss`        | Autocomplétion SCSS            |
 | EditorConfig      | `editorconfig.editorconfig` | Configuration éditeur partagée |
 

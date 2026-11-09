@@ -4,6 +4,7 @@ import Button from "@codegouvfr/react-dsfr/Button";
 import ovoidSvg from "@codegouvfr/react-dsfr/dsfr/artwork/background/ovoid.svg";
 import technicalErrorSvg from "@codegouvfr/react-dsfr/dsfr/artwork/pictograms/system/technical-error.svg";
 import { type Metadata } from "next";
+import Link from "next/link";
 
 export const metadata: Metadata = { title: "Page non trouvée" };
 
@@ -19,7 +20,7 @@ export default function NotFound() {
               La page que vous cherchez est introuvable. Excusez-nous pour la gène occasionnée.
             </p>
             <p className="fr-text--sm fr-mb-5w">
-              Si vous avez tapé l'adresse web dans le navigateur, vérifiez qu'elle est correcte. La page n’est peut-être
+              Si vous avez tapé l’adresse web dans le navigateur, vérifiez qu’elle est correcte. La page n’est peut-être
               plus disponible.
               <br />
               Dans ce cas, pour continuer votre visite vous pouvez consulter notre page d’accueil, ou effectuer une
@@ -29,9 +30,9 @@ export default function NotFound() {
             </p>
             <ul className="fr-btns-group-icons-right fr-btns-group--inline-md">
               <li>
-                <a className="fr-btn" href="/">
-                  Page d'accueil
-                </a>
+                <Link className="fr-btn" href="/">
+                  Page d’accueil
+                </Link>
               </li>
               <li>
                 <Button

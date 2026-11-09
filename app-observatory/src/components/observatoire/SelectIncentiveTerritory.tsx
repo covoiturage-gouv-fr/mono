@@ -17,7 +17,7 @@ export default function SelectIncentiveTerritory(props: { url: string, data:any[
     type: dashboard.params.type
   }].flat()
   const [options, setOptions] = useState<any[]>(defaultOption);
-  const search =  async (v: string | null) => {
+  const search = (v: string | null) => {
     const filter = v ?  props.data.filter(d=> d.collectivite.toLowerCase().includes(v.toLowerCase())) : props.data
     setOptions(filter);
   };
@@ -47,8 +47,8 @@ export default function SelectIncentiveTerritory(props: { url: string, data:any[
       noOptionsText={'Pas de résultats'}
       renderInput={(params) => <TextField {...params} label='Chercher mon territoire' />}
       filterOptions={(options) => options}
-      onInputChange={async(e, v) => {
-        await search(v);
+      onInputChange={(e, v) => {
+        search(v);
       }}
       
       onChange={(e,v) =>{

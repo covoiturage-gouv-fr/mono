@@ -5,7 +5,7 @@ import Badge from "@codegouvfr/react-dsfr/Badge";
 import Download from "@codegouvfr/react-dsfr/Download";
 import Pagination from "@codegouvfr/react-dsfr/Pagination";
 import { Table } from "@codegouvfr/react-dsfr/Table";
-import { type ReactNode, useEffect, useMemo, useState } from "react";
+import { type ReactNode, useMemo, useState } from "react";
 import AlertMessage from "../common/AlertMessage";
 
 interface ExportListItemInterface {
@@ -112,9 +112,11 @@ export default function ExportList({ refreshTrigger, days = 30, pageSize = 25 }:
   const pageCount = Math.max(1, Math.ceil(dataTableFull.length / pageSize));
   const dataTable = dataTableFull.slice((page - 1) * pageSize, page * pageSize);
 
-  useEffect(() => {
+  const [prevRefreshTrigger, setPrevRefreshTrigger] = useState(refreshTrigger);
+  if (prevRefreshTrigger !== refreshTrigger) {
+    setPrevRefreshTrigger(refreshTrigger);
     setPage(1);
-  }, [refreshTrigger]);
+  }
 
   const tableHeaders = ["Date de début", "Date de fin", "Zone géographique", "Fichier"];
 

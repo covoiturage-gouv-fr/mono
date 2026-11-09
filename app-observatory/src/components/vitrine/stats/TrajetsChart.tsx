@@ -11,7 +11,7 @@ import Chart from "@/components/observatoire/charts/Chart";
 import { OBSERVATORY_API_URL } from "@/helpers/api";
 import { useApi } from "@/hooks/useApi";
 
-type EvolFluxRow = { year: number; month?: number; journeys: number | string };
+interface EvolFluxRow { year: number; month?: number; journeys: number | string }
 
 // Série nationale des trajets « passager » validés, issue de l'API observatoire
 // (endpoint evol-flux, périmètre France). Complétée / doublée par un repli figé

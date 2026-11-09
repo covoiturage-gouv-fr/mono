@@ -71,12 +71,14 @@ export default function AdministrationLayout({ children }: { children: React.Rea
 
   // Une page hors des onglets du rôle n'est pas servie : renvoi sur le profil (l'API refuserait de toute façon).
   const allowedTabs = tabs.map((t) => t.tabId).join(",");
+  const tabIdFromPath = routeToTabId[pathname];
+  if (tabIdFromPath && allowedTabs.split(",").includes(tabIdFromPath) && tabIdFromPath !== activeTab) {
+    setActiveTab(tabIdFromPath);
+  }
   useEffect(() => {
     const tabId = routeToTabId[pathname];
     if (tabId) {
-      if (allowedTabs.split(",").includes(tabId)) {
-        setActiveTab(tabId);
-      } else {
+      if (!allowedTabs.split(",").includes(tabId)) {
         router.replace("/administration/profil");
       }
     } else if (pathname === "/administration") {

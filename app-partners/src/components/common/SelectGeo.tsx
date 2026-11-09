@@ -7,7 +7,7 @@ import Tag from "@codegouvfr/react-dsfr/Tag";
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import { debounce } from "@mui/material/utils";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export default function SelectGeo(props: {
   defaultValue?: string;
@@ -31,26 +31,23 @@ export default function SelectGeo(props: {
   const [options, setOptions] = useState<TerritorySearchResult[]>([defaultOption]);
   // Une réponse lente ne doit pas écraser celle d'une frappe plus récente :
   // chaque recherche annule la précédente.
-  const pending = useRef<AbortController>(undefined);
-  const search = useMemo(
-    () =>
-      debounce((v: string | null) => {
-        pending.current?.abort();
-        const { signal } = (pending.current = new AbortController());
-        void searchTerritories(v, 20, signal).then((results) => {
-          if (!signal.aborted) setOptions(results);
-        });
-      }, 300),
-    [],
-  );
+  const search = useMemo(() => {
+    const pending: { controller?: AbortController } = {};
+    const run = debounce((v: string | null) => {
+      pending.controller?.abort();
+      const { signal } = (pending.controller = new AbortController());
+      void searchTerritories(v, 20, signal).then((results) => {
+        if (!signal.aborted) setOptions(results);
+      });
+    }, 300);
+    const cancel = () => {
+      run.clear();
+      pending.controller?.abort();
+    };
+    return { run, cancel };
+  }, []);
   // Démontage : le `search` en cours ne doit pas tirer après coup.
-  useEffect(
-    () => () => {
-      search.clear();
-      pending.current?.abort();
-    },
-    [search],
-  );
+  useEffect(() => search.cancel, [search]);
 
   return (
     <>
@@ -81,12 +78,11 @@ export default function SelectGeo(props: {
           // `reset` = libellé réinjecté après sélection, pas une saisie : ne pas rechercher.
           if (reason !== "input") return;
           if (!v.trim()) {
-            search.clear();
-            pending.current?.abort();
+            search.cancel();
             setOptions([defaultOption]);
             return;
           }
-          search(v);
+          search.run(v);
         }}
         onChange={(e, v) => {
           setValue(v);
