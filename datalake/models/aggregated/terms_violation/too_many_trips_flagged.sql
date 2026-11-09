@@ -2,11 +2,15 @@
     materialized='incremental',
     incremental_strategy='delete+insert',
     unique_key='carpool_id',
+    indexes=[
+      { 'columns': ['carpool_id'], 'unique': true }
+    ],
     tags=['aggregated', 'terms_violation', 'daily']
 ) }}
 
 -- GEN-647 — refus too_many_trips_by_day : à tort (aucun > 4) vs légitime.
--- Incrémental 7 j ; --full-refresh pour les statuts historiques.
+-- Incrémental 7 j ou start/end ; --full-refresh pour l'historique.
+-- Index unique (posé au full-refresh) : un run concurrent échoue.
 
 WITH refused AS (
   SELECT
@@ -22,7 +26,10 @@ WITH refused AS (
   FROM {{ ref('carpools') }}
   WHERE
     'too_many_trips_by_day' = ANY(terms_violation_error_labels)
-  {% if is_incremental() %}
+    {% if is_incremental() and var('start', none) %}
+      AND start_datetime_tz >= '{{ var("start") }}'::timestamptz
+      AND start_datetime_tz < '{{ var("end", "infinity") }}'::timestamptz
+    {% elif is_incremental() %}
       AND start_datetime_tz >= (CURRENT_DATE - interval '7 days')
     {% endif %}
 ),

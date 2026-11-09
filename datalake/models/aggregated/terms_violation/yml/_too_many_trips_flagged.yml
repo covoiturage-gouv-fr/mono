@@ -9,6 +9,8 @@ models:
       - name: carpool_id
         description: identifiant du trajet refusé (carpool_v2)
         data_type: integer
+        data_tests:
+          - unique
       - name: operator_id
         data_type: integer
       - name: operator_name
