@@ -124,11 +124,13 @@ NEXT_PUBLIC_MATOMO_SITE_ID=    # ID du site Matomo
 En environement de développement il est possible d'utiliser les endpoints de production suivants :
 
 ```env
-NEXT_PUBLIC_CMS_URL=https://ncms.covoiturage.beta.gouv.fr
+NEXT_PUBLIC_CMS_URL=https://cms.covoiturage.beta.gouv.fr
 NEXT_PUBLIC_SEARCH_URL=https://search.covoiturage.beta.gouv.fr
 ```
 
 Pour des raisons de sécurité les tokens devront être récuperés indépendamment
+
+Le CMS est derrière un oauth2-proxy : sans login GitHub, seules les routes `GET /api/(pages|articles|resources|categories|page-vitrines)` répondent (avec `NEXT_PUBLIC_CMS_TOKEN`), tout autre chemin renvoie la page de login HTML.
 
 ## Liens utiles
 
