@@ -26,7 +26,7 @@ WITH refused AS (
   FROM {{ ref('carpools') }}
   WHERE
     'too_many_trips_by_day' = ANY(terms_violation_error_labels)
-    {% if is_incremental() and var('start', none) %}
+  {% if is_incremental() and var('start', none) %}
       AND start_datetime_tz >= '{{ var("start") }}'::timestamptz
       AND start_datetime_tz < '{{ var("end", "infinity") }}'::timestamptz
     {% elif is_incremental() %}
