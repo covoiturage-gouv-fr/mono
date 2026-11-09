@@ -24,6 +24,18 @@ interface SearchOptions {
 }
 type ContentTypes = "article" | "resource" | "page";
 
+interface SearchHit {
+  title: string;
+  slug: string;
+  createdAt: string;
+  content?: string;
+  tags?: { slug: string }[];
+}
+
+interface MultiSearchResponse {
+  results?: { indexUid: ContentTypes; hits?: SearchHit[] }[];
+}
+
 export default function SearchBar(props: SearchBarProps) {
   const { className, id, placeholder, type } = props;
   const [options, setOptions] = useState<SearchOptions[]>([]);
@@ -58,14 +70,14 @@ export default function SearchBar(props: SearchBarProps) {
       ],
     };
     try {
-      const response = await fetchSearchAPI("multi-search", {
+      const response = await fetchSearchAPI<MultiSearchResponse>("multi-search", {
         method: "post",
         body: JSON.stringify(query),
       });
       setOptions(
         (response.results ?? [])
-          .map((r: any) =>
-            (r.hits ?? []).map((h: any) => {
+          .map((r) =>
+            (r.hits ?? []).map((h) => {
               const { tags, content, ...hit } = h;
               void content;
               void tags;

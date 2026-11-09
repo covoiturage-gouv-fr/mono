@@ -43,12 +43,12 @@ export async function searchTerritories(
       console.error(`Recherche de territoires : HTTP ${response.status}`);
       return [];
     }
-    const data = await response.json();
+    const data: unknown = await response.json();
     if (!Array.isArray(data)) {
       console.error("Recherche de territoires : réponse inattendue");
       return [];
     }
-    return data;
+    return data as TerritorySearchResult[];
   } catch (e) {
     // Requête remplacée par une frappe plus récente : ce n'est pas une panne.
     if (e instanceof Error && e.name === "AbortError") return [];

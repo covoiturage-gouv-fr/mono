@@ -2,7 +2,7 @@ import { ClasseInterface } from '@/interfaces/observatoire/componentsInterfaces'
 import type { AnalyseInterface } from '@/interfaces/observatoire/helpersInterfaces';
 import { ckmeans } from 'simple-statistics';
 
-export function jenks(data: any[], field: string, colors: string[], width: number[]) {
+export function jenks<K extends string>(data: Record<K, number>[], field: K, colors: string[], width: number[]) {
   const vals: number[] = data.map((d) => d[field]);
   const nbClasses = Math.min(colors.length, vals.length);
   const breaks =  nbClasses > 1 ? ckmeans(vals, nbClasses) : [];

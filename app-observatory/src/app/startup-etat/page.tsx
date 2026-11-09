@@ -1,6 +1,7 @@
 import Hero from '@/components/common/Hero';
 import VitrineRows from '@/components/vitrine/VitrineRows';
 import { fetchAPI } from '@/helpers/cms';
+import { PageVitrine } from '@/interfaces/cms/strapi';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -24,7 +25,7 @@ export default async function Vitrine() {
       }
     },  
   };
-  const response  = await fetchAPI('/page-vitrines',query);
+  const response  = await fetchAPI<PageVitrine>('/page-vitrines',query);
   const data = response.data[0];
   const hero = data?.attributes?.Hero;
   const rows = data?.attributes?.Rows;
@@ -38,7 +39,6 @@ export default async function Vitrine() {
           subtitle={hero.subtitle}
           content={hero.content} 
           img={hero.img.data ? hero.img.data.attributes.url : undefined} 
-          alt={hero.alt} 
           buttons={hero.buttons} 
         />
       }

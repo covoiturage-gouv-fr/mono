@@ -3,6 +3,7 @@ import CategoryTags from '@/components/common/CategoryTags';
 import PageTitle from "@/components/common/PageTitle";
 import Pagination from "@/components/common/Pagination";
 import { cmsActusByPage, fetchAPI, shorten } from "@/helpers/cms";
+import { Article, Categorie } from "@/interfaces/cms/strapi";
 import { fr } from "@codegouvfr/react-dsfr";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string, id: string }>}) {
@@ -14,7 +15,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       }
     }
   };
-  const {data} =  await fetchAPI('/categories',query);  
+  const {data} =  await fetchAPI<Categorie>('/categories',query);  
   return {
     title: `Actualités page ${id} pour la catégorie ${data ? data[0].attributes.label : ''}| Observatoire.covoiturage.gouv.fr`,
     description: `Page ${id} des actualités sur le covoiturage de courte distance pour la catégorie ${data ? data[0].attributes.label : ''}`,
@@ -22,7 +23,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 }
 
 export async function generateStaticParams() {
-  const categories =  await fetchAPI('/categories',{
+  const categories =  await fetchAPI<Categorie>('/categories',{
     fields: 'slug',
     filters:{
       articles:{
@@ -32,7 +33,7 @@ export async function generateStaticParams() {
       }
     }
   });
-  const data = await Promise.all(categories.data.map(async (c:any) => {
+  const data = await Promise.all(categories.data.map(async (c) => {
     const query = {
       filter:{
         categories:{
@@ -45,7 +46,7 @@ export async function generateStaticParams() {
         pageSize: cmsActusByPage
       }
     };
-    const { meta }  = await fetchAPI('/articles',query);
+    const { meta }  = await fetchAPI<Article>('/articles',query);
     const nbPage = meta.pagination.pageCount;
     return Array.from({ length: nbPage }, (_, v) => {
       const id = v + 1;
@@ -75,7 +76,7 @@ export default async function ActuCategoriePage({ params }: { params: Promise<{ 
       page: id,
     }
   };
-  const { data, meta }  = await fetchAPI('/articles',query);
+  const { data, meta }  = await fetchAPI<Article>('/articles',query);
   const catQuery = {
     filters:{
       articles:{
@@ -85,9 +86,9 @@ export default async function ActuCategoriePage({ params }: { params: Promise<{ 
       }
     }
   }
-  const categories =  await fetchAPI('/categories',catQuery);
+  const categories =  await fetchAPI<Categorie>('/categories',catQuery);
   const nbPage = meta ? meta.pagination.pageCount : 1;
-  const pageTitle = `Actualités de la catégorie ${categories.data.find((c:any) => c.attributes.slug === slug).attributes.label} page ${id}`; 
+  const pageTitle = `Actualités de la catégorie ${categories.data.find((c) => c.attributes.slug === slug)?.attributes.label ?? ''} page ${id}`; 
 
   return (
     <div id='content'>
@@ -96,7 +97,7 @@ export default async function ActuCategoriePage({ params }: { params: Promise<{ 
         {categories.data && <CategoryTags categories={categories.data} active={slug} page={id}/>}
       </div>
       <div className={fr.cx('fr-grid-row', 'fr-grid-row--gutters')}>
-        {data?.map((a:any, i:number) => {
+        {data?.map((a, i:number) => {
             return (
               <div key={i} className={fr.cx('fr-col-12','fr-col-md-6')}>
                 <ActuCard 
@@ -104,8 +105,7 @@ export default async function ActuCategoriePage({ params }: { params: Promise<{ 
                   content={shorten(a.attributes.description,250)}
                   date={new Date(a.attributes.createdAt).toLocaleDateString('fr-FR')}
                   href={`/actualites/${a.attributes.slug}`}
-                  img={a.attributes.img.data.attributes.formats.medium ? a.attributes.img.data.attributes.formats.medium.url : a.attributes.img.data.attributes.url}
-                  img_legend={a.attributes.img_legend}
+                  img={a.attributes.img.data?.attributes.formats?.medium ? a.attributes.img.data.attributes.formats.medium.url : a.attributes.img.data?.attributes.url ?? ''}
                   categories={a.attributes.categories.data}
                 />
               </div>

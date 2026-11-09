@@ -1,7 +1,7 @@
-import { Button } from '../cms/collectionsInterface'
+import { Button, VitrineRow } from "@/interfaces/cms/strapi"
 
 export interface RowsProps {
-  data: any[],
+  data: VitrineRow[],
 };
 
 export interface VitrineCardProps {

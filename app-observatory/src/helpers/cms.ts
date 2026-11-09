@@ -1,5 +1,6 @@
 import { Config } from "@/config";
 import { cms } from "@/config/cms";
+import { StrapiResponse } from "@/interfaces/cms/strapi";
 import qs from "qs";
 
 export const cmsHost = Config.get<string>("cms.host");
@@ -12,7 +13,7 @@ export const getNbPages = (total: number, max: number) => {
   return total / max > 1 ? Math.round(total / max) : 1;
 };
 
-export const fetchAPI = async (path: string, urlParamsObject = {}, options = {}) => {
+export const fetchAPI = async <A>(path: string, urlParamsObject = {}, options = {}): Promise<StrapiResponse<A>> => {
   try {
     const mergedOptions = {
       next: cms.next,
@@ -23,8 +24,7 @@ export const fetchAPI = async (path: string, urlParamsObject = {}, options = {})
     const queryString = qs.stringify(urlParamsObject);
     const requestUrl = `${cmsHost}/api${path}${queryString ? `?${queryString}` : ""}`;
     const response = await fetch(requestUrl, mergedOptions);
-    const data = await response.json();
-    return data;
+    return (await response.json()) as StrapiResponse<A>;
   } catch (e) {
     console.error(e);
     throw new Error(`Please check if your server is running and you set all the required tokens.`, { cause: e });

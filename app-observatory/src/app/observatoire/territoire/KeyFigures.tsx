@@ -1,8 +1,8 @@
 import Rows from "@/components/observatoire/indicators/Rows";
 import { OBSERVATORY_API_URL } from "@/helpers/api";
 import { useApi } from "@/hooks/useApi";
-import { IndicatorProps } from "@/interfaces/observatoire/componentsInterfaces";
 import { KeyFiguresDataInterface } from "@/interfaces/observatoire/dataInterfaces";
+import { IndicatorRow } from "@/interfaces/cms/strapi";
 import { fr } from "@codegouvfr/react-dsfr";
 import { useDashboardContext } from "../../../context/DashboardProvider";
 
@@ -29,12 +29,13 @@ export default function KeyFigures() {
     return `${OBSERVATORY_API_URL}/keyfigures?${params.join("&")}`;
   };
   const { data, error, loading } = useApi<KeyFiguresDataInterface[]>(url());
-  const row1 =
+  const row1: IndicatorRow[] =
     data && data.length > 0
       ? ([
           {
             __component: "row.indicator",
             value: data[0].passengers.toLocaleString(),
+            unit: "",
             text: "Passagers transportés",
             link: "/observatoire/glossaire-des-indicateurs/#passagers-transportés",
             icon: "ri-car-line",
@@ -42,6 +43,7 @@ export default function KeyFigures() {
           {
             __component: "row.indicator",
             value: `${data[0].occupation_rate.toLocaleString()}`,
+            unit: "",
             text: "Personnes par véhicule",
             link: "/observatoire/glossaire-des-indicateurs/#taux-doccupation-des-véhicules-partagés",
             icon: "ri-group-2-line",
@@ -49,6 +51,7 @@ export default function KeyFigures() {
           {
             __component: "row.indicator",
             value: `${data[0].new_drivers.toLocaleString()}`,
+            unit: "",
             text: "Primo conducteurs",
             link: "/observatoire/glossaire-des-indicateurs/#primo-covoitureurs",
             icon: "ri-steering-2-line",
@@ -56,14 +59,15 @@ export default function KeyFigures() {
           {
             __component: "row.indicator",
             value: `${data[0].new_passengers.toLocaleString()}`,
+            unit: "",
             text: "Primo passagers",
             link: "/observatoire/glossaire-des-indicateurs/#primo-covoitureurs",
             icon: "ri-user-add-line",
           },
-        ] as IndicatorProps[])
+        ])
       : [];
 
-  const row2 =
+  const row2: IndicatorRow[] =
     data && data.length > 0
       ? ([
           {
@@ -101,11 +105,12 @@ export default function KeyFigures() {
           {
             __component: "row.indicator",
             value: Math.round(data[0].distance * 0.000195).toLocaleString(),
+            unit: "",
             text: "Tonnes de CO₂ économisés",
             link: "/observatoire/glossaire-des-indicateurs/#co-économisé",
             icon: "ri-haze-line",
           },
-        ] as IndicatorProps[])
+        ])
       : [];
 
   return (
