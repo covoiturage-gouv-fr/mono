@@ -2,12 +2,12 @@ import { INSEECode, PerimeterType } from "@/interfaces/observatoire/Perimeter";
 import { PeriodType } from "../observatoire/componentsInterfaces";
 import { TerritoryListInterface } from "../observatoire/dataInterfaces";
 
-export type Params = {
+export interface Params {
   code: INSEECode;
   type: PerimeterType;
   observe: PerimeterType;
   name: string;
-};
+}
 
 export interface DashboardParams extends Params {
   period: PeriodType;
@@ -19,7 +19,7 @@ export interface DashboardParams extends Params {
   graph: number;
 }
 
-export type DashboardContextType = {
+export interface DashboardContextType {
   dashboard: {
     params: DashboardParams;
     lastPeriod: number;
@@ -36,4 +36,4 @@ export type DashboardContextType = {
     onChangeGraph: (value: number) => void;
     onChangeMap: (value: number) => void;
   };
-};
+}

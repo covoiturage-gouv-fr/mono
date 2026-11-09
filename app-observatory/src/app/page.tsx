@@ -137,7 +137,7 @@ export default async function Home() {
             }
             <SectionTitle title='Vous êtes ?' />
             <div className={fr.cx('fr-grid-row','fr-grid-row--gutters')}>
-              {tiles && tiles.map( (t, i) => 
+              {tiles?.map( (t, i) => 
                 <div key={i} className={fr.cx('fr-col-12','fr-col-md-4')}>
                   <Tile 
                     title={t.title}

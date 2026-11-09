@@ -6,7 +6,7 @@ import { fr } from "@codegouvfr/react-dsfr";
 import Alert from "@codegouvfr/react-dsfr/Alert";
 import Button from "@codegouvfr/react-dsfr/Button";
 import { usePathname, useRouter } from "next/navigation";
-import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useEffectEvent, useRef, useState } from "react";
 
 // Clés du miroir client (affichage + ré-assertion après reload).
 const MIRROR_KEY = "rpc.active_territory_id";
@@ -25,7 +25,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const formEditingRef = useRef(false);
   // checkAuth tourne depuis des effets figés : le mode simulate est lu via une ref, jamais périmé.
   const simulateRef = useRef(simulate);
-  simulateRef.current = simulate;
+  useEffect(() => {
+    simulateRef.current = simulate;
+  }, [simulate]);
 
   // Le toast de bascule se ferme seul : fixé en haut, il recouvrait l'en-tête jusqu'au rechargement.
   useEffect(() => {
@@ -84,13 +86,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // À chaque navigation : un compte supprimé ou une session expirée ne doit pas survivre au cookie.
   // Déjà authentifié : pas de spinner, la vérification se fait en arrière-plan.
+  const onCheckAuth = useEffectEvent(() => void checkAuth());
   useEffect(() => {
-    void checkAuth();
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- vérification de session : les setState suivent l'appel réseau
+    onCheckAuth();
   }, [pathname]);
 
   // useApi signale un 401 : la session serveur fait foi, on la revérifie.
   useEffect(() => {
-    const onUnauthorized = () => void checkAuth();
+    const onUnauthorized = () => onCheckAuth();
     window.addEventListener(AUTH_UNAUTHORIZED_EVENT, onUnauthorized);
     return () => window.removeEventListener(AUTH_UNAUTHORIZED_EVENT, onUnauthorized);
   }, []);
@@ -137,11 +141,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [isAuth, simulate]);
 
   // clean up user on simulatedRole reset
-  useEffect(() => {
+  const [prevSimulatedRole, setPrevSimulatedRole] = useState(simulatedRole);
+  if (prevSimulatedRole !== simulatedRole) {
+    setPrevSimulatedRole(simulatedRole);
     if (!simulatedRole) {
       setUser((prev) => (prev ? { ...prev, territory_id: null, operator_id: null } : prev));
     }
-  }, [simulatedRole]);
+  }
 
   const onChangeTerritory = (id: number | null) => {
     const territory_id = simulatedRole === "territory" && id ? id : null;

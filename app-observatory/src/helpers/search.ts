@@ -17,7 +17,7 @@ export const fetchSearchAPI = async (path:string, options = {}) => {
   }
   catch(e){
     console.error(e);
-    throw new Error(`Please check if your server is running and you set all the required tokens.`);
+    throw new Error(`Please check if your server is running and you set all the required tokens.`, { cause: e });
   }
   // Meilisearch répond en JSON même en erreur : sans ce garde, le corps d'erreur
   // est retourné comme un résultat et casse l'appelant plus loin.

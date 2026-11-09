@@ -3,7 +3,7 @@ import { searchDashboardTerritories, type TerritoryOption } from "@/helpers/api"
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import { debounce } from "@mui/material/utils";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 const MIN_CHARS = 2;
 const RESULTS_LIMIT = 20;
@@ -25,33 +25,31 @@ export default function TerritoryAutocomplete(props: {
   const [input, setInput] = useState(valueLabel);
   // Une réponse lente ne doit pas écraser celle d'une frappe plus récente :
   // chaque recherche annule la précédente.
-  const pending = useRef<AbortController>(undefined);
-  const search = useMemo(
-    () =>
-      debounce((v: string) => {
-        pending.current?.abort();
-        const { signal } = (pending.current = new AbortController());
-        void searchDashboardTerritories(v, RESULTS_LIMIT, signal).then((results) => {
-          if (!signal.aborted) setOptions(results);
-        });
-      }, 300),
-    [],
-  );
-  useEffect(
-    () => () => {
-      search.clear();
-      pending.current?.abort();
-    },
-    [search],
-  );
+  const search = useMemo(() => {
+    const pending: { controller?: AbortController } = {};
+    const run = debounce((v: string) => {
+      pending.controller?.abort();
+      const { signal } = (pending.controller = new AbortController());
+      void searchDashboardTerritories(v, RESULTS_LIMIT, signal).then((results) => {
+        if (!signal.aborted) setOptions(results);
+      });
+    }, 300);
+    const cancel = () => {
+      run.clear();
+      pending.controller?.abort();
+    };
+    return { run, cancel };
+  }, []);
+  useEffect(() => search.cancel, [search]);
   // Clé = libellé, pas l'objet : le parent peut reconstruire `value` à chaque rendu.
-  useEffect(() => {
+  const [prevValueLabel, setPrevValueLabel] = useState(valueLabel);
+  if (prevValueLabel !== valueLabel) {
+    setPrevValueLabel(valueLabel);
     setInput(valueLabel);
-  }, [valueLabel]);
+  }
 
   const stop = () => {
-    search.clear();
-    pending.current?.abort();
+    search.cancel();
     setOptions([]);
   };
 
@@ -76,7 +74,7 @@ export default function TerritoryAutocomplete(props: {
         // `reset` = libellé réinjecté après sélection, pas une saisie : ne pas rechercher.
         if (reason !== "input") return;
         if (v.trim().length < MIN_CHARS) return stop();
-        search(v);
+        search.run(v);
       }}
       onChange={(e, v) => {
         stop();

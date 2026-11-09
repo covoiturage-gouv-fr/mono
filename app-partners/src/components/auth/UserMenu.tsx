@@ -19,6 +19,7 @@ export function UserMenu() {
 
   const authLogout = () => {
     logout();
+    // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- URL absolue de l'API, rechargement complet voulu
     window.location.href = `${Config.get<string>("auth.domain")}/auth/logout`;
   };
 

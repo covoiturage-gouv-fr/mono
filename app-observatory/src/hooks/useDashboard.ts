@@ -42,10 +42,10 @@ export const useDashboard = () => {
   const onLoadTerritory = useCallback(
     async (value?: { code: INSEECode; type: PerimeterType }) => {
       setLoading(true);
-      const territory = value ? value : { code: "XXXXX", type: "country" as PerimeterType };
+      const territory = value ?? { code: "XXXXX", type: "country" as PerimeterType };
       const name = await fetchTerritoryName(territory, targetMillesime(params.year));
       setParams((p) => {
-        return { ...p, ...territory, name: name, observe: "com" } as typeof p;
+        return { ...p, ...territory, name: name, observe: "com" };
       });
       setLoading(false);
     },

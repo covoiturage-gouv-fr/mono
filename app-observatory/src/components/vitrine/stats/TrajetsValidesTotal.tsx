@@ -5,7 +5,7 @@ import Rows from "@/components/observatoire/indicators/Rows";
 import { OBSERVATORY_API_URL } from "@/helpers/api";
 import { useApi } from "@/hooks/useApi";
 
-type EvolFluxRow = { year: number; journeys: number | string };
+interface EvolFluxRow { year: number; journeys: number | string }
 
 // Total des trajets « passager » validés = somme de la série annuelle nationale
 // d'evol-flux (2019 → année en cours). Rien n'est rendu tant que l'API n'a pas

@@ -8,7 +8,7 @@ export function GetPeriod() {
   };
 
   switch (dashboard.params.period) {
-    case "trimester":
+    case "trimester": {
       const startTrimesterMonths = [0, 3, 6, 9]; // Mois de début des trimestres (janvier, avril, juillet, octobre)
       const endTrimesterMonths = [2, 5, 8, 11]; // Mois de fin des trimestres (mars, juin, septembre, décembre)
       period.start_date = new Date(
@@ -21,7 +21,8 @@ export function GetPeriod() {
         endTrimesterMonths[dashboard.params.trimester - 1] + 1,
       ).toISOString().slice(0, 10); // Dernier jour du mois du trimestre
       break;
-    case "semester":
+    }
+    case "semester": {
       const startSemesterMonths = [0, 6]; // Mois de début des semestres (janvier, juillet)
       const endSemesterMonths = [5, 11]; // Mois de fin des trimestres (juin, décembre)
       period.start_date = new Date(
@@ -34,6 +35,7 @@ export function GetPeriod() {
         endSemesterMonths[dashboard.params.semester - 1] + 1,
       ).toISOString().slice(0, 10); // Dernier jour du mois du trimestre
       break;
+    }
     case "year":
       period.start_date = new Date(
         dashboard.params.year,

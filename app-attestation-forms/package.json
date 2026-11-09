@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
+    "lint": "eslint --concurrency auto .",
     "predev": "react-dsfr update-icons",
     "prebuild": "react-dsfr update-icons",
     "serve": "npx serve out -p 4200"
@@ -23,12 +23,14 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/file-saver": "^2.0.7",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "eslint": "^9",
+    "eslint": "^10.14.0",
     "eslint-config-next": "16.4.4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "typescript-eslint": "^8.72.1"
   }
 }

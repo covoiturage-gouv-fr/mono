@@ -82,9 +82,11 @@ export default function TabCampaigns() {
   const totalRecords = dataTableFull.length;
 
   // ⚠️ si les données changent, on revient à la première page
-  useEffect(() => {
+  const [prevTotal, setPrevTotal] = useState(dataTableFull.length);
+  if (prevTotal !== dataTableFull.length) {
+    setPrevTotal(dataTableFull.length);
     setPage(1);
-  }, [dataTableFull.length]);
+  }
 
   const headers = [
     "Statut",
@@ -103,7 +105,7 @@ export default function TabCampaigns() {
     } else if (pathname === "/activite") {
       router.push("/activite/campagnes");
     }
-  }, [router, campaignId]);
+  }, [router, campaignId, pathname]);
 
   return (
     <>
@@ -119,7 +121,7 @@ export default function TabCampaigns() {
             marginBottom: "1rem",
           }}
         >
-          <h3 className={fr.cx("fr-callout__title")}>Campagnes d'incitation</h3>
+          <h3 className={fr.cx("fr-callout__title")}>Campagnes d’incitation</h3>
           <Input
             label="Rechercher"
             state={search !== "" ? (totalRecords <= 0 ? "error" : "success") : "default"}

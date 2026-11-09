@@ -51,7 +51,7 @@ export default function CampaignDetails() {
           {`${(Number(currentCampaign?.incentive_sum) / 100).toLocaleString()} € sur ${(Number(currentCampaign.max_amount) / 100).toLocaleString()} €`}
         </div>
         <i>
-          * A noter que le budget est le montant dédié aux incitations uniquement et qu'il s'agit ici d'une estimation
+          * A noter que le budget est le montant dédié aux incitations uniquement et qu’il s’agit ici d’une estimation
           de la consommation en quasi temps réel.{" "}
         </i>
         <DescriptiveSheetUrlEditor

@@ -41,9 +41,14 @@ export default function TabExport() {
 
   const { createExport, data: exportResponse, loading, error, reset } = useExportCreate();
 
+  const [prevExportResponse, setPrevExportResponse] = useState(exportResponse);
+  if (prevExportResponse !== exportResponse) {
+    setPrevExportResponse(exportResponse);
+    if (exportResponse) setRefreshTrigger((prev) => prev + 1);
+  }
+
   useEffect(() => {
     if (exportResponse) {
-      setRefreshTrigger((prev) => prev + 1);
       scrollRef.current?.scrollIntoView({ behavior: "smooth" });
     }
   }, [exportResponse]);
@@ -237,10 +242,10 @@ export default function TabExport() {
                         <>
                           <ActiveScopeBadge />
                           <br />
-                          Vous allez recevoir un email avec le lien de téléchargement d'ici maximum 2h.
+                          Vous allez recevoir un email avec le lien de téléchargement d’ici maximum 2h.
                           <br />
                           Un rafraîchissement de la page sera nécessaire pour mettre à jour le statut de traitement de
-                          l'export affiché ci-dessous.
+                          l’export affiché ci-dessous.
                         </>
                       }
                       closable

@@ -11,7 +11,7 @@ import { Input } from "@codegouvfr/react-dsfr/Input";
 import { RadioButtons } from "@codegouvfr/react-dsfr/RadioButtons";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, DefaultValues, useForm } from "react-hook-form";
 
 const STORAGE_KEY = "formPublic";
 
@@ -50,7 +50,7 @@ export function PublicForm() {
   useEffect(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) reset(JSON.parse(saved));
+      if (saved) reset(JSON.parse(saved) as DefaultValues<PublicFormValues>);
     } catch {
       localStorage.removeItem(STORAGE_KEY);
     }
@@ -59,6 +59,7 @@ export function PublicForm() {
   // debounced auto-save
   useEffect(() => {
     let timeout: ReturnType<typeof setTimeout>;
+    // eslint-disable-next-line react-hooks/incompatible-library -- abonnement dans un effet, aucune valeur lue au rendu
     const subscription = watch((value) => {
       clearTimeout(timeout);
       timeout = setTimeout(() => {
@@ -79,7 +80,7 @@ export function PublicForm() {
     try {
       setSubmitError(false);
       await generatePublicPdf(data);
-      saveHonor("public", "");
+      void saveHonor("public", "");
     } catch (err) {
       console.error(err);
       setSubmitError(true);
@@ -98,23 +99,23 @@ export function PublicForm() {
       : fallback;
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} onReset={onReset}>
+    <form onSubmit={(e) => void handleSubmit(onSubmit)(e)} onReset={onReset}>
       <h4>Secteur public</h4>
 
       <p>
-        L'indemnité est un montant forfaitaire pouvant aller jusqu'à 300&nbsp;€ par an (exonérée d'impôts et de
+        L&apos;indemnité est un montant forfaitaire pouvant aller jusqu&apos;à 300&nbsp;€ par an (exonérée d&apos;impôts et de
         prélèvements sociaux) en fonction du nombre de déplacements réalisés :
       </p>
       <ul>
         <li>100 € pour un nombre de déplacements entre 30 et 59 jours ;</li>
         <li>200 € pour un nombre de déplacements entre 60 et 99 jours ;</li>
-        <li>300 € pour un nombre de déplacements d'au moins 100 jours</li>
+        <li>300 € pour un nombre de déplacements d&apos;au moins 100 jours</li>
       </ul>
 
       <p className="fr-highlight fr-highlight--blue-ecume">
 
         <em>
-          Les champs marqués d'un{" "}
+          Les champs marqués d&apos;un{" "}
           <span aria-hidden="true" style={{ color: "var(--text-default-error)" }}>
             *
           </span>{" "}
@@ -193,7 +194,7 @@ export function PublicForm() {
       )}
 
       <Input
-        label={<RequiredLabel>Nombre de jours covoiturés dans l'année</RequiredLabel>}
+        label={<RequiredLabel>Nombre de jours covoiturés dans l&apos;année</RequiredLabel>}
         nativeInputProps={{ ...register("days"), maxLength: 3, required: true }}
         state={errors.days ? "error" : "default"}
         stateRelatedMessage={errors.days?.message}
@@ -242,7 +243,7 @@ export function PublicForm() {
               hintText:
                 c.id === "checkbox_6"
                   ? 
-                    <p className="fr-highlight fr-highlight--blue-ecume fr-mt-1w">Les agents de la fonction publique hospitalière ne peuvent pas bénéficier du Forfait mobilités durables, s'il existe des transports collectifs gratuits sur leur territoires, contrairement aux agents des fonctions publiques d'Etat et territoriale, qui ont désormais ce droit.</p>
+                    <p className="fr-highlight fr-highlight--blue-ecume fr-mt-1w">Les agents de la fonction publique hospitalière ne peuvent pas bénéficier du Forfait mobilités durables, s&apos;il existe des transports collectifs gratuits sur leur territoires, contrairement aux agents des fonctions publiques d&apos;Etat et territoriale, qui ont désormais ce droit.</p>
                   : undefined,
               nativeInputProps: {
                 value: c.id,

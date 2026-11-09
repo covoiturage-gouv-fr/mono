@@ -23,12 +23,16 @@ export function useUrlSearch(options: UseUrlSearchOptions = {}): UseUrlSearchRet
   const debouncedSearch = useDebounce(search, debounceMs);
 
   // Initialize search from URL param
-  useEffect(() => {
+  const [prevSearchParams, setPrevSearchParams] = useState<typeof searchParams | null>(null);
+  const [prevParamName, setPrevParamName] = useState(paramName);
+  if (prevSearchParams !== searchParams || prevParamName !== paramName) {
+    setPrevSearchParams(searchParams);
+    setPrevParamName(paramName);
     const param = searchParams.get(paramName);
     if (param) {
       setSearch(param);
     }
-  }, [searchParams, paramName]);
+  }
 
   // Sync debounced search back to URL
   useEffect(() => {

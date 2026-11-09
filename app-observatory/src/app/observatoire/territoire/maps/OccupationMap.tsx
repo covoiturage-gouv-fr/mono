@@ -10,7 +10,6 @@ import { AnalyseInterface } from "@/interfaces/observatoire/helpersInterfaces";
 import { fr } from "@codegouvfr/react-dsfr";
 import bbox from "@turf/bbox";
 import { feature, featureCollection } from "@turf/helpers";
-import { FeatureCollection } from "geojson";
 import { LngLatBoundsLike } from "maplibre-gl";
 import { useCallback, useMemo, useState } from "react";
 import { LayerProps, Layer, Popup, Source } from "react-map-gl/maplibre";
@@ -29,7 +28,7 @@ export default function OccupationMap({ title }: { title: string }) {
   const url = GetApiUrl("occupation", params);
   const { data, error, loading } = useApi<OccupationDataInterface[]>(url);
   const geojson = useMemo(() => {
-    const occupationData = data ? data : [];
+    const occupationData = data ?? [];
     return featureCollection(
       occupationData.map((d) =>
         feature(d.geom, {
@@ -39,7 +38,7 @@ export default function OccupationMap({ title }: { title: string }) {
           occupation_rate: Number(d.occupation_rate),
         }),
       ),
-    ) as unknown as FeatureCollection;
+    );
   }, [data]);
 
   const layer: LayerProps = {
@@ -172,7 +171,7 @@ export default function OccupationMap({ title }: { title: string }) {
           download={
             <DownloadButton
               title={"Télécharger les données de la carte"}
-              data={geojson as FeatureCollection}
+              data={geojson}
               type={"geojson"}
               filename="occupation"
             />

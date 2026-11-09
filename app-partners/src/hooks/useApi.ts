@@ -91,6 +91,7 @@ export const useApi = <T>(url: string | URL, paginate = false, init?: RequestIni
     }
   }, [url, init, paginate]);
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- chargement de données : loading/error remis à zéro avant la requête
     void fetchData();
   }, [fetchData, reloadDependency]);
   return { data, error, loading, refetch: fetchData };

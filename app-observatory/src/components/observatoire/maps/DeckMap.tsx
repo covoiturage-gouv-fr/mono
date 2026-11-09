@@ -53,10 +53,10 @@ const DeckMap = (props: DeckMapInterface) => {
         <div className={fr.cx('fr-col', mapClass)} tabIndex={0}>
           <Map
             ref={mapRef}
-            initialViewState={props.initialView ? props.initialView : defaultView}
+            initialViewState={props.initialView ?? defaultView}
             style={{
-              width: props.width ? props.width : '100%',
-              height: props.height ? props.height : '60vh',
+              width: props.width ?? '100%',
+              height: props.height ?? '60vh',
             }}
             mapStyle={props.mapStyle}
             workerUrl="/maplibre-gl-worker.mjs"
@@ -66,8 +66,7 @@ const DeckMap = (props: DeckMapInterface) => {
             <DeckGLOverlay layers={props.layers} getTooltip={props.tooltip} />
             <NavigationControl />
             <FullscreenControl />
-            {props.legend &&
-              props.legend.map((l,i) =>
+            {props.legend?.map((l,i) =>
                 <Legend key={i} {...l} />
               )
             }

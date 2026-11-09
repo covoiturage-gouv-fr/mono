@@ -11,8 +11,7 @@ export default function ActuCard(props: ActuCardProps) {
       desc={props.content}
       start={
         <ul className={fr.cx('fr-tags-group')}>
-          {props.categories &&
-            props.categories.map((c, i) => {
+          {props.categories?.map((c, i) => {
               return (
                 <li key={i}>
                   <Tag small>

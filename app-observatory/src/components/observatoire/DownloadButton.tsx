@@ -2,7 +2,7 @@ import Button from '@codegouvfr/react-dsfr/Button';
 import { downloadData } from '@/helpers/map';
 import { FeatureCollection } from 'geojson';
 
-type DownloadButtonProps = {
+interface DownloadButtonProps {
   title: string,
   data: any[] | FeatureCollection,
   filename: string,
@@ -10,7 +10,7 @@ type DownloadButtonProps = {
 }
 export default function DownloadButton(props:DownloadButtonProps) {
   return(
-    <Button onClick={() => downloadData(props.filename, props.data, props.type ? props.type : 'csv')}
+    <Button onClick={() => downloadData(props.filename, props.data, props.type ?? 'csv')}
       iconId="fr-icon-download-fill"
       iconPosition="right"
     >

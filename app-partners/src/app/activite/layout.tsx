@@ -33,21 +33,18 @@ export default function ActiviteLayout({ children }: { children: React.ReactNode
   const pathname = usePathname();
   const [activeTab, setActiveTab] = useState("1");
 
-  useEffect(() => {
-    let tabId = undefined;
-    for (const [route, id] of Object.entries(routeToTabId)) {
-      if (pathname === route || pathname.startsWith(route)) {
-        tabId = id;
-        break;
-      }
-    }
+  const tabIdFromPath = Object.entries(routeToTabId).find(
+    ([route]) => pathname === route || pathname.startsWith(route),
+  )?.[1];
+  if (tabIdFromPath && tabIdFromPath !== activeTab) {
+    setActiveTab(tabIdFromPath);
+  }
 
-    if (tabId) {
-      setActiveTab(tabId);
-    } else if (pathname === "/activite") {
+  useEffect(() => {
+    if (!tabIdFromPath && pathname === "/activite") {
       router.push("/activite/export");
     }
-  }, [pathname, router]);
+  }, [pathname, router, tabIdFromPath]);
 
   const handleTabChange = (tabId: string) => {
     const route = tabIdToRoute[tabId];

@@ -28,7 +28,7 @@ function objectToMap(obj: ConfigObject): Map<string, ConfigObject> {
   const map = new Map();
   if (typeof obj === 'object' && obj !== null) {
     for (const key in obj) {
-      if (obj.hasOwnProperty(key)) {
+      if (Object.hasOwn(obj, key)) {
         const value = obj[key];
 
         if (typeof value === 'object' && value !== null) {

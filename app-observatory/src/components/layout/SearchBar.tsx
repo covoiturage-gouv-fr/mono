@@ -8,20 +8,20 @@ import { sendEvent } from "@socialgouv/matomo-next";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 
-type SearchBarProps = {
+interface SearchBarProps {
   className?: string;
   id: string;
   placeholder: string;
   type: "search";
-};
+}
 
-type SearchOptions = {
+interface SearchOptions {
   id: ContentTypes;
   title: string;
   tag: string | null;
   slug: string;
   createdAt: string;
-};
+}
 type ContentTypes = "article" | "resource" | "page";
 
 export default function SearchBar(props: SearchBarProps) {
@@ -136,8 +136,8 @@ export default function SearchBar(props: SearchBarProps) {
           </li>
         );
       }}
-      onInputChange={async (e, v) => {
-        await search(v);
+      onInputChange={(e, v) => {
+        void search(v);
       }}
       renderInput={(params) => (
         <div ref={params.InputProps.ref}>
