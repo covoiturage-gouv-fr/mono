@@ -35,7 +35,7 @@ export async function generateStaticParams() {
   });
   const data = await Promise.all(categories.data.map(async (c) => {
     const query = {
-      filter:{
+      filters:{
         categories:{
           slug:{
             $eq: c.attributes.slug

@@ -77,7 +77,7 @@ export default async function ResourceSingle({ params }: { params: Promise<{ slu
     {
       name:'Email', 
       icon:'fr-share__link--mail', 
-      href:`mailto:?subject=${data ? data.attributes.title : ''}&body= ${location}`,
+      href:`mailto:?subject=${encodeURIComponent(data ? data.attributes.title : '')}&body=${encodeURIComponent(location)}`,
     }
   ]
 

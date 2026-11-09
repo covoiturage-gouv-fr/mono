@@ -35,7 +35,7 @@ export async function generateStaticParams() {
   });
   const data = await Promise.all(categories.data.map(async (c) => {
     const query = {
-      filter:{
+      filters:{
         categories:{
           slug:{
             $eq: c.attributes.slug
@@ -62,8 +62,8 @@ export async function generateStaticParams() {
 export default async function ActuCategoriePage({ params }: { params: Promise<{ slug: string, id: string }>}) {
   const { slug, id } = await params;
   const query = {
-    populate: 'img,file',
-    sort:'public_date:desc',
+    populate: 'categories,img',
+    sort:'createdAt:desc',
     filters:{
       categories:{
         slug:{

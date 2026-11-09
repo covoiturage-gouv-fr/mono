@@ -77,7 +77,7 @@ export default async function ActuSingle({ params }: { params: Promise<{ slug: s
     {
       name:'Email', 
       icon:'fr-share__link--mail', 
-      href:`mailto:?subject=${data ? data.attributes.title : ''}&body=${data ? data.attributes.description : ''} ${location}`,
+      href:`mailto:?subject=${encodeURIComponent(data ? data.attributes.title : '')}&body=${encodeURIComponent(`${data ? data.attributes.description : ''} ${location}`)}`,
     }
   ]
 
