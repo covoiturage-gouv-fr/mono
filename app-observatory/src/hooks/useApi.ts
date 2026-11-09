@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 // Corps d'erreur : JSON (`{ detail }` FastAPI, `{ message }`) ou texte brut.
-export const toErrorMessage =(text: string): string => {
+export const toErrorMessage = (text: string): string => {
   let body: unknown;
   try {
     body = JSON.parse(text);
@@ -14,7 +14,7 @@ export const toErrorMessage =(text: string): string => {
     if (typeof detail === "string") return detail;
     if (typeof message === "string") return message;
   }
-  return JSON.stringify(body);
+  return "Erreur inattendue de l'API";
 };
 
 export const useApi = <T>(input: RequestInfo | URL, init?: RequestInit) => {
@@ -32,9 +32,9 @@ export const useApi = <T>(input: RequestInfo | URL, init?: RequestInit) => {
           const res = (await response.json()) as T;
           setData(res);
         } else {
-          const errorMessage = toErrorMessage(await response.text());
-          console.error(`API ${response.status} on ${target}`, errorMessage);
-          setError(errorMessage);
+          const text = await response.text();
+          console.error(`API ${response.status} on ${target}`, text);
+          setError(toErrorMessage(text));
           setData(undefined);
         }
       } catch (e) {

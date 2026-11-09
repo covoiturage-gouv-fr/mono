@@ -18,8 +18,8 @@ describe("toErrorMessage", () => {
     expect(toErrorMessage('{"message":"boom"}')).toBe("boom");
   });
 
-  it("sérialise un detail non textuel (422 FastAPI)", () => {
+  it("n'expose pas un detail non textuel (422 FastAPI)", () => {
     const body = '{"detail":[{"loc":["query","q"],"msg":"too long"}]}';
-    expect(toErrorMessage(body)).toBe(body);
+    expect(toErrorMessage(body)).toBe("Erreur inattendue de l'API");
   });
 });
