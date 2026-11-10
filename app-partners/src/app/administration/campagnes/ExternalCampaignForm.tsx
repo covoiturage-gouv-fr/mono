@@ -129,12 +129,6 @@ export default function ExternalCampaignForm(props: {
       }}
       noValidate
     >
-      {submitted && Object.keys(errors).length > 0 && (
-        <p className={fr.cx("fr-error-text", "fr-mb-3w")}>
-          Le formulaire contient des erreurs, corrigez les champs signalés.
-        </p>
-      )}
-
       <Section title="1. Territoire et opérateurs">
         {props.lockedTerritoryLabel !== null ? (
           <p className={fr.cx("fr-mb-1w")}>
@@ -276,14 +270,20 @@ export default function ExternalCampaignForm(props: {
         />
       </Section>
 
-      <ButtonsGroup
-        inlineLayoutWhen="always"
-        alignment="right"
-        buttons={[
-          { children: "Annuler", priority: "secondary", type: "button", onClick: props.onCancel },
-          { children: "Enregistrer en brouillon", type: "submit" },
-        ]}
-      />
+      <div className={fr.cx("fr-grid-row", "fr-grid-row--middle", "fr-grid-row--right")} style={{ gap: "1rem" }}>
+        {submitted && Object.keys(errors).length > 0 && (
+          <p role="alert" className={fr.cx("fr-error-text", "fr-mb-2w")}>
+            Le formulaire contient des erreurs, corrigez les champs signalés.
+          </p>
+        )}
+        <ButtonsGroup
+          inlineLayoutWhen="always"
+          buttons={[
+            { children: "Annuler", priority: "secondary", type: "button", onClick: props.onCancel },
+            { children: "Enregistrer en brouillon", type: "submit" },
+          ]}
+        />
+      </div>
     </form>
   );
 }

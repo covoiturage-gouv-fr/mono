@@ -1,19 +1,41 @@
 @import "remixicon/fonts/remixicon.css";
 
-// Le Notice DSFR met titre, description et lien en ligne dès 36em : description sous le titre, lien à droite.
+// Grille : titre et lien sur la ligne de la croix de fermeture, description dessous (<p> aplati avec display: contents).
 .simulation-banner {
-  .fr-notice__body > p {
-    flex: 1;
+  .fr-notice__body {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    column-gap: 0.5rem;
   }
 
-  .fr-notice__desc,
+  .fr-notice__body > p {
+    display: contents;
+  }
+
+  .fr-notice__title {
+    grid-area: 1 / 1;
+  }
+
   .fr-notice__link {
+    grid-area: 1 / 2;
+    white-space: nowrap;
+  }
+
+  .fr-btn--close {
+    grid-area: 1 / 3;
+  }
+
+  .fr-notice__desc {
+    grid-area: 2 / 1 / 3 / 4;
     display: block;
   }
 
-  .fr-notice__link {
-    width: fit-content;
-    margin-left: auto;
+  // Trop étroit : le lien passe sous la description.
+  @media (max-width: 36em) {
+    .fr-notice__link {
+      grid-area: 3 / 1 / 4 / 4;
+      justify-self: start;
+    }
   }
 }
 
