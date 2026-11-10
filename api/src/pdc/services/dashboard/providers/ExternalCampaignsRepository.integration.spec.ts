@@ -3,17 +3,17 @@ import { afterAll, beforeAll, describe, it } from "dep:testing-bdd";
 import { ConflictException, NotFoundException } from "@/ilos/common/index.ts";
 import sql from "@/lib/pg/sql.ts";
 import { DenoDbContext, makeDenoDbBeforeAfter } from "@/pdc/providers/test/index.ts";
-import type { CreateCampaignCondition } from "@/pdc/services/dashboard/dto/CampaignConditions.ts";
-import { CampaignConditionsRepository } from "./CampaignConditionsRepository.ts";
+import type { CreateExternalCampaign } from "@/pdc/services/dashboard/dto/ExternalCampaigns.ts";
+import { ExternalCampaignsRepository } from "./ExternalCampaignsRepository.ts";
 
-describe("CampaignConditionsRepository", () => {
+describe("ExternalCampaignsRepository", () => {
   let db: DenoDbContext;
-  let repository: CampaignConditionsRepository;
+  let repository: ExternalCampaignsRepository;
   let op1: number;
   let op2: number;
   const { before, after } = makeDenoDbBeforeAfter();
 
-  const campaign = (overrides: Partial<CreateCampaignCondition> = {}): CreateCampaignCondition => ({
+  const campaign = (overrides: Partial<CreateExternalCampaign> = {}): CreateExternalCampaign => ({
     territory_type: "custom",
     territory_code: "36709",
     territory_label: "PETR Alsace du Nord",
@@ -46,7 +46,7 @@ describe("CampaignConditionsRepository", () => {
 
   beforeAll(async () => {
     db = await before();
-    repository = new CampaignConditionsRepository(db.connection);
+    repository = new ExternalCampaignsRepository(db.connection);
     // Le jeu de données de test insère des opérateurs avec des _id explicites : on recale la séquence.
     await db.connection.query(sql`
       SELECT setval(pg_get_serial_sequence('operator.operators', '_id'), (SELECT max(_id) FROM operator.operators))

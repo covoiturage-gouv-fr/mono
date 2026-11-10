@@ -4,12 +4,15 @@ import {
   classesPreuve,
   eligibiliteLabels,
   eligibilites,
-  emptyCampaignCondition,
-  type CampaignConditionForm as FormValues,
-  campaignConditionSchema,
+  emptyExternalCampaign,
+  type ExternalCampaignForm as FormValues,
+  externalCampaignSchema,
+  crossRuleIssues,
+  type FieldErrors,
   sensTrajets,
   sensTrajetsLabels,
-} from "@/helpers/campaignCondition";
+  visibleErrors,
+} from "@/helpers/externalCampaign";
 import { castPerimeterType } from "@/helpers/search";
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
@@ -21,10 +24,10 @@ import { Select } from "@codegouvfr/react-dsfr/Select";
 import { ToggleSwitch } from "@codegouvfr/react-dsfr/ToggleSwitch";
 import { type ReactNode, useMemo, useState } from "react";
 
-type Draft = ReturnType<typeof emptyCampaignCondition>;
+type Draft = ReturnType<typeof emptyExternalCampaign>;
 type Key = keyof Draft;
 
-export default function CampaignConditionForm(props: {
+export default function ExternalCampaignForm(props: {
   initial: Draft;
   operators: { id: number; name: string }[];
   // Compte opérateur : son entreprise est renseignée d'office, le choix des opérateurs est masqué.
@@ -36,17 +39,30 @@ export default function CampaignConditionForm(props: {
 }) {
   const [draft, setDraft] = useState<Draft>(props.initial);
   const [submitted, setSubmitted] = useState(false);
-  const errors = useMemo(() => {
-    const r = campaignConditionSchema.safeParse(draft);
-    return r.success ? {} : r.error.flatten().fieldErrors;
+  const [touched, setTouched] = useState<ReadonlySet<string>>(new Set());
+  const errors = useMemo<FieldErrors>(() => {
+    const r = externalCampaignSchema.safeParse(draft);
+    const merged: FieldErrors = r.success ? {} : { ...r.error.flatten().fieldErrors };
+    // Le schéma n'évalue pas les règles croisées s'il échoue ailleurs (ex. territoire vide).
+    for (const { path, message } of crossRuleIssues(draft)) {
+      if (!merged[path]?.includes(message)) merged[path] = [...(merged[path] ?? []), message];
+    }
+    return merged;
   }, [draft]);
-  const shown = (k: Key) => (submitted ? errors[k as keyof typeof errors]?.[0] : undefined);
+  const visible = useMemo(() => visibleErrors(errors, touched, submitted), [errors, touched, submitted]);
+  const shown = (k: Key): string | undefined => visible[k];
 
-  const set = <K extends Key>(k: K, v: Draft[K]) => setDraft((d) => ({ ...d, [k]: v }));
+  const touch = (k: Key) => setTouched((t) => (t.has(k) ? t : new Set(t).add(k)));
+  // Cases, radios, selects et listes : touchés dès le changement.
+  const set = <K extends Key>(k: K, v: Draft[K]) => {
+    setDraft((d) => ({ ...d, [k]: v }));
+    touch(k);
+  };
+  const setQuiet = <K extends Key>(k: K, v: Draft[K]) => setDraft((d) => ({ ...d, [k]: v }));
   const text = (k: Key) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
-    set(k, (e.target.value === "" ? null : e.target.value) as never);
+    setQuiet(k, (e.target.value === "" ? null : e.target.value) as never);
   const num = (k: Key) => (e: React.ChangeEvent<HTMLInputElement>) =>
-    set(k, (e.target.value === "" ? null : Number(e.target.value)) as never);
+    setQuiet(k, (e.target.value === "" ? null : Number(e.target.value)) as never);
 
   const field = (k: Key, label: string, kind: "euros" | "entier" | "km" | "date" | "texte", hint?: string) => {
     const error = shown(k);
@@ -65,6 +81,7 @@ export default function CampaignConditionForm(props: {
           step: kind === "euros" ? "0.01" : isNum ? 1 : undefined,
           value: value ?? "",
           onChange: isNum ? num(k) : text(k),
+          onBlur: () => touch(k),
         }}
       />
     );
@@ -94,6 +111,7 @@ export default function CampaignConditionForm(props: {
     label: string,
   ) => (
     <ToggleSwitch
+      className={fr.cx("fr-mb-3w")}
       label={label}
       inputTitle={label}
       checked={draft[k]}
@@ -107,17 +125,11 @@ export default function CampaignConditionForm(props: {
       onSubmit={(e) => {
         e.preventDefault();
         setSubmitted(true);
-        const r = campaignConditionSchema.safeParse(draft);
+        const r = externalCampaignSchema.safeParse(draft);
         if (r.success) props.onSubmit(draft as FormValues);
       }}
       noValidate
     >
-      {submitted && Object.keys(errors).length > 0 && (
-        <p className={fr.cx("fr-error-text", "fr-mb-3w")}>
-          Le formulaire contient des erreurs, corrigez les champs signalés.
-        </p>
-      )}
-
       <Section title="1. Territoire et opérateurs">
         {props.lockedTerritoryLabel !== null ? (
           <p className={fr.cx("fr-mb-1w")}>
@@ -251,18 +263,28 @@ export default function CampaignConditionForm(props: {
           textArea
           state={shown("autres_informations") ? "error" : "default"}
           stateRelatedMessage={shown("autres_informations")}
-          nativeTextAreaProps={{ value: draft.autres_informations ?? "", onChange: text("autres_informations") }}
+          nativeTextAreaProps={{
+            value: draft.autres_informations ?? "",
+            onChange: text("autres_informations"),
+            onBlur: () => touch("autres_informations"),
+          }}
         />
       </Section>
 
-      <ButtonsGroup
-        inlineLayoutWhen="always"
-        alignment="right"
-        buttons={[
-          { children: "Annuler", priority: "secondary", type: "button", onClick: props.onCancel },
-          { children: "Enregistrer en brouillon", type: "submit" },
-        ]}
-      />
+      <div className={fr.cx("fr-grid-row", "fr-grid-row--middle", "fr-grid-row--right")} style={{ gap: "1rem" }}>
+        {submitted && Object.keys(errors).length > 0 && (
+          <p role="alert" className={fr.cx("fr-error-text", "fr-mb-2w")}>
+            Le formulaire contient des erreurs, corrigez les champs signalés.
+          </p>
+        )}
+        <ButtonsGroup
+          inlineLayoutWhen="always"
+          buttons={[
+            { children: "Annuler", priority: "secondary", type: "button", onClick: props.onCancel },
+            { children: "Enregistrer en brouillon", type: "submit" },
+          ]}
+        />
+      </div>
     </form>
   );
 }

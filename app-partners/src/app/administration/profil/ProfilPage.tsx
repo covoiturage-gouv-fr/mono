@@ -87,6 +87,7 @@ export default function ProfilPage() {
             <div className={fr.cx("fr-col-12", "fr-col-md-6")}>
               <h3 className={fr.cx("fr-callout__title")}>Simulation</h3>
               <ToggleSwitch
+                className={fr.cx("fr-mb-3w")}
                 label="S'identifier en tant qu'opérateur ou territoire"
                 checked={simulate}
                 onChange={(state) => {

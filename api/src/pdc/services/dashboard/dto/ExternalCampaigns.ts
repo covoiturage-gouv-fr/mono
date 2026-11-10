@@ -59,7 +59,7 @@ const fields = {
 
 type Fields = Infer<ReturnType<typeof object<typeof fields>>>;
 
-// Mêmes règles croisées que le formulaire app-partners (helpers/campaignCondition.ts).
+// Mêmes règles croisées que le formulaire app-partners (helpers/externalCampaign.ts).
 export function crossRuleError(c: Fields): string | true {
   if (c.date_fin && c.date_fin < c.date_debut) return "date_fin doit suivre date_debut";
   const minP = c.conducteur_montant_min_par_passager;
@@ -77,25 +77,25 @@ export function crossRuleError(c: Fields): string | true {
 }
 
 // territory_id : territoire simulé par l'équipe RPC, ignoré pour les autres appelants.
-export const CreateCampaignCondition = refine(
+export const CreateExternalCampaign = refine(
   assign(object(fields), object({ territory_id: optional(Id) })),
-  "campaign_condition",
+  "external_campaign",
   crossRuleError,
 );
-export const UpdateCampaignCondition = refine(
+export const UpdateExternalCampaign = refine(
   assign(object(fields), object({ id: Id })),
-  "campaign_condition",
+  "external_campaign",
   crossRuleError,
 );
-export const CampaignConditionId = object({ id: Id });
+export const ExternalCampaignId = object({ id: Id });
 // operator_id / territory_id : simulation de l'équipe RPC, ignorés pour les autres appelants.
-export const CampaignConditions = object({
+export const ExternalCampaigns = object({
   id: optional(Id),
   operator_id: optional(Id),
   territory_id: optional(Id),
 });
 
-export type CreateCampaignCondition = Infer<typeof CreateCampaignCondition>;
-export type UpdateCampaignCondition = Infer<typeof UpdateCampaignCondition>;
-export type CampaignConditionId = Infer<typeof CampaignConditionId>;
-export type CampaignConditions = Infer<typeof CampaignConditions>;
+export type CreateExternalCampaign = Infer<typeof CreateExternalCampaign>;
+export type UpdateExternalCampaign = Infer<typeof UpdateExternalCampaign>;
+export type ExternalCampaignId = Infer<typeof ExternalCampaignId>;
+export type ExternalCampaigns = Infer<typeof ExternalCampaigns>;

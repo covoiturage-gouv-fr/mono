@@ -22,6 +22,7 @@ services:
 
       # Test-only login route, opt-in flag + fixed e2e accounts (never in demo/production)
       APP_ENABLE_TEST_AUTH: "true"
+      APP_FEATURE_EXTERNAL_CAMPAIGNS: "true"
       APIE2E_AUTH_ADMIN_EMAIL: admin@example.com
       APIE2E_AUTH_ADMIN_PASSWORD: admin1234
       APIE2E_AUTH_OPERATOR_EMAIL: operator@example.com

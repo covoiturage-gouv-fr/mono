@@ -1,7 +1,7 @@
 import { assertEquals, assertRejects } from "dep:assert";
 import { describe, it } from "dep:testing-bdd";
 import { InvalidRequestException } from "@/ilos/common/index.ts";
-import { resolveSimulatedTerritory, toCampaignTerritory } from "./campaignConditionTerritory.ts";
+import { resolveSimulatedTerritory, toCampaignTerritory } from "./externalCampaignTerritory.ts";
 
 describe("toCampaignTerritory", () => {
   const group = (has_versions: boolean, selectors: { type: string; value: string }[]) => ({
