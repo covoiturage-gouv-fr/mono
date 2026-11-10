@@ -111,6 +111,7 @@ export default function ExternalCampaignForm(props: {
     label: string,
   ) => (
     <ToggleSwitch
+      className={fr.cx("fr-mb-3w")}
       label={label}
       inputTitle={label}
       checked={draft[k]}
