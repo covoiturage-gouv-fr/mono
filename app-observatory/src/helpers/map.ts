@@ -15,21 +15,21 @@ export const fitBounds = (map: MapRef | null, bounds?: LngLatBoundsLike) => {
   }
 };
 
-export const parseJSONFile = async (path:string) => {
+export const parseJSONFile = async <T = unknown>(path:string) => {
   const response = await fetch(path);
   const text = await response.text();
-  const parseData = JSON.parse(text);
+  const parseData = JSON.parse(text) as T;
   return parseData;
 }
 
-export const downloadData = (filename:string, data:any[] | FeatureCollection, type?:'csv' | 'geojson') => {
+export const downloadData = <T extends object>(filename:string, data:T[] | FeatureCollection, type?:'csv' | 'geojson') => {
   let blob = new Blob([JSON.stringify(data)],{type:'application/json'});
   if (type === 'csv' && Array.isArray(data)){
-    const header = Object.keys(data[0]);
-    const replacer = (value:any) => value === null ? '' : value;
+    const header = Object.keys(data[0]) as (keyof T)[];
+    const replacer = (value:unknown) => value === null ? '' : value;
     const csv = [
       header.join(','), // header row first
-      ...data.map((row:any) => header.map((fieldName:any) => JSON.stringify(replacer(row[fieldName]))).join(','))
+      ...data.map((row) => header.map((fieldName) => JSON.stringify(replacer(row[fieldName]))).join(','))
     ].join('\r\n');
     blob = new Blob([csv],{type:'text/csv'});
   } 

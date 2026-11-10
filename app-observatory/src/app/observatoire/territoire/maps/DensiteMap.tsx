@@ -6,6 +6,7 @@ import { classColor, getLegendClasses, jenks } from '@/helpers/analyse';
 import { useApi } from '@/hooks/useApi';
 import type { DensiteDataInterface } from '@/interfaces/observatoire/dataInterfaces';
 import { fr } from '@codegouvfr/react-dsfr';
+import type { PickingInfo } from '@deck.gl/core';
 import { H3HexagonLayer } from '@deck.gl/geo-layers';
 import bbox from '@turf/bbox';
 import { multiPolygon } from '@turf/helpers';
@@ -54,7 +55,7 @@ export default function DensiteMap({ title }: { title: string }) {
     : [];
   }, [data]);
 
-  const layer = new H3HexagonLayer({
+  const layer = new H3HexagonLayer<DensiteDataInterface>({
     id: 'densite-layer',
     data: data ?? [],
     opacity: OPACITY,
@@ -70,8 +71,8 @@ export default function DensiteMap({ title }: { title: string }) {
     const bounds = dashboard.params.code === 'XXXXX' ? [-5.225, 41.333, 9.55, 51.2] : bbox(multiPolygon(polygon));
     return bounds as LngLatBoundsLike;
   };
-  const tooltip = ({ object }: any) =>
-    object && {
+  const tooltip = ({ object }: PickingInfo<DensiteDataInterface>) =>
+    object ? {
       html: `<div><b>${object.count.toLocaleString('fr-FR')}</b> ${object.count > 1 ? 'départs ou arrivées' : 'départ ou arrivée'} de covoiturage dans cette maille</div>`,
       className: 'fr-callout',
       style: {
@@ -80,7 +81,7 @@ export default function DensiteMap({ title }: { title: string }) {
         fontSize: '0.8em',
         maxWidth: '250px',
       },
-    };
+    } : null;
 
   return (
     <>

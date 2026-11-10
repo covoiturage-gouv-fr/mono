@@ -6,6 +6,7 @@ import { GetApiUrl } from '@/helpers/api';
 import { useApi } from '@/hooks/useApi';
 import type { FluxDataInterface } from '@/interfaces/observatoire/dataInterfaces';
 import { fr } from '@codegouvfr/react-dsfr';
+import type { PickingInfo } from '@deck.gl/core';
 import { ArcLayer } from '@deck.gl/layers';
 import bbox from '@turf/bbox';
 import { multiPoint } from '@turf/helpers';
@@ -38,7 +39,7 @@ export default function FluxMap({ title }: { title: string }) {
     : [];
   }, [filteredData]);
 
-  const layer = new ArcLayer({
+  const layer = new ArcLayer<FluxDataInterface>({
     id: 'flux-layer',
     data: filteredData,
     opacity: 0.3,
@@ -62,8 +63,8 @@ export default function FluxMap({ title }: { title: string }) {
     return  bounds as LngLatBoundsLike;
   };
 
-  const tooltip = ({ object }: any) =>
-    object && {
+  const tooltip = ({ object }: PickingInfo<FluxDataInterface>) =>
+    object ? {
       html: `<div class="tooltip-title"><b>${object.ter_1} - ${object.ter_2}</b></div>
     <div>${object.passengers} passagers transportés</div>
     <div>${object.distance.toLocaleString()} Km parcourus</div>`,
@@ -77,7 +78,7 @@ export default function FluxMap({ title }: { title: string }) {
         left: '-125px',
         top: '-110px',
       },
-    };
+    } : null;
 
   return (
     <>

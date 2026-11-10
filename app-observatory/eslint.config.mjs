@@ -16,15 +16,4 @@ export default defineConfig(
       parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname },
     },
   },
-  {
-    // Dette : réponses Strapi non typées (fetchAPI → any), voir issue #3699
-    rules: {
-      "@typescript-eslint/no-explicit-any": "off",
-      "@typescript-eslint/no-unsafe-argument": "off",
-      "@typescript-eslint/no-unsafe-assignment": "off",
-      "@typescript-eslint/no-unsafe-call": "off",
-      "@typescript-eslint/no-unsafe-member-access": "off",
-      "@typescript-eslint/no-unsafe-return": "off",
-    },
-  },
 );

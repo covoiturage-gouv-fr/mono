@@ -131,3 +131,77 @@ export interface IncentiveDataInterface {
   autres: number;
   no_incentive: number;
 }
+
+// Route /observatory/campaigns (vue zone_exposed.campaigns).
+export interface CampaignDataInterface {
+  type: PerimeterType;
+  code: INSEECode;
+  // libellé du périmètre ; null si le territoire n'est pas au dernier millésime
+  libelle: string | null;
+  premiere_campagne: string | null;
+  budget_incitations: string | null;
+  date_debut: string | null;
+  date_fin: string | null;
+  conducteur_montant_max_par_passager: string | null;
+  conducteur_montant_max_par_mois: number | null;
+  conducteur_montant_min_par_passager: string | null;
+  conducteur_trajets_max_par_mois: number | null;
+  passager_trajets_max_par_mois: number | null;
+  passager_gratuite: string | null;
+  passager_eligible_gratuite: string | null;
+  passager_reduction_ticket: string | null;
+  passager_eligibilite_reduction: string | null;
+  passager_montant_ticket: string | null;
+  zone_sens_des_trajets: string | null;
+  zone_exclusion: string | null;
+  si_zone_exclue_liste: string | null;
+  autre_exclusion: string | null;
+  trajet_longueur_min: number | null;
+  trajet_longueur_max: number | null;
+  trajet_classe_de_preuve: string | null;
+  operateurs: string | null;
+  autres_informations: string | null;
+  lien: string | null;
+  geom: Geometry;
+}
+
+// Propriétés GeoJSON d'une campagne (noms courts pour la carte et le détail).
+export interface CampaignPropertiesInterface {
+  name?: string;
+  type: PerimeterType;
+  code: INSEECode;
+  debut: string | null;
+  fin: string | null;
+  budget: string | null;
+  operateurs: string | null;
+  p_gratuit: string | null;
+  p_eligible: string | null;
+  p_t_max: number | null;
+  p_tk: string | null;
+  p_e_tk: string | null;
+  p_m_tk: string | null;
+  p_max: number | null;
+  c_m_max_p: string | null;
+  c_m_max: number | null;
+  c_m_min_p: string | null;
+  c_t_max: number | null;
+  sens: string | null;
+  exclusion: string | null;
+  liste_exclusion: string | null;
+  autre_exclusion: string | null;
+  l_min: number | null;
+  l_max: number | null;
+  classe: string | null;
+  lien: string | null;
+}
+
+// Fichier statique voies_covoit_*.json (voies réservées au covoiturage).
+export interface VoieReserveePropertiesInterface {
+  name: string;
+  type: string;
+  gestionnaire: string;
+  localisation: string;
+  mise_en_service: string;
+  distance: string;
+  link: string;
+}

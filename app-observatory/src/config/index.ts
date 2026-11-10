@@ -24,8 +24,8 @@ const _configuration = objectToMap({
 
 export type ConfigObject = string | number | boolean | null | { [key: string]: ConfigObject } | undefined;
 
-function objectToMap(obj: ConfigObject): Map<string, ConfigObject> {
-  const map = new Map();
+function objectToMap(obj: ConfigObject): Map<string, unknown> {
+  const map = new Map<string, unknown>();
   if (typeof obj === 'object' && obj !== null) {
     for (const key in obj) {
       if (Object.hasOwn(obj, key)) {

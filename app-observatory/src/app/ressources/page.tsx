@@ -2,6 +2,7 @@ import PageTitle from "@/components/common/PageTitle";
 import { fr } from "@codegouvfr/react-dsfr";
 import RessourceCard from "@/components/ressources/RessourceCard";
 import { fetchAPI, cmsRessourcesByPage } from "@/helpers/cms";
+import { Resource, Categorie } from "@/interfaces/cms/strapi";
 import Pagination from "@/components/common/Pagination";
 import { Metadata } from 'next';
 import CategoryTags from '@/components/common/CategoryTags';
@@ -19,7 +20,7 @@ export default async function Ressources() {
       pageSize: cmsRessourcesByPage
     }
   };
-  const { data, meta } = await fetchAPI('/resources',query);
+  const { data, meta } = await fetchAPI<Resource>('/resources',query);
   const pageTitle= 'Ressources'; 
   const nbPage = meta ? meta.pagination.pageCount : 1;
   const catQuery = {
@@ -31,7 +32,7 @@ export default async function Ressources() {
       }
     }
   }
-  const categories =  await fetchAPI('/categories',catQuery);
+  const categories =  await fetchAPI<Categorie>('/categories',catQuery);
 
   return (
     <div id='content'>
@@ -40,7 +41,7 @@ export default async function Ressources() {
         {categories.data && <CategoryTags categories={categories.data} type={'ressources'} />}
       </div>
       <div className={fr.cx('fr-grid-row', 'fr-grid-row--gutters')}>
-        {data?.map((a:any, i:number) => {
+        {data?.map((a, i:number) => {
             return (
               <div key={i} className={fr.cx('fr-col-12','fr-col-md-6')}>
                 <RessourceCard 
@@ -48,7 +49,7 @@ export default async function Ressources() {
                   content={a.attributes.content}
                   date={new Date(a.attributes.public_date).toLocaleDateString('fr-FR')}
                   href={`/ressources/${a.attributes.slug}`}
-                  img={a.attributes.img.data ? a.attributes.img.data.attributes.url : null}          
+                  img={a.attributes.img.data ? a.attributes.img.data.attributes.url : ''}          
                 />
               </div>
             )

@@ -1,14 +1,13 @@
-import { Button } from "../cms/collectionsInterface";
+import { Button } from "@/interfaces/cms/strapi";
 
 export interface ActuCardProps {
   title: string;
   content: string;
   date: string;
   img: string;
-  img_legend?: string;
   href: string;
   horizontal?: false | undefined;
-  categories: CategorieProps[];
+  categories?: CategorieProps[];
   buttons?: Button[];
 }
 
