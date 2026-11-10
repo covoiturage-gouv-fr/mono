@@ -38,6 +38,18 @@ export const withTerritory = (caller: Caller, resolved: ResolvedTerritory | null
   territory: resolved ? { territory_type: resolved.territory_type, territory_code: resolved.territory_code } : null,
 });
 
+// Mode simulation de l'espace partenaire : l'équipe RPC lit comme l'opérateur ou le territoire choisi.
+export function viewedAs(caller: Caller, params: { operator_id?: number; territory_id?: number }): Caller {
+  if (!caller.registry) return caller;
+  if (params.operator_id) {
+    return { registry: false, operator_id: params.operator_id, territory_id: null, territory: null };
+  }
+  if (params.territory_id) {
+    return { registry: false, operator_id: null, territory_id: params.territory_id, territory: null };
+  }
+  return caller;
+}
+
 const isOnly = (ids: number[], operatorId: number | null) =>
   operatorId !== null && ids.length === 1 && ids[0] === operatorId;
 

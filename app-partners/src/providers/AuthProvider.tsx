@@ -18,6 +18,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthContextProps["user"]>();
   const [simulate, setSimulate] = useState(false);
   const [simulatedRole, setSimulatedRole] = useState<"operator" | "territory" | undefined>(undefined);
+  const [simulatedLabel, setSimulatedLabel] = useState<string>();
   const [loading, setLoading] = useState(true);
   // API injoignable au chargement : page d'erreur lisible plutôt qu'un écran vide.
   const [authError, setAuthError] = useState<Error>();
@@ -149,15 +150,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  const onChangeTerritory = (id: number | null) => {
+  const onChangeTerritory = (id: number | null, label?: string) => {
     const territory_id = simulatedRole === "territory" && id ? id : null;
+    setSimulatedLabel(territory_id ? label : undefined);
     if (user) {
       setUser((prev) => (prev ? { ...prev, territory_id, operator_id: null } : prev));
     }
   };
 
-  const onChangeOperator = (id: number | null) => {
+  const onChangeOperator = (id: number | null, label?: string) => {
     const operator_id = simulatedRole === "operator" && id ? id : null;
+    setSimulatedLabel(operator_id ? label : undefined);
     if (user) {
       setUser((prev) => (prev ? { ...prev, operator_id, territory_id: null } : prev));
     }
@@ -171,6 +174,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const onChangeSimulatedRole = (value: "operator" | "territory" | undefined) => {
+    // Changer de rôle simulé repart d'un choix vide : l'ancien id ne doit pas filtrer l'autre rôle.
+    if (value !== simulatedRole) {
+      setSimulatedLabel(undefined);
+      setUser((prev) => (prev ? { ...prev, territory_id: null, operator_id: null } : prev));
+    }
     switch (value) {
       case "operator":
       case "territory":
@@ -221,6 +229,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         activeScope: getActiveScope(user),
         simulate,
         simulatedRole,
+        simulatedLabel: simulate && simulatedRole ? simulatedLabel : undefined,
         onChangeTerritory,
         onChangeOperator,
         onChangeSimulate,

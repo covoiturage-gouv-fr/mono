@@ -9,8 +9,11 @@ import { apiErrorMessage, parseBody, signalUnauthorized, toUserError } from "@/h
 import { useMemo } from "react";
 import { useRestQuery } from "./useRestQuery";
 
-export function useCampaignConditions() {
-  const query = useRestQuery<CampaignConditionApiRow[]>("v3", "dashboard/campaign-conditions");
+export function useCampaignConditions(params: { operator_id?: number; territory_id?: number } = {}) {
+  const query = useRestQuery<CampaignConditionApiRow[]>("v3", "dashboard/campaign-conditions", params, {}, [
+    params.operator_id,
+    params.territory_id,
+  ]);
   const rows = useMemo(() => (query.data ?? []).map(fromApiRow), [query.data]);
   return { ...query, rows };
 }

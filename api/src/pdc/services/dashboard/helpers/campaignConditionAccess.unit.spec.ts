@@ -1,7 +1,7 @@
 import { assertEquals, assertThrows } from "dep:assert";
 import { describe, it } from "dep:testing-bdd";
 import { ForbiddenException } from "@/ilos/common/index.ts";
-import { assertCanCreate, assertCanWrite, callerOf, withTerritory } from "./campaignConditionAccess.ts";
+import { assertCanCreate, assertCanWrite, callerOf, viewedAs, withTerritory } from "./campaignConditionAccess.ts";
 
 describe("campaignConditionAccess", () => {
   const registry = callerOf({
@@ -91,5 +91,26 @@ describe("campaignConditionAccess", () => {
 
   it("laisse l'équipe RPC tout modifier", () => {
     assertCanWrite(multi, [5], registry);
+  });
+
+  it("liste pour l'équipe RPC en simulation comme l'opérateur ou le territoire simulé", () => {
+    assertEquals(viewedAs(registry, { operator_id: 5 }), {
+      registry: false,
+      operator_id: 5,
+      territory_id: null,
+      territory: null,
+    });
+    assertEquals(viewedAs(registry, { territory_id: 7 }), {
+      registry: false,
+      operator_id: null,
+      territory_id: 7,
+      territory: null,
+    });
+    assertEquals(viewedAs(registry, {}), registry);
+  });
+
+  it("ignore l'opérateur ou le territoire demandé par un appelant hors équipe RPC", () => {
+    assertEquals(viewedAs(operator3, { operator_id: 5, territory_id: 7 }), operator3);
+    assertEquals(viewedAs(territory7, { operator_id: 5, territory_id: 8 }), territory7);
   });
 });
