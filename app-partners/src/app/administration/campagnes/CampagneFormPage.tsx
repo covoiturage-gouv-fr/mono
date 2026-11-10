@@ -56,29 +56,33 @@ function CampagneForm({ id, params }: { id: number | null; params: { operator_id
   return (
     <>
       {actionError && <ActionErrorAlert message={actionError} onClose={() => setActionError(undefined)} />}
-      <h3 className={fr.cx("fr-callout__title")}>{current ? "Modifier la campagne" : "Déclarer une campagne"}</h3>
-      {current?.status === "validated" && (
-        <p className={fr.cx("fr-text--sm")}>
-          Cette campagne est validée : toute modification la repasse en brouillon jusqu&apos;à sa revalidation.
-        </p>
-      )}
-      <ExternalCampaignForm
-        initial={initial}
-        operators={operators}
-        lockedOperatorId={registry ? null : operatorId}
-        lockedTerritoryLabel={simulatingTerritory && current ? current.territory.label : territoryLabel}
-        onCancel={() => router.push(CAMPAGNES_URL)}
-        onSubmit={(values) => {
-          setActionError(undefined);
-          saveExternalCampaign(
-            values,
-            current?.id ?? null,
-            simulatingTerritory ? (territoryId ?? undefined) : undefined,
-          )
-            .then(() => router.push(`${CAMPAGNES_URL}?ok=enregistree`))
-            .catch((e: unknown) => setActionError(e instanceof Error ? e.message : String(e)));
-        }}
-      />
+      <div className={fr.cx("fr-grid-row")}>
+        <div className={fr.cx("fr-col-12", "fr-col-lg-8")}>
+          <h3 className={fr.cx("fr-callout__title")}>{current ? "Modifier la campagne" : "Déclarer une campagne"}</h3>
+          {current?.status === "validated" && (
+            <p className={fr.cx("fr-text--sm")}>
+              Cette campagne est validée : toute modification la repasse en brouillon jusqu&apos;à sa revalidation.
+            </p>
+          )}
+          <ExternalCampaignForm
+            initial={initial}
+            operators={operators}
+            lockedOperatorId={registry ? null : operatorId}
+            lockedTerritoryLabel={simulatingTerritory && current ? current.territory.label : territoryLabel}
+            onCancel={() => router.push(CAMPAGNES_URL)}
+            onSubmit={(values) => {
+              setActionError(undefined);
+              saveExternalCampaign(
+                values,
+                current?.id ?? null,
+                simulatingTerritory ? (territoryId ?? undefined) : undefined,
+              )
+                .then(() => router.push(`${CAMPAGNES_URL}?ok=enregistree`))
+                .catch((e: unknown) => setActionError(e instanceof Error ? e.message : String(e)));
+            }}
+          />
+        </div>
+      </div>
     </>
   );
 }
