@@ -1,6 +1,7 @@
-import { assertEquals } from "dep:assert";
+import { assertEquals, assertRejects } from "dep:assert";
 import { describe, it } from "dep:testing-bdd";
-import { toCampaignTerritory } from "./campaignConditionTerritory.ts";
+import { InvalidRequestException } from "@/ilos/common/index.ts";
+import { resolveSimulatedTerritory, toCampaignTerritory } from "./campaignConditionTerritory.ts";
 
 describe("toCampaignTerritory", () => {
   const group = (has_versions: boolean, selectors: { type: string; value: string }[]) => ({
@@ -30,5 +31,24 @@ describe("toCampaignTerritory", () => {
     assertEquals(toCampaignTerritory(12, group(false, two)), null);
     assertEquals(toCampaignTerritory(12, group(false, [{ type: "arr", value: "69381" }])), null);
     assertEquals(toCampaignTerritory(12, group(false, [])), null);
+  });
+});
+
+describe("resolveSimulatedTerritory", () => {
+  const resolved = { territory_type: "custom" as const, territory_code: "7", territory_label: "T" };
+  const caller = (registry: boolean) => ({ registry, operator_id: null, territory_id: null, territory: null });
+  const repo = (r: typeof resolved | null) => ({ resolveTerritory: () => Promise.resolve(r) });
+
+  it("l'équipe RPC avec territory_id obtient le territoire résolu", async () => {
+    assertEquals(await resolveSimulatedTerritory(repo(resolved), caller(true), 7), resolved);
+  });
+
+  it("sans territory_id ou hors équipe RPC, rien", async () => {
+    assertEquals(await resolveSimulatedTerritory(repo(resolved), caller(true), undefined), null);
+    assertEquals(await resolveSimulatedTerritory(repo(resolved), caller(false), 7), null);
+  });
+
+  it("refuse un territoire sans équivalent", async () => {
+    await assertRejects(() => resolveSimulatedTerritory(repo(null), caller(true), 7), InvalidRequestException);
   });
 });

@@ -46,3 +46,13 @@ export async function withCallerTerritory(
   if (caller.registry || caller.territory_id === null) return caller;
   return withTerritory(caller, await repository.resolveTerritory(caller.territory_id));
 }
+
+// Territoire simulé par l'équipe RPC à la création ; rien pour les autres appelants (leur territoire vient de la session).
+export async function resolveSimulatedTerritory(
+  repository: { resolveTerritory(id: number): Promise<ResolvedTerritory | null> },
+  caller: Caller,
+  territoryId: number | undefined,
+): Promise<ResolvedTerritory | null> {
+  if (!caller.registry || territoryId === undefined) return null;
+  return await resolveOwnTerritory(repository, territoryId);
+}
