@@ -2,6 +2,7 @@
 import AdminTable from "@/components/common/AdminTable";
 import { isRegistry } from "@/helpers/auth";
 import {
+  campaignListScope,
   canCreateCampaign,
   canEditCampaign,
   emptyCampaignCondition,
@@ -27,13 +28,28 @@ import CampaignConditionForm from "./CampaignConditionForm";
 const date = (d: string | null) => (d ? new Date(d).toLocaleDateString("fr-FR") : "—");
 
 export default function CampagnesDeclareesPage() {
+  const { user, simulatedRole } = useAuth();
+  if (!user) return null;
+  const scope = campaignListScope(user, simulatedRole);
+  if (scope.pending) {
+    return (
+      <p>
+        Choisissez {simulatedRole === "operator" ? "un opérateur" : "un territoire"} dans « Mon profil » pour voir ses
+        campagnes déclarées.
+      </p>
+    );
+  }
+  return <CampagnesDeclarees params={scope.params} />;
+}
+
+function CampagnesDeclarees({ params }: { params: { operator_id?: number; territory_id?: number } }) {
   const { user, activeScope } = useAuth();
   const registry = isRegistry(user?.role);
   const operatorId = user?.operator_id ?? null;
   const territoryId = !registry && operatorId === null ? (user?.territory_id ?? null) : null;
   const territoryLabel = territoryId === null ? null : (activeScope?.label ?? user?.organisation ?? "Votre territoire");
   // L'API ne renvoie à un opérateur que les campagnes où il est listé.
-  const { rows, error: loadError, loading, refetch } = useCampaignConditions();
+  const { rows, error: loadError, loading, refetch } = useCampaignConditions(params);
   const { data: operatorsData } = useOperatorsList({ limit: 1000 });
   const operators = (operatorsData?.data ?? []).filter((o): o is { id: number; name: string; siret: string } => !!o.id);
   const operatorName = (id: number) => operators.find((o) => o.id === id)?.name ?? `#${id}`;
@@ -72,7 +88,8 @@ export default function CampagnesDeclareesPage() {
     const current = rows.find((r) => r.id === editing);
     const initial = current ?? {
       ...emptyCampaignCondition(),
-      operator_ids: !registry && operatorId ? [operatorId] : [],
+      // Compte opérateur, ou équipe RPC simulant un opérateur : pré-rempli.
+      operator_ids: operatorId ? [operatorId] : [],
       // Valeur provisoire pour la validation du formulaire : l'API impose le territoire du compte.
       territory:
         territoryId === null

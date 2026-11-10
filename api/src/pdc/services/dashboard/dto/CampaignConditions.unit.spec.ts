@@ -1,7 +1,7 @@
 import { assertEquals } from "dep:assert";
 import { describe, it } from "dep:testing-bdd";
 import { Struct, validate } from "@/lib/superstruct/index.ts";
-import { CreateCampaignCondition, UpdateCampaignCondition } from "./CampaignConditions.ts";
+import { CampaignConditions, CreateCampaignCondition, UpdateCampaignCondition } from "./CampaignConditions.ts";
 
 describe("dto/CampaignConditions", () => {
   // deno-lint-ignore no-explicit-any
@@ -114,5 +114,11 @@ describe("dto/CampaignConditions", () => {
 
   it("refuse les balises dans les champs texte", () => {
     assertEquals(failures({ ...base, autres_informations: "<script>" }).length > 0, true);
+  });
+
+  it("convertit l'opérateur ou le territoire simulé reçu en query string", () => {
+    const [error, value] = validate({ operator_id: "101", territory_id: "7" }, CampaignConditions, { coerce: true });
+    assertEquals(error, undefined);
+    assertEquals(value, { operator_id: 101, territory_id: 7 });
   });
 });

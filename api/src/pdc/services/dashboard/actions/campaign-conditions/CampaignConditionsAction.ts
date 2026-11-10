@@ -2,7 +2,7 @@ import { ContextType, ForbiddenException, handler } from "@/ilos/common/index.ts
 import { Action as AbstractAction } from "@/ilos/core/index.ts";
 import { copyGroupIdAndApplyGroupPermissionMiddlewares } from "@/pdc/providers/middleware/index.ts";
 import { CampaignConditions } from "@/pdc/services/dashboard/dto/CampaignConditions.ts";
-import { Caller, callerOf } from "@/pdc/services/dashboard/helpers/campaignConditionAccess.ts";
+import { Caller, callerOf, viewedAs } from "@/pdc/services/dashboard/helpers/campaignConditionAccess.ts";
 import { withCallerTerritory } from "@/pdc/services/dashboard/helpers/campaignConditionTerritory.ts";
 import {
   CampaignConditionRow,
@@ -35,7 +35,10 @@ export class CampaignConditionsAction extends AbstractAction {
   public override async handle(params: CampaignConditions, context: ContextType): Promise<CampaignConditionRow[]> {
     return this.rowsFor(
       params,
-      await withCallerTerritory(this.repository, callerOf(context, "registry.campaign_condition.list")),
+      await withCallerTerritory(
+        this.repository,
+        viewedAs(callerOf(context, "registry.campaign_condition.list"), params),
+      ),
     );
   }
 

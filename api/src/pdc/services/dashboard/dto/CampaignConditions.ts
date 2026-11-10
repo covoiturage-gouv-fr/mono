@@ -83,7 +83,12 @@ export const UpdateCampaignCondition = refine(
   crossRuleError,
 );
 export const CampaignConditionId = object({ id: Id });
-export const CampaignConditions = object({ id: optional(Id) });
+// operator_id / territory_id : simulation de l'équipe RPC, ignorés pour les autres appelants.
+export const CampaignConditions = object({
+  id: optional(Id),
+  operator_id: optional(Id),
+  territory_id: optional(Id),
+});
 
 export type CreateCampaignCondition = Infer<typeof CreateCampaignCondition>;
 export type UpdateCampaignCondition = Infer<typeof UpdateCampaignCondition>;

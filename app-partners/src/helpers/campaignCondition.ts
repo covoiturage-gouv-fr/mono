@@ -153,6 +153,18 @@ export const canEditCampaign = (
   );
 };
 
+// La simulation n'existe que côté front (session = registry) : la liste est filtrée par paramètre,
+// les actions restent celles de l'équipe RPC.
+export const campaignListScope = (
+  user: { operator_id: number | null; territory_id: number | null },
+  simulatedRole: "operator" | "territory" | undefined,
+): { params: { operator_id?: number; territory_id?: number }; pending: boolean } => {
+  if (!simulatedRole) return { params: {}, pending: false };
+  const id = simulatedRole === "operator" ? user.operator_id : user.territory_id;
+  if (!id) return { params: {}, pending: true };
+  return { params: simulatedRole === "operator" ? { operator_id: id } : { territory_id: id }, pending: false };
+};
+
 // L'API stocke les montants en centimes et le territoire à plat.
 const MONTANTS = [
   "budget_incitations",

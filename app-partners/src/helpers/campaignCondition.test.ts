@@ -1,4 +1,5 @@
 import {
+  campaignListScope,
   canCreateCampaign,
   canEditCampaign,
   emptyCampaignCondition,
@@ -168,5 +169,33 @@ describe("conversion API", () => {
   it("relit une ligne de l'API dans le format du formulaire", () => {
     const meta = { id: 4, status: "draft" as const, created_by_operator_id: 3, created_by_territory_id: null };
     expect(fromApiRow({ ...toApiPayload(form), ...meta })).toEqual({ ...form, ...meta });
+  });
+});
+
+describe("campaignListScope", () => {
+  const admin = { operator_id: null, territory_id: null };
+
+  it("hors simulation, la liste suit la session sans filtre", () => {
+    expect(campaignListScope(admin, undefined)).toEqual({ params: {}, pending: false });
+    expect(campaignListScope({ operator_id: 3, territory_id: null }, undefined)).toEqual({
+      params: {},
+      pending: false,
+    });
+  });
+
+  it("en simulation, filtre sur l'opérateur ou le territoire choisi", () => {
+    expect(campaignListScope({ ...admin, operator_id: 3 }, "operator")).toEqual({
+      params: { operator_id: 3 },
+      pending: false,
+    });
+    expect(campaignListScope({ ...admin, territory_id: 7 }, "territory")).toEqual({
+      params: { territory_id: 7 },
+      pending: false,
+    });
+  });
+
+  it("en simulation sans choix, n'affiche rien plutôt que toutes les campagnes", () => {
+    expect(campaignListScope(admin, "operator").pending).toBe(true);
+    expect(campaignListScope({ ...admin, operator_id: 3 }, "territory").pending).toBe(true);
   });
 });

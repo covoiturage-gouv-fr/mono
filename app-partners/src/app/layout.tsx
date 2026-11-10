@@ -3,6 +3,7 @@ import { AppHeader } from "@/components/layout/AppHeader";
 import { Follow } from "@/components/layout/Follow";
 import { MatomoAnalytics } from "@/components/layout/MatomoAnalytics";
 import { ScrollToTop } from "@/components/layout/ScrollToTop";
+import { SimulationBanner } from "@/components/layout/SimulationBanner";
 import { Skiplinks } from "@/components/layout/Skiplinks";
 import {
   DsfrProvider,
@@ -53,6 +54,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <AuthProvider>
               <Skiplinks />
               <AppHeader />
+              <SimulationBanner />
               <main tabIndex={-1}>
                 {children}
                 <ScrollToTop />
