@@ -9,20 +9,19 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useDashboardContext } from '../../context/DashboardProvider';
 
-// `id` et `l_territory` ne sont pas renvoyés par /campaigns (lus tels quels, undefined)
-type IncentiveTerritoryOption = Pick<CampaignDataInterface, 'code' | 'type' | 'collectivite'> & { id?: string; l_territory?: string };
+type IncentiveTerritoryOption = Pick<CampaignDataInterface, 'code' | 'type' | 'libelle'>;
 
 export default function SelectIncentiveTerritory(props: { url: string, data:CampaignDataInterface[] }) {
   const { dashboard } = useDashboardContext();
   const router = useRouter();
   const defaultOption: IncentiveTerritoryOption[] = [props.data,{
     code: dashboard.params.code,
-    collectivite: dashboard.params.name,
+    libelle: dashboard.params.name,
     type: dashboard.params.type
   }].flat()
   const [options, setOptions] = useState<IncentiveTerritoryOption[]>(defaultOption);
   const search = (v: string | null) => {
-    const filter = v ?  props.data.filter(d=> d.collectivite?.toLowerCase().includes(v.toLowerCase())) : props.data
+    const filter = v ?  props.data.filter(d=> d.libelle?.toLowerCase().includes(v.toLowerCase())) : props.data
     setOptions(filter);
   };
 
@@ -31,7 +30,7 @@ export default function SelectIncentiveTerritory(props: { url: string, data:Camp
     <Autocomplete
       id='select-territory'
       options={options}
-      getOptionLabel={(option) => `${option.l_territory} - ${castPerimeterType(option.type)}`}
+      getOptionLabel={(option) => `${option.libelle ?? option.code} - ${castPerimeterType(option.type)}`}
       groupBy={(option) => option.type}
       renderGroup={(params) => (
         <li key={params.key}>
@@ -41,9 +40,9 @@ export default function SelectIncentiveTerritory(props: { url: string, data:Camp
       )}
       renderOption={(props, option) => {
         return (
-          <li {...props} key={option.id}>
+          <li {...props} key={`${option.type}-${option.code}`}>
             <div>
-              <div> <span className={fr.cx('fr-text--bold')}>{option.collectivite}</span> <span className={fr.cx('fr-text--xs')}>({option.code})</span></div>              
+              <div> <span className={fr.cx('fr-text--bold')}>{option.libelle}</span> <span className={fr.cx('fr-text--xs')}>({option.code})</span></div>              
             </div>
           </li>
         )
@@ -57,7 +56,7 @@ export default function SelectIncentiveTerritory(props: { url: string, data:Camp
       
       onChange={(e,v) =>{
         if (!v) return;
-        router.push(getUrl(props.url, {territory: v.code, l_territory: v.collectivite ?? '', type: v.type}))
+        router.push(getUrl(props.url, {territory: v.code, l_territory: v.libelle ?? '', type: v.type}))
         }
       }
     />

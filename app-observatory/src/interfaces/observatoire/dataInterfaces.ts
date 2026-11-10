@@ -136,8 +136,8 @@ export interface IncentiveDataInterface {
 export interface CampaignDataInterface {
   type: PerimeterType;
   code: INSEECode;
-  // écartée de la vue exposée : jamais renvoyée par l'API
-  collectivite?: string;
+  // libellé du périmètre ; null si le territoire n'est pas au dernier millésime
+  libelle: string | null;
   premiere_campagne: string | null;
   budget_incitations: string | null;
   date_debut: string | null;

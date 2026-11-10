@@ -31,7 +31,7 @@ export default function Dashboard() {
     return featureCollection(
       campaignsData.map((d) =>
         feature<Geometry, CampaignPropertiesInterface>(d.geom, {
-          name:d.collectivite,
+          name:d.libelle ?? undefined,
           type: d.type,
           code: d.code,
           debut: d.date_debut,
