@@ -32,7 +32,8 @@ models:
         data_tests:
           - not_null
           - accepted_values:
-              values: ['com', 'epci', 'aom', 'dep', 'reg', 'country', 'custom']
+              arguments:
+                values: ['com', 'epci', 'aom', 'dep', 'reg', 'country', 'custom']
       - name: year
         data_type: integer
         data_tests:
