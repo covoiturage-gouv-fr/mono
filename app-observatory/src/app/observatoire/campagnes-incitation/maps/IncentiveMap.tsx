@@ -12,6 +12,19 @@ import { getUrl } from "@/helpers/search";
 import { INSEECode, PerimeterType } from "@/interfaces/observatoire/Perimeter";
 import { useRouter } from "next/navigation";
 
+// Une couche par type de territoire, même style : l'ordre fixe l'empilement (custom au-dessus).
+const layerTypes = ["country", "reg", "dep", "aom", "epci", "custom"];
+const layers: LayerProps[] = layerTypes.map((type) => ({
+  id: type,
+  source: "campaigns",
+  type: "fill",
+  paint: {
+    "fill-color": "#020C7C",
+    "fill-opacity": 0.6,
+  },
+  filter: ["all", ["==", "type", type]],
+}));
+
 export default function IncentiveMap({
   params,
   data,
@@ -26,57 +39,6 @@ export default function IncentiveMap({
   sidebar?: ReactNode;
 }) {
   const router = useRouter();
-  const countryLayer: LayerProps = {
-    id: "country",
-    source: "campaigns",
-    type: "fill",
-    paint: {
-      "fill-color": "#020C7C",
-      "fill-opacity": 0.6,
-    },
-    filter: ["all", ["==", "type", "country"]],
-  };
-  const regLayer: LayerProps = {
-    id: "reg",
-    source: "campaigns",
-    type: "fill",
-    paint: {
-      "fill-color": "#020C7C",
-      "fill-opacity": 0.6,
-    },
-    filter: ["all", ["==", "type", "reg"]],
-  };
-  const depLayer: LayerProps = {
-    id: "dep",
-    source: "campaigns",
-    type: "fill",
-    paint: {
-      "fill-color": "#020C7C",
-      "fill-opacity": 0.6,
-    },
-    filter: ["all", ["==", "type", "dep"]],
-  };
-  const aomLayer: LayerProps = {
-    id: "aom",
-    source: "campaigns",
-    type: "fill",
-    paint: {
-      "fill-color": "#020C7C",
-      "fill-opacity": 0.6,
-    },
-    filter: ["all", ["==", "type", "aom"]],
-  };
-  const epciLayer: LayerProps = {
-    id: "epci",
-    source: "campaigns",
-    type: "fill",
-    paint: {
-      "fill-color": "#020C7C",
-      "fill-opacity": 0.6,
-    },
-    filter: ["all", ["==", "type", "epci"]],
-  };
-
   const mapStyle = Config.get<string>("observatoire.mapStyle");
 
   const bounds = useMemo(() => {
@@ -149,7 +111,7 @@ export default function IncentiveMap({
           mapStyle={mapStyle}
           bounds={bounds}
           scrollZoom={false}
-          interactiveLayerIds={["country", "reg", "dep", "aom", "epci"]}
+          interactiveLayerIds={layerTypes}
           cursor={cursor}
           onMouseEnter={onMouseEnter}
           onMouseLeave={onMouseLeave}
@@ -168,11 +130,9 @@ export default function IncentiveMap({
           }
         >
           <Source id="campaigns" type="geojson" data={data}>
-            <Layer {...countryLayer} />
-            <Layer {...regLayer} />
-            <Layer {...depLayer} />
-            <Layer {...aomLayer} />
-            <Layer {...epciLayer} />
+            {layers.map((layer) => (
+              <Layer key={layer.id} {...layer} />
+            ))}
             <Popup
               longitude={hoverInfo ? hoverInfo.longitude : 0}
               latitude={hoverInfo ? hoverInfo.latitude : 0}
