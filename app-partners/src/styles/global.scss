@@ -182,6 +182,15 @@
     }
     th:last-child {
       background-color: var(--background-contrast-blue-ecume);
+      // Le fond opaque masque le filet que le DSFR peint sur le thead : on le redessine sur la cellule.
+      background-image: linear-gradient(
+        0deg,
+        var(--border-plain-blue-ecume),
+        var(--border-plain-blue-ecume)
+      );
+      background-size: 100% 1px;
+      background-repeat: no-repeat;
+      background-position: 0 100%;
     }
     tbody tr:nth-child(even) td:last-child {
       background-color: var(--background-contrast-blue-ecume);
