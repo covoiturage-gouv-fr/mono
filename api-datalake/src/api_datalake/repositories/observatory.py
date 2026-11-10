@@ -21,7 +21,7 @@ CAMPAIGNS_COLUMNS = (
     "passager_eligibilite_reduction", "passager_montant_ticket",
     "zone_sens_des_trajets", "zone_exclusion", "si_zone_exclue_liste",
     "autre_exclusion", "trajet_longueur_min", "trajet_longueur_max",
-    "trajet_classe_de_preuve", "operateurs", "autres_informations", "lien", "geom",
+    "trajet_classe_de_preuve", "operateurs", "autres_informations", "lien", "libelle", "geom",
 )
 
 # Grain de période -> (suffixe de table exposée, colonne de filtre, valeur). Un seul

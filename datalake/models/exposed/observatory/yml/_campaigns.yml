@@ -20,6 +20,9 @@ models:
         data_type: text
       - name: lien
         data_type: text
+      - name: libelle
+        data_type: character varying
+        description: Libellé du territoire (perimeters_agg, dernier millésime) ; null si absent du millésime.
       - name: geom
         data_type: jsonb
         description: Géométrie GeoJSON du territoire (périmètre au dernier millésime).
