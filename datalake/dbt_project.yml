@@ -63,6 +63,8 @@ seeds:
           l_aom: varchar
           reg: varchar
 vars:
+  # Pas de copie des lignes en échec dans le schéma elementary
+  test_sample_row_count: 0
   dbt-osmosis:
     sources:
       carpool_v1:
