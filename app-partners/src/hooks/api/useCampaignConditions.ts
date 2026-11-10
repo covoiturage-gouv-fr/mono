@@ -35,9 +35,10 @@ async function send(method: "POST" | "PUT" | "DELETE", path: string, body?: unkn
   }
 }
 
-export const saveCampaignCondition = (form: CampaignConditionForm, id: number | null) =>
+// territoryId : territoire simulé par l'équipe RPC, à la création seulement.
+export const saveCampaignCondition = (form: CampaignConditionForm, id: number | null, territoryId?: number) =>
   id === null
-    ? send("POST", "dashboard/campaign-condition", toApiPayload(form))
+    ? send("POST", "dashboard/campaign-condition", { ...toApiPayload(form), territory_id: territoryId })
     : send("PUT", "dashboard/campaign-condition", { ...toApiPayload(form), id });
 
 export const validateCampaignCondition = (id: number) => send("POST", "dashboard/campaign-condition/validate", { id });

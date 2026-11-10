@@ -6,14 +6,12 @@ import { Notice } from "@codegouvfr/react-dsfr/Notice";
 export function SimulationBanner() {
   const { simulate, simulatedRole, simulatedLabel, onChangeSimulate } = useAuth();
   if (!simulate || !simulatedRole) return null;
-  const kind = simulatedRole === "operator" ? "l'opérateur" : "le territoire";
+  const kind = simulatedRole === "operator" ? "de l'opérateur" : "du territoire";
 
   return (
     <Notice
       severity="warning"
-      title={
-        simulatedLabel ? `Simulation : vous consultez l'espace de ${kind} ${simulatedLabel}.` : "Simulation activée."
-      }
+      title={simulatedLabel ? `Simulation : vous consultez l'espace ${kind} ${simulatedLabel}.` : "Simulation activée."}
       description={
         simulatedLabel
           ? "Les données sont filtrées sur ce partenaire ; vos actions restent celles de l'équipe RPC."

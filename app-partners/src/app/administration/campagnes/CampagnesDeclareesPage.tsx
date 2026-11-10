@@ -43,11 +43,21 @@ export default function CampagnesDeclareesPage() {
 }
 
 function CampagnesDeclarees({ params }: { params: { operator_id?: number; territory_id?: number } }) {
-  const { user, activeScope } = useAuth();
+  const { user, activeScope, simulatedRole, simulatedLabel } = useAuth();
   const registry = isRegistry(user?.role);
   const operatorId = user?.operator_id ?? null;
-  const territoryId = !registry && operatorId === null ? (user?.territory_id ?? null) : null;
-  const territoryLabel = territoryId === null ? null : (activeScope?.label ?? user?.organisation ?? "Votre territoire");
+  const simulatingTerritory = registry && simulatedRole === "territory";
+  const territoryId = simulatingTerritory
+    ? (user?.territory_id ?? null)
+    : !registry && operatorId === null
+      ? (user?.territory_id ?? null)
+      : null;
+  const territoryLabel =
+    territoryId === null
+      ? null
+      : simulatingTerritory
+        ? (simulatedLabel ?? "Territoire simulé")
+        : (activeScope?.label ?? user?.organisation ?? "Votre territoire");
   // L'API ne renvoie à un opérateur que les campagnes où il est listé.
   const { rows, error: loadError, loading, refetch } = useCampaignConditions(params);
   const { data: operatorsData } = useOperatorsList({ limit: 1000 });
@@ -109,14 +119,19 @@ function CampagnesDeclarees({ params }: { params: { operator_id?: number; territ
           initial={initial}
           operators={operators}
           lockedOperatorId={registry ? null : operatorId}
-          lockedTerritoryLabel={territoryLabel}
+          lockedTerritoryLabel={simulatingTerritory && current ? current.territory.label : territoryLabel}
           onCancel={() => {
             setActionError(undefined);
             setEditing(null);
           }}
           onSubmit={(values) =>
             void run(
-              () => saveCampaignCondition(values, current?.id ?? null),
+              () =>
+                saveCampaignCondition(
+                  values,
+                  current?.id ?? null,
+                  simulatingTerritory ? (territoryId ?? undefined) : undefined,
+                ),
               "La campagne est enregistrée en brouillon.",
             )
           }

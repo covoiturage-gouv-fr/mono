@@ -3,7 +3,10 @@ import { Action as AbstractAction } from "@/ilos/core/index.ts";
 import { copyGroupIdAndApplyGroupPermissionMiddlewares } from "@/pdc/providers/middleware/index.ts";
 import { CreateCampaignCondition } from "@/pdc/services/dashboard/dto/CampaignConditions.ts";
 import { assertCanCreate, callerOf } from "@/pdc/services/dashboard/helpers/campaignConditionAccess.ts";
-import { resolveOwnTerritory } from "@/pdc/services/dashboard/helpers/campaignConditionTerritory.ts";
+import {
+  resolveOwnTerritory,
+  resolveSimulatedTerritory,
+} from "@/pdc/services/dashboard/helpers/campaignConditionTerritory.ts";
 import { CampaignConditionsRepositoryInterfaceResolver } from "@/pdc/services/dashboard/interfaces/CampaignConditionsRepositoryInterface.ts";
 
 @handler({
@@ -31,7 +34,10 @@ export class CreateCampaignConditionAction extends AbstractAction {
   public override async handle(data: CreateCampaignCondition, context: ContextType): Promise<{ id: number }> {
     const caller = callerOf(context, "registry.campaign_condition.create");
     assertCanCreate(data.operator_ids, caller);
-    if (caller.registry) return this.repository.create(data, { operator_id: null, territory_id: null });
+    if (caller.registry) {
+      const territory = await resolveSimulatedTerritory(this.repository, caller, data.territory_id);
+      return this.repository.create({ ...data, ...territory }, { operator_id: null, territory_id: null });
+    }
     if (caller.territory_id !== null) {
       const territory = await resolveOwnTerritory(this.repository, caller.territory_id);
       return this.repository.create({ ...data, ...territory }, {

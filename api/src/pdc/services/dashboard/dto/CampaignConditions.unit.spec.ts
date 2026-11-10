@@ -121,4 +121,9 @@ describe("dto/CampaignConditions", () => {
     assertEquals(error, undefined);
     assertEquals(value, { operator_id: 101, territory_id: 7 });
   });
+
+  it("accepte un territory_id optionnel à la création, coercé en nombre", () => {
+    assertEquals(failures({ ...base, territory_id: "7" }), []);
+    assertEquals(failures(base), []);
+  });
 });

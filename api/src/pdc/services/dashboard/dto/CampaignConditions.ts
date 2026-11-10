@@ -76,7 +76,12 @@ export function crossRuleError(c: Fields): string | true {
   return true;
 }
 
-export const CreateCampaignCondition = refine(object(fields), "campaign_condition", crossRuleError);
+// territory_id : territoire simulé par l'équipe RPC, ignoré pour les autres appelants.
+export const CreateCampaignCondition = refine(
+  assign(object(fields), object({ territory_id: optional(Id) })),
+  "campaign_condition",
+  crossRuleError,
+);
 export const UpdateCampaignCondition = refine(
   assign(object(fields), object({ id: Id })),
   "campaign_condition",
