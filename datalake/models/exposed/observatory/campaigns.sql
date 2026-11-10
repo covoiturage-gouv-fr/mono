@@ -12,6 +12,8 @@
 --     internes du seed brut (email, collectivite, column00, « Mise à jour »,
 --     nom_région, siren…) qui ne doivent PAS fuiter sur une API publique ;
 --   * renomme `lien_page_collectivité` -> `lien` (contrat historique) ;
+--   * expose le libellé du périmètre (`libelle`), pas la colonne
+--     `collectivite` du seed ;
 --   * embarque la géométrie GeoJSON du territoire (jointure périmètre au
 --     dernier millésime).
 
@@ -46,6 +48,7 @@ SELECT
   a.operateurs,
   a.autres_informations,
   a.lien_page_collectivité       AS lien,
+  b.libelle,
   st_asgeojson(b.geom, 6)::jsonb AS geom
 FROM {{ source('raw', 'campaigns') }} AS a
 LEFT JOIN {{ ref('perimeters_agg') }} AS b
