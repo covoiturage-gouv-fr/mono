@@ -48,9 +48,12 @@ COPY --from=builder --chown=datalake:datalake /app /app
 ENV PATH="/app/.venv/bin:$PATH" \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PYTHONPATH=/app/src
+    PYTHONPATH=/app/src \
+    FORWARDED_ALLOW_IPS=127.0.0.1
 
 USER datalake
 EXPOSE 8081
 # --no-server-header : masque la bannière `Server: uvicorn` (durcissement API8/API9).
-ENTRYPOINT ["uvicorn", "api_datalake.main:app", "--app-dir", "src", "--host", "0.0.0.0", "--port", "8081", "--no-server-header"]
+# --proxy-headers : X-Forwarded-For cru seulement depuis FORWARDED_ALLOW_IPS (lu par uvicorn).
+# --no-access-log : remplacé par le journal d'accès JSON de l'application.
+ENTRYPOINT ["uvicorn", "api_datalake.main:app", "--app-dir", "src", "--host", "0.0.0.0", "--port", "8081", "--no-server-header", "--proxy-headers", "--no-access-log"]

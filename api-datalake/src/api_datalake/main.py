@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
 
+from .access_log import AccessLogMiddleware
 from .cache import close_redis, open_redis
 from .config import settings
 from .db import close_pool, open_pool
@@ -68,6 +69,8 @@ def create_app() -> FastAPI:
         allow_methods=["GET"],
         allow_headers=["*"],
     )
+    # Ajouté en dernier = le plus externe : journalise aussi les 503 de maintenance et le CORS.
+    app.add_middleware(AccessLogMiddleware)
 
     @app.get("/health")
     async def health():
