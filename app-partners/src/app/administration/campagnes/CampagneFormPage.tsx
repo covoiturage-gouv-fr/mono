@@ -59,6 +59,7 @@ function CampagneForm({ id, params }: { id: number | null; params: { operator_id
       <div className={fr.cx("fr-grid-row")}>
         <div className={fr.cx("fr-col-12", "fr-col-lg-8")}>
           <h3 className={fr.cx("fr-callout__title")}>{current ? "Modifier la campagne" : "Déclarer une campagne"}</h3>
+          {!current && <DeclarationIntro />}
           {current?.status === "validated" && (
             <p className={fr.cx("fr-text--sm")}>
               Cette campagne est validée : toute modification la repasse en brouillon jusqu&apos;à sa revalidation.
@@ -83,6 +84,33 @@ function CampagneForm({ id, params }: { id: number | null; params: { operator_id
           />
         </div>
       </div>
+    </>
+  );
+}
+
+// Texte à valider par le PO avant la mise en production.
+function DeclarationIntro() {
+  return (
+    <>
+      <p>
+        Ce formulaire sert à déclarer une campagne d&apos;incitation au covoiturage qui n&apos;est pas suivie par le
+        Registre de preuve de covoiturage (RPC), c&apos;est-à-dire dont les incitations ne sont pas calculées par le
+        RPC. Les campagnes suivies par le RPC sont déjà connues : inutile de les déclarer ici.
+      </p>
+      <p>
+        Une fois validée par l&apos;équipe RPC, la campagne est intégrée aux statistiques de l&apos;observatoire du
+        covoiturage (carte des campagnes d&apos;incitation) et publiée sur data.gouv.fr dans le jeu de données «{" "}
+        <a
+          href="https://www.data.gouv.fr/fr/datasets/64a436118c609995b0386541/"
+          target="_blank"
+          rel="noopener"
+          title="Conditions des campagnes d'incitation financière au covoiturage - nouvelle fenêtre"
+        >
+          Conditions des campagnes d&apos;incitation financière au covoiturage
+        </a>{" "}
+        ». Tant qu&apos;elle n&apos;est pas validée, elle reste en brouillon et n&apos;est pas publiée.
+      </p>
+      <p>Les informations saisies sont donc publiques : n&apos;y indiquez aucune donnée personnelle.</p>
     </>
   );
 }
