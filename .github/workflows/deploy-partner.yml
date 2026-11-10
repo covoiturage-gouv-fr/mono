@@ -17,8 +17,8 @@ jobs:
     name: Deploy Espace Partenaires
     strategy:
       matrix:
-        # prerelease (-rc.N) = demo only
-        env: ${{ github.event.release.prerelease && fromJSON('["demo"]') || fromJSON('["demo", "production"]') }}
+        # prerelease (-rc.N) = demo only ; stable = variable de dépôt PARTNER_DEPLOY_ENVS (tableau JSON)
+        env: ${{ github.event.release.prerelease && fromJSON('["demo"]') || fromJSON(vars.PARTNER_DEPLOY_ENVS || '["demo", "production"]') }}
     environment: ${{ matrix.env }}
     runs-on: ubuntu-latest
     steps:
