@@ -2,22 +2,19 @@ import { PostgresError } from "dep:postgres";
 import { ConflictException, NotFoundException, provider } from "@/ilos/common/index.ts";
 import { DenoPostgresConnection } from "@/ilos/connection-postgres/index.ts";
 import sql, { join, raw } from "@/lib/pg/sql.ts";
-import type {
-  CreateCampaignCondition,
-  UpdateCampaignCondition,
-} from "@/pdc/services/dashboard/dto/CampaignConditions.ts";
+import type { CreateExternalCampaign, UpdateExternalCampaign } from "@/pdc/services/dashboard/dto/ExternalCampaigns.ts";
 import {
   TerritoryGroupShape,
   toCampaignTerritory,
-} from "@/pdc/services/dashboard/helpers/campaignConditionTerritory.ts";
+} from "@/pdc/services/dashboard/helpers/externalCampaignTerritory.ts";
 import {
-  CampaignConditionAuthor,
-  CampaignConditionRow,
-  CampaignConditionsFilter,
-  CampaignConditionsRepositoryInterface,
-  CampaignConditionsRepositoryInterfaceResolver,
+  ExternalCampaignAuthor,
+  ExternalCampaignRow,
+  ExternalCampaignsFilter,
+  ExternalCampaignsRepositoryInterface,
+  ExternalCampaignsRepositoryInterfaceResolver,
   ResolvedTerritory,
-} from "@/pdc/services/dashboard/interfaces/CampaignConditionsRepositoryInterface.ts";
+} from "@/pdc/services/dashboard/interfaces/ExternalCampaignsRepositoryInterface.ts";
 
 const COLUMNS = [
   "territory_type",
@@ -47,19 +44,19 @@ const COLUMNS = [
   "trajet_classe_preuve",
   "lien_page_collectivite",
   "autres_informations",
-] as const satisfies readonly (keyof CreateCampaignCondition)[];
+] as const satisfies readonly (keyof CreateExternalCampaign)[];
 
 const UNIQUE_VIOLATION = "23505";
 
 @provider({
-  identifier: CampaignConditionsRepositoryInterfaceResolver,
+  identifier: ExternalCampaignsRepositoryInterfaceResolver,
 })
-export class CampaignConditionsRepository implements CampaignConditionsRepositoryInterface {
-  private readonly table = raw("policy.campaign_conditions");
+export class ExternalCampaignsRepository implements ExternalCampaignsRepositoryInterface {
+  private readonly table = raw("policy.external");
 
   constructor(private pgConnection: DenoPostgresConnection) {}
 
-  async list(params: CampaignConditionsFilter): Promise<CampaignConditionRow[]> {
+  async list(params: ExternalCampaignsFilter): Promise<ExternalCampaignRow[]> {
     const filters = [sql`deleted_at IS NULL`];
     if (params.operator_id !== undefined) filters.push(sql`operator_ids @> ARRAY[${params.operator_id}]::int[]`);
     if (params.id !== undefined) filters.push(sql`_id = ${params.id}`);
@@ -71,7 +68,7 @@ export class CampaignConditionsRepository implements CampaignConditionsRepositor
           : sql`created_by_territory_id = ${id}`,
       );
     }
-    return this.pgConnection.query<CampaignConditionRow>(sql`
+    return this.pgConnection.query<ExternalCampaignRow>(sql`
       SELECT
         _id AS id,
         ${raw(COLUMNS.filter((c) => !c.startsWith("date_")).join(", "))},
@@ -89,12 +86,12 @@ export class CampaignConditionsRepository implements CampaignConditionsRepositor
     `);
   }
 
-  async find(id: number): Promise<CampaignConditionRow | null> {
+  async find(id: number): Promise<ExternalCampaignRow | null> {
     const [row] = await this.list({ id });
     return row ?? null;
   }
 
-  async create(data: CreateCampaignCondition, author: CampaignConditionAuthor): Promise<{ id: number }> {
+  async create(data: CreateExternalCampaign, author: ExternalCampaignAuthor): Promise<{ id: number }> {
     const rows = await this.unique(() =>
       this.pgConnection.query<{ id: number }>(sql`
         INSERT INTO ${this.table} (${raw(COLUMNS.join(", "))}, created_by_operator_id, created_by_territory_id)
@@ -106,7 +103,7 @@ export class CampaignConditionsRepository implements CampaignConditionsRepositor
   }
 
   // Toute modification repasse la campagne en brouillon : elle doit être revalidée.
-  async update(data: UpdateCampaignCondition): Promise<void> {
+  async update(data: UpdateExternalCampaign): Promise<void> {
     const assignments = COLUMNS.map((c) => sql`${raw(c)} = ${data[c]}`);
     const rows = await this.unique(() =>
       this.pgConnection.query(sql`
@@ -116,14 +113,14 @@ export class CampaignConditionsRepository implements CampaignConditionsRepositor
         RETURNING _id
       `)
     );
-    if (rows.length !== 1) throw new NotFoundException(`campaign condition not found: (${data.id})`);
+    if (rows.length !== 1) throw new NotFoundException(`external campaign not found: (${data.id})`);
   }
 
   async delete(id: number): Promise<void> {
     const rows = await this.pgConnection.query(sql`
       UPDATE ${this.table} SET deleted_at = now() WHERE _id = ${id} AND deleted_at IS NULL RETURNING _id
     `);
-    if (rows.length !== 1) throw new NotFoundException(`campaign condition not found: (${id})`);
+    if (rows.length !== 1) throw new NotFoundException(`external campaign not found: (${id})`);
   }
 
   async validate(id: number, userId: number | null): Promise<void> {
@@ -133,7 +130,7 @@ export class CampaignConditionsRepository implements CampaignConditionsRepositor
       WHERE _id = ${id} AND deleted_at IS NULL
       RETURNING _id
     `);
-    if (rows.length !== 1) throw new NotFoundException(`campaign condition not found: (${id})`);
+    if (rows.length !== 1) throw new NotFoundException(`external campaign not found: (${id})`);
   }
 
   async resolveTerritory(territoryId: number): Promise<ResolvedTerritory | null> {

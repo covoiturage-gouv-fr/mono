@@ -1,6 +1,6 @@
 import { InvalidRequestException } from "@/ilos/common/index.ts";
-import { Caller, withTerritory } from "@/pdc/services/dashboard/helpers/campaignConditionAccess.ts";
-import type { ResolvedTerritory } from "@/pdc/services/dashboard/interfaces/CampaignConditionsRepositoryInterface.ts";
+import { Caller, withTerritory } from "@/pdc/services/dashboard/helpers/externalCampaignAccess.ts";
+import type { ResolvedTerritory } from "@/pdc/services/dashboard/interfaces/ExternalCampaignsRepositoryInterface.ts";
 
 export type TerritoryGroupShape = {
   name: string;

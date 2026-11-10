@@ -27,8 +27,44 @@ const texte = (max: number) =>
     .max(max, { message: `${max} caractères maximum` })
     .regex(/^[^<>]*$/, { message: "Les caractères < et > ne sont pas autorisés" });
 
+type CrossRuleDraft = Partial<Record<string, unknown>>;
+
+const isNum = (v: unknown): v is number => typeof v === "number" && !Number.isNaN(v);
+
+// Règles croisées tolérantes aux brouillons incomplets, évaluables même si le reste du schéma échoue.
+export const crossRuleIssues = (row: CrossRuleDraft): { path: string; message: string }[] => {
+  const issues: { path: string; message: string }[] = [];
+  const issue = (path: string, message: string) => issues.push({ path, message });
+  const { date_debut, date_fin } = row;
+  if (typeof date_fin === "string" && date_fin && typeof date_debut === "string" && date_fin < date_debut) {
+    issue("date_fin", "La date de fin doit suivre la date de début");
+  }
+  const min = row.conducteur_montant_min_par_passager;
+  const max = row.conducteur_montant_max_par_passager;
+  if (isNum(min) && isNum(max) && min > max) {
+    issue("conducteur_montant_min_par_passager", "Le minimum dépasse le maximum");
+  }
+  if (
+    isNum(row.trajet_longueur_min) &&
+    isNum(row.trajet_longueur_max) &&
+    row.trajet_longueur_min > row.trajet_longueur_max
+  ) {
+    issue("trajet_longueur_min", "La longueur minimale dépasse la maximale");
+  }
+  if (row.passager_gratuite && !row.passager_eligible_gratuite) {
+    issue("passager_eligible_gratuite", "Précisez qui bénéficie de la gratuité");
+  }
+  if (row.passager_reduction_ticket && !row.passager_eligibilite_reduction) {
+    issue("passager_eligibilite_reduction", "Précisez qui bénéficie de la réduction");
+  }
+  if (row.zone_exclusion && !(typeof row.zone_exclusion_liste === "string" && row.zone_exclusion_liste.trim())) {
+    issue("zone_exclusion_liste", "Listez les zones exclues");
+  }
+  return issues;
+};
+
 // Montants en euros côté formulaire ; l'API les stockera en centimes.
-export const campaignConditionSchema = z
+export const externalCampaignSchema = z
   .object({
     territory: z.object(
       { type: z.enum(perimeterTypes), code: z.string().min(1), label: z.string() },
@@ -65,45 +101,49 @@ export const campaignConditionSchema = z
     autres_informations: texte(2000).nullable(),
   })
   .superRefine((row, ctx) => {
-    const issue = (path: string, message: string) =>
+    for (const { path, message } of crossRuleIssues(row)) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, path: [path], message });
-    if (row.date_fin && row.date_fin < row.date_debut) {
-      issue("date_fin", "La date de fin doit suivre la date de début");
-    }
-    const min = row.conducteur_montant_min_par_passager;
-    const max = row.conducteur_montant_max_par_passager;
-    if (min !== null && max !== null && min > max) {
-      issue("conducteur_montant_min_par_passager", "Le minimum dépasse le maximum");
-    }
-    if (
-      row.trajet_longueur_min !== null &&
-      row.trajet_longueur_max !== null &&
-      row.trajet_longueur_min > row.trajet_longueur_max
-    ) {
-      issue("trajet_longueur_min", "La longueur minimale dépasse la maximale");
-    }
-    if (row.passager_gratuite && !row.passager_eligible_gratuite) {
-      issue("passager_eligible_gratuite", "Précisez qui bénéficie de la gratuité");
-    }
-    if (row.passager_reduction_ticket && !row.passager_eligibilite_reduction) {
-      issue("passager_eligibilite_reduction", "Précisez qui bénéficie de la réduction");
-    }
-    if (row.zone_exclusion && !row.zone_exclusion_liste?.trim()) {
-      issue("zone_exclusion_liste", "Listez les zones exclues");
     }
   });
 
-export type CampaignConditionForm = z.input<typeof campaignConditionSchema>;
+// Champs dont le « touché » révèle aussi l'erreur d'une règle croisée portée par la clé.
+export const linkedFields: Record<string, string[]> = {
+  date_fin: ["date_debut"],
+  conducteur_montant_min_par_passager: ["conducteur_montant_max_par_passager"],
+  trajet_longueur_min: ["trajet_longueur_max"],
+  passager_eligible_gratuite: ["passager_gratuite"],
+  passager_eligibilite_reduction: ["passager_reduction_ticket"],
+  zone_exclusion_liste: ["zone_exclusion"],
+};
 
-export interface CampaignCondition extends CampaignConditionForm {
+export type FieldErrors = Record<string, string[] | undefined>;
+
+// Première erreur de chaque champ touché (ou de tous au submit).
+export const visibleErrors = (
+  errors: FieldErrors,
+  touched: ReadonlySet<string>,
+  submitted: boolean,
+): Record<string, string> => {
+  const out: Record<string, string> = {};
+  for (const [key, messages] of Object.entries(errors)) {
+    const message = messages?.[0];
+    if (!message) continue;
+    if (submitted || touched.has(key) || (linkedFields[key] ?? []).some((k) => touched.has(k))) out[key] = message;
+  }
+  return out;
+};
+
+export type ExternalCampaignForm = z.input<typeof externalCampaignSchema>;
+
+export interface ExternalCampaign extends ExternalCampaignForm {
   id: number;
   status: (typeof campaignStatuses)[number];
   created_by_operator_id: number | null;
   created_by_territory_id: number | null;
 }
 
-export const emptyCampaignCondition = (): Omit<CampaignConditionForm, "territory"> & {
-  territory: CampaignConditionForm["territory"] | null;
+export const emptyExternalCampaign = (): Omit<ExternalCampaignForm, "territory"> & {
+  territory: ExternalCampaignForm["territory"] | null;
 } => ({
   territory: null,
   operator_ids: [],
@@ -132,13 +172,13 @@ export const emptyCampaignCondition = (): Omit<CampaignConditionForm, "territory
   autres_informations: null,
 });
 
-// Mêmes règles que l'API (campaignConditionAccess.ts) : seuls les admins écrivent ;
+// Mêmes règles que l'API (externalCampaignAccess.ts) : seuls les admins écrivent ;
 // un opérateur modifie ses campagnes mono-opérateur, les multi-opérateurs sont saisies par l'équipe RPC.
 export const canCreateCampaign = (role: string) =>
   role === "registry.admin" || role === "operator.admin" || role === "territory.admin";
 
 export const canEditCampaign = (
-  campaign: Pick<CampaignCondition, "operator_ids" | "created_by_operator_id" | "created_by_territory_id">,
+  campaign: Pick<ExternalCampaign, "operator_ids" | "created_by_operator_id" | "created_by_territory_id">,
   user: { role: string; operator_id: number | null; territory_id?: number | null },
 ) => {
   if (user.role === "registry.admin") return true;
@@ -179,11 +219,24 @@ interface ApiTerritory {
   territory_code: string;
   territory_label: string;
 }
-export type CampaignConditionPayload = Omit<CampaignConditionForm, "territory"> & ApiTerritory;
-export type CampaignConditionApiRow = CampaignConditionPayload & Omit<CampaignCondition, keyof CampaignConditionForm>;
+export type ExternalCampaignPayload = Omit<ExternalCampaignForm, "territory"> & ApiTerritory;
+export type ExternalCampaignApiRow = ExternalCampaignPayload & Omit<ExternalCampaign, keyof ExternalCampaignForm>;
 
-export const toApiPayload = ({ territory, ...rest }: CampaignConditionForm): CampaignConditionPayload => {
-  const payload: CampaignConditionPayload = {
+// Champs posés par le serveur : le schéma d'entrée de l'API les refuse (`never`) si une ligne éditée les renvoie.
+const SERVER_FIELDS = [
+  "created_by_operator_id",
+  "created_by_territory_id",
+  "status",
+  "validated_at",
+  "validated_by",
+  "created_at",
+  "updated_at",
+  "deleted_at",
+];
+
+export const toApiPayload = ({ territory, ...row }: ExternalCampaignForm): ExternalCampaignPayload => {
+  const rest = Object.fromEntries(Object.entries(row).filter(([k]) => !SERVER_FIELDS.includes(k))) as typeof row;
+  const payload: ExternalCampaignPayload = {
     ...rest,
     territory_type: territory.type,
     territory_code: territory.code,
@@ -201,8 +254,8 @@ export const fromApiRow = ({
   territory_code,
   territory_label,
   ...rest
-}: CampaignConditionApiRow): CampaignCondition => {
-  const row: CampaignCondition = {
+}: ExternalCampaignApiRow): ExternalCampaign => {
+  const row: ExternalCampaign = {
     ...rest,
     territory: { type: territory_type, code: territory_code, label: territory_label },
   };

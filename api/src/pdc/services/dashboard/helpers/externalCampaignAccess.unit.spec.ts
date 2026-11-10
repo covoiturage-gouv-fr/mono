@@ -1,18 +1,18 @@
 import { assertEquals, assertThrows } from "dep:assert";
 import { describe, it } from "dep:testing-bdd";
 import { ForbiddenException } from "@/ilos/common/index.ts";
-import { assertCanCreate, assertCanWrite, callerOf, viewedAs, withTerritory } from "./campaignConditionAccess.ts";
+import { assertCanCreate, assertCanWrite, callerOf, viewedAs, withTerritory } from "./externalCampaignAccess.ts";
 
-describe("campaignConditionAccess", () => {
+describe("externalCampaignAccess", () => {
   const registry = callerOf({
-    call: { user: { permissions: ["registry.campaign_condition.update"], operator_id: 3 } },
+    call: { user: { permissions: ["registry.external_campaign.update"], operator_id: 3 } },
   });
   const operator3 = callerOf({
-    call: { user: { permissions: ["operator.campaign_condition.update"], operator_id: 3 } },
+    call: { user: { permissions: ["operator.external_campaign.update"], operator_id: 3 } },
   });
   const territory7 = withTerritory(
     callerOf({
-      call: { user: { permissions: ["territory.campaign_condition.update"], operator_id: null, territory_id: 7 } },
+      call: { user: { permissions: ["territory.external_campaign.update"], operator_id: null, territory_id: 7 } },
     }),
     { territory_type: "aom", territory_code: "200046977", territory_label: "AOM 7" },
   );

@@ -1,11 +1,11 @@
 import { assertEquals } from "dep:assert";
 import { describe, it } from "dep:testing-bdd";
 import { Struct, validate } from "@/lib/superstruct/index.ts";
-import { CampaignConditions, CreateCampaignCondition, UpdateCampaignCondition } from "./CampaignConditions.ts";
+import { CreateExternalCampaign, ExternalCampaigns, UpdateExternalCampaign } from "./ExternalCampaigns.ts";
 
-describe("dto/CampaignConditions", () => {
+describe("dto/ExternalCampaigns", () => {
   // deno-lint-ignore no-explicit-any
-  const failures = (payload: unknown, struct: Struct<any, any> = CreateCampaignCondition): string[] => {
+  const failures = (payload: unknown, struct: Struct<any, any> = CreateExternalCampaign): string[] => {
     const [err] = validate(payload, struct, { coerce: true });
     return err ? err.failures().map((f) => `${f.path.join(".")} : ${f.message}`) : [];
   };
@@ -43,7 +43,7 @@ describe("dto/CampaignConditions", () => {
 
   it("accepte une campagne complète", () => {
     assertEquals(failures(base), []);
-    assertEquals(failures({ ...base, id: 12 }, UpdateCampaignCondition), []);
+    assertEquals(failures({ ...base, id: 12 }, UpdateExternalCampaign), []);
   });
 
   it("accepte une campagne sans date de fin ni montants", () => {
@@ -117,7 +117,7 @@ describe("dto/CampaignConditions", () => {
   });
 
   it("convertit l'opérateur ou le territoire simulé reçu en query string", () => {
-    const [error, value] = validate({ operator_id: "101", territory_id: "7" }, CampaignConditions, { coerce: true });
+    const [error, value] = validate({ operator_id: "101", territory_id: "7" }, ExternalCampaigns, { coerce: true });
     assertEquals(error, undefined);
     assertEquals(value, { operator_id: 101, territory_id: 7 });
   });

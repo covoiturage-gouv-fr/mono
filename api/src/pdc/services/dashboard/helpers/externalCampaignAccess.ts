@@ -1,5 +1,5 @@
 import { ContextType, ForbiddenException } from "@/ilos/common/index.ts";
-import type { ResolvedTerritory } from "@/pdc/services/dashboard/interfaces/CampaignConditionsRepositoryInterface.ts";
+import type { ResolvedTerritory } from "@/pdc/services/dashboard/interfaces/ExternalCampaignsRepositoryInterface.ts";
 
 export type Caller = {
   registry: boolean;
@@ -20,7 +20,7 @@ type Owned = {
 // Un périmètre est opérateur XOR territoire : on ne garde que celui de la session.
 export function callerOf(
   context: Pick<ContextType, "call">,
-  registryPermission = "registry.campaign_condition.update",
+  registryPermission = "registry.external_campaign.update",
 ): Caller {
   const user = context?.call?.user;
   const permissions = (user?.permissions ?? []) as string[];

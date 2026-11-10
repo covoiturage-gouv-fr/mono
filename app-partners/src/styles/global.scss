@@ -1,5 +1,22 @@
 @import "remixicon/fonts/remixicon.css";
 
+// Le Notice DSFR met titre, description et lien en ligne dès 36em : description sous le titre, lien à droite.
+.simulation-banner {
+  .fr-notice__body > p {
+    flex: 1;
+  }
+
+  .fr-notice__desc,
+  .fr-notice__link {
+    display: block;
+  }
+
+  .fr-notice__link {
+    width: fit-content;
+    margin-left: auto;
+  }
+}
+
 .text-center {
   text-align: center;
 }
@@ -106,7 +123,9 @@
 }
 
 // Tableaux d'administration : le balisage DSFR hérité met la table en `display: block`, d'où une largeur au contenu.
+// Les cellules passent à la ligne ; si le tableau défile encore, la colonne d'actions reste collée à droite.
 .admin-table {
+  max-width: 100%;
   overflow-x: auto;
   > table {
     display: table;
@@ -114,20 +133,36 @@
     th,
     td {
       text-align: left;
-      white-space: nowrap;
+      overflow-wrap: break-word;
     }
-    // width: 1 % + nowrap : la colonne d'actions prend la largeur de ses boutons, sur une ligne.
     th:last-child,
     td:last-child {
       width: 1%;
       text-align: right;
+      overflow-wrap: normal;
+      white-space: nowrap;
+      position: sticky;
+      right: 0;
+      background-color: var(--background-alt-blue-ecume);
+      // Boutons empilés sous `lg` (comme `inlineLayoutWhen="lg and up"`), sur une ligne au-delà.
       .fr-btns-group {
+        flex-direction: column;
         flex-wrap: nowrap;
-        justify-content: flex-end;
+        align-items: flex-end;
         li {
           justify-content: flex-end;
         }
+        @media (min-width: 62em) {
+          flex-direction: row;
+          justify-content: flex-end;
+        }
       }
+    }
+    th:last-child {
+      background-color: var(--background-contrast-blue-ecume);
+    }
+    tbody tr:nth-child(even) td:last-child {
+      background-color: var(--background-contrast-blue-ecume);
     }
   }
 }
