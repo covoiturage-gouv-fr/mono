@@ -129,7 +129,7 @@ NEXT_PUBLIC_CMS_URL=           # URL du CMS Strapi
 NEXT_PUBLIC_MAPTILER_KEY=      # Clé MapTiler pour les fonds de carte
 NEXT_PUBLIC_MATOMO_URL=        # URL Matomo (analytics)
 NEXT_PUBLIC_MATOMO_SITE_ID=    # ID du site Matomo
-NEXT_PUBLIC_BAROMETER_FIXTURES= # true : baromètre sur données fictives (dev)
+NEXT_PUBLIC_BAROMETER_FIXTURES= # true : baromètre sur les JSON de public/barometre-fixtures (données VINCI)
 ```
 
 En environement de développement il est possible d'utiliser les endpoints de production suivants :
