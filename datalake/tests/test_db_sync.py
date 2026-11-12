@@ -57,4 +57,14 @@ def test_import_table_drops_partial_table_on_error(monkeypatch):
 def test_import_table_rejects_unknown_ext():
     conn = FakeConn()
     with pytest.raises(ValueError):
-        db_sync.import_table(table="t", schema="s", path="/x.parquet", ext="parquet", conn=conn)
+        db_sync.import_table(table="t", schema="s", path="/x.xml", ext="xml", conn=conn)
+
+
+def test_import_table_forwards_to_load_parquet(monkeypatch):
+    conn = FakeConn()
+    captured = {}
+    monkeypatch.setattr(db_sync.pg, "load_parquet", lambda *a, **k: captured.update(k) or 3)
+    n = db_sync.import_table(table="t", schema="s", path="/x.parquet", ext="parquet",
+                              columns=[["a", "varchar"]], conn=conn)
+    assert n == 3
+    assert captured["columns"] == [["a", "varchar"]]

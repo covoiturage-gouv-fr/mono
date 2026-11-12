@@ -208,6 +208,31 @@
     ]
   },
   {
+    "name": "insee_mobpro_2023",
+    "ext": "parquet",
+    "origin": "https://www.insee.fr/fr/statistiques/fichier/9004795/RP2023_mobpro.parquet",
+    "select": [
+      ["COMMUNE", "varchar", "code_commune_residence"],
+      ["ARM", "varchar", "code_arrondissement_residence"],
+      ["DCLT", "varchar", "code_commune_travail"],
+      ["DCFLT", "varchar", "code_commune_travail_frontaliere"],
+      ["REGION", "varchar", "code_region_residence"],
+      ["REGLT", "varchar", "code_region_travail"],
+      ["METRODOM", "varchar", "indicateur_metropole_dom"],
+      ["ILT", "varchar", "indicateur_lieu_travail"],
+      ["ILTUU", "varchar", "indicateur_lieu_travail_unite_urbaine"],
+      ["TRANS", "varchar", "mode_transport_principal"],
+      ["VOIT", "varchar", "nb_voitures_menage"],
+      ["IPONDI", "varchar", "poids_individu"],
+      ["SEXE", "varchar", "sexe"],
+      ["AGEREVQ", "varchar", "tranche_age_quinquennale"],
+      ["GS", "varchar", "groupe_socioprofessionnel"],
+      ["NA5", "varchar", "secteur_activite"],
+      ["STAT", "varchar", "statut_professionnel"],
+      ["TP", "varchar", "temps_travail"]
+    ]
+  },
+  {
     "name": "campaigns",
     "filename": "campaigns.20260708T200045Z",
     "ext": "csv",
