@@ -48,12 +48,31 @@ datalake_production  ·  zone_exposed.{od,incentive,distribution,occupation,loca
 | Module | Rôle |
 | --- | --- |
 | `config.py` | Variables d'environnement (base `DBT_*`, Redis, cutoff, CORS) |
+| `access_log.py` | Journal d'accès JSON (une ligne par requête) |
 | `db.py` | Pool psycopg async (lecture seule) |
 | `cache.py` | Clé de cache versionnée + gzip du payload |
 | `period.py` | Fenêtre de publication + cutoff du dernier enregistrement |
 | `helpers.py` | Allowlist des types de territoire |
 | `repositories/observatory.py` | Requêtes SQL sur `zone_exposed` |
 | `routers/observatory.py` | Endpoints publics |
+
+## Journal d'accès
+
+Une ligne JSON par requête sur stdout, dans tous les environnements (sondes `/health` et
+`/health/ready` exclues tant qu'elles réussissent). Il remplace le journal d'accès d'uvicorn (`--no-access-log`).
+
+```json
+{"ts": "2026-11-10T10:37:14.509+00:00", "level": "info", "ip": "203.0.113.7", "request_id": "0123abcd", "method": "GET", "route": "/observatory/location", "status": 200, "duration_ms": 65}
+```
+
+- `route` : gabarit de la route, absent sans correspondance (404, 503 de maintenance). Jamais
+  de chemin brut, de query string, de corps, de cookie ni de jeton.
+- `request_id` (`X-Request-Id`) et `pentest_id` (`X-Pentest-Id`) : absents si l'en-tête
+  l'est ; valeurs réduites à `[A-Za-z0-9._-]`, 64 caractères au plus.
+- `sub`, `role` : présents si l'authentification les a posés sur `request.state`.
+- `ip` : uvicorn ne croit `X-Forwarded-For` que si le pair figure dans
+  **`FORWARDED_ALLOW_IPS`** (IP ou CIDR, séparés par des virgules ; à renseigner avec le CIDR
+  des pods nginx ingress). Défaut `127.0.0.1` : en-tête ignoré, `ip` = adresse du pair.
 
 ## Développement
 

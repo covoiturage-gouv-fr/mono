@@ -172,10 +172,13 @@ Copier `.env.example` vers `.env` et configurer les valeurs.
 | `NODE_ENV` | Non | `local` | Environnement Node.js |
 | `APP_ENV` | Non | `${NODE_ENV}` | Environnement applicatif (`local`, `dev`, `staging`, `production`). Contrôle la sécurité des cookies de session, l'accès au listing RPC, le filtrage des actions par environnement |
 | `APP_MAINTENANCE` | Non | `false` | Active le mode maintenance (HTTP 503 sur toutes les requêtes) |
+| `APP_FEATURE_EXTERNAL_CAMPAIGNS` | Non | `false` | Active les campagnes déclarées (`/dashboard/external-campaign(s)`, 5 routes). Éteint : 404 « Fonctionnalité indisponible » avant tout accès base |
 | `APP_VERSION` | Non | ISO timestamp | Version de l'application, utilisée dans les tags Sentry et les logs de démarrage |
 | `APP_LOG_LEVEL` | Non | `INFO` | Niveau de log (`DEBUG`, `INFO`, `WARN`, `ERROR`). Les écritures passant par le Kernel sont tracées en `INFO` avec le préfixe `[audit]` (identifiants pseudonymes de l'acteur et des ressources uniquement, ni e-mail, ni nom, ni téléphone) |
 
 Format des logs : `[tag] étape clé=valeur` via `taggedLogger("[tag]")` (`src/lib/logger/tagged.ts`). Tags : `[audit]`, `[http]`, `[kernel]`, `[pg]`, `[cache]`, `[session]`, `[proconnect]`, `[dex]`, `[campaign]`, `[apdf]`, `[export]`, `[geo]`, `[boot]`… Les valeurs sont filtrées et tronquées ; sur les chemins de requête, une erreur est notée `error=<Classe:code>` (`errorCode(e)`), jamais par son message. `session=` est une empreinte de la session, stable du login au logout.
+
+Journal d'accès : une ligne `INFO` par requête HTTP, à la fin de la réponse, dans tous les environnements (`src/pdc/proxy/middlewares/accessLogMiddleware.ts`). Message `[access]`, champs dans `args` : `ip` (`req.ip`, comme le limiteur de débit), `request_id` (`X-Request-Id` du proxy), `method`, `route` (motif Express, jamais l'URL), `status`, `duration_ms`, `sub` et `role` si authentifié (`user:<_id>` ou `operator:<operator_id>`), `pentest_id` si l'en-tête `X-Pentest-Id` est présent. Ni query string, ni corps, ni cookie, ni jeton. Les sondes `/health` et `/metrics` réussies ne sont pas journalisées.
 
 #### URLs des services
 
@@ -232,7 +235,7 @@ L'e-mail de bienvenue (création d'un utilisateur) transmet au template Brevo le
 | --- | --- | --- | --- |
 | `AWS_ACCESS_KEY_ID` | **Oui** | — | Clé d'accès S3 |
 | `AWS_SECRET_ACCESS_KEY` | **Oui** | — | Clé secrète S3 |
-| `AWS_ENDPOINT` | Non | `https://s3.fr-par.scw.cloud` | Endpoint S3 (Scaleway, Minio, AWS…) |
+| `AWS_ENDPOINT` | Non | `https://s3.fr-par.scw.cloud` | Endpoint S3 (Scaleway, RustFS, AWS…) |
 | `AWS_REGION` | Non | `fr-par` | Région S3 |
 
 > Préfixe de bucket configurable via `AWS_BUCKET_PREFIX`. Override par bucket possible via `AWS_BUCKET_{NAME}_ENDPOINT`.

@@ -76,9 +76,10 @@ Copier `.env.example` vers `.env.local` et configurer :
 | `NEXT_PUBLIC_DATALAKE_BASE_URL`   | URL de l'API datalake (recherche de territoires)                            |
 | `NEXT_PUBLIC_PC_USER_URI`         | Page « mes informations » ProConnect (lien du profil). Production : `https://identite.proconnect.gouv.fr/personal-information`, démo (bac à sable) : `https://identite-sandbox.proconnect.gouv.fr/personal-information`. Vide = production |
 | `NEXT_PUBLIC_FEATURE_MULTI_SIRET` | `true` affiche le multi-périmètre : liste des territoires dans le menu compte du header (si ≥ 2), badge, éditeur. Off par défaut |
+| `NEXT_PUBLIC_FEATURE_EXTERNAL_CAMPAIGNS` | `true` affiche l'onglet « Campagnes déclarées » et ses pages (déclarer, modifier). Off par défaut ; l'API a son pendant `APP_FEATURE_EXTERNAL_CAMPAIGNS` |
 | `NEXT_PUBLIC_CONTACT_EMAIL`       | Adresse du support affichée dans les messages d'erreur de connexion et la page 404 (`contact@covoiturage.beta.gouv.fr` par défaut) |
 
-Les `NEXT_PUBLIC_*` sont figées au build : changer le flag demande un redéploiement (var GitHub `PARTNER_FEATURE_MULTI_SIRET` par environnement).
+Les `NEXT_PUBLIC_*` sont figées au build : changer le flag demande un redéploiement (vars GitHub `PARTNER_FEATURE_MULTI_SIRET` et `PARTNER_FEATURE_EXTERNAL_CAMPAIGNS` par environnement).
 
 ### Erreurs de connexion
 

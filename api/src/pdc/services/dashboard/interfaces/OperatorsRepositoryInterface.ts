@@ -1,6 +1,9 @@
 import type { ResultInterface as CreateOperatorResultInterface } from "@/pdc/services/dashboard/actions/operators/CreateOperatorAction.ts";
 import type { ResultInterface as DeleteOperatorResultInterface } from "@/pdc/services/dashboard/actions/operators/DeleteOperatorAction.ts";
-import type { OperatorResult, ResultInterface as OperatorsResultInterface } from "@/pdc/services/dashboard/actions/operators/OperatorsAction.ts";
+import type {
+  OperatorResult,
+  ResultInterface as OperatorsResultInterface,
+} from "@/pdc/services/dashboard/actions/operators/OperatorsAction.ts";
 import type { ResultInterface as UpdateOperatorResultInterface } from "@/pdc/services/dashboard/actions/operators/UpdateOperatorAction.ts";
 import {
   CreateOperator as CreateOperatorDataInterface,
