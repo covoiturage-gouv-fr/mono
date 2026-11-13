@@ -1,34 +1,35 @@
 "use client";
 import AdminTable from "@/components/common/AdminTable";
-import { isRegistry } from "@/helpers/auth";
 import {
   campaignListScope,
   canCreateCampaign,
   canEditCampaign,
-  emptyCampaignCondition,
-  type CampaignCondition,
-} from "@/helpers/campaignCondition";
+  type ExternalCampaign,
+} from "@/helpers/externalCampaign";
 import { castPerimeterType } from "@/helpers/search";
 import { useOperatorsList } from "@/hooks/api";
 import {
-  deleteCampaignCondition,
-  saveCampaignCondition,
-  useCampaignConditions,
-  validateCampaignCondition,
-} from "@/hooks/api/useCampaignConditions";
-import { useAuth } from "@/providers/AuthProvider";
+  deleteExternalCampaign,
+  useExternalCampaigns,
+  validateExternalCampaign,
+} from "@/hooks/api/useExternalCampaigns";
 import { fr } from "@codegouvfr/react-dsfr";
 import Alert from "@codegouvfr/react-dsfr/Alert";
 import Badge from "@codegouvfr/react-dsfr/Badge";
 import Button from "@codegouvfr/react-dsfr/Button";
 import ButtonsGroup from "@codegouvfr/react-dsfr/ButtonsGroup";
-import { useState } from "react";
-import CampaignConditionForm from "./CampaignConditionForm";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import ActionErrorAlert from "./ActionErrorAlert";
+import { useCampaignContext } from "./useCampaignContext";
+
+const DECLARER_URL = "/administration/campagnes/declarer/";
+const MODIFIER_URL = "/administration/campagnes/modifier/";
 
 const date = (d: string | null) => (d ? new Date(d).toLocaleDateString("fr-FR") : "—");
 
 export default function CampagnesDeclareesPage() {
-  const { user, simulatedRole } = useAuth();
+  const { user, simulatedRole } = useCampaignContext();
   if (!user) return null;
   const scope = campaignListScope(user, simulatedRole);
   if (scope.pending) {
@@ -43,20 +44,24 @@ export default function CampagnesDeclareesPage() {
 }
 
 function CampagnesDeclarees({ params }: { params: { operator_id?: number; territory_id?: number } }) {
-  const { user, activeScope } = useAuth();
-  const registry = isRegistry(user?.role);
-  const operatorId = user?.operator_id ?? null;
-  const territoryId = !registry && operatorId === null ? (user?.territory_id ?? null) : null;
-  const territoryLabel = territoryId === null ? null : (activeScope?.label ?? user?.organisation ?? "Votre territoire");
+  const { user, registry, operatorId, territoryId } = useCampaignContext();
   // L'API ne renvoie à un opérateur que les campagnes où il est listé.
-  const { rows, error: loadError, loading, refetch } = useCampaignConditions(params);
+  const { rows, error: loadError, loading, refetch } = useExternalCampaigns(params);
   const { data: operatorsData } = useOperatorsList({ limit: 1000 });
   const operators = (operatorsData?.data ?? []).filter((o): o is { id: number; name: string; siret: string } => !!o.id);
   const operatorName = (id: number) => operators.find((o) => o.id === id)?.name ?? `#${id}`;
-  // null = formulaire fermé, 0 = création
-  const [editing, setEditing] = useState<number | null>(null);
   const [actionError, setActionError] = useState<string>();
-  const [saved, setSaved] = useState<string>();
+  const router = useRouter();
+  const pathname = usePathname();
+  const justSaved = useSearchParams().get("ok") === "enregistree";
+  const [saved, setSaved] = useState<string | undefined>(
+    justSaved ? "La campagne est enregistrée en brouillon." : undefined,
+  );
+
+  // Le message reste affiché, mais un rechargement ne le rejoue pas.
+  useEffect(() => {
+    if (justSaved) router.replace(pathname);
+  }, [justSaved, pathname, router]);
 
   if (!user) return null;
 
@@ -66,67 +71,14 @@ function CampagnesDeclarees({ params }: { params: { operator_id?: number; territ
     try {
       await action();
       setSaved(success);
-      setEditing(null);
       await refetch();
     } catch (e) {
       setActionError(e instanceof Error ? e.message : String(e));
     }
   };
 
-  const errorAlert = actionError && (
-    <Alert
-      className={fr.cx("fr-mb-3w")}
-      severity="error"
-      small
-      description={actionError}
-      closable
-      onClose={() => setActionError(undefined)}
-    />
-  );
-
-  if (editing !== null) {
-    const current = rows.find((r) => r.id === editing);
-    const initial = current ?? {
-      ...emptyCampaignCondition(),
-      // Compte opérateur, ou équipe RPC simulant un opérateur : pré-rempli.
-      operator_ids: operatorId ? [operatorId] : [],
-      // Valeur provisoire pour la validation du formulaire : l'API impose le territoire du compte.
-      territory:
-        territoryId === null
-          ? null
-          : { type: "custom" as const, code: String(territoryId), label: territoryLabel ?? "" },
-    };
-    return (
-      <>
-        {errorAlert}
-        <h3 className={fr.cx("fr-callout__title")}>{current ? "Modifier la campagne" : "Déclarer une campagne"}</h3>
-        {current?.status === "validated" && (
-          <p className={fr.cx("fr-text--sm")}>
-            Cette campagne est validée : toute modification la repasse en brouillon jusqu&apos;à sa revalidation.
-          </p>
-        )}
-        <CampaignConditionForm
-          initial={initial}
-          operators={operators}
-          lockedOperatorId={registry ? null : operatorId}
-          lockedTerritoryLabel={territoryLabel}
-          onCancel={() => {
-            setActionError(undefined);
-            setEditing(null);
-          }}
-          onSubmit={(values) =>
-            void run(
-              () => saveCampaignCondition(values, current?.id ?? null),
-              "La campagne est enregistrée en brouillon.",
-            )
-          }
-        />
-      </>
-    );
-  }
-
   const headers = ["Territoire", "Opérateurs", "Début", "Fin", "Statut", "Actions"];
-  const data = rows.map((r: CampaignCondition) => {
+  const data = rows.map((r: ExternalCampaign) => {
     const editable = canEditCampaign(r, { role: user.role, operator_id: operatorId, territory_id: territoryId });
     return [
       <span key="t">
@@ -158,14 +110,14 @@ function CampagnesDeclarees({ params }: { params: { operator_id?: number; territ
               children: "modifier",
               iconId: "fr-icon-edit-line",
               priority: "secondary",
-              onClick: () => setEditing(r.id),
+              linkProps: { href: `${MODIFIER_URL}?id=${r.id}` },
             },
             ...(registry && r.status === "draft"
               ? [
                   {
                     children: "valider",
                     iconId: "fr-icon-check-line" as const,
-                    onClick: () => void run(() => validateCampaignCondition(r.id), "La campagne est validée."),
+                    onClick: () => void run(() => validateExternalCampaign(r.id), "La campagne est validée."),
                   },
                 ]
               : []),
@@ -175,7 +127,7 @@ function CampagnesDeclarees({ params }: { params: { operator_id?: number; territ
               priority: "tertiary",
               onClick: () => {
                 if (window.confirm("Supprimer cette campagne ?")) {
-                  void run(() => deleteCampaignCondition(r.id), "La campagne est supprimée.");
+                  void run(() => deleteExternalCampaign(r.id), "La campagne est supprimée.");
                 }
               },
             },
@@ -191,7 +143,7 @@ function CampagnesDeclarees({ params }: { params: { operator_id?: number; territ
 
   return (
     <>
-      {errorAlert}
+      {actionError && <ActionErrorAlert message={actionError} onClose={() => setActionError(undefined)} />}
       {saved && (
         <Alert
           className={fr.cx("fr-mb-3w")}
@@ -215,7 +167,7 @@ function CampagnesDeclarees({ params }: { params: { operator_id?: number; territ
           iconId="fr-icon-add-circle-line"
           size="small"
           className={fr.cx("fr-mb-2w")}
-          onClick={() => setEditing(0)}
+          linkProps={{ href: DECLARER_URL }}
         >
           Déclarer une campagne
         </Button>

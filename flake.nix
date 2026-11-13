@@ -81,7 +81,7 @@
             just
             openssl
             jq
-            minio-client
+            rclone
             duckdb
 
             # rpc infra

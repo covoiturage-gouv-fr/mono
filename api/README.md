@@ -172,6 +172,7 @@ Copier `.env.example` vers `.env` et configurer les valeurs.
 | `NODE_ENV` | Non | `local` | Environnement Node.js |
 | `APP_ENV` | Non | `${NODE_ENV}` | Environnement applicatif (`local`, `dev`, `staging`, `production`). Contrôle la sécurité des cookies de session, l'accès au listing RPC, le filtrage des actions par environnement |
 | `APP_MAINTENANCE` | Non | `false` | Active le mode maintenance (HTTP 503 sur toutes les requêtes) |
+| `APP_FEATURE_EXTERNAL_CAMPAIGNS` | Non | `false` | Active les campagnes déclarées (`/dashboard/external-campaign(s)`, 5 routes). Éteint : 404 « Fonctionnalité indisponible » avant tout accès base |
 | `APP_VERSION` | Non | ISO timestamp | Version de l'application, utilisée dans les tags Sentry et les logs de démarrage |
 | `APP_LOG_LEVEL` | Non | `INFO` | Niveau de log (`DEBUG`, `INFO`, `WARN`, `ERROR`). Les écritures passant par le Kernel sont tracées en `INFO` avec le préfixe `[audit]` (identifiants pseudonymes de l'acteur et des ressources uniquement, ni e-mail, ni nom, ni téléphone) |
 
@@ -234,7 +235,7 @@ L'e-mail de bienvenue (création d'un utilisateur) transmet au template Brevo le
 | --- | --- | --- | --- |
 | `AWS_ACCESS_KEY_ID` | **Oui** | — | Clé d'accès S3 |
 | `AWS_SECRET_ACCESS_KEY` | **Oui** | — | Clé secrète S3 |
-| `AWS_ENDPOINT` | Non | `https://s3.fr-par.scw.cloud` | Endpoint S3 (Scaleway, Minio, AWS…) |
+| `AWS_ENDPOINT` | Non | `https://s3.fr-par.scw.cloud` | Endpoint S3 (Scaleway, RustFS, AWS…) |
 | `AWS_REGION` | Non | `fr-par` | Région S3 |
 
 > Préfixe de bucket configurable via `AWS_BUCKET_PREFIX`. Override par bucket possible via `AWS_BUCKET_{NAME}_ENDPOINT`.

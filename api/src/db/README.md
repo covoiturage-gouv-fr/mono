@@ -9,6 +9,8 @@
 
 - `just migrate` : joue toutes les migrations ; une base neuve a un schéma `geo` vide, la remplir avec `geo-import`
 - `just seed` : joue toutes les migrations et charge les données de test de `providers/migration/seeds`
+- `just seed-synthetic <profil> [date]` : génère un jeu de données fictif plus volumineux sur une base migrée
+  dont `geo.perimeters` est chargée, voir `synthetic/README.md`
 - `just geo-import <fichier> [sha256]` : remplace `geo.perimeters` et met à jour `com_evolution` depuis le datalake
 
 ## Migrations

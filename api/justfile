@@ -132,6 +132,12 @@ migrate:
 seed:
   deno run {{ deno_flags }} src/db/cmd-seed.ts
 
+# Generate a synthetic dataset from a profile (src/db/synthetic/README.md), on a migrated base with geo.perimeters loaded
+# ex: just seed-synthetic pentest [YYYY-MM-DD]
+[group('database')]
+seed-synthetic profile date="":
+  deno run {{ deno_flags }} src/db/cmd-seed-synthetic.ts {{ quote(profile) }} {{ if date != "" { quote(date) } else { "" } }}
+
 # Replace geo.perimeters with the millesimes dumped by the datalake (`just export-perimeters`) and
 # refresh geo.com_evolution (src/db/geo/import.sh, step by step in src/db/geo/RUNBOOK.md).
 # ex: just geo-import ../datalake/tmp/geo/perimeters_2025-2026.20260929T080503Z.pgdump
@@ -275,7 +281,7 @@ generate_certs skip=path_exists(join(cert_dir,"cert.key")):
 # Create a new bucket
 [private]
 create_bucket name:
-  just dc_e2e run --rm s3-init mb --ignore-existing minio/{{name}}
+  just dc_e2e run --rm s3-init mkdir s3:{{name}}
 
 # Wait for app
 [private]

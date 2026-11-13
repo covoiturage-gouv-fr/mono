@@ -1,6 +1,6 @@
 "use client";
 
-import { Config } from "@/config";
+import { analytics, matomoEnabled } from "@/config/analytics";
 import { useAuth } from "@/providers/AuthProvider";
 import { push, trackAppRouter } from "@socialgouv/matomo-next";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -13,6 +13,7 @@ export function MatomoAnalytics() {
   const lastUserIdRef = useRef<string | null>(null);
 
   useEffect(() => {
+    if (!matomoEnabled(analytics)) return;
     const analyticsId = isAuth && user?.analytics_id ? user.analytics_id : null;
     if (analyticsId === lastUserIdRef.current) return;
     lastUserIdRef.current = analyticsId;
@@ -20,7 +21,7 @@ export function MatomoAnalytics() {
     if (analyticsId) {
       push(["setUserId", analyticsId]);
       if (user?.organisation) {
-        push(["setCustomDimension", Config.get<string>("analytics.matomoOrgDimensionId"), user.organisation]);
+        push(["setCustomDimension", analytics.matomoOrgDimensionId, user.organisation]);
       }
     } else {
       push(["resetUserId"]);
@@ -28,11 +29,10 @@ export function MatomoAnalytics() {
   }, [isAuth, user]);
 
   useEffect(() => {
-    const url = Config.get<string>("analytics.matomoUrl");
-    if (url?.length) {
+    if (matomoEnabled(analytics)) {
       trackAppRouter({
-        url,
-        siteId: Config.get<string>("analytics.matomoSiteId"),
+        url: analytics.matomoUrl,
+        siteId: analytics.matomoSiteId,
         pathname,
         searchParams,
         disableCookies: true,

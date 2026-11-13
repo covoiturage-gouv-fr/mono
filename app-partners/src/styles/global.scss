@@ -1,5 +1,44 @@
 @import "remixicon/fonts/remixicon.css";
 
+// Grille : titre et lien sur la ligne de la croix de fermeture, description dessous (<p> aplati avec display: contents).
+.simulation-banner {
+  .fr-notice__body {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    column-gap: 0.5rem;
+  }
+
+  .fr-notice__body > p {
+    display: contents;
+  }
+
+  .fr-notice__title {
+    grid-area: 1 / 1;
+  }
+
+  .fr-notice__link {
+    grid-area: 1 / 2;
+    white-space: nowrap;
+  }
+
+  .fr-btn--close {
+    grid-area: 1 / 3;
+  }
+
+  .fr-notice__desc {
+    grid-area: 2 / 1 / 3 / 4;
+    display: block;
+  }
+
+  // Trop étroit : le lien passe sous la description.
+  @media (max-width: 36em) {
+    .fr-notice__link {
+      grid-area: 3 / 1 / 4 / 4;
+      justify-self: start;
+    }
+  }
+}
+
 .text-center {
   text-align: center;
 }
@@ -106,7 +145,9 @@
 }
 
 // Tableaux d'administration : le balisage DSFR hérité met la table en `display: block`, d'où une largeur au contenu.
+// Les cellules passent à la ligne ; si le tableau défile encore, la colonne d'actions reste collée à droite.
 .admin-table {
+  max-width: 100%;
   overflow-x: auto;
   > table {
     display: table;
@@ -114,20 +155,45 @@
     th,
     td {
       text-align: left;
-      white-space: nowrap;
+      overflow-wrap: break-word;
     }
-    // width: 1 % + nowrap : la colonne d'actions prend la largeur de ses boutons, sur une ligne.
     th:last-child,
     td:last-child {
       width: 1%;
       text-align: right;
+      overflow-wrap: normal;
+      white-space: nowrap;
+      position: sticky;
+      right: 0;
+      background-color: var(--background-alt-blue-ecume);
+      // Boutons empilés sous `lg` (comme `inlineLayoutWhen="lg and up"`), sur une ligne au-delà.
       .fr-btns-group {
+        flex-direction: column;
         flex-wrap: nowrap;
-        justify-content: flex-end;
+        align-items: flex-end;
         li {
           justify-content: flex-end;
         }
+        @media (min-width: 62em) {
+          flex-direction: row;
+          justify-content: flex-end;
+        }
       }
+    }
+    th:last-child {
+      background-color: var(--background-contrast-blue-ecume);
+      // Le fond opaque masque le filet que le DSFR peint sur le thead : on le redessine sur la cellule.
+      background-image: linear-gradient(
+        0deg,
+        var(--border-plain-blue-ecume),
+        var(--border-plain-blue-ecume)
+      );
+      background-size: 100% 1px;
+      background-repeat: no-repeat;
+      background-position: 0 100%;
+    }
+    tbody tr:nth-child(even) td:last-child {
+      background-color: var(--background-contrast-blue-ecume);
     }
   }
 }
