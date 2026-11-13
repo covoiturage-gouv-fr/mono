@@ -7,48 +7,44 @@
     "build": "NEXT_TELEMETRY_DISABLED=1 next build",
     "start": "NEXT_TELEMETRY_DISABLED=1 next start",
     "serve": "NEXT_TELEMETRY_DISABLED=1 npx serve out -p 4200",
-    "lint": "NEXT_TELEMETRY_DISABLED=1 eslint --concurrency auto .",
+    "lint": "eslint --concurrency auto .",
     "test": "vitest run",
     "predev": "react-dsfr update-icons",
     "prebuild": "react-dsfr update-icons"
   },
   "dependencies": {
-    "@codegouvfr/react-dsfr": "1.35",
+    "@codegouvfr/react-dsfr": "1.36",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@mui/material": "^7.1.1",
     "@mui/x-date-pickers": "^8.5.0",
     "@socialgouv/matomo-next": "^1.14.2",
-    "chart.js": "^4.5.1",
+    "chart.js": "^4.6.1",
     "dayjs": "^1.11.23",
-    "next": "^16.4.1",
-    "react": "^19.3.0",
+    "next": "^16.4.4",
+    "react": "^19.3.1",
     "react-chartjs-2": "^5.3.1",
-    "react-dom": "^19.3.0",
+    "react-dom": "^19.3.1",
     "remixicon": "^4.9.1",
     "validator": "^13.15.35",
     "zod": "^3.24.2"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3.3.7",
+    "@eslint/js": "^10.0.1",
     "@testing-library/react": "^16.3.3",
     "@types/node": "^24",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@types/validator": "^13.15.10",
-    "@typescript-eslint/eslint-plugin": "^8.70.1",
-    "@typescript-eslint/parser": "^8.70.1",
-    "eslint": "^9.36.0",
-    "eslint-config-next": "^16.3.8",
-    "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-prettier": "^5.5.6",
-    "jsdom": "^29.1.1",
-    "sass": "^1.104.1",
+    "eslint": "^10.14.0",
+    "eslint-config-next": "^16.4.4",
+    "jsdom": "^30.1.3",
+    "sass": "^1.107.1",
     "typescript": "^5",
-    "typescript-eslint": "^8.70.1",
-    "vitest": "^5.0.3"
+    "typescript-eslint": "^8.72.1",
+    "vitest": "^5.0.5"
   },
   "overrides": {
-    "postcss": "^8.5.28"
+    "postcss": "^8.5.32"
   }
 }

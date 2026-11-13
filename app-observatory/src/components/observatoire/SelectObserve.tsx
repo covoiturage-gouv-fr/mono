@@ -3,10 +3,10 @@ import { PerimeterType } from '@/interfaces/observatoire/Perimeter';
 import { FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 import { useDashboardContext } from '../../context/DashboardProvider';
 
-type SelectObserveProps = {
+interface SelectObserveProps {
   id: string,
   label: string,
-};
+}
 
 export default function SelectObserve(props: SelectObserveProps) {
   const { dashboard } = useDashboardContext();

@@ -3,7 +3,7 @@
 import { Input } from "@codegouvfr/react-dsfr/Input";
 import { ReactNode, useEffect, useId, useRef, useState } from "react";
 
-export type AutocompleteProps = {
+export interface AutocompleteProps {
   label: ReactNode | string;
   arialabel: string;
   value: string;
@@ -17,7 +17,7 @@ export type AutocompleteProps = {
   minChars?: number;
   /** debounce delay in ms (default 250) */
   debounceMs?: number;
-};
+}
 
 /**
  * Generic accessible combobox (WAI-ARIA "combobox with listbox popup" pattern).
@@ -76,13 +76,14 @@ export function Autocomplete({
     setLoading(true);
     window.clearTimeout(debounceRef.current);
     const requestId = ++requestRef.current;
-    debounceRef.current = window.setTimeout(async () => {
-      const results = await search(term);
-      // discard if a newer search has been triggered since
-      if (requestId !== requestRef.current) return;
-      setItems(results);
-      setOpen(results.length > 0);
-      setLoading(false);
+    debounceRef.current = window.setTimeout(() => {
+      void search(term).then((results) => {
+        // discard if a newer search has been triggered since
+        if (requestId !== requestRef.current) return;
+        setItems(results);
+        setOpen(results.length > 0);
+        setLoading(false);
+      });
     }, debounceMs);
   };
 

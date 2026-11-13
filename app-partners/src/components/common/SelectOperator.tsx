@@ -3,7 +3,10 @@ import { useOperatorsList } from "@/hooks/api";
 import { Select } from "@codegouvfr/react-dsfr/Select";
 import { useState } from "react";
 
-export default function SelectOperator(props: { defaultValue: number | null; onChange: (id: number | null) => void }) {
+export default function SelectOperator(props: {
+  defaultValue: number | null;
+  onChange: (id: number | null, label?: string) => void;
+}) {
   const [value, setValue] = useState<number | null>(props.defaultValue);
   const { data } = useOperatorsList({ limit: 100 });
   return (
@@ -14,7 +17,7 @@ export default function SelectOperator(props: { defaultValue: number | null; onC
         onChange: (e) => {
           const newValue = Number(e.target.value);
           setValue(newValue);
-          props.onChange(newValue);
+          props.onChange(newValue, e.target.selectedOptions[0]?.text);
         },
       }}
     >

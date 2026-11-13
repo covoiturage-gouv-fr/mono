@@ -78,7 +78,7 @@ export class ProcessGeoCommand implements CommandInterface {
     let batch = 0;
     let total = 0;
     let totalFailed = 0;
-    let shouldContinue = true;
+    let shouldContinue: boolean;
     let cursor: ProcessGeoCursor | undefined;
 
     do {

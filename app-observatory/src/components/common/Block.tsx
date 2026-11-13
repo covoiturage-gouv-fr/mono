@@ -25,8 +25,8 @@ export default function Block(props:BlockProps) {
                   } : {
                     href: b.url,
                   },
-                  iconId: b.icon ? b.icon : '',
-                  priority: b.color ? b.color : 'primary',
+                  iconId: b.icon ?? '',
+                  priority: b.color ?? 'primary',
                 } 
               }) as [ButtonProps, ...ButtonProps[]]}
               buttonsEquisized
@@ -57,8 +57,8 @@ export default function Block(props:BlockProps) {
                 } : {
                   href: b.url,
                 },
-                iconId: b.icon ? b.icon : '',
-                priority: b.color ? b.color : 'primary',
+                iconId: b.icon ?? '',
+                priority: b.color ?? 'primary',
               } 
             }) as [ButtonProps, ...ButtonProps[]]}
           />

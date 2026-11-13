@@ -46,26 +46,25 @@ const AppMap = (props: MapInterface) => {
         <div className={fr.cx('fr-col-12', mapClass)} tabIndex={0}>
           <Map
             ref={mapRef}
-            initialViewState={props.initialView ? props.initialView : defaultView}
+            initialViewState={props.initialView ?? defaultView}
             style={{
-              width: props.width ? props.width : '100%',
-              height: props.height ? props.height : '60vh',
+              width: props.width ?? '100%',
+              height: props.height ?? '60vh',
             }}
             mapStyle={props.mapStyle}
             workerUrl="/maplibre-gl-worker.mjs"
             onLoad={() => fitBounds(mapRef.current, props.bounds)}
             scrollZoom={props.scrollZoom}
-            cursor={props.cursor ? props.cursor : cursor}
-            onMouseEnter={props.onMouseEnter ? props.onMouseEnter : defaultOnMouseEnter}
-            onMouseLeave={props.onMouseLeave ? props.onMouseLeave : defaultOnMouseLeave}
+            cursor={props.cursor === undefined || props.cursor === '' ? cursor : props.cursor}
+            onMouseEnter={props.onMouseEnter ?? defaultOnMouseEnter}
+            onMouseLeave={props.onMouseLeave ?? defaultOnMouseLeave}
             onMouseMove={props.onMouseMove}
             onClick={props.onClick}
             interactiveLayerIds={props.interactiveLayerIds}
           >
             <NavigationControl />
             <FullscreenControl />
-            {props.legend &&
-              props.legend.map((l,i) =>
+            {props.legend?.map((l,i) =>
                 <Legend key={i} title={l.title} type={l.type} classes={l.classes} order={l.order} />
               )
             }

@@ -6,7 +6,6 @@ import {
   ArcElement,
   BarElement,
   CategoryScale,
-  ChartData,
   Chart as ChartJS,
   Filler,
   Legend,
@@ -38,7 +37,7 @@ ChartJS.register(
 // pour colorer plusieurs séries que pour les parts d'un doughnut.
 const PALETTE = ["#000091", "#6a6af4", "#b7a73f", "#e1000f", "#3182bd", "#9ecae1"];
 
-export type ChartSeries = {
+export interface ChartSeries {
   label: string;
   data: number[];
   /** Couleur de la série (ligne / barre). */
@@ -48,9 +47,9 @@ export type ChartSeries = {
   fill?: boolean;
   /** Config `chartjs-plugin-datalabels` propre à la série (opt-in). */
   datalabels?: unknown;
-};
+}
 
-export type ChartProps = {
+export interface ChartProps {
   title: string;
   kind?: "line" | "bar" | "doughnut";
   labels: string[];
@@ -71,7 +70,7 @@ export type ChartProps = {
   srIntro?: string | string[];
   loading?: boolean;
   error?: unknown;
-};
+}
 
 const toSeries = (data: number[] | ChartSeries[]): ChartSeries[] => {
   if (data.length === 0) return [];
@@ -139,7 +138,7 @@ export default function Chart({
 
   const plugins: Plugin[] = [];
   if (showValues || series.some((s) => s.datalabels)) plugins.push(ChartDataLabels);
-  if (goal) plugins.push(goalLinePlugin as Plugin);
+  if (goal) plugins.push(goalLinePlugin);
 
   const datasets = series.map((s, i) => {
     const color = s.color ?? PALETTE[i % PALETTE.length];
@@ -198,14 +197,14 @@ export default function Chart({
         style={{ backgroundColor: "#fff", height: `${height}px` }}
       >
         {kind === "line" ? (
-          <Line {...common} data={chartData as ChartData<"line", number[]>} />
+          <Line {...common} data={chartData} />
         ) : kind === "doughnut" ? (
           <Doughnut
             {...common}
-            data={chartData as ChartData<"doughnut", number[]>}
+            data={chartData}
           />
         ) : (
-          <Bar {...common} data={chartData as ChartData<"bar", number[]>} />
+          <Bar {...common} data={chartData} />
         )}
         <figcaption className={fr.cx("fr-sr-only")}>
           {goal && (

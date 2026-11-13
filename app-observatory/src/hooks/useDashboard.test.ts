@@ -23,7 +23,7 @@ const territory = (id: string, l_territory: string) => ({
 });
 
 const lastUrl = (spy: ReturnType<typeof respondWith>) =>
-  String(spy.mock.calls.at(-1)![0]);
+  spy.mock.calls.at(-1)![0] as string;
 
 beforeEach(() => respondWith([]));
 afterEach(() => vi.restoreAllMocks());

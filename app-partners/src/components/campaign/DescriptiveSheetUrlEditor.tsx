@@ -89,7 +89,7 @@ export default function DescriptiveSheetUrlEditor({ campaignId, initialValue }: 
               />
             </div>
             <div className={fr.cx("fr-col", "fr-col-md")} style={{ display: "flex", alignItems: "flex-end" }}>
-              <Button onClick={() => void handleUpdateDescriptiveSheetUrl()}>Enregistrer ou modifier l'URL</Button>
+              <Button onClick={() => void handleUpdateDescriptiveSheetUrl()}>Enregistrer ou modifier l’URL</Button>
             </div>
           </div>
         </>

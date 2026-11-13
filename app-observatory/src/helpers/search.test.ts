@@ -23,22 +23,22 @@ describe("fetchSearchAPI", () => {
   test("lève une erreur portant le statut quand la recherche répond 403", async () => {
     respondWith(403, invalidApiKey);
 
-    await expect(fetchSearchAPI("indexes/geo/search")).rejects.toThrow(/403/);
+    await expect(fetchSearchAPI("multi-search")).rejects.toThrow(/403/);
   });
 
   test("lève une erreur portant le code Meilisearch quand la recherche répond 403", async () => {
     respondWith(403, invalidApiKey);
 
-    await expect(fetchSearchAPI("indexes/geo/search")).rejects.toThrow(
+    await expect(fetchSearchAPI("multi-search")).rejects.toThrow(
       /invalid_api_key/,
     );
   });
 
   test("retourne le corps décodé quand la recherche répond 200", async () => {
-    respondWith(200, { hits: [{ l_territory: "France" }] });
+    respondWith(200, { results: [{ indexUid: "page", hits: [{ title: "Accueil" }] }] });
 
-    await expect(fetchSearchAPI("indexes/geo/search")).resolves.toEqual({
-      hits: [{ l_territory: "France" }],
+    await expect(fetchSearchAPI("multi-search")).resolves.toEqual({
+      results: [{ indexUid: "page", hits: [{ title: "Accueil" }] }],
     });
   });
 });

@@ -1,7 +1,6 @@
 import Block from "@/components/common/Block";
 import Hero from "@/components/common/Hero";
 import Highlight from '@/components/common/Highlight';
-import MDContent from "@/components/common/MDContent";
 import SectionTitle from "@/components/common/SectionTitle";
 import { AppFooter } from '@/components/layout/AppFooter';
 import { AppHeader } from '@/components/layout/AppHeader';
@@ -11,6 +10,7 @@ import Rows from '@/components/observatoire/indicators/Rows';
 import RessourceCard from "@/components/ressources/RessourceCard";
 import { ContextProvider } from '@/context/ContextProvider';
 import { fetchAPI, shorten } from "@/helpers/cms";
+import { Page } from "@/interfaces/cms/strapi";
 import { fr } from "@codegouvfr/react-dsfr";
 import { Tile } from "@codegouvfr/react-dsfr/Tile";
 import { Metadata } from 'next';
@@ -46,7 +46,7 @@ export default async function Home() {
       }
     },  
   };
-  const response  = await fetchAPI('/pages',query);
+  const response  = await fetchAPI<Page>('/pages',query);
   const data = response.data[0]
   const hero = data.attributes.hero
   const block = data.attributes.block
@@ -94,26 +94,15 @@ export default async function Home() {
                 title={hero.title} 
                 subtitle={hero.subtitle}
                 content={hero.content} 
-                img={hero.img.data ? hero.img.data.attributes.formats.medium.url : undefined} 
-                alt={hero.alt} 
+                img={hero.img.data ? hero.img.data.attributes.formats?.medium?.url : undefined} 
                 buttons={hero.buttons} 
               />
-            }
-            {data.content && 
-              <div className={fr.cx('fr-grid-row','fr-mt-5w')}>
-                <div className={fr.cx('fr-col')}>
-                  <div>
-                    <MDContent source={data.content} />
-                  </div>
-                </div>
-              </div>
             }
             {block &&
               <Block 
                 title={block.title} 
                 content={block.content} 
-                img={block.img.data.attributes.url} 
-                alt={block.alt} 
+                img={block.img.data?.attributes.url} 
                 buttons={block.buttons} 
               />
             }
@@ -122,14 +111,13 @@ export default async function Home() {
             }
             {list && 
               <div className={fr.cx('fr-grid-row')}>
-                {list.map((l:any, i:number) => 
+                {list.map((l, i:number) => 
                   l.__component === 'page.highlight' 
                   ? <Highlight key={i} 
                       title={l.title}
                       content={l.content}
-                      img={l.img.data.attributes.url}
+                      img={l.img.data?.attributes.url}
                       buttons={l.buttons}
-                      classes={l.classes} 
                     /> 
                   : <SectionTitle key={i} title={l.title} />        
                 )}
@@ -137,7 +125,7 @@ export default async function Home() {
             }
             <SectionTitle title='Vous êtes ?' />
             <div className={fr.cx('fr-grid-row','fr-grid-row--gutters')}>
-              {tiles && tiles.map( (t, i) => 
+              {tiles?.map( (t, i) => 
                 <div key={i} className={fr.cx('fr-col-12','fr-col-md-4')}>
                   <Tile 
                     title={t.title}
@@ -154,14 +142,14 @@ export default async function Home() {
               <>
                 <SectionTitle title='Ressources' />
                 <div className={fr.cx('fr-grid-row','fr-grid-row--gutters')}>
-                  {resources.data.map((r:any, i:number) =>  
+                  {resources.data.map((r, i:number) =>  
                     <div key={i} className={fr.cx('fr-col', 'fr-col-md-4')}>
                       <RessourceCard 
                         title={r.attributes.title}
                         content={shorten(r.attributes.content, 100)}
                         date={new Date(r.attributes.public_date).toLocaleDateString('fr-FR')}
                         href={`/ressources/${r.attributes.slug}`}
-                        img={r.attributes.img.data ? r.attributes.img.data.attributes.url : null}           
+                        img={r.attributes.img.data ? r.attributes.img.data.attributes.url : ''}           
                       />
                     </div>
                   )}

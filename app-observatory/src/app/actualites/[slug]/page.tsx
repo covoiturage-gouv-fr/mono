@@ -8,7 +8,7 @@ import { ButtonProps } from '@codegouvfr/react-dsfr/Button';
 import ButtonsGroup from '@codegouvfr/react-dsfr/ButtonsGroup';
 import Tag from "@codegouvfr/react-dsfr/Tag";
 import Image from 'next/image';
-import { Button } from '../../../interfaces/cms/collectionsInterface';
+import { Article } from "@/interfaces/cms/strapi";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }>}) {
   const { slug } = await params;
@@ -20,11 +20,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     },
     fields:['title','description']
   };
-  const response  = await fetchAPI('/articles',query);
+  const response  = await fetchAPI<Article>('/articles',query);
   const data = response.data[0];
   return {
     title: `${data ? data.attributes.title : ''} | Observatoire.covoiturage.gouv.fr`,
-    description: shorten(`${data && data.attributes.description ? data.attributes.description : ''}`,150),
+    description: shorten(`${data?.attributes.description ?? ''}`,150),
   }
 }
 
@@ -35,9 +35,9 @@ export async function generateStaticParams() {
       limit:-1,
     },
   };
-  const response  = await fetchAPI('/articles',query);
+  const response  = await fetchAPI<Article>('/articles',query);
   const data = response.data
-  return data ? data.map((p:any) => ({
+  return data ? data.map((p) => ({
     slug: p.attributes.slug,
   })) : []
 }
@@ -54,8 +54,9 @@ export default async function ActuSingle({ params }: { params: Promise<{ slug: s
     },
     populate: '*',  
   };
-  const response  = await fetchAPI('/articles',query);
+  const response  = await fetchAPI<Article>('/articles',query);
   const data = response.data[0];
+  const img = data?.attributes.img.data?.attributes;
     
   const share = [
     {
@@ -76,7 +77,7 @@ export default async function ActuSingle({ params }: { params: Promise<{ slug: s
     {
       name:'Email', 
       icon:'fr-share__link--mail', 
-      href:`mailto:?subject=${data ? data.attributes.title : ''}&body=${data ? data.attributes.description : ''} ${location}`,
+      href:`mailto:?subject=${encodeURIComponent(data ? data.attributes.title : '')}&body=${encodeURIComponent(`${data ? data.attributes.description : ''} ${location}`)}`,
     }
   ]
 
@@ -92,8 +93,7 @@ export default async function ActuSingle({ params }: { params: Promise<{ slug: s
           <div className={fr.cx('fr-grid-row', 'fr-grid-row--gutters')}>
             <div className={fr.cx('fr-col','fr-col-md-9')}>
               <ul className={fr.cx('fr-tags-group')}>
-                {data.attributes.categories &&
-                  data.attributes.categories.data.map((c:any, i:number) => {
+                {data.attributes.categories?.data.map((c, i:number) => {
                     return (
                       <li key={i}>
                         <Tag
@@ -113,15 +113,17 @@ export default async function ActuSingle({ params }: { params: Promise<{ slug: s
               <Share social={share} location={location} />
             </div>
           </div>          
+          {img &&
           <figure style={{textAlign:'center'}}>
               <Image className={fr.cx('fr-responsive-img', 'fr-responsive-img--16x9')} 
-                src={data.attributes.img.data.attributes.formats.large ? data.attributes.img.data.attributes.formats.large.url: data.attributes.img.data.attributes.url } 
-                alt={data.attributes.legend ? data.attributes.legend : ''} 
-                width={data.attributes.img.data.attributes.formats.large ? data.attributes.img.data.attributes.formats.large.width : data.attributes.img.data.attributes.width} 
-                height={data.attributes.img.data.attributes.formats.large ? data.attributes.img.data.attributes.formats.large.height : data.attributes.img.data.attributes.height} 
+                src={img.formats?.large ? img.formats.large.url : img.url} 
+                alt={data.attributes.legend ?? ''} 
+                width={(img.formats?.large ? img.formats.large.width : img.width) ?? undefined} 
+                height={(img.formats?.large ? img.formats.large.height : img.height) ?? undefined} 
               />
             <figcaption className={fr.cx('fr-content-media__caption')}>{data.attributes.legend}</figcaption>
           </figure>
+          }
           <div>
             {data.attributes.description}
             <MDContent source={data.attributes.content} />
@@ -133,7 +135,7 @@ export default async function ActuSingle({ params }: { params: Promise<{ slug: s
         <ButtonsGroup
           alignment={'right'}
           inlineLayoutWhen={'always'}
-          buttons={data.attributes.buttons.map((b:Button) => {
+          buttons={data.attributes.buttons.map((b) => {
             return {
               children:b.title,
               linkProps: b.url.startsWith('http') ? {

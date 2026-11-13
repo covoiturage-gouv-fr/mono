@@ -25,7 +25,8 @@ export default function Pagination(props:PaginationProps) {
     }
     return []
   };
-  const defaultPage = props.defaultPage ? props.defaultPage : 1;
+  // 0 ou NaN (segment de route invalide) retombent aussi sur 1.
+  const defaultPage = Number(props.defaultPage) || 1;
   const pages = getPagination(props.count, defaultPage);
 
   return(

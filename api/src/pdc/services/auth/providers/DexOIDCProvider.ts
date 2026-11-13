@@ -1,5 +1,10 @@
 import { ConfigInterfaceResolver, InitHookInterface, provider, UnauthorizedException } from "@/ilos/common/index.ts";
-import { taggedLogger } from "@/lib/logger/tagged.ts";
+import { errorCode, taggedLogger } from "@/lib/logger/tagged.ts";
+import {
+  keyRef,
+  REVOCATION_TTL_SECONDS,
+  RevokedCredentialsRepository,
+} from "@/pdc/services/auth/providers/RevokedCredentialsRepository.ts";
 import { encodeBase64 } from "dep:encoding";
 import { createRemoteJWKSet, errors, jwtVerify } from "dep:jose";
 
@@ -44,7 +49,10 @@ export function parseTokenSubject(name: string | undefined): { role: string; ope
 export class DexOIDCProvider implements InitHookInterface {
   protected JWKS: ReturnType<typeof createRemoteJWKSet> | undefined;
 
-  constructor(protected config: ConfigInterfaceResolver) {}
+  constructor(
+    protected config: ConfigInterfaceResolver,
+    protected revoked: RevokedCredentialsRepository,
+  ) {}
 
   async init(): Promise<void> {
     this.getJWKS();
@@ -66,9 +74,27 @@ export class DexOIDCProvider implements InitHookInterface {
       const { payload } = await jwtVerify<{ name: string; email: string }>(token, this.getJWKS(), {
         issuer: authBaseUrl,
         audience: clientId,
+        // a longer Dex expiry would outlive the revocation mark
+        maxTokenAge: REVOCATION_TTL_SECONDS,
       });
 
       const { role, operator_id } = parseTokenSubject(payload.name);
+      if (typeof payload.email !== "string" || !payload.email) {
+        dexLog.warn("token rejected", { error: "missing_email", operator_id });
+        throw new UnauthorizedException("Malformed token");
+      }
+      // A Redis failure rejects the call rather than letting a revoked key through
+      let revoked: boolean;
+      try {
+        revoked = await this.revoked.isRevoked(payload.email);
+      } catch (e) {
+        dexLog.error("revocation check failed", { operator_id, error: errorCode(e) });
+        throw e;
+      }
+      if (revoked) {
+        dexLog.warn("token rejected", { error: "revoked", operator_id, key: keyRef(payload.email) });
+        throw new UnauthorizedException("Revoked credentials");
+      }
 
       return {
         operator_id,

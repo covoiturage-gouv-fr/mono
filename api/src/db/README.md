@@ -2,15 +2,12 @@
 
 ## Prérequis
 
-- `pg_dump`
-- `pg_restore`
-- `7z`
+- `psql`, `pg_dump`, `pg_restore` (`geo-import`)
 - `sha256sum`
-- Accès au bucket S3 (Scaleway : geo-datasets-archives), en lecture publique
 
 ## Commandes disponibles
 
-- `just migrate` : joue toutes les migrations et flashe les données depuis le cache
+- `just migrate` : joue toutes les migrations ; une base neuve a un schéma `geo` vide, la remplir avec `geo-import`
 - `just seed` : joue toutes les migrations et charge les données de test de `providers/migration/seeds`
 - `just geo-import <fichier> [sha256]` : remplace `geo.perimeters` et met à jour `com_evolution` depuis le datalake
 
@@ -70,23 +67,3 @@ restauration dans le schéma `geo_export` (`stage`), garde-fou et rapport (`chec
 En prod, le script tourne depuis l'image `docker/geo-import/prod` (psql + pg_restore 17), étape par
 étape, avec le seul nom du dump : voir `src/db/geo/RUNBOOK.md`. Tests du script (sans base) :
 `bash src/db/geo/import.test.sh`.
-
-## Dump des données pour le flash
-
-La table `geo.perimeters` est flashée depuis un dump de données.
-
-L'archive actuelle remplit `geo.perimeters` avec les millésimes d'avant le datalake : lancer ensuite
-`geo-import` sur la base neuve.
-
-```shell
-# dump des données geo pour le flash
-DUMP_FILE=$(date +%F)_data.sql.7z
-pg_dump -Fc -xO -a -n geo | 7z a -si $DUMP_FILE
-sha256sum $DUMP_FILE | tee $DUMP_FILE.sha
-```
-
-1. Déposer l'archive et le fichier sha256sum dans le bucket de cache (geo-datasets-archives) via
-   l'interface web.
-2. Rendre les deux fichiers publics.
-3. Mettre à jour la configuration du cache dans `api/src/db/cmd-migrate.ts` avec l'URL publique et
-   l'empreinte SHA256.

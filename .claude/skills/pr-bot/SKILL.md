@@ -59,7 +59,7 @@ Per PR, `pass-env gh pr view <n> --json title,body,files,labels` and
 | security | `security` label or advisory in the body -> priority |
 | directory | `cms/`, `docker/cms/`, `app-attestation/`: close (see hard rules); a group mixing them with another dir is closed too, its fix for the other dir is redone by hand (say so) |
 | overlap | two PRs bumping the same package in the same dir (e.g. a single bump + a group) -> keep the superset, close the other |
-| CI coverage | `quality.yml` covers `api/`, `app-partners/`, `app-observatory/`, `shared/`, `docker/api/`; `quality-datalake*.yml` cover `datalake/` and `api-datalake/` -> other dirs have no CI, say so |
+| CI coverage | `quality.yml` covers `api/`, `app-partners/`, `app-observatory/`, `docker/api/`; `quality-datalake*.yml` cover `datalake/` and `api-datalake/` -> other dirs have no CI, say so |
 
 For a major on a covered app, grep the usage of the package in the code
 (`git grep -n "<package>" -- <dir>`) and read the migration guide if one is linked.

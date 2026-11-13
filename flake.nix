@@ -78,7 +78,6 @@
 
           buildInputs = with pkgs; [
             # system
-            p7zip
             just
             openssl
             jq
@@ -117,7 +116,6 @@
             export GH_REPO=covoiturage-gouv-fr/mono
             export DENO_NO_UPDATE_CHECK=true
             export DENO_DIR="$PWD/api/.cache"
-            export SEVEN_ZIP_BIN_PATH=$(which 7z)
             export LESS="-SRXF"
             if [ -L /run/current-system ]; then
               export PATH="${python313Nixos}/bin:$PATH"

@@ -28,8 +28,10 @@ export interface AuthContextProps {
   activeScope?: UserScope;
   simulate: boolean;
   simulatedRole?: "operator" | "territory";
-  onChangeTerritory: (id: number | null) => void;
-  onChangeOperator: (id: number | null) => void;
+  // Nom de l'opérateur ou du territoire simulé, affiché dans le menu compte.
+  simulatedLabel?: string;
+  onChangeTerritory: (id: number | null, label?: string) => void;
+  onChangeOperator: (id: number | null, label?: string) => void;
   onChangeSimulate: (state: boolean) => void;
   onChangeSimulatedRole: (value: "operator" | "territory" | undefined) => void;
   // Bascule serveur du périmètre actif (distincte du mode simulate admin).

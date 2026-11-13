@@ -2,6 +2,7 @@ import { FrCxArg } from "@codegouvfr/react-dsfr";
 import type { LayersList, PickingInfo } from "@deck.gl/core";
 import { LngLatBoundsLike, MapLayerMouseEvent } from "maplibre-gl";
 import { ReactNode } from "react";
+import type { Row } from "@/interfaces/cms/strapi";
 import { INSEECode, PerimeterType } from "./Perimeter";
 
 export interface ViewInterface {
@@ -51,7 +52,7 @@ export interface MapInterface {
 
 export interface DeckMapInterface extends MapInterface {
   layers?: LayersList;
-  tooltip?: ((info: PickingInfo) => DeckTooltipContent) | null;
+  tooltip?: ((info: PickingInfo) => DeckTooltipContent | null) | null;
 }
 
 export interface DeckTooltipContent {
@@ -74,7 +75,7 @@ export interface SearchParamsInterface {
 }
 
 export interface RowsProps {
-  data: any[];
+  data: Row[];
 }
 
 export interface IndicatorProps {

@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- variable vide (cf. .env.example) doit retomber sur la valeur par défaut
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
 /**

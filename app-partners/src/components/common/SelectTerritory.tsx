@@ -1,14 +1,19 @@
 "use client";
 import { useTerritoriesList } from "@/hooks/api";
 import { Select } from "@codegouvfr/react-dsfr/Select";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
-export default function SelectTerritory(props: { defaultValue: number | null; onChange: (id: number | null) => void }) {
+export default function SelectTerritory(props: {
+  defaultValue: number | null;
+  onChange: (id: number | null, label?: string) => void;
+}) {
   const [value, setValue] = useState<number | null>(props.defaultValue);
   const { data } = useTerritoriesList({ limit: 200 });
-  useEffect(() => {
+  const [prevDefaultValue, setPrevDefaultValue] = useState(props.defaultValue);
+  if (prevDefaultValue !== props.defaultValue) {
+    setPrevDefaultValue(props.defaultValue);
     setValue(props.defaultValue);
-  }, [props.defaultValue]);
+  }
 
   return (
     <Select
@@ -18,7 +23,7 @@ export default function SelectTerritory(props: { defaultValue: number | null; on
         onChange: (e) => {
           const newValue = Number(e.target.value);
           setValue(newValue);
-          props.onChange(newValue);
+          props.onChange(newValue, e.target.selectedOptions[0]?.text);
         },
       }}
     >

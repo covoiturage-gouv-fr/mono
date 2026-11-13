@@ -1,11 +1,12 @@
 'use client'
 import { OBSERVATORY_API_URL } from '@/helpers/api';
 import { useApi } from '@/hooks/useApi';
+import type { CampaignDataInterface, CampaignPropertiesInterface } from '@/interfaces/observatoire/dataInterfaces';
 import { PerimeterType } from '@/interfaces/observatoire/Perimeter';
 import { fr } from '@codegouvfr/react-dsfr';
 import CircularProgress from '@mui/material/CircularProgress';
 import { feature, featureCollection } from '@turf/helpers';
-import { FeatureCollection } from 'geojson';
+import { Geometry } from 'geojson';
 import { useSearchParams } from 'next/navigation';
 import { useMemo } from 'react';
 import SelectIncentiveTerritory from '../../../components/observatoire/SelectIncentiveTerritory';
@@ -24,13 +25,13 @@ export default function Dashboard() {
   const url = `${OBSERVATORY_API_URL}/campaigns${params.code !== 'XXXXX' 
     ?`?code=${params.code}&type=${params.type}${params.year ? `&year=${params.year}` : ''}`
     : params.year ? `?year=${params.year}` : ''}`;
-  const { data, error, loading } = useApi<any[]>(url);
+  const { data, error, loading } = useApi<CampaignDataInterface[]>(url);
   const geojson = useMemo(() => {
-    const campaignsData = data ? data : [];
+    const campaignsData = data ?? [];
     return featureCollection(
       campaignsData.map((d) =>
-        feature(d.geom, {
-          name:d.collectivite,
+        feature<Geometry, CampaignPropertiesInterface>(d.geom, {
+          name:d.libelle ?? undefined,
           type: d.type,
           code: d.code,
           debut: d.date_debut,
@@ -58,7 +59,7 @@ export default function Dashboard() {
           lien: d.lien,
         }),
       ),
-    ) as FeatureCollection;
+    );
   }, [data]);
 
   return(

@@ -2,6 +2,7 @@ import PageTitle from "@/components/common/PageTitle";
 import Pagination from "@/components/common/Pagination";
 import RessourceCard from "@/components/ressources/RessourceCard";
 import { cmsRessourcesByPage, fetchAPI } from "@/helpers/cms";
+import { Resource, Categorie } from "@/interfaces/cms/strapi";
 import { fr } from "@codegouvfr/react-dsfr";
 import CategoryTags from '../../../../components/common/CategoryTags';
 
@@ -19,7 +20,7 @@ export async function generateStaticParams() {
       pageSize: cmsRessourcesByPage
     }
   };
-  const { meta }  = await fetchAPI('/resources',query);
+  const { meta }  = await fetchAPI<Resource>('/resources',query);
   const nbPage = meta.pagination.pageCount;
   return Array.from({ length: nbPage }, (_, v) => {
     const id = v + 1;
@@ -39,7 +40,7 @@ export default async function RessourcePage({ params }: { params: Promise<{ id: 
       page: id,
     }
   };
-  const { data, meta }  = await fetchAPI('/resources',query);
+  const { data, meta }  = await fetchAPI<Resource>('/resources',query);
   const catQuery = {
     filters:{
       resources:{
@@ -49,7 +50,7 @@ export default async function RessourcePage({ params }: { params: Promise<{ id: 
       }
     }
   }
-  const categories =  await fetchAPI('/categories',catQuery);
+  const categories =  await fetchAPI<Categorie>('/categories',catQuery);
   const nbPage = meta.pagination.pageCount;
   const pageTitle= `Ressources page ${id}`; 
 
@@ -61,8 +62,7 @@ export default async function RessourcePage({ params }: { params: Promise<{ id: 
         {categories.data && <CategoryTags categories={categories.data} type={'ressources'} page={id}/>}
       </div>
       <div className={fr.cx('fr-grid-row', 'fr-grid-row--gutters')}>
-        {data &&
-          data.map((a:any, i:number) => {
+        {data?.map((a, i:number) => {
             return (
               <div key={i} className={fr.cx('fr-col-12','fr-col-md-6')}>
                 <RessourceCard 
@@ -70,7 +70,7 @@ export default async function RessourcePage({ params }: { params: Promise<{ id: 
                   content={a.attributes.content}
                   date={new Date(a.attributes.public_date).toLocaleDateString('fr-FR')}
                   href={`/ressources/${a.attributes.slug}`}
-                  img={a.attributes.img.data ? a.attributes.img.data.attributes.url : null}
+                  img={a.attributes.img.data ? a.attributes.img.data.attributes.url : ''}
                 />
               </div>
             )

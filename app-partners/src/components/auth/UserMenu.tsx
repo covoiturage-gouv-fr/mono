@@ -4,6 +4,7 @@ import { features } from "@/config/features";
 import { activeScopeLabel, labelRole, switchableScopes } from "@/helpers/auth";
 import { useAuth } from "@/providers/AuthProvider";
 import { fr } from "@codegouvfr/react-dsfr";
+import Link from "next/link";
 import { useId } from "react";
 
 // Accès rapide « compte » du header : identité, périmètre actif, bascule de territoire, profil, déconnexion.
@@ -19,6 +20,7 @@ export function UserMenu() {
 
   const authLogout = () => {
     logout();
+    // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- URL absolue de l'API, rechargement complet voulu
     window.location.href = `${Config.get<string>("auth.domain")}/auth/logout`;
   };
 
@@ -78,9 +80,13 @@ export function UserMenu() {
               </li>
             )}
             <li>
-              <a className={fr.cx("fr-nav__link", "fr-icon-user-line", "fr-link--icon-left")} href="/administration/profil">
+              {/* Navigation client : un rechargement perdrait la simulation, qui ne vit qu'en mémoire. */}
+              <Link
+                className={fr.cx("fr-nav__link", "fr-icon-user-line", "fr-link--icon-left")}
+                href="/administration/profil"
+              >
                 Mon profil
-              </a>
+              </Link>
             </li>
             <li>
               <button

@@ -2,7 +2,7 @@ import { ClasseInterface } from '@/interfaces/observatoire/componentsInterfaces'
 import type { AnalyseInterface } from '@/interfaces/observatoire/helpersInterfaces';
 import { ckmeans } from 'simple-statistics';
 
-export function jenks(data: any[], field: string, colors: string[], width: number[]) {
+export function jenks<K extends string>(data: Record<K, number>[], field: K, colors: string[], width: number[]) {
   const vals: number[] = data.map((d) => d[field]);
   const nbClasses = Math.min(colors.length, vals.length);
   const breaks =  nbClasses > 1 ? ckmeans(vals, nbClasses) : [];
@@ -13,7 +13,7 @@ export function jenks(data: any[], field: string, colors: string[], width: numbe
 }
 
 export function hexToRgb(hex: string): [number, number, number] {
-  const m = hex.match(/^#?([\da-f]{2})([\da-f]{2})([\da-f]{2})$/i);
+  const m = /^#?([\da-f]{2})([\da-f]{2})([\da-f]{2})$/i.exec(hex);
   if (m) {
     const rgb: [number, number, number] = [parseInt(m[1], 16), parseInt(m[2], 16), parseInt(m[3], 16)];
     return rgb;
@@ -56,30 +56,31 @@ export function getLegendClasses(analysis: AnalyseInterface[], type: string){
         })
       }
     } else if(type === 'interval'){
-      for(const key in analysis){
+      for(let i = 0; i < analysis.length; i++){
+        const d = analysis[i]
         const classe = {
           color:[255,255,255],
           val:'',
           width:0
         }
-        if(Number(key) === analysis.length-1){
-          classe.color = analysis[key].color
-          classe.val = `>= ${analysis[key].val}`
-          classe.width =  analysis[key].width
+        if(i === analysis.length-1){
+          classe.color = d.color
+          classe.val = `>= ${d.val}`
+          classe.width =  d.width
           
         } else {
-          classe.color = analysis[key].color
-          classe.val = `${analysis[key].val} à ${(analysis[Number(key)+1].val)}`
-          classe.width =  analysis[key].width
+          classe.color = d.color
+          classe.val = `${d.val} à ${(analysis[i+1].val)}`
+          classe.width =  d.width
         }
         legend.push(classe)
       }
     } else if(['category','proportional_circles'].includes(type)){
-      for(const key in analysis){
+      for(const d of analysis){
         const classe = {
-          color: analysis[key].color,
-          val : `${analysis[key].val}`,
-          width :  analysis[key].width
+          color: d.color,
+          val : `${d.val}`,
+          width :  d.width
         }
         legend.push(classe)
       }

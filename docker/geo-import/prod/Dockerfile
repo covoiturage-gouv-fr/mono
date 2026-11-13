@@ -1,7 +1,7 @@
 # Outils de l'import annuel des périmètres geo (api/src/db/geo/import.sh). Contexte de build = racine.
 # Clients PostgreSQL seuls (pas de serveur ni de gosu, sortis du scan Trivy) ; pg_restore doit être
 # >= au pg_dump du datalake et à la version majeure du serveur (17).
-FROM alpine:3.22
+FROM alpine:3.24
 
 # postgresql17-client crée l'utilisateur postgres (uid 70).
 RUN apk add --no-cache bash curl postgresql17-client

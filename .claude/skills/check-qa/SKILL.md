@@ -66,7 +66,7 @@ cd api && deno fmt --check
 
 ### 7. Project Coherence
 - [ ] **Existing patterns**: Follow patterns from similar existing code
-- [ ] **Shared types**: Use types from `shared/` or define in service contracts
+- [ ] **Shared types**: Use types from `api/src/shared/` or define in service contracts
 - [ ] **Configuration**: Use `env_or_*` helpers for environment variables
 - [ ] **No over-engineering**: Simple solutions preferred (per CLAUDE.md)
 

@@ -23,7 +23,7 @@ export default function Indicator(props: IndicatorProps) {
             {props.icon && (
               <span
                 aria-hidden={true}
-                className={`${props.icon} ${style.icon}`}
+                className={`${fr.cx(props.icon)} ${style.icon}`}
               ></span>
             )}
             <span className={`fr-h3`}>

@@ -5,7 +5,7 @@ import { TerritoryListInterface } from '../interfaces/observatoire/dataInterface
 
 export const searchHost = Config.get<string>('search.host');
 
-export const fetchSearchAPI = async (path:string, options = {}) => {
+export const fetchSearchAPI = async <T = unknown>(path:string, options = {}): Promise<T> => {
   const mergedOptions = {
     headers: search.headers,
     ...options,
@@ -17,14 +17,14 @@ export const fetchSearchAPI = async (path:string, options = {}) => {
   }
   catch(e){
     console.error(e);
-    throw new Error(`Please check if your server is running and you set all the required tokens.`);
+    throw new Error(`Please check if your server is running and you set all the required tokens.`, { cause: e });
   }
   // Meilisearch répond en JSON même en erreur : sans ce garde, le corps d'erreur
   // est retourné comme un résultat et casse l'appelant plus loin.
   if (!response.ok) {
     throw new Error(`Search API ${path}: HTTP ${response.status} ${await response.text()}`);
   }
-  return response.json();
+  return (await response.json()) as T;
 }
 
 export const castPerimeterType = (value: PerimeterType) => {

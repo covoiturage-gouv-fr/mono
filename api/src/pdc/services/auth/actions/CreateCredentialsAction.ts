@@ -30,7 +30,7 @@ export class CreateCredentialsAction extends AbstractAction {
   }
 
   protected override async handle(params: CreateCredentialsParams): Promise<CreateCredentialsResult> {
-    if (!params.operator_id || !(await this.operatorRepository.exists(params.operator_id))) {
+    if (!params.operator_id || !(await this.operatorRepository.exists(params.operator_id, { active: true }))) {
       throw new NotFoundException(`Operator with ID ${params.operator_id} does not exist`);
     }
 

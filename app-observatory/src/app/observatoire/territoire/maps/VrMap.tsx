@@ -1,9 +1,10 @@
 import AppMap from '@/components/observatoire/maps/Map';
 import { Config } from '@/config';
 import { LayerProps, Layer, Source, Popup } from 'react-map-gl/maplibre';
-import { LngLatBoundsLike } from 'maplibre-gl';
+import { LngLatBoundsLike, MapLayerMouseEvent } from 'maplibre-gl';
 import { useJson } from '@/hooks/useJson';
-import { Feature, FeatureCollection } from 'geojson';
+import { Feature, FeatureCollection, Geometry } from 'geojson';
+import type { VoieReserveePropertiesInterface } from '@/interfaces/observatoire/dataInterfaces';
 import { useCallback, useMemo, useState } from 'react';
 import Table from '@codegouvfr/react-dsfr/Table';
 import SelectInList from '@/components/common/SelectInList';
@@ -16,18 +17,18 @@ export default function VrMap({ title}: { title: string }) {
   const mapStyle = Config.get<string>('observatoire.mapStyle');
   const [bounds, setBounds] = useState<LngLatBoundsLike>([-5.225, 41.333, 9.55, 51.2]);
   const url = `https://static.covoiturage.beta.gouv.fr/voies_covoit_10ea0b9f65.json`;
-  const { data } = useJson<FeatureCollection>(url);
+  const { data } = useJson<FeatureCollection<Geometry, VoieReserveePropertiesInterface>>(url);
   const geojson = useMemo(()=>{
-    return data ? data : ''
+    return data ?? ''
   }, [data]);
   const selectList = [{id:0, name:'Sélectionner une voie'}]
   if (geojson) {
     geojson.features?.map((f,i) => {
-      selectList.push({id:i+1, name:f.properties!.name})
+      selectList.push({id:i+1, name:f.properties.name})
     });
   }
   const [selected, setSelected] = useState(0);
-  const [selectedData, setSelectedData] = useState<Feature>();
+  const [selectedData, setSelectedData] = useState<Feature<Geometry, VoieReserveePropertiesInterface>>();
   const onChangeSelect = useCallback((value: number) => {
     setSelected(value);
     setSelectedData(geojson ? geojson.features[value-1] : undefined);
@@ -47,14 +48,14 @@ export default function VrMap({ title}: { title: string }) {
   const [hoverInfo, setHoverInfo] = useState<{
     longitude: number,
     latitude: number,
-    properties: any
+    properties: VoieReserveePropertiesInterface
   } | undefined>();
-  const onMouseEnter = useCallback((e:any) => {
+  const onMouseEnter = useCallback((e:MapLayerMouseEvent) => {
     setCursor('pointer');
     setHoverInfo({
       longitude: e.lngLat.lng,
       latitude: e.lngLat.lat,
-      properties: e.features[0].properties
+      properties: e.features![0].properties as VoieReserveePropertiesInterface
     });
   }, []);
   const onMouseLeave = useCallback(() => {
@@ -81,7 +82,7 @@ export default function VrMap({ title}: { title: string }) {
               onChange={onChangeSelect}
             />
             {
-              selectedData && selectedData.properties && <Table data={[
+              selectedData?.properties && <Table data={[
                 ['Type', selectedData.properties.type],
                 ['Gestion', selectedData.properties.gestionnaire],
                 ['Localisation', selectedData.properties.localisation],

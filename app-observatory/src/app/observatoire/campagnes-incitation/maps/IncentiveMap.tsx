@@ -2,13 +2,14 @@ import AppMap from "@/components/observatoire/maps/Map";
 import { Config } from "@/config";
 import { fr } from "@codegouvfr/react-dsfr";
 import bbox from "@turf/bbox";
-import { FeatureCollection } from "geojson";
+import { FeatureCollection, Geometry } from "geojson";
 import { LngLatBoundsLike, MapLayerMouseEvent } from "maplibre-gl";
 import { ReactNode, useCallback, useMemo, useState } from "react";
 import { LayerProps, Layer, Popup, Source } from "react-map-gl/maplibre";
 
 import DownloadButton from "@/components/observatoire/DownloadButton";
 import { getUrl } from "@/helpers/search";
+import type { CampaignPropertiesInterface } from "@/interfaces/observatoire/dataInterfaces";
 import { INSEECode, PerimeterType } from "@/interfaces/observatoire/Perimeter";
 import { useRouter } from "next/navigation";
 
@@ -20,7 +21,7 @@ export default function IncentiveMap({
   sidebar,
 }: {
   params: { code: INSEECode; type: PerimeterType; year: string | null };
-  data: FeatureCollection;
+  data: FeatureCollection<Geometry, CampaignPropertiesInterface>;
   loading: boolean;
   error: string | null;
   sidebar?: ReactNode;
@@ -89,17 +90,17 @@ export default function IncentiveMap({
     | {
         longitude: number;
         latitude: number;
-        properties: any;
+        properties: CampaignPropertiesInterface;
       }
     | undefined
   >();
   const [cursor, setCursor] = useState<string>("");
-  const onMouseEnter = useCallback((e: any) => {
+  const onMouseEnter = useCallback((e: MapLayerMouseEvent) => {
     setCursor("pointer");
     setHoverInfo({
       longitude: e.lngLat.lng,
       latitude: e.lngLat.lat,
-      properties: e.features[0].properties,
+      properties: e.features![0].properties as CampaignPropertiesInterface,
     });
   }, []);
   const onMouseLeave = useCallback(() => {
@@ -111,17 +112,18 @@ export default function IncentiveMap({
       setHoverInfo({
         longitude: e.lngLat.lng,
         latitude: e.lngLat.lat,
-        properties: e.features[0].properties,
+        properties: e.features[0].properties as CampaignPropertiesInterface,
       });
     }
   }, []);
   const onClick = useCallback((e: MapLayerMouseEvent) => {
     if (e.features && e.features.length > 0) {
+      const properties = e.features[0].properties as CampaignPropertiesInterface;
       router.push(
         getUrl("campagnes-incitation", {
-          territory: e.features[0].properties.code,
-          l_territory: e.features[0].properties.name,
-          type: e.features[0].properties.type,
+          territory: properties.code,
+          l_territory: properties.name ?? "",
+          type: properties.type,
         })
       );
     }

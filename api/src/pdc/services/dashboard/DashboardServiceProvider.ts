@@ -6,6 +6,7 @@ import { S3StorageProvider } from "../../providers/storage/index.ts";
 import { ValidatorMiddleware } from "../../providers/superstruct/ValidatorMiddleware.ts";
 import { SessionRepository } from "../auth/providers/SessionRepository.ts";
 import { UserScopeRepository } from "../auth/providers/UserScopeRepository.ts";
+import { externalCampaignsFeatureMiddlewareBinding } from "./middlewares/ExternalCampaignsFeatureMiddleware.ts";
 import { userScopeGuardMiddlewareBinding } from "./middlewares/UserScopeGuardMiddleware.ts";
 import { CampaignApdfAction } from "./actions/CampaignApdfAction.ts";
 import { CampaignsAction } from "./actions/CampaignsAction.ts";
@@ -13,6 +14,11 @@ import { JourneysIncentiveByDayAction } from "./actions/JourneysIncentiveByDayAc
 import { JourneysIncentiveByMonthAction } from "./actions/JourneysIncentiveByMonthAction.ts";
 import { JourneysOperatorsByDayAction } from "./actions/JourneysOperatorsByDayAction.ts";
 import { JourneysOperatorsByMonthAction } from "./actions/JourneysOperatorsByMonthAction.ts";
+import { CreateExternalCampaignAction } from "./actions/external-campaigns/CreateExternalCampaignAction.ts";
+import { DeleteExternalCampaignAction } from "./actions/external-campaigns/DeleteExternalCampaignAction.ts";
+import { ExternalCampaignsAction } from "./actions/external-campaigns/ExternalCampaignsAction.ts";
+import { UpdateExternalCampaignAction } from "./actions/external-campaigns/UpdateExternalCampaignAction.ts";
+import { ValidateExternalCampaignAction } from "./actions/external-campaigns/ValidateExternalCampaignAction.ts";
 import { CreateOperatorAction } from "./actions/operators/CreateOperatorAction.ts";
 import { DeleteOperatorAction } from "./actions/operators/DeleteOperatorAction.ts";
 import { OperatorAction } from "./actions/operators/OperatorAction.ts";
@@ -27,6 +33,7 @@ import { PurgeInactiveUsersCommand } from "./commands/PurgeInactiveUsersCommand.
 import { config } from "./config/index.ts";
 import { BrevoProvider } from "./providers/BrevoProvider.ts";
 import { CampaignsRepository } from "./providers/CampaignsRepository.ts";
+import { ExternalCampaignsRepository } from "./providers/ExternalCampaignsRepository.ts";
 import { JourneysRepository } from "./providers/JourneysRepository.ts";
 import { OperatorsRepository } from "./providers/OperatorsRepository.ts";
 import { TerritoriesRepository } from "./providers/TerritoriesRepository.ts";
@@ -42,6 +49,7 @@ import { UsersRepository } from "./providers/UsersRepository.ts";
     TerritoriesRepository,
     JourneysRepository,
     CampaignsRepository,
+    ExternalCampaignsRepository,
     UsersRepository,
     UserScopeRepository,
     SessionRepository,
@@ -64,10 +72,20 @@ import { UsersRepository } from "./providers/UsersRepository.ts";
     CreateUserAction,
     UpdateUserAction,
     DeleteUserAction,
+    ExternalCampaignsAction,
+    CreateExternalCampaignAction,
+    UpdateExternalCampaignAction,
+    DeleteExternalCampaignAction,
+    ValidateExternalCampaignAction,
   ],
-  middlewares: [...defaultMiddlewareBindings, [
-    "validate",
-    ValidatorMiddleware,
-  ], userScopeGuardMiddlewareBinding],
+  middlewares: [
+    ...defaultMiddlewareBindings,
+    [
+      "validate",
+      ValidatorMiddleware,
+    ],
+    userScopeGuardMiddlewareBinding,
+    externalCampaignsFeatureMiddlewareBinding,
+  ],
 })
 export class DashboardServiceProvider extends AbstractServiceProvider {}

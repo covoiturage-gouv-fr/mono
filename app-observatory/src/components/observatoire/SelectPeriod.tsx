@@ -3,10 +3,10 @@ import { PeriodType } from '@/interfaces/observatoire/componentsInterfaces';
 import { FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 import { useDashboardContext } from '../../context/DashboardProvider';
 
-type SelectPeriodProps = {
+interface SelectPeriodProps {
   id: string,
   label: string,
-};
+}
 
 export default function SelectPeriod(props: SelectPeriodProps) {
   const { dashboard } = useDashboardContext();

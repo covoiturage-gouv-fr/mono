@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface PaginateAPIResponse<T> {
   meta?: { totalPages: number };
@@ -60,12 +60,17 @@ export const useApi = <T>(url: string | URL, paginate = false, init?: RequestIni
   const [data, setData] = useState<T>();
   const [error, setError] = useState<Error | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  // Seule la dernière requête écrit l'état : une réponse plus lente d'une URL précédente est ignorée.
+  const lastRequest = useRef(0);
   const fetchData = useCallback(async () => {
+    const request = ++lastRequest.current;
+    const isStale = () => request !== lastRequest.current;
     try {
       setError(null);
       setLoading(true);
       const response = await fetch(url, { ...init, credentials: "include" });
       const text = await response.text();
+      if (isStale()) return;
       const parsed = parseBody(text);
       if (!response.ok) {
         if (response.status === 401) signalUnauthorized();
@@ -84,13 +89,15 @@ export const useApi = <T>(url: string | URL, paginate = false, init?: RequestIni
         setData((res ?? undefined) as T | undefined);
       }
     } catch (e) {
+      if (isStale()) return;
       setError(toUserError(e));
       setData(undefined);
     } finally {
-      setLoading(false);
+      if (!isStale()) setLoading(false);
     }
   }, [url, init, paginate]);
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- chargement de données : loading/error remis à zéro avant la requête
     void fetchData();
   }, [fetchData, reloadDependency]);
   return { data, error, loading, refetch: fetchData };

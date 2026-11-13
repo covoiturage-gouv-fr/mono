@@ -1,4 +1,4 @@
-import { Button } from "../cms/collectionsInterface";
+import { Button } from "@/interfaces/cms/strapi";
 
 export interface RessourceCardProps {
   title: string;

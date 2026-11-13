@@ -7,10 +7,10 @@ import { useEffect, useState } from 'react';
 
 export default function CategoryTags(props: {categories: CategorieProps[], active?:string, type?: 'actualites' | 'ressources', page?: string}) {  
   const router = useRouter();
-  const [active, setActive] = useState<string | null>(props.active || null);
-  const [page, setPage] = useState<string | null>(props.page || null);
+  const [active, setActive] = useState<string | null>(props.active ?? null);
+  const [page, setPage] = useState<string | null>(props.page ?? null);
   useEffect(() => {
-    const type = props.type || 'actualites';
+    const type = props.type ?? 'actualites';
     const baseRoute = `/${type}`;
     const categoryRoute = active ? `/categorie/${active}` : '';
     const pageRoute = page ? `/page/${page}` : '';
@@ -19,8 +19,7 @@ export default function CategoryTags(props: {categories: CategorieProps[], activ
   }, [active, page, props.type, router]);
   return (
     <ul className={fr.cx('fr-tags-group')}>
-      {props.categories &&
-        props.categories.map((t) => {
+      {props.categories?.map((t) => {
           return (
             <li key={t.id}>
               <Tag

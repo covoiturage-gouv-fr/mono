@@ -21,9 +21,6 @@ import {
 } from "@/ilos/common/index.ts";
 import { handlerListIdentifier, ServiceProvider } from "@/ilos/core/index.ts";
 
-// Plafond d'un batch JSON-RPC : le limiteur de débit compte la requête HTTP, pas les appels.
-const MAX_RPC_BATCH_SIZE = 20;
-const log = taggedLogger("[http]");
 import { env_or_fail, env_or_false } from "@/lib/env/index.ts";
 import { taggedLogger } from "@/lib/logger/tagged.ts";
 import { auditLog } from "@/pdc/proxy/audit.ts";
@@ -48,6 +45,10 @@ import {
   rateLimiter,
 } from "./middlewares/rateLimiter.ts";
 import { sessionMiddleware } from "./middlewares/sessionMiddleware.ts";
+
+// Plafond d'un batch JSON-RPC : le limiteur de débit compte la requête HTTP, pas les appels.
+const MAX_RPC_BATCH_SIZE = 20;
+const log = taggedLogger("[http]");
 
 export class HttpTransport implements TransportInterface {
   app: express.Express;

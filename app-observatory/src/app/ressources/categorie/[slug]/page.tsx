@@ -3,6 +3,7 @@ import PageTitle from "@/components/common/PageTitle";
 import Pagination from "@/components/common/Pagination";
 import RessourceCard from '@/components/ressources/RessourceCard';
 import { cmsRessourcesByPage, fetchAPI } from "@/helpers/cms";
+import { Resource, Categorie } from "@/interfaces/cms/strapi";
 import { fr } from "@codegouvfr/react-dsfr";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }>}) {
@@ -14,7 +15,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       }
     }
   };
-  const {data} =  await fetchAPI('/categories',query);
+  const {data} =  await fetchAPI<Categorie>('/categories',query);
   return {
     title: `Catégorie ${data ? data[0].attributes.label : ''} des ressources | Observatoire.covoiturage.gouv.fr`,
     description: `Catégorie ${data ? data[0].attributes.label : ''} des ressources sur le covoiturage de courte distance`,
@@ -28,9 +29,9 @@ export async function generateStaticParams() {
       limit:-1,
     },
   };
-  const {data} =  await fetchAPI('/categories',query);
+  const {data} =  await fetchAPI<Categorie>('/categories',query);
   
-  return data.map((post:any) => ({
+  return data.map((post) => ({
     slug: post.attributes.slug,
   }))
 }
@@ -51,7 +52,7 @@ export default async function ResourceCategoryPage({ params }: { params: Promise
       pageSize: cmsRessourcesByPage,
     }
   };
-  const { data, meta }  = await fetchAPI('/resources',query);
+  const { data, meta }  = await fetchAPI<Resource>('/resources',query);
   const catQuery = {
     filters:{
       resources:{
@@ -61,7 +62,7 @@ export default async function ResourceCategoryPage({ params }: { params: Promise
       }
     }
   }
-  const categories =  await fetchAPI('/categories',catQuery);
+  const categories =  await fetchAPI<Categorie>('/categories',catQuery);
   const pageTitle = 'Ressources';
   const nbPage = meta.pagination.pageCount;
 
@@ -72,8 +73,7 @@ export default async function ResourceCategoryPage({ params }: { params: Promise
         {categories.data && <CategoryTags categories={categories.data} active={slug} type={'ressources'} />}
       </div>
       <div className={fr.cx('fr-grid-row', 'fr-grid-row--gutters')}>
-        {data &&
-          data.map((a:any, i:number) => {
+        {data?.map((a, i:number) => {
             return (
               <div key={i} className={fr.cx('fr-col-12','fr-col-md-6')}>
                 <RessourceCard 
@@ -81,7 +81,7 @@ export default async function ResourceCategoryPage({ params }: { params: Promise
                   content={a.attributes.content}
                   date={new Date(a.attributes.public_date).toLocaleDateString('fr-FR')}
                   href={`/ressources/${a.attributes.slug}`}
-                  img={a.attributes.img.data ? a.attributes.img.data.attributes.url : null} 
+                  img={a.attributes.img.data ? a.attributes.img.data.attributes.url : ''} 
                 />
               </div>
             )

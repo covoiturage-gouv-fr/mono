@@ -38,7 +38,7 @@ jobs:
           fi
 
       - name: Deploy
-        uses: bump-sh/github-action@3cfa0288007867bad2515ca467cc01d8291a3301 # v1.3.1
+        uses: bump-sh/github-action@d0ed23a6da98160b655aa5588c7f3677c074c926 # v1.4.0
         with:
           doc: api
           token: ${{ secrets.BUMP_TOKEN_API }}

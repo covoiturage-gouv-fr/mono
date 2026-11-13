@@ -15,7 +15,7 @@ export default function SelectIncentiveYear(props: {
     { val: "2025", name: "2025" },
     { val: "2026", name: "2026" },
   ];
-  const currentYear = props.params.year ? props.params.year : undefined;
+  const currentYear = props.params.year === null || props.params.year === '' ? undefined : props.params.year;
   const onClick = (v: string | undefined) => {
     router.push(
       `${getUrl(props.url, {

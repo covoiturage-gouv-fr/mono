@@ -20,8 +20,8 @@ export default function VitrineRows(props: RowsProps) {
                   <VitrineCard 
                     title={r.title}
                     content={r.content}
-                    img={r.img.data.attributes.url}
-                    tags={r.tags.data.map((t:any) => t.attributes.label)}
+                    img={r.img.data ? r.img.data.attributes.url : ''}
+                    tags={r.tags.data.map((t) => t.attributes.label)}
                     buttons={r.buttons}
                   />
                 </div>

@@ -1,8 +1,9 @@
 import SectionTitle from "@/components/common/SectionTitle";
 import ButtonsGroup from "@codegouvfr/react-dsfr/ButtonsGroup";
 import Table from "@codegouvfr/react-dsfr/Table";
+import type { CampaignPropertiesInterface } from "@/interfaces/observatoire/dataInterfaces";
 
-export default function Details({ data }: { data: any }) {
+export default function Details({ data }: { data: CampaignPropertiesInterface }) {
   const title = `Campagne d'incitation ${
     data.name ? `pour la collectivité : ${data.name}` : ""
   }`;

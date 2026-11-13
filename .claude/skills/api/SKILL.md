@@ -109,8 +109,7 @@ Located in `api/src/pdc/services/`:
 
 ## Shared Types
 
-Domain interfaces in `shared/` directory — import with `@pdc/shared/{domain}`.
-Being deprecated as the older frontend was removed in favor of app-partners.
+Common interfaces and schemas live in `api/src/shared/` — import with `@/shared/...`. Service-specific types go in the service `contracts/`.
 
 ## Docker Compose Overlays
 

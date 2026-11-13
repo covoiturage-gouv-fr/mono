@@ -65,7 +65,7 @@ jobs:
       - uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2.0.5
         with:
           deno-version: v2.9.8
-      - uses: taiki-e/install-action@183e4297cca2404691e9380e1307288dced5c82a # v2.87.25
+      - uses: taiki-e/install-action@682ce6c3c696a4cd5168a05f98e51aa02b877941 # v2.89.1
         with:
           tool: just@1.44.1
       - name: Run unit test
@@ -147,7 +147,7 @@ jobs:
           persist-credentials: false
 
       - name: Install NodeJS
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: "24.22.1"
 
@@ -167,7 +167,7 @@ jobs:
           persist-credentials: false
 
       - name: Install NodeJS
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: "24.22.1"
 
@@ -191,7 +191,7 @@ jobs:
           persist-credentials: false
 
       - name: Install NodeJS
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: "24.22.1"
 
@@ -216,7 +216,7 @@ jobs:
           persist-credentials: false
 
       - name: Install NodeJS
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: "24.22.1"
 
@@ -249,7 +249,7 @@ jobs:
           persist-credentials: false
 
       - name: Install NodeJS
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: "24.22.1"
 
@@ -269,7 +269,7 @@ jobs:
           persist-credentials: false
 
       - name: Install NodeJS
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: "24.22.1"
 
@@ -293,7 +293,7 @@ jobs:
           persist-credentials: false
 
       - name: Install NodeJS
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: "24.22.1"
 
@@ -318,7 +318,7 @@ jobs:
           persist-credentials: false
 
       - name: Install NodeJS
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: "24.22.1"
 
@@ -335,6 +335,36 @@ jobs:
           NEXT_PUBLIC_CMS_TOKEN: ${{ secrets.CMS_API_KEY }}
           NEXT_PUBLIC_SEARCH_URL: ${{ vars.API_SEARCH_URL }}
           NEXT_PUBLIC_SEARCH_TOKEN: ${{ secrets.MEILISEARCH_API_KEY }}
+
+  # ###########################################################################################
+  #
+  #  Attestation forms
+  #
+  # ###########################################################################################
+
+  attestation-forms-lint:
+    needs: [changes]
+    if: ${{ needs.changes.outputs.attestation-forms == 'true' }}
+    name: (attestation-forms) lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install NodeJS
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24.22.1"
+
+      - name: Install dependencies
+        working-directory: app-attestation-forms
+        run: npm ci
+
+      - name: Run lint
+        working-directory: app-attestation-forms
+        run: npm run lint
 
   # ###########################################################################################
   #
@@ -356,7 +386,7 @@ jobs:
           persist-credentials: false
 
       - name: Run zizmor 🌈
-        uses: zizmorcore/zizmor-action@cc914d7f3750a2d13d75c7f184a1060aa0e9d482 # v0.6.4
+        uses: zizmorcore/zizmor-action@45d7276c9ca790aabd705e31ca99c6185c3e76dd # v0.8.1
 
   # ###########################################################################################
   #
@@ -374,6 +404,7 @@ jobs:
       api: ${{ steps.filter.outputs.api }}
       partners: ${{ steps.filter.outputs.partners }}
       observatory: ${{ steps.filter.outputs.observatory }}
+      attestation-forms: ${{ steps.filter.outputs.attestation-forms }}
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -408,15 +439,15 @@ jobs:
               - 'docker/api/**'
               - 'app-partners/**'
               - 'app-observatory/**'
-              - 'shared/**'
             api:
               - 'api/**'
               - 'docker/api/**'
-              - 'shared/**'
             partners:
               - 'app-partners/**'
             observatory:
               - 'app-observatory/**'
+            attestation-forms:
+              - 'app-attestation-forms/**'
 
   release:
     name: (chore) release
@@ -458,7 +489,7 @@ jobs:
         with:
           persist-credentials: false # otherwise, the token used is GITHUB_TOKEN, instead of your personal token
       - name: Semantic Release
-        uses: cycjimmy/semantic-release-action@b12c8f6015dc215fe37bc154d4ad456dd3833c90 # v6.0.0
+        uses: cycjimmy/semantic-release-action@ad51787758d9654d5a75150a89a6fa9b3ccef95e # v8.1.4
         with:
           # Required by the conventionalcommits preset used in .releaserc
           # (semantic-release 24 ships only the angular preset by default).

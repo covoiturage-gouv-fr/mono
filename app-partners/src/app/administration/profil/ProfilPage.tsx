@@ -26,63 +26,68 @@ export default function ProfilPage() {
     if (user?.role === "registry.admin" && simulate === false) {
       onChangeSimulatedRole(undefined);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- ne réagir qu'à la bascule du mode simulate
   }, [simulate]);
 
   return (
     <>
       {user && (
-        <>
-          <h3 className={fr.cx("fr-callout__title")}>Mon profil</h3>
-          {user.name && (
-            <p>
-              <b>Nom:</b> {user.name}
-            </p>
-          )}
-          <p>
-            <b>Mail:</b> {user.email}
-          </p>
-          <p>
-            <b>Rôle:</b> {labelRole(user.role)}
-          </p>
-          {activeScopeLabel(user) && (
-            <p>
-              <b>Périmètre actif:</b> {activeScopeLabel(user)}
-              {activeScope?.siret && ` (SIRET ${activeScope.siret})`}
-            </p>
-          )}
-          {user.login_siren && (
-            <p>
-              <b>SIREN de connexion ProConnect:</b> {user.login_siren}
-            </p>
-          )}
-          {scopes.length > 1 && (
-            <>
-              <p className={fr.cx("fr-mb-1w")}>
-                <b>Périmètres accessibles:</b>
+        <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters")}>
+          <div className={fr.cx("fr-col-12", "fr-col-md-6")}>
+            <h3 className={fr.cx("fr-callout__title")}>Mon profil</h3>
+            {user.name && (
+              <p>
+                <b>Nom:</b> {user.name}
               </p>
-              <ul className={fr.cx("fr-mb-3w")}>
-                {scopes.map((s) => (
-                  <li key={s.operator_id ?? s.territory_id}>
-                    {s.label}
-                    {s.siret && ` (SIRET ${s.siret})`}
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
-          <p>
-            <a
-              href={proconnectAccountUrl(Config.get<string>("auth.pc_uri", ""))}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Modifier mes informations sur ProConnect (s'ouvre dans un nouvel onglet)"
-            >
-              Modifier mes informations sur ProConnect
-            </a>
-          </p>
+            )}
+            <p>
+              <b>Mail:</b> {user.email}
+            </p>
+            <p>
+              <b>Rôle:</b> {labelRole(user.role)}
+            </p>
+            {activeScopeLabel(user) && (
+              <p>
+                <b>Périmètre actif:</b> {activeScopeLabel(user)}
+                {activeScope?.siret && ` (SIRET ${activeScope.siret})`}
+              </p>
+            )}
+            {user.login_siren && (
+              <p>
+                <b>SIREN de connexion ProConnect:</b> {user.login_siren}
+              </p>
+            )}
+            {scopes.length > 1 && (
+              <>
+                <p className={fr.cx("fr-mb-1w")}>
+                  <b>Périmètres accessibles:</b>
+                </p>
+                <ul className={fr.cx("fr-mb-3w")}>
+                  {scopes.map((s) => (
+                    <li key={s.operator_id ?? s.territory_id}>
+                      {s.label}
+                      {s.siret && ` (SIRET ${s.siret})`}
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+            <p>
+              <a
+                href={proconnectAccountUrl(Config.get<string>("auth.pc_uri", ""))}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Modifier mes informations sur ProConnect (s'ouvre dans un nouvel onglet)"
+              >
+                Modifier mes informations sur ProConnect
+              </a>
+            </p>
+          </div>
           {user.role === "registry.admin" && (
-            <>
+            <div className={fr.cx("fr-col-12", "fr-col-md-6")}>
+              <h3 className={fr.cx("fr-callout__title")}>Simulation</h3>
               <ToggleSwitch
+                className={fr.cx("fr-mb-3w")}
                 label="S'identifier en tant qu'opérateur ou territoire"
                 checked={simulate}
                 onChange={(state) => {
@@ -120,9 +125,9 @@ export default function ProfilPage() {
                   )}
                 </>
               )}
-            </>
+            </div>
           )}
-        </>
+        </div>
       )}
     </>
   );

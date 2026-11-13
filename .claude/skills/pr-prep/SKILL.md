@@ -50,7 +50,7 @@ files the branch itself changes, diffed from where it started (`origin/next` if 
 
 | Diff | `$BASE` | Release on merge |
 | ---- | ------- | ---------------- |
-| touches `api/`, `app-partners/`, `app-observatory/`, `shared/` or `docker/api/` | **`next`** (default) | prerelease `vX.Y.Z-rc.N`, **demo only** |
+| touches `api/`, `app-partners/`, `app-observatory/` or `docker/api/` | **`next`** (default) | prerelease `vX.Y.Z-rc.N`, **demo only** |
 | same, but the user asks for a hotfix / direct delivery | `main` | stable `vX.Y.Z`, demo + **production** |
 | data-only (`datalake/`, `cms/`), other `docker/` dirs, `.github/`, `docs/`, `.claude/` | **`main`** | none (no demo env for these) |
 
@@ -92,8 +92,8 @@ title into the commit subject, the PR title's `<type>(<scope>)` is decisive - ge
 and merged app code never ships.
 
 **Gate 1 - file filter** (`.github/workflows/quality.yml`, `changes` job, `dorny/paths-filter`):
-sets `app=true` only when the diff touches `api/**`, `app-partners/**`, `app-observatory/**`,
-`shared/**` or `docker/api/**`. The `release` job is gated on `app=true`. A **data-only** PR (dbt /
+sets `app=true` only when the diff touches `api/**`, `app-partners/**`, `app-observatory/**`
+or `docker/api/**`. The `release` job is gated on `app=true`. A **data-only** PR (dbt /
 datalake / cms / other docker/ dirs / .github ...) can **never** cut a release, whatever the title says.
 
 **Gate 2 - commit-analyzer** (`.releaserc`, `conventionalcommits` preset):
@@ -105,7 +105,7 @@ datalake / cms / other docker/ dirs / .github ...) can **never** cut a release, 
 
 **Naming rule:**
 
-- Diff touches **app-stack code** (`api` / `app-partners` / `app-observatory` / `shared`) **and
+- Diff touches **app-stack code** (`api` / `app-partners` / `app-observatory`) **and
   must deploy** -> title MUST be a releasing type (`feat`/`fix`/`perf`) with a **non-data scope**
   reflecting the app area (e.g. `export`, `api`, `partners`, `observatory`). **Never** scope app
   code with `dbt`/`datalake`/`cms`.

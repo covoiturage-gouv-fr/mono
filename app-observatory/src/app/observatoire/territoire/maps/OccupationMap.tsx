@@ -10,8 +10,7 @@ import { AnalyseInterface } from "@/interfaces/observatoire/helpersInterfaces";
 import { fr } from "@codegouvfr/react-dsfr";
 import bbox from "@turf/bbox";
 import { feature, featureCollection } from "@turf/helpers";
-import { FeatureCollection } from "geojson";
-import { LngLatBoundsLike } from "maplibre-gl";
+import { LngLatBoundsLike, MapLayerMouseEvent } from "maplibre-gl";
 import { useCallback, useMemo, useState } from "react";
 import { LayerProps, Layer, Popup, Source } from "react-map-gl/maplibre";
 import { useDashboardContext } from "../../../../context/DashboardProvider";
@@ -29,7 +28,7 @@ export default function OccupationMap({ title }: { title: string }) {
   const url = GetApiUrl("occupation", params);
   const { data, error, loading } = useApi<OccupationDataInterface[]>(url);
   const geojson = useMemo(() => {
-    const occupationData = data ? data : [];
+    const occupationData = data ?? [];
     return featureCollection(
       occupationData.map((d) =>
         feature(d.geom, {
@@ -39,7 +38,7 @@ export default function OccupationMap({ title }: { title: string }) {
           occupation_rate: Number(d.occupation_rate),
         }),
       ),
-    ) as unknown as FeatureCollection;
+    );
   }, [data]);
 
   const layer: LayerProps = {
@@ -99,7 +98,7 @@ export default function OccupationMap({ title }: { title: string }) {
       dashboard.params.code === "XXXXX"
         ? [-5.225, 41.333, 9.55, 51.2]
         : bbox(geojson);
-    return bounds as unknown as LngLatBoundsLike;
+    return bounds as LngLatBoundsLike;
   }, [dashboard.params.code, geojson]);
 
   const [hoverInfo, setHoverInfo] = useState<
@@ -111,12 +110,12 @@ export default function OccupationMap({ title }: { title: string }) {
     | undefined
   >();
   const [cursor, setCursor] = useState<string>("");
-  const onMouseEnter = useCallback((e: any) => {
+  const onMouseEnter = useCallback((e: MapLayerMouseEvent) => {
     setCursor("pointer");
     setHoverInfo({
       longitude: e.lngLat.lng,
       latitude: e.lngLat.lat,
-      properties: e.features[0].properties,
+      properties: e.features![0].properties as OccupationDataInterface,
     });
   }, []);
   const onMouseLeave = useCallback(() => {
@@ -172,7 +171,7 @@ export default function OccupationMap({ title }: { title: string }) {
           download={
             <DownloadButton
               title={"Télécharger les données de la carte"}
-              data={geojson as FeatureCollection}
+              data={geojson}
               type={"geojson"}
               filename="occupation"
             />

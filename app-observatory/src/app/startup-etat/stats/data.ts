@@ -4,7 +4,7 @@
 // Voir src/app/startup-etat/stats/README.md pour la procédure de rafraîchissement.
 // Dernier relevé : 2026-09-02.
 
-import { IndicatorProps } from "@/interfaces/observatoire/componentsInterfaces";
+import { IndicatorRow } from "@/interfaces/cms/strapi";
 
 export interface SeriePoint {
   x: string;
@@ -96,7 +96,7 @@ export const INDICATEURS = {
     md: 4,
     text: "créations d'aires de covoiturage en 2024",
   },
-} satisfies Record<string, IndicatorProps>;
+} satisfies Record<string, IndicatorRow>;
 
 // Indicateur « trajets validés depuis 2019 » : `value` calculée au runtime dans
 // <TrajetsValidesTotal> (somme de la série annuelle evol-flux, sans repli).
@@ -106,7 +106,7 @@ export const TRAJETS_VALIDES_INDICATEUR = {
   md: 6,
   text: 'trajets « passager » validés depuis 2019',
   note: "Trajets courte distance transmis par les plateformes de covoiturage partenaires et validés par les services de normalisation et de contrôle de covoiturage.beta.gouv.fr.",
-} satisfies Omit<IndicatorProps, "value">;
+} satisfies Omit<IndicatorRow, "value">;
 
 // Repli du graphe mensuel des trajets « passager » validés (carte Metabase 413).
 // L'API observatoire ne remonte que ~7 ans glissants : ce repli garde l'historique

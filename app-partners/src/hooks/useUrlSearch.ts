@@ -14,6 +14,15 @@ interface UseUrlSearchReturn {
   onChangeSearch: (value: string) => void;
 }
 
+// null = URL déjà à jour : un replace inutile écrase une navigation en cours (onglet cliqué pendant le montage).
+export function nextSearchQuery(current: URLSearchParams, paramName: string, value: string): string | null {
+  if ((current.get(paramName) ?? "") === value) return null;
+  const params = new URLSearchParams(current.toString());
+  if (value) params.set(paramName, value);
+  else params.delete(paramName);
+  return params.toString();
+}
+
 export function useUrlSearch(options: UseUrlSearchOptions = {}): UseUrlSearchReturn {
   const { paramName = "q", debounceMs = 500 } = options;
 
@@ -23,32 +32,26 @@ export function useUrlSearch(options: UseUrlSearchOptions = {}): UseUrlSearchRet
   const debouncedSearch = useDebounce(search, debounceMs);
 
   // Initialize search from URL param
-  useEffect(() => {
+  const [prevSearchParams, setPrevSearchParams] = useState<typeof searchParams | null>(null);
+  const [prevParamName, setPrevParamName] = useState(paramName);
+  if (prevSearchParams !== searchParams || prevParamName !== paramName) {
+    setPrevSearchParams(searchParams);
+    setPrevParamName(paramName);
     const param = searchParams.get(paramName);
     if (param) {
       setSearch(param);
     }
-  }, [searchParams, paramName]);
+  }
 
   // Sync debounced search back to URL
   useEffect(() => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (debouncedSearch) {
-      params.set(paramName, debouncedSearch);
-    } else {
-      params.delete(paramName);
-    }
-    router.replace(`?${params.toString()}`, { scroll: false });
+    const query = nextSearchQuery(searchParams, paramName, debouncedSearch);
+    if (query !== null) router.replace(`?${query}`, { scroll: false });
   }, [debouncedSearch, router, searchParams, paramName]);
 
   const onChangeSearch = (value: string) => {
     setSearch(value);
   };
 
-  return {
-    search,
-    debouncedSearch,
-    setSearch,
-    onChangeSearch,
-  };
+  return { search, debouncedSearch, setSearch, onChangeSearch };
 }

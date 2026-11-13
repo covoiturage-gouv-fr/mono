@@ -28,6 +28,7 @@ export default function SelectTerritory(props: { url:string }) {
   const pending = useRef<AbortController>(undefined);
   const search = useMemo(
     () =>
+      // eslint-disable-next-line react-hooks/refs -- la ref n'est lue qu'au déclenchement du debounce, pas au rendu
       debounce((v: string | null) => {
         pending.current?.abort();
         const { signal } = (pending.current = new AbortController());

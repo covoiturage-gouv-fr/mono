@@ -7,6 +7,7 @@ import SectionTitle from "@/components/common/SectionTitle";
 import Rows from '@/components/observatoire/indicators/Rows';
 import RessourceCard from "@/components/ressources/RessourceCard";
 import { fetchAPI, shorten } from "@/helpers/cms";
+import { Page } from "@/interfaces/cms/strapi";
 import { fr } from "@codegouvfr/react-dsfr";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }>}) {
@@ -24,7 +25,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     },
     fields:['title','content']
   };
-  const {data}  = await fetchAPI('/pages',query);
+  const {data}  = await fetchAPI<Page>('/pages',query);
   return {
     title: `${data ? data[0].attributes.title : ''} | Observatoire.covoiturage.gouv.fr`,
     description: shorten(`${data ? data[0].attributes.content :
@@ -46,8 +47,8 @@ export async function generateStaticParams() {
       limit:-1,
     },
   };
-  const {data}  = await fetchAPI('/pages',query);
-  return data ? data.map((post:any) => ({
+  const {data}  = await fetchAPI<Page>('/pages',query);
+  return data ? data.map((post) => ({
     slug: post.attributes.slug,
   })) : []
 }
@@ -78,7 +79,7 @@ export default async function CollectiviteSinglePage({ params }: { params: Promi
       }
     },  
   };
-  const response  = await fetchAPI('/pages',query);
+  const response  = await fetchAPI<Page>('/pages',query);
   const data = response.data[0];
   const hero = data.attributes.hero;
   const block = data.attributes.block;
@@ -98,11 +99,10 @@ export default async function CollectiviteSinglePage({ params }: { params: Promi
           subtitle={hero.subtitle}
           content={hero.content} 
           img={hero.img.data ? hero.img.data.attributes.url : undefined} 
-          alt={hero.alt} 
           buttons={hero.buttons} 
         />
       }
-      {data && data.attributes.content && 
+      {data?.attributes.content && 
         <div className={fr.cx('fr-grid-row','fr-mt-5w')}>
           <div className={fr.cx('fr-col')}>
             <div className={fr.cx('fr-text--lg')}>
@@ -115,8 +115,7 @@ export default async function CollectiviteSinglePage({ params }: { params: Promi
         <Block 
           title={block.title} 
           content={block.content} 
-          img={block.img.data.attributes.url} 
-          alt={block.alt} 
+          img={block.img.data?.attributes.url} 
           buttons={block.buttons} 
         />
       }
@@ -125,14 +124,13 @@ export default async function CollectiviteSinglePage({ params }: { params: Promi
       }
       {list && 
         <div className={fr.cx('fr-grid-row')}>
-          {list.map((l:any, i:number) => 
+          {list.map((l, i:number) => 
             l.__component === 'page.highlight' 
             ? <Highlight key={i} 
                 title={l.title}
                 content={l.content}
-                img={l.img.data.attributes.url}
+                img={l.img.data?.attributes.url}
                 buttons={l.buttons}
-                classes={l.classes} 
               /> 
             : <SectionTitle key={i} title={l.title} />        
           )}
@@ -142,14 +140,14 @@ export default async function CollectiviteSinglePage({ params }: { params: Promi
         <>
           <SectionTitle title='Ressources' />
           <div className={fr.cx('fr-grid-row','fr-grid-row--gutters')}>
-            {resources.data.map((r:any, i:number) =>  
+            {resources.data.map((r, i:number) =>  
               <div key={i} className={fr.cx('fr-col', 'fr-col-md-4')}>
                 <RessourceCard 
                   title={r.attributes.title}
                   content={shorten(r.attributes.content, 100)}
                   date={new Date(r.attributes.public_date).toLocaleDateString('fr-FR')}
                   href={`/ressources/${r.attributes.slug}`}
-                  img={r.attributes.img.data ? r.attributes.img.data.attributes.url : null}           
+                  img={r.attributes.img.data ? r.attributes.img.data.attributes.url : ''}           
                 />
               </div>
             )}
