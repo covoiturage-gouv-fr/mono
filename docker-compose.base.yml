@@ -59,6 +59,7 @@ services:
       APP_ENV: ${APP_ENV:-local}
       APP_LOG_LEVEL: ${APP_LOG_LEVEL:-DEBUG}
       APP_ENABLE_TEST_AUTH: ${APP_ENABLE_TEST_AUTH:-false}
+      APP_FEATURE_EXTERNAL_CAMPAIGNS: ${APP_FEATURE_EXTERNAL_CAMPAIGNS:-false}
 
       # Exposed Services URLs
       APP_API_URL: ${APP_API_URL:-http://localhost:8080}
