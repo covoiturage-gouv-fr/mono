@@ -20,6 +20,12 @@ export const tabIdFromPathname = (pathname: string): string | undefined => {
   return administrationTabs.find((t) => path.startsWith(t.href))?.id;
 };
 
+// Faux pour un onglet hors rôle et pour /administration nu, tous deux redirigés vers le profil.
+export const isPathAllowed = (pathname: string, visibleIds: string[]): boolean => {
+  const id = tabIdFromPathname(pathname);
+  return id ? visibleIds.includes(id) : pathname.replace(/\/$/, "") !== "/administration";
+};
+
 export const visibleTabIds = (
   user: { role: string; operator_id: number | null; territory_id: number | null } | undefined,
   simulating: boolean,
