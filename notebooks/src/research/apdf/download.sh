@@ -7,7 +7,7 @@
 # ------------------------------------------------------------------------------------------
 
 SOURCE_FOLDER="sources"
-MC_CONNECTION="rpc"
+RCLONE_REMOTE="rpc"
 BUCKET_NAME="api.production-appels-de-fonds"
 
 # ------------------------------------------------------------------------------------------
@@ -24,10 +24,5 @@ fi
 MONTH=$1
 CAMPAIGN_ID=$2
 
-BUCKET_URL="${MC_CONNECTION}/${BUCKET_NAME}/${CAMPAIGN_ID}/"
-BUCKET_FILTER="APDF-${MONTH}"
-
-mc ls "${BUCKET_URL}" \
-  | grep "${BUCKET_FILTER}" \
-  | awk '{print $6}' \
-  | xargs -I {} mc cp "${BUCKET_URL}{}" "${SOURCE_FOLDER}/"
+rclone copy "${RCLONE_REMOTE}:${BUCKET_NAME}/${CAMPAIGN_ID}/" "${SOURCE_FOLDER}/" \
+  --include "APDF-${MONTH}*"
