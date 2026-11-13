@@ -1,4 +1,4 @@
-import { tabIdFromPathname, visibleTabIds } from "@/helpers/administrationTabs";
+import { isPathAllowed, tabIdFromPathname, visibleTabIds } from "@/helpers/administrationTabs";
 import { describe, expect, it } from "vitest";
 
 describe("tabIdFromPathname", () => {
@@ -56,4 +56,16 @@ describe("visibleTabIds", () => {
   it("sans utilisateur : profil seul", () => {
     expect(visibleTabIds(undefined, false)).toEqual(["profil"]);
   });
+});
+
+describe("isPathAllowed", () => {
+  it.each([
+    ["/administration/profil/", ["profil"], true],
+    ["/administration/campagnes/", ["profil", "campagnes"], true],
+    ["/administration/campagnes/", ["profil"], false],
+    ["/administration/campagnes/declarer/", ["profil"], false],
+    ["/administration/operateurs/", ["profil", "utilisateurs"], false],
+    ["/administration", ["profil"], false],
+    ["/administration/", ["profil"], false],
+  ])("%s avec %j -> %s", (path, ids, allowed) => expect(isPathAllowed(path, ids)).toBe(allowed));
 });

@@ -1,7 +1,7 @@
 "use client";
 import { features } from "@/config/features";
 import PageTitle from "@/components/common/PageTitle";
-import { administrationTabs, tabIdFromPathname, visibleTabIds } from "@/helpers/administrationTabs";
+import { administrationTabs, isPathAllowed, tabIdFromPathname, visibleTabIds } from "@/helpers/administrationTabs";
 import { useAuth } from "@/providers/AuthProvider";
 import { fr } from "@codegouvfr/react-dsfr";
 import Link from "next/link";
@@ -16,17 +16,12 @@ export default function AdministrationLayout({ children }: { children: React.Rea
   const visibleIds = visibleTabIds(user ?? undefined, !!simulatedRole, features.externalCampaigns);
   const tabs = administrationTabs.filter((t) => visibleIds.includes(t.id));
   const activeId = tabIdFromPathname(pathname);
-  const allowedIds = visibleIds.join(",");
+  const allowed = isPathAllowed(pathname, visibleIds);
 
   // Une page hors des onglets du rôle n'est pas servie : renvoi sur le profil (l'API refuserait de toute façon).
   useEffect(() => {
-    const id = tabIdFromPathname(pathname);
-    if (id) {
-      if (!allowedIds.split(",").includes(id)) router.replace("/administration/profil/");
-    } else if (pathname.replace(/\/$/, "") === "/administration") {
-      router.replace("/administration/profil/");
-    }
-  }, [pathname, router, allowedIds]);
+    if (!allowed) router.replace("/administration/profil/");
+  }, [allowed, router]);
 
   return (
     <div className={fr.cx("fr-container")}>
@@ -48,7 +43,7 @@ export default function AdministrationLayout({ children }: { children: React.Rea
               </li>
             ))}
           </ul>
-          <div className={fr.cx("fr-tabs__panel", "fr-tabs__panel--selected")}>{children}</div>
+          <div className={fr.cx("fr-tabs__panel", "fr-tabs__panel--selected")}>{allowed ? children : null}</div>
         </div>
       </div>
     </div>
