@@ -130,19 +130,26 @@ services:
       - front
 
   s3:
-    # MinIO a retiré ses images publiques (Docker Hub puis quay.io) : image Chainguard épinglée par digest.
-    image: cgr.dev/chainguard/minio:latest@sha256:4cf4831a2bbcf13ddca09c1cbcc9faff716dd3c4247e0babc32864b8ee8e0034
+    # MinIO a retiré ses images publiques : RustFS (S3 compatible, utilisateur non-root) épinglé par digest.
+    image: rustfs/rustfs:1.0.5@sha256:b81d16a90ee25bd9511280127ca1471788c6e874cf0f0da759645f46b2dc1d74
     environment:
-      MINIO_DOMAIN: s3
-    command: ['server', '/data']
+      RUSTFS_ACCESS_KEY: minioadmin
+      RUSTFS_SECRET_KEY: minioadmin
+      RUSTFS_SERVER_DOMAINS: s3
+      RUSTFS_CONSOLE_ENABLE: 'false'
     networks:
       - back
 
   s3-init:
-    # image sans shell : alias passé par MC_HOST_<alias>, commande fournie par `just create_bucket`
-    image: cgr.dev/chainguard/minio-client:latest@sha256:b20bdc339b3f2596c8f731793f861d2445fd13a9a3cfb517ff020969f4e4bf71
+    # rclone sans fichier de config : le remote `s3` est défini par env, commande fournie par `just create_bucket`
+    image: rclone/rclone:1.76.0@sha256:7cbeec24a44f206067597c0368be4de90ae19a64d5113c7d1938bd737a81e466
     environment:
-      MC_HOST_minio: http://minioadmin:minioadmin@s3:9000
+      RCLONE_CONFIG_S3_TYPE: s3
+      RCLONE_CONFIG_S3_PROVIDER: Other
+      RCLONE_CONFIG_S3_ENDPOINT: http://s3:9000
+      RCLONE_CONFIG_S3_ACCESS_KEY_ID: minioadmin
+      RCLONE_CONFIG_S3_SECRET_ACCESS_KEY: minioadmin
+      RCLONE_CONFIG_S3_FORCE_PATH_STYLE: 'true'
     networks:
       - back
     depends_on:
