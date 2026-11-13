@@ -233,7 +233,7 @@ L'e-mail de bienvenue (création d'un utilisateur) transmet au template Brevo le
 | --- | --- | --- | --- |
 | `AWS_ACCESS_KEY_ID` | **Oui** | — | Clé d'accès S3 |
 | `AWS_SECRET_ACCESS_KEY` | **Oui** | — | Clé secrète S3 |
-| `AWS_ENDPOINT` | Non | `https://s3.fr-par.scw.cloud` | Endpoint S3 (Scaleway, Minio, AWS…) |
+| `AWS_ENDPOINT` | Non | `https://s3.fr-par.scw.cloud` | Endpoint S3 (Scaleway, RustFS, AWS…) |
 | `AWS_REGION` | Non | `fr-par` | Région S3 |
 
 > Préfixe de bucket configurable via `AWS_BUCKET_PREFIX`. Override par bucket possible via `AWS_BUCKET_{NAME}_ENDPOINT`.
