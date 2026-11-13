@@ -94,6 +94,7 @@ jobs:
           APP_CEE_PRIVATE_KEY_PATH: ${{ github.workspace }}/docker/api/certs/privateKey.pem
           APP_CEE_PUBLIC_KEY_PATH: ${{ github.workspace }}/docker/api/certs/publicKey.pem
           APP_MAIL_SMTP_URL: smtp://localhost:1025
+          APP_POSTGRES_INSECURE: true
           APP_POSTGRES_TIMEOUT: 120000
           APP_POSTGRES_URL: postgres://postgres:postgres@localhost:5432/test
           APP_REDIS_URL: redis://localhost:6379

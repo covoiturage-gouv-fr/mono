@@ -29,7 +29,7 @@ fileignoreconfig:
   - filename: docker/dex/config-e2e.yaml
     checksum: b9d61835e4bc73b76af477bdd2e9a3cf86eb60219a7a6fc6134363801060022d
   - filename: docker-compose.base.yml
-    checksum: 26800d502eead58a42d2972c5077ef5974e45a3a4cc27734c17ce9a5866a8c06
+    checksum: 105a40373ce040479c36c0eb6af9c66c19be06181607f4df1b87911f552edd3b
   - filename: docker-compose.e2e.yml
     allowed_patterns: ["POSTGRES_PASSWORD", "APIE2E_AUTH_[A-Z]+_(EMAIL|PASSWORD)"]
   - filename: notebooks/cerema/pdll2025.ipynb
