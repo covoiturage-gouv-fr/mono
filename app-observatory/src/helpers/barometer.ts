@@ -5,19 +5,13 @@ import type {
   BarometerProvider,
 } from "@/interfaces/observatoire/barometer";
 import type { FeatureCollection, Point } from "geojson";
-import { OBSERVATORY_API_URL } from "./api";
 
-// Tant que la route datalake n'existe pas, `NEXT_PUBLIC_BAROMETER_FIXTURES=true`
-// sert les JSON de `public/barometre-fixtures/`.
-const USE_FIXTURES = process.env.NEXT_PUBLIC_BAROMETER_FIXTURES === "true";
+// Tant que les routes datalake `/observatory/barometer/points` et
+// `/observatory/barometer/measures?id=` n'existent pas, la page lit les JSON de
+// `public/barometre-fixtures/` (mêmes colonnes).
+export const barometerPointsUrl = () => "/barometre-fixtures/points.json";
 
-export const barometerPointsUrl = () =>
-  USE_FIXTURES ? "/barometre-fixtures/points.json" : `${OBSERVATORY_API_URL}/barometer/points`;
-
-export const barometerMeasuresUrl = (id: number) =>
-  USE_FIXTURES
-    ? `/barometre-fixtures/mesures/${id}.json`
-    : `${OBSERVATORY_API_URL}/barometer/measures?id=${id}`;
+export const barometerMeasuresUrl = (id: number) => `/barometre-fixtures/mesures/${id}.json`;
 
 const PALETTE = ["#000091", "#e1000f", "#b7a73f", "#6a6af4", "#3182bd", "#18753c"];
 

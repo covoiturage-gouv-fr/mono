@@ -81,7 +81,7 @@ src/
 - Fiche du point : capteur, périodes de mesure, organisme, caractéristiques
 - Contrat : `/observatory/barometer/points` et `/observatory/barometer/measures?id=`, mêmes colonnes que `barometre_points.csv` et `barometre_mesures.csv`
 - Graphiques déduits des colonnes remplies : `heure` remplie = comptage horaire (taux par heure), `jour` seul = moyenne par jour de la semaine, aucun des deux = moyenne sur la période (évolution)
-- Non référencé dans le menu tant que la route datalake n'existe pas ; `NEXT_PUBLIC_BAROMETER_FIXTURES=true` sert les données VINCI de `public/barometre-fixtures/`
+- Non référencé dans le menu ; en attendant les routes datalake, la page lit les données VINCI de `public/barometre-fixtures/`
 
 ## Installation
 
@@ -129,7 +129,6 @@ NEXT_PUBLIC_CMS_URL=           # URL du CMS Strapi
 NEXT_PUBLIC_MAPTILER_KEY=      # Clé MapTiler pour les fonds de carte
 NEXT_PUBLIC_MATOMO_URL=        # URL Matomo (analytics)
 NEXT_PUBLIC_MATOMO_SITE_ID=    # ID du site Matomo
-NEXT_PUBLIC_BAROMETER_FIXTURES= # true : baromètre sur les JSON de public/barometre-fixtures (données VINCI)
 ```
 
 En environement de développement il est possible d'utiliser les endpoints de production suivants :
