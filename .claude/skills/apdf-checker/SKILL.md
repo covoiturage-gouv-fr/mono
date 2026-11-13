@@ -21,9 +21,11 @@ territoires et les opérateurs. Rejoue chaque mois le contrôle décrit dans le 
 
 ## Constantes
 
-- Bucket : `api.production-appels-de-fonds`, alias `mc` local = **`dlk`**
+- Bucket : `api.production-appels-de-fonds`, remote `rclone` local = **`dlk`**
   (chemin objet : `<campaign_id>/APDF-<YYYY-MM>-*.xlsx`).
-- Outils : `mc` (minio-client) et `duckdb`. Si absents : `nix shell nixpkgs#minio-client nixpkgs#duckdb`.
+  Création : `rclone config create dlk s3 provider=Scaleway region=fr-par endpoint=s3.fr-par.scw.cloud env_auth=true`
+  (clés via `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`).
+- Outils : `rclone` et `duckdb`. Si absents : `nix shell nixpkgs#rclone nixpkgs#duckdb`.
 - Page campagne : `https://app.covoiturage.beta.gouv.fr/campaign/<campaign_id>`
 - Ticket Notion mensuel : tâche **« Publication des APDF <mois> <année> »**
   (base « Tâches & Planning par projet », priorité *Run mensuel*).
@@ -61,16 +63,10 @@ DIR=$(mktemp -d "/tmp/apdf-$MONTH.XXXXXX")   # dossier isolé, chemin non prévi
 echo "Dossier de travail : $DIR"
 
 # lister
-mc ls -r dlk/api.production-appels-de-fonds/ | grep "APDF-$MONTH" | sort
+rclone lsf -R --files-only --include "*/APDF-$MONTH-*.xlsx" dlk:api.production-appels-de-fonds | sort
 
-# télécharger UNIQUEMENT le mois cible (ne pas faire un `mc cp --recursive` du bucket entier :
-# il tire tout l'historique, plusieurs Go)
-mc ls -r dlk/api.production-appels-de-fonds/ \
-  | grep -oE "[0-9]+/APDF-$MONTH-[^ ]+\.xlsx" \
-  | while read -r key; do
-      dest="$DIR/$key"; mkdir -p "$(dirname "$dest")"
-      [ -f "$dest" ] || mc cp "dlk/api.production-appels-de-fonds/$key" "$dest" >/dev/null 2>&1
-    done
+# télécharger UNIQUEMENT le mois cible (sans --include : tout l'historique, plusieurs Go)
+rclone copy dlk:api.production-appels-de-fonds "$DIR" --include "*/APDF-$MONTH-*.xlsx"
 find "$DIR" -name "APDF-$MONTH-*.xlsx" | wc -l
 ```
 
@@ -180,7 +176,7 @@ rm -rf "$DIR"   # /tmp/apdf-<mois>.XXXXXX
 
 ## Pièges connus
 
-- `mc cp --recursive` sur le bucket = tout l'historique (plusieurs Go). Toujours filtrer par mois.
+- `rclone copy` sans `--include` = tout l'historique (plusieurs Go). Toujours filtrer par mois.
 - `duckdb` lit l'en-tête comme données → `TRY_CAST` + `WHERE D1 LIKE '<Y>-%'`, jamais `OFFSET 1`
   (l'OFFSET est appliqué après la projection, donc le CAST plante sur la ligne d'en-tête).
 - Le nom de fichier se parse depuis la gauche (les slugs contiennent des `-`).
