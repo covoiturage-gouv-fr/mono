@@ -30,7 +30,7 @@ docker/docker-compose.e2e.yml    # e2e overrides
 ```
 
 Services: **postgres** (5432), **redis** (6379), **mailer** (mailpit 1025/8025),
-**s3** (minio 9000), **dex** (OIDC), **proxy** (traefik 80/443), **api** (8080,
+**s3** (rustfs 9000), **dex** (OIDC), **proxy** (traefik 80/443), **api** (8080,
 built from `api/Dockerfile`). Compose project name is `rpc`, so containers are
 `rpc-postgres-1` etc. and the shared network is `rpc_back`.
 
@@ -44,7 +44,7 @@ The composite action `./.github/actions/build-stack` runs, in order:
 4. `just dc_e2e run api just cache` / `cache-migrator` / `seed` — cache deps, run
    migrations, seed test data (this is where a new migration first executes).
 5. `just dc_e2e up -d proxy api` — build + start the api image and traefik.
-6. `just create_bucket ...` ×3 — minio buckets.
+6. `just create_bucket ...` ×3 — S3 buckets (rclone mkdir).
 7. `just wait api 8080` — block until the api answers.
 
 Then the test job runs, inside the api container:

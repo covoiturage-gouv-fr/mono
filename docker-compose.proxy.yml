@@ -57,7 +57,7 @@ services:
 
   s3:
     environment:
-      MINIO_DOMAIN: s3.covoiturage.test
+      RUSTFS_SERVER_DOMAINS: s3.covoiturage.test
     labels:
       - 'traefik.enable=true'
       - 'traefik.http.routers.s3.rule=Host(`s3.covoiturage.test`) || Host(`local-pdc-export.s3.covoiturage.test`) || Host(`download.covoiturage.test`) || Host(`cms.s3.covoiturage.test`)'
