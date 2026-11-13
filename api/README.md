@@ -178,6 +178,8 @@ Copier `.env.example` vers `.env` et configurer les valeurs.
 
 Format des logs : `[tag] étape clé=valeur` via `taggedLogger("[tag]")` (`src/lib/logger/tagged.ts`). Tags : `[audit]`, `[http]`, `[kernel]`, `[pg]`, `[cache]`, `[session]`, `[proconnect]`, `[dex]`, `[campaign]`, `[apdf]`, `[export]`, `[geo]`, `[boot]`… Les valeurs sont filtrées et tronquées ; sur les chemins de requête, une erreur est notée `error=<Classe:code>` (`errorCode(e)`), jamais par son message. `session=` est une empreinte de la session, stable du login au logout.
 
+Journal d'accès : une ligne `INFO` par requête HTTP, à la fin de la réponse, dans tous les environnements (`src/pdc/proxy/middlewares/accessLogMiddleware.ts`). Message `[access]`, champs dans `args` : `ip` (`req.ip`, comme le limiteur de débit), `request_id` (`X-Request-Id` du proxy), `method`, `route` (motif Express, jamais l'URL), `status`, `duration_ms`, `sub` et `role` si authentifié (`user:<_id>` ou `operator:<operator_id>`), `pentest_id` si l'en-tête `X-Pentest-Id` est présent. Ni query string, ni corps, ni cookie, ni jeton. Les sondes `/health` et `/metrics` réussies ne sont pas journalisées.
+
 #### URLs des services
 
 | Variable | Requis | Défaut | Description |
