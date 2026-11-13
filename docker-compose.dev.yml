@@ -47,7 +47,10 @@ services:
       - ./api:/app/api
       # Named volume avoids the host/container uid mismatch that would block cache writes.
       - deno_cache:/app/api/.cache
-      - ./tmp:/tmp
+      - type: tmpfs
+        target: /tmp
+        tmpfs:
+          mode: 01777
 
   # cms:
   #   build:

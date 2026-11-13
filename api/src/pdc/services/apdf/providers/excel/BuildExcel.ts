@@ -33,6 +33,25 @@ export class BuildExcel {
     });
   }
 
+  // Sous Deno, une erreur d'ouverture du fichier (EACCES...) n'est pas relayée et commit() ne se termine jamais.
+  public static async failOnStreamError(
+    wbWriter: excel.stream.xlsx.WorkbookWriter,
+    work: () => Promise<void>,
+  ): Promise<void> {
+    const stream = (wbWriter as unknown as { stream?: NodeJS.EventEmitter }).stream;
+    let onError: ((err: Error) => void) | undefined;
+    const failed = new Promise<never>((_, reject) => {
+      onError = reject;
+      stream?.once("error", onError);
+    });
+    try {
+      await Promise.race([work(), failed]);
+    } finally {
+      if (onError) stream?.off("error", onError);
+      failed.catch(() => {});
+    }
+  }
+
   async call(
     campaign: Campaign,
     start_date: Date,
@@ -75,9 +94,11 @@ export class BuildExcel {
 
     // create the Workbook and add Worksheets
     const wbWriter: excel.stream.xlsx.WorkbookWriter = BuildExcel.initWorkbookWriter(filepath);
-    if (this.hasSliceTrips(slices)) await this.writeSlices(wbWriter, slices, Boolean(declared_siren));
-    await this.writeTrips(wbWriter, params);
-    await wbWriter.commit();
+    await BuildExcel.failOnStreamError(wbWriter, async () => {
+      if (this.hasSliceTrips(slices)) await this.writeSlices(wbWriter, slices, Boolean(declared_siren));
+      await this.writeTrips(wbWriter, params);
+      await wbWriter.commit();
+    });
 
     return { filename, filepath };
   }
