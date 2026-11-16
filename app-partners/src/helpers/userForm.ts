@@ -40,9 +40,9 @@ export const userFormSchema = z
   // Un rôle opérateur sans opérateur, ou territoire sans périmètre, est un compte sans accès.
   .superRefine((row, ctx) => {
     if (row.role.startsWith("operator.") && !row.operator_id) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["operator_id"], message: "Sélectionnez un opérateur" });
+      ctx.addIssue({ code: "custom", path: ["operator_id"], message: "Sélectionnez un opérateur" });
     }
     if (row.role.startsWith("territory.") && row.scopes?.length === 0) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["scopes"], message: "Ajoutez au moins un périmètre" });
+      ctx.addIssue({ code: "custom", path: ["scopes"], message: "Ajoutez au moins un périmètre" });
     }
   });
