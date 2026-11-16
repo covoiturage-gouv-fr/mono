@@ -42,9 +42,10 @@ export interface BarometerProvider {
 }
 
 export interface BarometerChart {
-  key: "heure" | "jour" | "periode";
+  key: `${"taux" | "trafic"}-${"heure" | "jour" | "periode"}`;
   title: string;
   kind: "bar" | "line";
+  unit: string;
   labels: string[];
   series: { label: string; data: number[] }[];
 }

@@ -98,18 +98,35 @@ describe("chartsOf", () => {
       measure({ heure: 7, tx_covoiturage: 12 }),
       measure({ debut: "2025-06-10", fin: "2025-06-10", heure: 7, tx_covoiturage: 15 }),
     ]);
-    expect(charts).toEqual([
+    expect(charts[0]).toEqual(
       {
-        key: "heure",
+        key: "taux-heure",
         title: "Taux de covoiturage par heure",
         kind: "bar",
+        unit: "%",
         labels: ["7h", "8h"],
         series: [
           { label: "3 juin 2024", data: [12, 14] },
           { label: "10 juin 2025", data: [15, NaN] },
         ],
       },
+    );
+  });
+
+  test("chaque graphique de taux est suivi du trafic sur le même découpage", () => {
+    const charts = chartsOf([
+      measure({ heure: 8, nb_vl: 14737 }),
+      measure({ heure: 7, nb_vl: 7868 }),
     ]);
+    expect(charts.map((c) => c.key)).toEqual(["taux-heure", "trafic-heure"]);
+    expect(charts[1]).toEqual({
+      key: "trafic-heure",
+      title: "Trafic de véhicules légers par heure",
+      kind: "bar",
+      unit: "véhicules",
+      labels: ["7h", "8h"],
+      series: [{ label: "3 juin 2024", data: [7868, 14737] }],
+    });
   });
 
   test("jour et heure remplis : le jour complète le libellé de la série", () => {
@@ -122,15 +139,15 @@ describe("chartsOf", () => {
       measure({ debut: "2025-06-01", fin: "2025-06-30", jour: 2, tx_covoiturage: 11 }),
       measure({ debut: "2025-06-01", fin: "2025-06-30", jour: 1, tx_covoiturage: 10 }),
     ]);
-    expect(charts).toEqual([
-      {
-        key: "jour",
-        title: "Taux de covoiturage moyen par jour de la semaine",
-        kind: "bar",
-        labels: ["lundi", "mardi"],
-        series: [{ label: "juin 2025", data: [10, 11] }],
-      },
-    ]);
+    expect(charts[0]).toEqual({
+      key: "taux-jour",
+      title: "Taux de covoiturage moyen par jour de la semaine",
+      kind: "bar",
+      unit: "%",
+      labels: ["lundi", "mardi"],
+      series: [{ label: "juin 2025", data: [10, 11] }],
+    });
+    expect(charts[1].title).toBe("Trafic moyen de véhicules légers par jour de la semaine");
   });
 
   test("jour et heure vides : évolution de la moyenne par période, en courbe à partir de 3 périodes", () => {
@@ -138,9 +155,10 @@ describe("chartsOf", () => {
       measure({ debut: `2025-${m}-01`, fin: `2025-${m}-${m === "02" ? "28" : "30"}`, tx_covoiturage: tx });
     const [chart] = chartsOf([month("06", 12), month("04", 10), month("02", 9)]);
     expect(chart).toEqual({
-      key: "periode",
+      key: "taux-periode",
       title: "Évolution du taux de covoiturage moyen",
       kind: "line",
+      unit: "%",
       labels: ["février 2025", "avril 2025", "juin 2025"],
       series: [{ label: "Taux moyen", data: [9, 10, 12] }],
     });
@@ -151,7 +169,7 @@ describe("chartsOf", () => {
       measure({ debut: "2025-06-01", fin: "2025-06-30" }),
       measure({ heure: 7 }),
     ]).map((c) => c.key);
-    expect(keys).toEqual(["heure", "periode"]);
+    expect(keys).toEqual(["taux-heure", "trafic-heure", "taux-periode", "trafic-periode"]);
     expect(chartsOf([])).toEqual([]);
   });
 });

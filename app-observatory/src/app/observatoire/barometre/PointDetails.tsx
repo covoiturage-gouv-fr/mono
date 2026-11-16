@@ -95,7 +95,8 @@ export default function PointDetails({ point }: { point: BarometerPoint }) {
                     kind={c.kind}
                     labels={c.labels}
                     data={c.series}
-                    unit='%'
+                    unit={c.unit}
+                    unitOnAxis={c.unit === '%'}
                     height={280}
                     legend={c.series.length > 1}
                     download={{ data: measures, filename: `barometre-${point.id}` }}
