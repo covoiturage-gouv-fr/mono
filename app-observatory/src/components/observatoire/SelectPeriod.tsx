@@ -1,5 +1,4 @@
 import { periodList } from '@/helpers/lists';
-import { PeriodType } from '@/interfaces/observatoire/componentsInterfaces';
 import { FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 import { useDashboardContext } from '../../context/DashboardProvider';
 
@@ -18,7 +17,7 @@ export default function SelectPeriod(props: SelectPeriodProps) {
           labelId={props.id}
           value={dashboard.params.period}
           label={props.label}
-          onChange={(event) => dashboard.onChangePeriod(event.target.value as PeriodType)}
+          onChange={(event) => dashboard.onChangePeriod(event.target.value)}
         >
           {periodList.map((d, i: number) => (
             <MenuItem key={i} value={d.id}>
