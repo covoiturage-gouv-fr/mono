@@ -14,9 +14,9 @@
     "dep:zlib": "node:zlib",
     "dep:fs": "node:fs", // replace by Deno native
     "dep:fs-promises": "node:fs/promises", // replace by Deno native
-    "dep:faker": "npm:@faker-js/faker@^9.8",
-    "dep:commander": "npm:commander@^12.1",
-    "dep:csv-parse": "npm:csv-parse@^5.5",
+    "dep:faker": "npm:@faker-js/faker@^10.6",
+    "dep:commander": "npm:commander@^15.1",
+    "dep:csv-parse": "npm:csv-parse@^7.0",
     "dep:redis": "npm:ioredis@^5.11",
     "dep:pg": "npm:pg@^8.23", // migrate to DenoPostgresConnection
     "dep:express": "npm:express@^4.22.3",
@@ -26,10 +26,10 @@
     "dep:ajvkeywords": "npm:ajv-keywords@^5",
     "dep:ajv": "npm:ajv@^8.20",
     "dep:date-fns-tz": "npm:date-fns-tz@^3.1",
-    "dep:date-fns": "npm:date-fns@^3.6",
+    "dep:date-fns": "npm:date-fns@^4.4",
     "dep:turf-boolean-point-in-polygon": "npm:@turf/boolean-point-in-polygon@^7.4",
     "dep:turf-distance": "npm:@turf/distance@^7.4",
-    "dep:date-fns-locale": "npm:date-fns@^3.6/locale",
+    "dep:date-fns-locale": "npm:date-fns@^4.4/locale",
     "dep:turf-helpers": "npm:@turf/helpers@^7.4",
     "dep:sentry": "npm:@sentry/node@^8.2",
     "dep:express-rate-limit": "npm:express-rate-limit@^8.7",
@@ -37,7 +37,7 @@
     "dep:ibantools": "npm:ibantools@^4.5", // useless : remove use and clear
     "dep:libphonenumber-js": "npm:libphonenumber-js@^1.13",
     "dep:xss": "npm:xss@^1",
-    "dep:body-parser": "npm:body-parser@^1.20.9",
+    "dep:body-parser": "npm:body-parser@^2.4",
     "dep:connect-redis": "npm:connect-redis@^7.1",
     "dep:express-mung": "npm:express-mung@^0.5",
     "dep:rate-limit-redis": "npm:rate-limit-redis@^6.0",
@@ -45,7 +45,7 @@
     "dep:prom-client": "npm:prom-client@^15.1",
     "dep:cors": "npm:cors@^2.8",
     "dep:mjml": "npm:mjml@^5.4.1",
-    "dep:helmet": "npm:helmet@^7.1",
+    "dep:helmet": "npm:helmet@^8.3",
     "dep:nodemailer": "npm:nodemailer@^6.9",
     "dep:semver": "jsr:@std/semver@^1",
     "dep:collections": "jsr:@std/collections@^1.4",
@@ -53,7 +53,7 @@
     "dep:encoding": "jsr:@std/encoding@^1",
     "dep:openid-client": "jsr:@panva/openid-client@6.9.0",
     "dep:log": "jsr:@std/log@^0", // will be removed in favour of OpenTelemetry
-    "dep:s3-lite-client": "jsr:@bradenmacdonald/s3-lite-client@^0.8.0",
+    "dep:s3-lite-client": "jsr:@bradenmacdonald/s3-lite-client@^1.0",
     "dep:postgres": "jsr:@db/postgres@0.19.5",
     "dep:jose": "https://deno.land/x/jose@v5.6.3/index.ts",
     "dep:path": "jsr:@std/path@^1/posix",
@@ -61,7 +61,7 @@
     // worker.ts must be listed to be listed in deno.lock and cached
     "dep:bcrypt-worker": "https://deno.land/x/bcrypt@v0.4.1/src/worker.ts",
     "dep:grpc": "https://deno.land/x/grpc_basic@0.4.7/client.ts",
-    "dep:sinon": "npm:sinon@18"
+    "dep:sinon": "npm:sinon@^22"
   },
   "compilerOptions": {
     // keep them even if deprecated as the code uses legacy decorators

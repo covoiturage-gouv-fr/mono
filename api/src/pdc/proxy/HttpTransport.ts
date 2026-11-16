@@ -146,6 +146,11 @@ export class HttpTransport implements TransportInterface {
   private registerBodyHandler(): void {
     this.app.use(bodyParser.json({ limit: "2mb" }));
     this.app.use(bodyParser.urlencoded({ extended: false }));
+    // body-parser 2 laisse req.body à undefined sans corps ; les handlers attendent un objet
+    this.app.use((req: Request, _res: Response, next: NextFunction) => {
+      req.body ??= {};
+      next();
+    });
   }
 
   private registerSessionHandler(): void {
