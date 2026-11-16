@@ -16,7 +16,7 @@
     "@codegouvfr/react-dsfr": "1.36",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
-    "@mui/material": "^7.1.1",
+    "@mui/material": "^9.5.0",
     "@mui/x-date-pickers": "^8.5.0",
     "@socialgouv/matomo-next": "^1.14.2",
     "chart.js": "^4.6.1",
