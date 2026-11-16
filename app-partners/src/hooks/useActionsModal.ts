@@ -3,7 +3,7 @@
 import { getApiUrl } from "@/helpers/api";
 import { apiErrorMessage, parseBody, toUserError } from "@/hooks/useApi";
 import { useCallback, useState } from "react";
-import { ZodError, type ZodSchema, type ZodType } from "zod";
+import { ZodError, type ZodType } from "zod";
 
 export const formatErrors = (formattedErrors: Record<string, string[] | undefined>): Record<string, string> => {
   return Object.keys(formattedErrors).reduce(
@@ -63,7 +63,7 @@ export const useActionsModal = <T extends Record<string, unknown>>() => {
   };
 
   const submitModal = useCallback(
-    async (url: string, validationSchema: ZodSchema) => {
+    async (url: string, validationSchema: ZodType) => {
       try {
         // Le corps envoyé est la version validée (rognée, normalisée) ; les clés hors schéma (id…) sont conservées.
         let payload: Record<string, unknown> = currentRow;
