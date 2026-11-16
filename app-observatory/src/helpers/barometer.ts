@@ -64,14 +64,40 @@ function seriesByPeriod(
   labels: string[],
   labelOf: (m: BarometerMeasure) => string,
   seriesOf: (m: BarometerMeasure) => string,
+  valueOf: (m: BarometerMeasure) => number,
 ) {
   const ordered = [...rows].sort((a, b) => a.debut.localeCompare(b.debut));
   const names = Array.from(new Set(ordered.map(seriesOf)));
   return names.map((name) => {
-    const values = new Map(rows.filter((m) => seriesOf(m) === name).map((m) => [labelOf(m), m.tx_covoiturage]));
+    const values = new Map(rows.filter((m) => seriesOf(m) === name).map((m) => [labelOf(m), valueOf(m)]));
     return { label: name, data: labels.map((l) => values.get(l) ?? NaN) };
   });
 }
+
+const METRICS = [
+  {
+    key: "taux",
+    unit: "%",
+    valueOf: (m: BarometerMeasure) => m.tx_covoiturage,
+    titles: {
+      heure: "Taux de covoiturage par heure",
+      jour: "Taux de covoiturage moyen par jour de la semaine",
+      periode: "Évolution du taux de covoiturage moyen",
+    },
+    periodSeries: "Taux moyen",
+  },
+  {
+    key: "trafic",
+    unit: "véhicules",
+    valueOf: (m: BarometerMeasure) => m.nb_vl,
+    titles: {
+      heure: "Trafic de véhicules légers par heure",
+      jour: "Trafic moyen de véhicules légers par jour de la semaine",
+      periode: "Évolution du trafic moyen de véhicules légers",
+    },
+    periodSeries: "Trafic moyen",
+  },
+] as const;
 
 export function chartsOf(measures: BarometerMeasure[]): BarometerChart[] {
   const charts: BarometerChart[] = [];
@@ -81,44 +107,54 @@ export function chartsOf(measures: BarometerMeasure[]): BarometerChart[] {
   if (byHour.length) {
     const hours = sortedUnique(byHour.map((m) => m.heure!), (a, b) => a - b);
     const labels = hours.map((h) => `${h}h`);
-    charts.push({
-      key: "heure",
-      title: "Taux de covoiturage par heure",
-      kind: "bar",
-      labels,
-      series: seriesByPeriod(
-        byHour,
+    for (const metric of METRICS) {
+      charts.push({
+        key: `${metric.key}-heure`,
+        title: metric.titles.heure,
+        kind: "bar",
+        unit: metric.unit,
         labels,
-        (m) => `${m.heure}h`,
-        (m) => (m.jour ? `${period(m)} (${JOURS[m.jour - 1]})` : period(m)),
-      ),
-    });
+        series: seriesByPeriod(
+          byHour,
+          labels,
+          (m) => `${m.heure}h`,
+          (m) => (m.jour ? `${period(m)} (${JOURS[m.jour - 1]})` : period(m)),
+          metric.valueOf,
+        ),
+      });
+    }
   }
 
   const byDay = measures.filter((m) => m.heure === null && m.jour !== null);
   if (byDay.length) {
     const days = sortedUnique(byDay.map((m) => m.jour!), (a, b) => a - b);
     const labels = days.map((d) => JOURS[d - 1]);
-    charts.push({
-      key: "jour",
-      title: "Taux de covoiturage moyen par jour de la semaine",
-      kind: "bar",
-      labels,
-      series: seriesByPeriod(byDay, labels, (m) => JOURS[(m.jour!) - 1], period),
-    });
+    for (const metric of METRICS) {
+      charts.push({
+        key: `${metric.key}-jour`,
+        title: metric.titles.jour,
+        kind: "bar",
+        unit: metric.unit,
+        labels,
+        series: seriesByPeriod(byDay, labels, (m) => JOURS[(m.jour!) - 1], period, metric.valueOf),
+      });
+    }
   }
 
   const byPeriod = measures
     .filter((m) => m.heure === null && m.jour === null)
     .sort((a, b) => a.debut.localeCompare(b.debut));
   if (byPeriod.length) {
-    charts.push({
-      key: "periode",
-      title: "Évolution du taux de covoiturage moyen",
-      kind: byPeriod.length >= 3 ? "line" : "bar",
-      labels: byPeriod.map(period),
-      series: [{ label: "Taux moyen", data: byPeriod.map((m) => m.tx_covoiturage) }],
-    });
+    for (const metric of METRICS) {
+      charts.push({
+        key: `${metric.key}-periode`,
+        title: metric.titles.periode,
+        kind: byPeriod.length >= 3 ? "line" : "bar",
+        unit: metric.unit,
+        labels: byPeriod.map(period),
+        series: [{ label: metric.periodSeries, data: byPeriod.map(metric.valueOf) }],
+      });
+    }
   }
 
   return charts;

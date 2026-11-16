@@ -6,10 +6,20 @@ import type { BarometerPoint, BarometerProvider } from '@/interfaces/observatoir
 import { fr } from '@codegouvfr/react-dsfr';
 import bbox from '@turf/bbox';
 import type { ExpressionSpecification, LngLatBoundsLike, MapLayerMouseEvent } from 'maplibre-gl';
-import { ReactNode, useCallback, useMemo, useState } from 'react';
-import { CircleLayerSpecification, Layer, Popup, Source } from 'react-map-gl/maplibre';
+import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
+import { CircleLayerSpecification, Layer, Popup, Source, useMap } from 'react-map-gl/maplibre';
 
 const FRANCE_BOUNDS: LngLatBoundsLike = [-5.225, 41.333, 9.55, 51.2];
+// Zoom 11 : l'axe routier reste lisible autour du point.
+const SELECTED_ZOOM = 11;
+
+function FlyToSelected({ point }: { point?: BarometerPoint }) {
+  const { current: map } = useMap();
+  useEffect(() => {
+    if (point) map?.flyTo({ center: [point.lon, point.lat], zoom: SELECTED_ZOOM });
+  }, [map, point]);
+  return null;
+}
 
 const hexToRgb = (hex: string) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
 
@@ -33,13 +43,16 @@ export default function BarometerMap({
   onSelect: (id: number) => void;
 }) {
   const geojson = useMemo(() => pointsToGeoJSON(points), [points]);
+  const selected = points.find((p) => p.id === selectedId);
+  // Sans emprise, AppMap ne recadre pas : FlyToSelected garde la main sur la vue.
   // Un point seul donnerait une emprise nulle : on reste sur la France.
   // Marge d'un degré pour que les points au bord ne passent pas sous la légende ou l'attribution.
-  const bounds = useMemo<LngLatBoundsLike>(() => {
+  const bounds = useMemo<LngLatBoundsLike | undefined>(() => {
+    if (selected) return undefined;
     if (points.length < 2) return FRANCE_BOUNDS;
     const [minX, minY, maxX, maxY] = bbox(geojson);
     return [minX - 1, minY - 1, maxX + 1, maxY + 1];
-  }, [geojson, points.length]);
+  }, [geojson, points.length, selected]);
 
   const paint = useMemo<CircleLayerSpecification['paint']>(() => {
     const isSelected: ExpressionSpecification = ['==', ['get', 'id'], selectedId ?? -1];
@@ -52,8 +65,10 @@ export default function BarometerMap({
     return {
       'circle-color': color,
       'circle-radius': ['case', isSelected, 10, 7],
+      'circle-opacity': selectedId === null ? 1 : ['case', isSelected, 1, 0.5],
       'circle-stroke-color': '#ffffff',
       'circle-stroke-width': ['case', isSelected, 3, 2],
+      'circle-stroke-opacity': selectedId === null ? 1 : ['case', isSelected, 1, 0.5],
     };
   }, [providers, colors, selectedId]);
 
@@ -105,7 +120,20 @@ export default function BarometerMap({
         },
       ]}
     >
+      <FlyToSelected point={selected} />
       <Source id='barometer' type='geojson' data={geojson}>
+        <Layer
+          id='barometer-selected-halo'
+          type='circle'
+          filter={['==', ['get', 'id'], selectedId ?? -1]}
+          paint={{
+            'circle-radius': 22,
+            'circle-color': '#000091',
+            'circle-opacity': 0.15,
+            'circle-stroke-color': '#000091',
+            'circle-stroke-width': 2,
+          }}
+        />
         <Layer id='barometer-points' type='circle' paint={paint} />
       </Source>
       {hover && (
