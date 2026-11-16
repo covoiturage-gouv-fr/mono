@@ -19,17 +19,13 @@ updates:
       npm-minor-patch:
         update-types: [minor, patch]
 
-  # Application gelée : correctifs de sécurité seulement.
+  # Application gelée, hors veille comme le CMS (sécurité comprise).
   - package-ecosystem: npm
     directory: /app-attestation
-    target-branch: next
     schedule:
       interval: weekly
-    open-pull-requests-limit: 0
-    cooldown:
-      default-days: 7
-    commit-message:
-      prefix: build(deps)
+    ignore:
+      - dependency-name: "*"
 
   # CMS hors veille. Sans target-branch pour que ignore couvre aussi la sécurité.
   - package-ecosystem: npm
