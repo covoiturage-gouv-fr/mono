@@ -1,5 +1,4 @@
 import { observeList } from '@/helpers/lists';
-import { PerimeterType } from '@/interfaces/observatoire/Perimeter';
 import { FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 import { useDashboardContext } from '../../context/DashboardProvider';
 
@@ -20,7 +19,7 @@ export default function SelectObserve(props: SelectObserveProps) {
           labelId={props.id}
           value={dashboard.params.observe}
           label={props.label}
-          onChange={(event) => dashboard.onChangeObserve(event.target.value as PerimeterType)}
+          onChange={(event) => dashboard.onChangeObserve(event.target.value)}
         >
           {filteredList.map((d, i: number) => (
             <MenuItem key={i} value={d.id}>

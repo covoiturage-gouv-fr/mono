@@ -22,7 +22,7 @@ export default function SelectInList(props: Props) {
          labelId={props.labelId} 
           value={props.id}
           label={props.label}
-          onChange={(event) => props.onChange(event.target.value as number)}
+          onChange={(event) => props.onChange(event.target.value)}
         >
           {props.list.map((d) => (
             <MenuItem key={d.id} disabled={d.disabled} value={d.id}>
