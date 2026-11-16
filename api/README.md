@@ -93,6 +93,9 @@ just test-unit
 just test-integration
 just test-e2e
 
+# Tests contre les API externes (geo.api.gouv.fr, BAN), ignorés par défaut
+APP_TEST_EXTERNAL_API=true deno test -A src/pdc/providers/geo/tests/Etalab*.integration.spec.ts
+
 # Accès base de données
 just db                 # Shell pgcli
 
