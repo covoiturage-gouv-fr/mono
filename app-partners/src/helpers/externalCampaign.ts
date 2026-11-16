@@ -102,7 +102,7 @@ export const externalCampaignSchema = z
   })
   .superRefine((row, ctx) => {
     for (const { path, message } of crossRuleIssues(row)) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, path: [path], message });
+      ctx.addIssue({ code: "custom", path: [path], message });
     }
   });
 
