@@ -113,7 +113,7 @@ describe("chartsOf", () => {
     );
   });
 
-  test("chaque graphique de taux est suivi du trafic sur le même découpage", () => {
+  test("chaque graphique de taux est suivi du trafic sur le même découpage, en courbe", () => {
     const charts = chartsOf([
       measure({ heure: 8, nb_vl: 14737 }),
       measure({ heure: 7, nb_vl: 7868 }),
@@ -122,7 +122,7 @@ describe("chartsOf", () => {
     expect(charts[1]).toEqual({
       key: "trafic-heure",
       title: "Trafic de véhicules légers par heure",
-      kind: "bar",
+      kind: "line",
       unit: "véhicules",
       labels: ["7h", "8h"],
       series: [{ label: "3 juin 2024", data: [7868, 14737] }],
@@ -148,6 +148,7 @@ describe("chartsOf", () => {
       series: [{ label: "juin 2025", data: [10, 11] }],
     });
     expect(charts[1].title).toBe("Trafic moyen de véhicules légers par jour de la semaine");
+    expect(charts[1].kind).toBe("line");
   });
 
   test("jour et heure vides : évolution de la moyenne par période, en courbe à partir de 3 périodes", () => {
