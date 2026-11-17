@@ -89,7 +89,7 @@ export default function PointDetails({ point }: { point: BarometerPoint }) {
           ) : (
             <div className={fr.cx('fr-grid-row', 'fr-grid-row--gutters')}>
               {charts.map((c) => (
-                <div key={c.key} className={fr.cx('fr-col-12')}>
+                <div key={c.key} className={fr.cx('fr-col-12', 'fr-col-lg-6')}>
                   <Chart
                     title={c.title}
                     kind={c.kind}

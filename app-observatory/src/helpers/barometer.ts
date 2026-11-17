@@ -78,6 +78,7 @@ const METRICS = [
   {
     key: "taux",
     unit: "%",
+    line: false,
     valueOf: (m: BarometerMeasure) => m.tx_covoiturage,
     titles: {
       heure: "Taux de covoiturage par heure",
@@ -89,6 +90,7 @@ const METRICS = [
   {
     key: "trafic",
     unit: "véhicules",
+    line: true,
     valueOf: (m: BarometerMeasure) => m.nb_vl,
     titles: {
       heure: "Trafic de véhicules légers par heure",
@@ -111,7 +113,7 @@ export function chartsOf(measures: BarometerMeasure[]): BarometerChart[] {
       charts.push({
         key: `${metric.key}-heure`,
         title: metric.titles.heure,
-        kind: "bar",
+        kind: metric.line ? "line" : "bar",
         unit: metric.unit,
         labels,
         series: seriesByPeriod(
@@ -133,7 +135,7 @@ export function chartsOf(measures: BarometerMeasure[]): BarometerChart[] {
       charts.push({
         key: `${metric.key}-jour`,
         title: metric.titles.jour,
-        kind: "bar",
+        kind: metric.line ? "line" : "bar",
         unit: metric.unit,
         labels,
         series: seriesByPeriod(byDay, labels, (m) => JOURS[(m.jour!) - 1], period, metric.valueOf),
@@ -149,7 +151,7 @@ export function chartsOf(measures: BarometerMeasure[]): BarometerChart[] {
       charts.push({
         key: `${metric.key}-periode`,
         title: metric.titles.periode,
-        kind: byPeriod.length >= 3 ? "line" : "bar",
+        kind: metric.line || byPeriod.length >= 3 ? "line" : "bar",
         unit: metric.unit,
         labels: byPeriod.map(period),
         series: [{ label: metric.periodSeries, data: byPeriod.map(metric.valueOf) }],
