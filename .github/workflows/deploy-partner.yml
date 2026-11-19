@@ -51,8 +51,33 @@ jobs:
           npm ci
           npm run build
 
-      - name: Deploy to bucket
+      - name: Deploy hashed assets to bucket
         uses: jakejarvis/s3-sync-action@be0c4ab89158cac4278689ebedd8407dd5f35a83 # zizmor: ignore[archived-uses] v0.5.1
+        with:
+          args: --acl public-read --follow-symlinks --cache-control 'public, max-age=31536000, immutable' --exclude '*' --include '*_next/static/*'
+        env:
+          AWS_S3_BUCKET: ${{ vars.DASHBOARD_BUCKET_NAME }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.BUCKET_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.BUCKET_SECRET_KEY }}
+          AWS_S3_ENDPOINT: ${{ vars.BUCKET_ENDPOINT }}
+          AWS_REGION: ${{ vars.BUCKET_REGION }}
+          SOURCE_DIR: app-partners/out
+
+      - name: Deploy other files to bucket
+        uses: jakejarvis/s3-sync-action@be0c4ab89158cac4278689ebedd8407dd5f35a83 # zizmor: ignore[archived-uses] v0.5.1
+        with:
+          args: --acl public-read --follow-symlinks --cache-control 'no-cache' --exclude '*_next/static/*'
+        env:
+          AWS_S3_BUCKET: ${{ vars.DASHBOARD_BUCKET_NAME }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.BUCKET_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.BUCKET_SECRET_KEY }}
+          AWS_S3_ENDPOINT: ${{ vars.BUCKET_ENDPOINT }}
+          AWS_REGION: ${{ vars.BUCKET_REGION }}
+          SOURCE_DIR: app-partners/out
+
+      - name: Delete stale files from bucket
+        uses: jakejarvis/s3-sync-action@be0c4ab89158cac4278689ebedd8407dd5f35a83 # zizmor: ignore[archived-uses] v0.5.1
+        # Fichiers déjà envoyés aux étapes précédentes : seul le nettoyage des objets obsolètes reste.
         with:
           args: --acl public-read --follow-symlinks --delete
         env:
