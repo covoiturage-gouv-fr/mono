@@ -133,8 +133,27 @@ describe("accessLogMiddleware", () => {
       }
       assertEquals(
         Object.keys(line).sort(),
-        ["duration_ms", "ip", "method", "role", "route", "status", "sub"],
+        ["api_version", "duration_ms", "ip", "method", "role", "route", "status", "sub"],
       );
+    });
+  });
+
+  it("logs the called api_version next to the route pattern, and no key on a non-versioned route", async () => {
+    await withServer(async (hit) => {
+      const versioned = await hit("/v3.1/journeys/abc-123", { method: "POST" });
+      assertEquals(versioned.api_version, "v3.1");
+      assertEquals(versioned.route, "/:api_version/journeys/:id");
+
+      assertEquals("api_version" in (await hit("/slow")), false);
+    });
+  });
+
+  it("does not log a malformed api_version raw", async () => {
+    await withServer(async (hit) => {
+      for (const garbage of ["..%2F..%2Fetc", "a".repeat(500), "v3%20status=200"]) {
+        const line = await hit(`/${garbage}/journeys/abc-123`, { method: "POST" });
+        assertEquals("api_version" in line, false, garbage.slice(0, 20));
+      }
     });
   });
 

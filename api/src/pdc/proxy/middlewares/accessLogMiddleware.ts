@@ -1,6 +1,7 @@
 import { logger } from "@/lib/logger/index.ts";
 import { safeValue } from "@/lib/logger/tagged.ts";
 import { NextFunction, Request, Response } from "dep:express";
+import { tryParseRange } from "dep:semver";
 
 export type AccessLogFields = {
   ip?: string;
@@ -8,6 +9,7 @@ export type AccessLogFields = {
   pentest_id?: string;
   method: string;
   route?: string;
+  api_version?: string;
   status: number;
   duration_ms: number;
   sub?: string;
@@ -21,6 +23,12 @@ const PROBE_ROUTES = new Set(["/health", "/metrics"]);
 function header(req: Request, name: string): string | undefined {
   const value = req.headers[name];
   return value === undefined || value === "" ? undefined : safeValue(String(value));
+}
+
+// Version appelée (même grammaire que registerExpressRoute), y compris périmée : seul un jeton bien formé est journalisé.
+function apiVersion(req: Request): string | undefined {
+  const version = req.params?.api_version;
+  return version && tryParseRange(version) ? safeValue(version) : undefined;
 }
 
 function actor(req: Request): Pick<AccessLogFields, "sub" | "role"> {
@@ -52,6 +60,7 @@ export function accessLogMiddleware(log: (fields: AccessLogFields) => void = wri
           pentest_id: header(req, "x-pentest-id"),
           method: req.method,
           route,
+          api_version: apiVersion(req),
           status: res.statusCode,
           duration_ms: Math.round(performance.now() - start),
           ...actor(req),
