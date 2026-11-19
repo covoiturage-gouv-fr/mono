@@ -41,6 +41,8 @@ export const apiErrorMessage = (status: number, body: unknown): string => {
       return "Vous n'avez pas les droits nécessaires pour cette action.";
     case 404:
       return "Élément introuvable.";
+    case 429:
+      return "Trop de requêtes, réessayez dans quelques instants.";
     default:
       if (status >= 500) return `Le service a rencontré une erreur interne (${status}). Réessayez plus tard.`;
       return fromBody() ?? `La requête a été refusée (${status}).`;

@@ -152,10 +152,10 @@ export default function SearchBar(props: SearchBarProps) {
         void search(v);
       }}
       renderInput={(params) => (
-        <div ref={params.InputProps.ref}>
+        <div ref={params.slotProps.input.ref}>
           <input
-            {...params.inputProps}
-            className={cx(params.inputProps.className, className)}
+            {...params.slotProps.htmlInput}
+            className={cx(params.slotProps.htmlInput.className, className)}
             id={id}
             placeholder={placeholder}
             type={type}

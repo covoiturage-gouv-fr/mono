@@ -1,4 +1,4 @@
-import { assertEquals } from "dep:assert";
+import { assertEquals, assertStringIncludes } from "dep:assert";
 import { afterEach, beforeEach, describe, it } from "dep:testing-bdd";
 import { KernelInterfaceResolver } from "@/ilos/common/index.ts";
 import { Cursor } from "@/ilos/connection-postgres/index.ts";
@@ -317,5 +317,28 @@ describe("BuildExcel", () => {
     sinon.assert.notCalled(slicesWorkbookWriterStub!);
     assertEquals(filename, fn);
     assertEquals(filepath, fp);
+  });
+
+  it("BuildExcel: should reject instead of hanging when the file cannot be opened", async () => {
+    workbookWriterStub.restore();
+    getPolicyCursorStub.returns(cursorCallback);
+    filenameStub.returns(filename);
+    filepathStub.returns("/nonexistent-dir/APDF-idfm.xlsx");
+    // l'erreur d'ouverture survient pendant l'écriture, avant commit()
+    tripsWorkbookWriterStub.callsFake(() => new Promise((r) => setTimeout(r, 200)));
+    kernelStub.resolves(config);
+    policyStatsStub.resolves({ total_count: 0, total_sum: 0, subsidized_count: 0, slices: [] });
+
+    let timer: number | undefined;
+    const timeout = new Promise<string>((resolve) => {
+      timer = setTimeout(() => resolve("HANG"), 3_000);
+    });
+    const outcome = await Promise.race([
+      buildExcel.call(campaign, start_date, end_date, operator_id).then(() => "OK", (e: Error) => e.message),
+      timeout,
+    ]);
+    clearTimeout(timer);
+
+    assertStringIncludes(String(outcome), "ENOENT");
   });
 });

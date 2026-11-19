@@ -1,20 +1,31 @@
 import { useEffect, useState } from "react";
 
-// Corps d'erreur : JSON (`{ detail }` FastAPI, `{ message }`) ou texte brut.
-export const toErrorMessage = (text: string): string => {
-  let body: unknown;
+// 4xx : seul un `detail`/`message` texte d'un corps JSON est relayé (borné) ; le reste vient d'un proxy.
+export const toErrorMessage = (status: number, text: string): string => {
   try {
-    body = JSON.parse(text);
+    const { detail, message } = (JSON.parse(text) ?? {}) as { detail?: unknown; message?: unknown };
+    const relayed = [detail, message].find((v): v is string => typeof v === "string" && v !== "");
+    if (relayed) return relayed.slice(0, 500);
   } catch {
-    return text;
+    // corps non JSON
   }
-  if (typeof body === "string") return body;
-  if (typeof body === "object" && body !== null) {
-    const { detail, message } = body as { detail?: unknown; message?: unknown };
-    if (typeof detail === "string") return detail;
-    if (typeof message === "string") return message;
+  return `La requête a été refusée (${status}).`;
+};
+
+const isMaintenance = (text: string): boolean => {
+  try {
+    return (JSON.parse(text) as { status?: unknown })?.status === "maintenance";
+  } catch {
+    return false;
   }
-  return "Erreur inattendue de l'API";
+};
+
+// 5xx : corps jamais affiché ; seul api-datalake signale sa maintenance par `{ status: "maintenance" }`.
+export const errorMessageFor = (status: number, text: string): string => {
+  if (status === 429) return "Trop de requêtes, réessayez dans quelques instants.";
+  if (status === 503 && isMaintenance(text)) return "Le service est en maintenance. Réessayez plus tard.";
+  if (status >= 500) return `Le service a rencontré une erreur interne (${status}). Réessayez plus tard.`;
+  return toErrorMessage(status, text);
 };
 
 export const useApi = <T>(input: RequestInfo | URL, init?: RequestInit) => {
@@ -34,7 +45,7 @@ export const useApi = <T>(input: RequestInfo | URL, init?: RequestInit) => {
         } else {
           const text = await response.text();
           console.error(`API ${response.status} on ${target}`, text);
-          setError(toErrorMessage(text));
+          setError(errorMessageFor(response.status, text));
           setData(undefined);
         }
       } catch (e) {

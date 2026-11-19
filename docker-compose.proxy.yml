@@ -45,7 +45,10 @@ services:
     command: ["just", "serve-unsafe"]
     volumes:
       - ./api:/app/api
-      - ./tmp:/tmp
+      - type: tmpfs
+        target: /tmp
+        tmpfs:
+          mode: 01777
     labels:
       - 'traefik.enable=true'
       - 'traefik.http.routers.api.rule=Host(`api.covoiturage.test`)'

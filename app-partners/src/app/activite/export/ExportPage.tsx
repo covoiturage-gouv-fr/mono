@@ -19,6 +19,9 @@ import dayjs, { type Dayjs } from "dayjs";
 import "dayjs/locale/fr";
 import { useEffect, useRef, useState } from "react";
 
+// x-date-pickers v9 passe le jour de `line-height: 1.66` (caption) à `1` : décale le chiffre de 1 px.
+const dayPickerSlotProps = { day: { sx: { lineHeight: 1.66 } } };
+
 export default function TabExport() {
   const { user, simulate, simulatedRole } = useAuth();
   const [territoryId, setTerritoryId] = useState(user?.territory_id);
@@ -187,6 +190,7 @@ export default function TabExport() {
                   onChange={(v) => v && setStartDate(v)}
                   minDate={dayjs().subtract(2, "years")}
                   maxDate={endDate}
+                  slotProps={dayPickerSlotProps}
                 />
 
                 <DatePicker
@@ -198,6 +202,7 @@ export default function TabExport() {
                   onChange={(v) => v && setEndDate(v)}
                   minDate={startDate}
                   maxDate={dayjs().subtract(5, "days")}
+                  slotProps={dayPickerSlotProps}
                 />
               </div>
 

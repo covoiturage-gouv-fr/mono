@@ -35,6 +35,7 @@ import { healthCheckFactory } from "./helpers/healthCheckFactory.ts";
 import { injectContext } from "./helpers/injectContext.ts";
 import { mapStatusCode } from "./helpers/mapStatusCode.ts";
 import { prometheusMetricsFactory } from "./helpers/prometheusMetricsFactory.ts";
+import { accessLogMiddleware } from "./middlewares/accessLogMiddleware.ts";
 import { CacheMiddleware, cacheMiddleware } from "./middlewares/cacheMiddleware.ts";
 import { dataWrapMiddleware, errorHandlerMiddleware } from "./middlewares/index.ts";
 import { metricsMiddleware } from "./middlewares/metricsMiddleware.ts";
@@ -87,6 +88,7 @@ export class HttpTransport implements TransportInterface {
 
   setup(): void {
     this.registerBeforeAllHandlers();
+    this.registerAccessLog();
     this.registerBodyHandler();
     this.registerSessionHandler();
     this.registerSecurity();
@@ -136,9 +138,19 @@ export class HttpTransport implements TransportInterface {
     Sentry.setTag("version", this.config.get("sentry.version"));
   }
 
+  // En premier : couvre aussi les requêtes rejetées avant routage (corps invalide, maintenance, 404).
+  private registerAccessLog(): void {
+    this.app.use(accessLogMiddleware());
+  }
+
   private registerBodyHandler(): void {
     this.app.use(bodyParser.json({ limit: "2mb" }));
     this.app.use(bodyParser.urlencoded({ extended: false }));
+    // body-parser 2 laisse req.body à undefined sans corps ; les handlers attendent un objet
+    this.app.use((req: Request, _res: Response, next: NextFunction) => {
+      req.body ??= {};
+      next();
+    });
   }
 
   private registerSessionHandler(): void {

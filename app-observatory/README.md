@@ -35,7 +35,8 @@ src/
 │   ├── page.tsx           # Page d'accueil
 │   ├── observatoire/      # Tableaux de bord
 │   │   ├── territoire/    # Données par territoire
-│   │   └── campagnes-incitation/  # Suivi des incitations
+│   │   ├── campagnes-incitation/  # Suivi des incitations
+│   │   └── barometre/     # Baromètre du covoiturage informel
 │   ├── actualites/        # Section actualités
 │   ├── ressources/        # Ressources documentaires
 │   ├── collectivites/     # Pages pour collectivités
@@ -74,6 +75,14 @@ src/
 - Montants distribués et trajets incités
 - Évolution dans le temps
 
+### Baromètre du covoiturage informel
+
+- Points de captage routiers (capteurs, enquêtes) sur carte, filtrables par fournisseur de données
+- Fiche du point : capteur, périodes de mesure, organisme, caractéristiques
+- Contrat : `/observatory/barometer/points` et `/observatory/barometer/measures?id=`, mêmes colonnes que `barometre_points.csv` et `barometre_mesures.csv`
+- Graphiques déduits des colonnes remplies : `heure` remplie = comptage horaire (taux par heure), `jour` seul = moyenne par jour de la semaine, aucun des deux = moyenne sur la période (évolution)
+- Non référencé dans le menu ; en attendant les routes datalake, la page lit les données VINCI de `public/barometre-fixtures/`
+
 ## Installation
 
 ```bash
@@ -91,7 +100,8 @@ src/
 │   ├── page.tsx           # Page d'accueil
 │   ├── observatoire/      # Tableaux de bord
 │   │   ├── territoire/    # Données par territoire
-│   │   └── campagnes-incitation/  # Suivi des incitations
+│   │   ├── campagnes-incitation/  # Suivi des incitations
+│   │   └── barometre/     # Baromètre du covoiturage informel
 │   ├── actualites/        # Section actualités
 │   ├── ressources/        # Ressources documentaires
 │   ├── collectivites/     # Pages pour collectivités

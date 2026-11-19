@@ -56,6 +56,8 @@ export interface ChartProps {
   /** `number[]` = série unique sans libellé. */
   data: number[] | ChartSeries[];
   unit?: string;
+  /** Affiche aussi l'unité sur les graduations de l'axe des ordonnées. */
+  unitOnAxis?: boolean;
   formatValue?: (value: number) => string;
   height?: number;
   legend?: boolean;
@@ -90,6 +92,7 @@ export default function Chart({
   labels,
   data,
   unit,
+  unitOnAxis = false,
   formatValue,
   height = 320,
   legend,
@@ -133,7 +136,17 @@ export default function Chart({
       legend: { display: showLegend },
       goalLine: goal ? { value: goal, label: goalLabel } : { value: undefined },
     },
-    scales: goal ? { y: { suggestedMax: goal * 1.05 } } : undefined,
+    scales:
+      goal || unitOnAxis
+        ? {
+            y: {
+              ...(goal && { suggestedMax: goal * 1.05 }),
+              ...(unitOnAxis && {
+                ticks: { callback: (value: string | number) => format(Number(value)) },
+              }),
+            },
+          }
+        : undefined,
   };
 
   const plugins: Plugin[] = [];
