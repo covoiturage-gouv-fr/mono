@@ -1,0 +1,229 @@
+version: 2
+models:
+  - name: route_trim
+    description: >
+      Route OSRM de chaque paire de cellules H3 (z8) de h3_od_month, coupée de sa
+      partie dans la cellule de départ et dans celle d'arrivée : on ne garde que
+      nodes[first_idx:last_idx]. Les tronçons qui franchissent le bord des
+      cellules sont conservés. Incrémental : une paire déjà coupée pour
+      l'import OSM courant n'est pas recalculée.
+    columns:
+      - name: dataset
+        data_type: text
+      - name: h3_1
+        data_type: h3index
+      - name: h3_2
+        data_type: h3index
+      - name: lng_1
+        data_type: numeric
+      - name: lat_1
+        data_type: numeric
+      - name: lng_2
+        data_type: numeric
+      - name: lat_2
+        data_type: numeric
+      - name: first_idx
+        data_type: bigint
+      - name: last_idx
+        data_type: bigint
+
+# osrm_route est fourni en SQL : dbt-postgres ne sait pas typer un bigint[] en dict.
+# osrm_node_h3 est éphémère : dbt n'accepte que le format sql.
+# Les cellules H3 sont des chaînes dans les tests : seule l'égalité est utilisée.
+unit_tests:
+  - name: route_trim_cuts_start_and_end_cells
+    model: route_trim
+    overrides:
+      macros:
+        is_incremental: false
+    given:
+      - input: ref('h3_od_month')
+        rows:
+          # même paire sur deux mois : une seule route
+          - {year: 2026, month: 10, h3_1: a, h3_2: b, lng_1: 1, lat_1: 1, lng_2: 2, lat_2: 2}
+          - {year: 2026, month: 11, h3_1: a, h3_2: b, lng_1: 1, lat_1: 1, lng_2: 2, lat_2: 2}
+      - input: source('raw', 'osrm_route')
+        format: sql
+        rows: |
+          SELECT '2023-12-21'::text AS dataset, 1::numeric AS lng_1, 1::numeric AS lat_1, 2::numeric AS lng_2, 2::numeric AS lat_2, 'ok'::text AS status, NULL::real AS distance, NULL::real AS duration, '{1,2,3,4,5,6}'::bigint[] AS nodes, now() AS routed_at
+      - input: ref('osrm_node_h3')
+        format: sql
+        rows: |
+          SELECT '2023-12-21'::text AS dataset, 1::bigint AS node_id, 'a'::text AS h3
+          UNION ALL
+          SELECT '2023-12-21'::text AS dataset, 2::bigint AS node_id, 'a'::text AS h3
+          UNION ALL
+          SELECT '2023-12-21'::text AS dataset, 3::bigint AS node_id, 'x'::text AS h3
+          UNION ALL
+          SELECT '2023-12-21'::text AS dataset, 4::bigint AS node_id, 'y'::text AS h3
+          UNION ALL
+          SELECT '2023-12-21'::text AS dataset, 5::bigint AS node_id, 'b'::text AS h3
+          UNION ALL
+          SELECT '2023-12-21'::text AS dataset, 6::bigint AS node_id, 'b'::text AS h3
+    expect:
+      rows:
+        # tronçons gardés : 2→3 (sortie de a), 3→4, 4→5 (entrée dans b)
+        - {dataset: '2023-12-21', h3_1: a, h3_2: b, lng_1: 1, lat_1: 1, lng_2: 2, lat_2: 2, first_idx: 2, last_idx: 5}
+
+  - name: route_trim_keeps_only_the_border_edge_between_neighbours
+    model: route_trim
+    overrides:
+      macros:
+        is_incremental: false
+    given:
+      - input: ref('h3_od_month')
+        rows:
+          - {year: 2026, month: 10, h3_1: a, h3_2: b, lng_1: 1, lat_1: 1, lng_2: 2, lat_2: 2}
+      - input: source('raw', 'osrm_route')
+        format: sql
+        rows: |
+          SELECT '2023-12-21'::text AS dataset, 1::numeric AS lng_1, 1::numeric AS lat_1, 2::numeric AS lng_2, 2::numeric AS lat_2, 'ok'::text AS status, NULL::real AS distance, NULL::real AS duration, '{1,2,3,4}'::bigint[] AS nodes, now() AS routed_at
+      - input: ref('osrm_node_h3')
+        format: sql
+        rows: |
+          SELECT '2023-12-21'::text AS dataset, 1::bigint AS node_id, 'a'::text AS h3
+          UNION ALL
+          SELECT '2023-12-21'::text AS dataset, 2::bigint AS node_id, 'a'::text AS h3
+          UNION ALL
+          SELECT '2023-12-21'::text AS dataset, 3::bigint AS node_id, 'b'::text AS h3
+          UNION ALL
+          SELECT '2023-12-21'::text AS dataset, 4::bigint AS node_id, 'b'::text AS h3
+    expect:
+      rows:
+        - {h3_1: a, h3_2: b, first_idx: 2, last_idx: 3}
+
+  - name: route_trim_keeps_passages_back_through_the_start_cell
+    model: route_trim
+    overrides:
+      macros:
+        is_incremental: false
+    given:
+      - input: ref('h3_od_month')
+        rows:
+          - {year: 2026, month: 10, h3_1: a, h3_2: b, lng_1: 1, lat_1: 1, lng_2: 2, lat_2: 2}
+      - input: source('raw', 'osrm_route')
+        format: sql
+        rows: |
+          SELECT '2023-12-21'::text AS dataset, 1::numeric AS lng_1, 1::numeric AS lat_1, 2::numeric AS lng_2, 2::numeric AS lat_2, 'ok'::text AS status, NULL::real AS distance, NULL::real AS duration, '{1,2,3,4,5,6}'::bigint[] AS nodes, now() AS routed_at
+      - input: ref('osrm_node_h3')
+        format: sql
+        rows: |
+          SELECT '2023-12-21'::text AS dataset, 1::bigint AS node_id, 'a'::text AS h3
+          UNION ALL
+          SELECT '2023-12-21'::text AS dataset, 2::bigint AS node_id, 'x'::text AS h3
+          UNION ALL
+          SELECT '2023-12-21'::text AS dataset, 3::bigint AS node_id, 'a'::text AS h3
+          UNION ALL
+          SELECT '2023-12-21'::text AS dataset, 4::bigint AS node_id, 'x'::text AS h3
+          UNION ALL
+          SELECT '2023-12-21'::text AS dataset, 5::bigint AS node_id, 'b'::text AS h3
+          UNION ALL
+          SELECT '2023-12-21'::text AS dataset, 6::bigint AS node_id, 'b'::text AS h3
+    expect:
+      rows:
+        - {h3_1: a, h3_2: b, first_idx: 1, last_idx: 5}
+
+  - name: route_trim_treats_nodes_without_cell_as_outside
+    model: route_trim
+    overrides:
+      macros:
+        is_incremental: false
+    given:
+      - input: ref('h3_od_month')
+        rows:
+          - {year: 2026, month: 10, h3_1: a, h3_2: b, lng_1: 1, lat_1: 1, lng_2: 2, lat_2: 2}
+      - input: source('raw', 'osrm_route')
+        format: sql
+        rows: |
+          SELECT '2023-12-21'::text AS dataset, 1::numeric AS lng_1, 1::numeric AS lat_1, 2::numeric AS lng_2, 2::numeric AS lat_2, 'ok'::text AS status, NULL::real AS distance, NULL::real AS duration, '{1,2,3}'::bigint[] AS nodes, now() AS routed_at
+      - input: ref('osrm_node_h3')
+        format: sql
+        rows: |
+          SELECT '2023-12-21'::text AS dataset, 1::bigint AS node_id, 'a'::text AS h3
+          UNION ALL
+          SELECT '2023-12-21'::text AS dataset, 3::bigint AS node_id, 'b'::text AS h3
+    expect:
+      rows:
+        - {h3_1: a, h3_2: b, first_idx: 1, last_idx: 3}
+
+  - name: route_trim_drops_routes_that_never_leave_the_start_cell
+    model: route_trim
+    overrides:
+      macros:
+        is_incremental: false
+    given:
+      - input: ref('h3_od_month')
+        rows:
+          - {year: 2026, month: 10, h3_1: a, h3_2: b, lng_1: 1, lat_1: 1, lng_2: 2, lat_2: 2}
+      - input: source('raw', 'osrm_route')
+        format: sql
+        rows: |
+          SELECT '2023-12-21'::text AS dataset, 1::numeric AS lng_1, 1::numeric AS lat_1, 2::numeric AS lng_2, 2::numeric AS lat_2, 'ok'::text AS status, NULL::real AS distance, NULL::real AS duration, '{1,2}'::bigint[] AS nodes, now() AS routed_at
+      - input: ref('osrm_node_h3')
+        format: sql
+        rows: |
+          SELECT '2023-12-21'::text AS dataset, 1::bigint AS node_id, 'a'::text AS h3
+          UNION ALL
+          SELECT '2023-12-21'::text AS dataset, 2::bigint AS node_id, 'a'::text AS h3
+    expect:
+      rows: []
+
+  - name: route_trim_ignores_unrouted_pairs_and_other_datasets
+    model: route_trim
+    overrides:
+      macros:
+        is_incremental: false
+    given:
+      - input: ref('h3_od_month')
+        rows:
+          # pas encore routée, sans route, routée sur un autre import OSM
+          - {year: 2026, month: 10, h3_1: c, h3_2: d, lng_1: 5, lat_1: 5, lng_2: 6, lat_2: 6}
+          - {year: 2026, month: 10, h3_1: e, h3_2: f, lng_1: 7, lat_1: 7, lng_2: 8, lat_2: 8}
+          - {year: 2026, month: 10, h3_1: a, h3_2: b, lng_1: 1, lat_1: 1, lng_2: 2, lat_2: 2}
+      - input: source('raw', 'osrm_route')
+        format: sql
+        rows: |
+          SELECT '2023-12-21'::text AS dataset, 7::numeric AS lng_1, 7::numeric AS lat_1, 8::numeric AS lng_2, 8::numeric AS lat_2, 'no_route'::text AS status, NULL::real AS distance, NULL::real AS duration, NULL::bigint[] AS nodes, now() AS routed_at
+          UNION ALL
+          SELECT '2026-01-01'::text AS dataset, 1::numeric AS lng_1, 1::numeric AS lat_1, 2::numeric AS lng_2, 2::numeric AS lat_2, 'ok'::text AS status, NULL::real AS distance, NULL::real AS duration, '{1,2}'::bigint[] AS nodes, now() AS routed_at
+      - input: ref('osrm_node_h3')
+        format: sql
+        rows: |
+          SELECT '2023-12-21'::text AS dataset, 1::bigint AS node_id, 'a'::text AS h3
+          UNION ALL
+          SELECT '2023-12-21'::text AS dataset, 2::bigint AS node_id, 'b'::text AS h3
+    expect:
+      rows: []
+
+  - name: route_trim_only_cuts_new_pairs_when_incremental
+    model: route_trim
+    overrides:
+      macros:
+        is_incremental: true
+    given:
+      - input: ref('h3_od_month')
+        rows:
+          - {year: 2026, month: 10, h3_1: a, h3_2: b, lng_1: 1, lat_1: 1, lng_2: 2, lat_2: 2}
+          - {year: 2026, month: 10, h3_1: c, h3_2: d, lng_1: 3, lat_1: 3, lng_2: 4, lat_2: 4}
+      - input: this
+        rows:
+          - {dataset: '2023-12-21', h3_1: a, h3_2: b, lng_1: 1, lat_1: 1, lng_2: 2, lat_2: 2, first_idx: 1, last_idx: 2}
+      - input: source('raw', 'osrm_route')
+        format: sql
+        rows: |
+          SELECT '2023-12-21'::text AS dataset, 1::numeric AS lng_1, 1::numeric AS lat_1, 2::numeric AS lng_2, 2::numeric AS lat_2, 'ok'::text AS status, NULL::real AS distance, NULL::real AS duration, '{1,2}'::bigint[] AS nodes, now() AS routed_at
+          UNION ALL
+          SELECT '2023-12-21'::text AS dataset, 3::numeric AS lng_1, 3::numeric AS lat_1, 4::numeric AS lng_2, 4::numeric AS lat_2, 'ok'::text AS status, NULL::real AS distance, NULL::real AS duration, '{3,4}'::bigint[] AS nodes, now() AS routed_at
+      - input: ref('osrm_node_h3')
+        format: sql
+        rows: |
+          SELECT '2023-12-21'::text AS dataset, 1::bigint AS node_id, 'a'::text AS h3
+          UNION ALL
+          SELECT '2023-12-21'::text AS dataset, 2::bigint AS node_id, 'b'::text AS h3
+          UNION ALL
+          SELECT '2023-12-21'::text AS dataset, 3::bigint AS node_id, 'c'::text AS h3
+          UNION ALL
+          SELECT '2023-12-21'::text AS dataset, 4::bigint AS node_id, 'd'::text AS h3
+    expect:
+      rows:
+        - {dataset: '2023-12-21', h3_1: c, h3_2: d, first_idx: 1, last_idx: 2}

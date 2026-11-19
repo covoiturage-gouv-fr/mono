@@ -3,6 +3,42 @@ sources:
   - name: raw
     schema: zone_raw
     tables:
+      - name: osrm_route
+        description: >
+          Cache des plus courts chemins OSRM entre centres de cellules H3 z8
+          des trajets covoiturés, créé et rempli par `just route-od`.
+        columns:
+          - name: dataset
+            data_type: text
+          - name: lng_1
+            data_type: numeric
+          - name: lat_1
+            data_type: numeric
+          - name: lng_2
+            data_type: numeric
+          - name: lat_2
+            data_type: numeric
+          - name: status
+            data_type: text
+          - name: distance
+            data_type: real
+          - name: duration
+            data_type: real
+          - name: nodes
+            data_type: bigint[]
+          - name: routed_at
+            data_type: timestamp with time zone
+      - name: osrm_node
+        description: Coordonnées des nœuds OSM des routes en cache, une fois par dataset.
+        columns:
+          - name: dataset
+            data_type: text
+          - name: node_id
+            data_type: bigint
+          - name: lng
+            data_type: numeric
+          - name: lat
+            data_type: numeric
       - name: insee_mvt_com_2026
         columns:
           - name: mod

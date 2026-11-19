@@ -43,6 +43,16 @@ models:
     exposed:
       +schema: "zone_exposed"
       +dbt-osmosis: "yml/_{model}.yml"
+    # Carte des flux par tronçon (routage OSRM). Dossier à part : les recettes
+    # qui sélectionnent models/trusted|aggregated|exposed ne l'embarquent pas.
+    routing:
+      +tags: ["routing"]
+      trusted:
+        +schema: "zone_trusted"
+        +dbt-osmosis: "yml/_{model}.yml"
+      aggregated:
+        +schema: "zone_aggregated"
+        +dbt-osmosis: "yml/_{model}.yml"
     app_metabase:
       +schema: "app_metabase"
       +materialized: "view"
@@ -65,6 +75,11 @@ seeds:
 vars:
   # Pas de copie des lignes en échec dans le schéma elementary
   test_sample_row_count: 0
+  # Routage OSRM des flux OD (models/routing, just route-od) : import OSM servi
+  # et fenêtre [from, to) des trajets dont les flux par tronçon sont cumulés.
+  osrm_dataset: "2023-12-21"
+  routing_from: "2026-10-01"
+  routing_to: "2026-11-01"
   dbt-osmosis:
     sources:
       carpool_v1:
