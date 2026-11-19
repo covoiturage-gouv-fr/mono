@@ -1,7 +1,8 @@
 import { taggedLogger } from "@/lib/logger/tagged.ts";
+import { requestPath, routePattern } from "./requestRoute.ts";
 import { NextFunction, Request, Response } from "dep:express";
 
-const httpLog = taggedLogger("[http]");
+const httpLog = taggedLogger("[http]", { maxLength: 512 });
 
 // error handler - !! keep the next argument !!
 // otherwise Express doesn't use it as error handler
@@ -73,7 +74,8 @@ function respond(err: Error, res: Response, _req: Request, code: number): void {
       status: code,
       error: err.name && err.name !== "Error" ? err.name : err.constructor.name,
       method: _req.method,
-      route: _req.route?.path,
+      route: requestPath(_req),
+      route_pattern: routePattern(_req),
       rpc: typeof body?.method === "string" ? body.method : undefined,
     });
   } catch {
