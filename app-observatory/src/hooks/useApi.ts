@@ -17,8 +17,21 @@ export const toErrorMessage = (text: string): string => {
   return "Erreur inattendue de l'API";
 };
 
-export const errorMessageFor = (status: number, text: string): string =>
-  status === 429 ? "Trop de requêtes, réessayez dans quelques instants." : toErrorMessage(text);
+const isMaintenance = (text: string): boolean => {
+  try {
+    return (JSON.parse(text) as { status?: unknown })?.status === "maintenance";
+  } catch {
+    return false;
+  }
+};
+
+// 5xx : corps jamais affiché ; seul api-datalake signale sa maintenance par `{ status: "maintenance" }`.
+export const errorMessageFor = (status: number, text: string): string => {
+  if (status === 429) return "Trop de requêtes, réessayez dans quelques instants.";
+  if (status === 503 && isMaintenance(text)) return "Le service est en maintenance. Réessayez plus tard.";
+  if (status >= 500) return `Le service a rencontré une erreur interne (${status}). Réessayez plus tard.`;
+  return toErrorMessage(text);
+};
 
 export const useApi = <T>(input: RequestInfo | URL, init?: RequestInit) => {
   const [data, setData] = useState<T>();
