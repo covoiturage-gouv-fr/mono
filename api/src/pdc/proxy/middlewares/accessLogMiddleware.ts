@@ -1,6 +1,8 @@
 import { logger } from "@/lib/logger/index.ts";
 import { safeValue } from "@/lib/logger/tagged.ts";
 import { NextFunction, Request, Response } from "dep:express";
+import { tryParseRange } from "dep:semver";
+import { requestPath, routePattern } from "./requestRoute.ts";
 
 export type AccessLogFields = {
   ip?: string;
@@ -8,6 +10,8 @@ export type AccessLogFields = {
   pentest_id?: string;
   method: string;
   route?: string;
+  route_pattern?: string;
+  api_version?: string;
   status: number;
   duration_ms: number;
   sub?: string;
@@ -21,6 +25,12 @@ const PROBE_ROUTES = new Set(["/health", "/metrics"]);
 function header(req: Request, name: string): string | undefined {
   const value = req.headers[name];
   return value === undefined || value === "" ? undefined : safeValue(String(value));
+}
+
+// Version appelée (même grammaire que registerExpressRoute), y compris périmée : seul un jeton bien formé est journalisé.
+function apiVersion(req: Request): string | undefined {
+  const version = req.params?.api_version;
+  return version && tryParseRange(version) ? safeValue(version) : undefined;
 }
 
 function actor(req: Request): Pick<AccessLogFields, "sub" | "role"> {
@@ -40,9 +50,9 @@ export function accessLogMiddleware(log: (fields: AccessLogFields) => void = wri
     const start = performance.now();
 
     res.on("finish", () => {
-      // Motif de la route, jamais l'URL : pas d'identifiant ni de query string dans le journal.
-      const route = req.route ? `${req.baseUrl}${req.route.path}` : undefined;
-      if (route && PROBE_ROUTES.has(route) && res.statusCode < 400) return;
+      // Chemin réel (filtré, sans query string) ; le motif Express est à part, absent si aucune route n'a répondu.
+      const pattern = routePattern(req);
+      if (pattern && PROBE_ROUTES.has(pattern) && res.statusCode < 400) return;
 
       try {
         const fields: AccessLogFields = {
@@ -51,7 +61,9 @@ export function accessLogMiddleware(log: (fields: AccessLogFields) => void = wri
           request_id: header(req, "x-request-id"),
           pentest_id: header(req, "x-pentest-id"),
           method: req.method,
-          route,
+          route: requestPath(req),
+          route_pattern: pattern,
+          api_version: apiVersion(req),
           status: res.statusCode,
           duration_ms: Math.round(performance.now() - start),
           ...actor(req),
