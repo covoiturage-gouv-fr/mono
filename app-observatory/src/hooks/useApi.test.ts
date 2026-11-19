@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { toErrorMessage } from "./useApi";
+import { errorMessageFor, toErrorMessage } from "./useApi";
 
 describe("toErrorMessage", () => {
   it("renvoie le texte brut si le corps n'est pas du JSON", () => {
@@ -21,5 +21,15 @@ describe("toErrorMessage", () => {
   it("n'expose pas un detail non textuel (422 FastAPI)", () => {
     const body = '{"detail":[{"loc":["query","q"],"msg":"too long"}]}';
     expect(toErrorMessage(body)).toBe("Erreur inattendue de l'API");
+  });
+});
+
+describe("errorMessageFor", () => {
+  it("masque le corps brut d'une 429 de l'edge", () => {
+    expect(errorMessageFor(429, "local_rate_limited")).toBe("Trop de requêtes, réessayez dans quelques instants.");
+  });
+
+  it("relaie le corps des autres statuts", () => {
+    expect(errorMessageFor(503, '{"detail":"maintenance"}')).toBe("maintenance");
   });
 });

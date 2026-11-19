@@ -17,6 +17,9 @@ export const toErrorMessage = (text: string): string => {
   return "Erreur inattendue de l'API";
 };
 
+export const errorMessageFor = (status: number, text: string): string =>
+  status === 429 ? "Trop de requêtes, réessayez dans quelques instants." : toErrorMessage(text);
+
 export const useApi = <T>(input: RequestInfo | URL, init?: RequestInit) => {
   const [data, setData] = useState<T>();
   const [error, setError] = useState<string | null>(null);
@@ -34,7 +37,7 @@ export const useApi = <T>(input: RequestInfo | URL, init?: RequestInit) => {
         } else {
           const text = await response.text();
           console.error(`API ${response.status} on ${target}`, text);
-          setError(toErrorMessage(text));
+          setError(errorMessageFor(response.status, text));
           setData(undefined);
         }
       } catch (e) {
