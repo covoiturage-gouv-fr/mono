@@ -122,3 +122,11 @@ def test_fetch_route_gives_up_after_attempts():
 
     with pytest.raises(requests.ConnectionError):
         fetch_route(session, "http://osrm", PAIR, attempts=3)
+
+
+def test_fetch_route_does_not_retry_an_unexpected_answer():
+    session = FakeSession([FakeResponse(400, {"code": "InvalidQuery", "message": "x"})])
+
+    with pytest.raises(ValueError, match="InvalidQuery"):
+        fetch_route(session, "http://osrm", PAIR)
+    assert len(session.calls) == 1

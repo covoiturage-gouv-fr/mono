@@ -47,3 +47,16 @@ def test_retry_rejects_non_positive_attempts():
 
     with pytest.raises(ValueError):
         retry(fn, attempts=0)
+
+
+def test_retry_does_not_retry_other_exceptions(monkeypatch):
+    monkeypatch.setattr("time.sleep", lambda s: None)
+    calls = {"n": 0}
+
+    def fn():
+        calls["n"] += 1
+        raise ValueError("bug")
+
+    with pytest.raises(ValueError):
+        retry(fn, attempts=4, retry_on=(ConnectionError,))
+    assert calls["n"] == 1

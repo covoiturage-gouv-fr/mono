@@ -2,6 +2,8 @@
 
 from dataclasses import dataclass
 
+import requests
+
 from pipelines.helpers.retry import retry
 
 ROUTE_PARAMS = {
@@ -66,4 +68,6 @@ def fetch_route(session, base_url: str, pair: Pair, attempts: int = 4, timeout: 
       raise TransientOsrmError(f"HTTP {response.status_code}")
     return parse_route(response.json())
 
-  return retry(call, attempts=attempts, label="route OSRM")
+  return retry(
+    call, attempts=attempts, label="route OSRM", retry_on=(TransientOsrmError, requests.RequestException)
+  )

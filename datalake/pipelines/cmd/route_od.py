@@ -134,7 +134,7 @@ def write_batch(conn, dataset: str, results: list[tuple[Pair, Optional[Route]]])
 def run(
   dataset: str = typer.Option(os.getenv("OSRM_DATASET", "2023-12-21"), help="Import OSM servi par OSRM"),
   osrm_url: str = typer.Option(os.getenv("OSRM_URL", "http://localhost:5000")),
-  concurrency: int = typer.Option(2, help="Requêtes simultanées ; l'instance sert aussi l'API de prod"),
+  concurrency: int = typer.Option(2, min=1, max=4, help="Requêtes simultanées ; l'instance sert aussi l'API de prod"),
   batch_size: int = typer.Option(500),
   limit: Optional[int] = typer.Option(None, help="Nombre maximal de paires à router"),
   dry_run: bool = typer.Option(False, help="Compte les paires à router sans appeler OSRM"),
