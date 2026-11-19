@@ -44,7 +44,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 RUN /data/.venv/bin/dbt deps --project-dir /data
 
 # Stage 3 -- runtime: minimal image, no compilers or dev headers
-FROM python:3.13-slim-bookworm AS runtime
+FROM python:3.15-slim-bookworm AS runtime
 
 # Runtime libs:
 #   libpq5            libpq shared lib for psycopg2 / dbt-postgres
