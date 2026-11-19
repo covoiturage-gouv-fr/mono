@@ -2,7 +2,7 @@ import { logger } from "@/lib/logger/index.ts";
 import { safeValue } from "@/lib/logger/tagged.ts";
 import { NextFunction, Request, Response } from "dep:express";
 import { tryParseRange } from "dep:semver";
-import { requestPath, routePattern } from "./requestRoute.ts";
+import { requestPath, routeApiVersion, routePattern } from "./requestRoute.ts";
 
 export type AccessLogFields = {
   ip?: string;
@@ -29,7 +29,7 @@ function header(req: Request, name: string): string | undefined {
 
 // Version appelée (même grammaire que registerExpressRoute), y compris périmée : seul un jeton bien formé est journalisé.
 function apiVersion(req: Request): string | undefined {
-  const version = req.params?.api_version;
+  const version = routeApiVersion(req);
   return version && tryParseRange(version) ? safeValue(version) : undefined;
 }
 

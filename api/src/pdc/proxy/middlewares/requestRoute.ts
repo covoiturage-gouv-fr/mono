@@ -13,3 +13,9 @@ export function requestPath(req: Request): string | undefined {
 export function routePattern(req: Request): string | undefined {
   return req.route ? `${req.baseUrl}${req.route.path}` : undefined;
 }
+
+// req.params est vidé quand une erreur remonte au gestionnaire global : relire la version dans le chemin réel.
+export function routeApiVersion(req: Request): string | undefined {
+  if (!routePattern(req)?.startsWith("/:api_version/")) return undefined;
+  return req.originalUrl?.split("?")[0].split("/")[1] || undefined;
+}

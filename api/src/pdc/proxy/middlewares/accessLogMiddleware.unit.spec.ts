@@ -28,10 +28,15 @@ async function withServer(fn: (hit: Hit, lines: AccessLogFields[], get: Get) => 
   app.get("/health", (req: Request, res: Response) => res.status(req.headers["x-test-fail"] ? 503 : 200).send("ok"));
   app.get("/metrics", (_req: Request, res: Response) => res.send("ok"));
   app.post("/:api_version/journeys/:id", (_req: Request, res: Response) => res.status(201).json({ ok: true }));
+  app.get(
+    "/:api_version/guarded/:id",
+    (_req: Request, _res: Response, next: NextFunction) => next(new Error("denied")),
+  );
   const sub = express.Router();
   sub.get("/items/:id", (_req: Request, res: Response) => res.send("ok"));
   app.use("/:api_version/sub", sub);
   app.get("/slow", (_req: Request, res: Response) => setTimeout(() => res.send("ok"), 30));
+  app.use((_err: Error, _req: Request, res: Response, _next: NextFunction) => res.status(401).end());
 
   const server = app.listen(0);
   await new Promise((resolve) => server.once("listening", resolve));
@@ -149,6 +154,15 @@ describe("accessLogMiddleware", () => {
       assertEquals(versioned.route, "/v3.1/journeys/abc-123");
 
       assertEquals("api_version" in (await hit("/slow")), false);
+    });
+  });
+
+  it("keeps api_version when a route middleware fails and the error handler answers", async () => {
+    await withServer(async (hit) => {
+      const line = await hit("/v3.1/guarded/877");
+      assertEquals(line.status, 401);
+      assertEquals(line.route_pattern, "/:api_version/guarded/:id");
+      assertEquals(line.api_version, "v3.1");
     });
   });
 
