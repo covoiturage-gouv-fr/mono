@@ -106,13 +106,23 @@ describe("errorHandlerMiddleware", () => {
 
   it("journalise au format [http] sans le message d'erreur", () => {
     using warn = stub(logger, "warn");
-    const req = { method: "POST", route: { path: "/:api_version/journeys" }, body: { email: "a@b.fr" } };
+    const req = {
+      method: "POST",
+      originalUrl: "/v3.1/journeys?token=secret",
+      baseUrl: "",
+      route: { path: "/:api_version/journeys" },
+      body: { email: "a@b.fr" },
+    };
     const res = { headersSent: true };
     // deno-lint-ignore no-explicit-any
     errorHandlerMiddleware(new UnauthorizedException("token de jean@ex.fr"), req as any, res as any, (() => {}) as any);
     const line = warn.calls[0].args[0] as string;
-    assertEquals(line, "[http] error status=401 error=UnauthorizedException method=POST route=/:api_version/journeys");
+    assertEquals(
+      line,
+      "[http] error status=401 error=UnauthorizedException method=POST route=/v3.1/journeys route_pattern=/:api_version/journeys",
+    );
     assertFalse(line.includes("jean"));
+    assertFalse(line.includes("secret"));
     assertEquals(req.body, { email: "a@b.fr" });
   });
 

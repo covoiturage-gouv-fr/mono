@@ -28,6 +28,9 @@ async function withServer(fn: (hit: Hit, lines: AccessLogFields[], get: Get) => 
   app.get("/health", (req: Request, res: Response) => res.status(req.headers["x-test-fail"] ? 503 : 200).send("ok"));
   app.get("/metrics", (_req: Request, res: Response) => res.send("ok"));
   app.post("/:api_version/journeys/:id", (_req: Request, res: Response) => res.status(201).json({ ok: true }));
+  const sub = express.Router();
+  sub.get("/items/:id", (_req: Request, res: Response) => res.send("ok"));
+  app.use("/:api_version/sub", sub);
   app.get("/slow", (_req: Request, res: Response) => setTimeout(() => res.send("ok"), 30));
 
   const server = app.listen(0);
@@ -50,11 +53,12 @@ async function withServer(fn: (hit: Hit, lines: AccessLogFields[], get: Get) => 
 }
 
 describe("accessLogMiddleware", () => {
-  it("logs method, matched route, status and duration when the response finishes", async () => {
+  it("logs method, real path, status and duration when the response finishes", async () => {
     await withServer(async (hit) => {
       const line = await hit("/v3/journeys/abc-123?token=secret", { method: "POST" });
       assertEquals(line.method, "POST");
-      assertEquals(line.route, "/:api_version/journeys/:id");
+      assertEquals(line.route, "/v3/journeys/abc-123");
+      assertEquals(line.route_pattern, "/:api_version/journeys/:id");
       assertEquals(line.status, 201);
       assertEquals(Number.isInteger(line.duration_ms), true);
 
@@ -128,21 +132,21 @@ describe("accessLogMiddleware", () => {
         body: JSON.stringify({ password: "body-secret" }),
       });
       const raw = JSON.stringify(line);
-      for (const secret of ["qs-secret", "bearer-secret", "cookie-secret", "body-secret", "abc-123", "example.org"]) {
+      for (const secret of ["qs-secret", "bearer-secret", "cookie-secret", "body-secret", "example.org"]) {
         assertEquals(raw.includes(secret), false, secret);
       }
       assertEquals(
         Object.keys(line).sort(),
-        ["api_version", "duration_ms", "ip", "method", "role", "route", "status", "sub"],
+        ["api_version", "duration_ms", "ip", "method", "role", "route", "route_pattern", "status", "sub"],
       );
     });
   });
 
-  it("logs the called api_version next to the route pattern, and no key on a non-versioned route", async () => {
+  it("logs the called api_version next to the real path, and no key on a non-versioned route", async () => {
     await withServer(async (hit) => {
       const versioned = await hit("/v3.1/journeys/abc-123", { method: "POST" });
       assertEquals(versioned.api_version, "v3.1");
-      assertEquals(versioned.route, "/:api_version/journeys/:id");
+      assertEquals(versioned.route, "/v3.1/journeys/abc-123");
 
       assertEquals("api_version" in (await hit("/slow")), false);
     });
@@ -157,11 +161,36 @@ describe("accessLogMiddleware", () => {
     });
   });
 
-  it("logs unmatched requests without their raw path", async () => {
+  it("logs the full real path of a request served by a sub-router, without query string", async () => {
+    await withServer(async (hit) => {
+      const line = await hit("/v3/sub/items/42?token=secret");
+      assertEquals(line.route, "/v3/sub/items/42");
+      assertEquals(line.route_pattern, "/v3/sub/items/:id");
+    });
+  });
+
+  it("logs the sanitized real path of unmatched requests, without route_pattern", async () => {
     await withServer(async (hit) => {
       const line = await hit("/nowhere/abc-123?x=1");
       assertEquals(line.status, 404);
-      assertEquals("route" in line, false);
+      assertEquals(line.route, "/nowhere/abc-123");
+      assertEquals("route_pattern" in line, false);
+    });
+  });
+
+  it("filters the characters of a caller-controlled path", async () => {
+    await withServer(async (hit) => {
+      const line = await hit("/v3/journeys/a%20b%0Ac=d%22%7D?token=secret", { method: "POST" });
+      assertEquals(line.route, "/v3/journeys/a_20b_0Ac_d_22_7D");
+      assertEquals(JSON.stringify(line).includes("secret"), false);
+    });
+  });
+
+  it("keeps a path with the longest operator_journey_id (256) whole and bounds longer ones", async () => {
+    await withServer(async (hit) => {
+      const path = `/v3.1/journeys/${"a".repeat(256)}/cancel`;
+      assertEquals((await hit(path)).route, path);
+      assertEquals((await hit(`/${"b".repeat(5000)}`)).route?.length, 512);
     });
   });
 
@@ -170,7 +199,7 @@ describe("accessLogMiddleware", () => {
       await get("/health");
       await get("/metrics");
       const failed = await hit("/health", { headers: { "x-test-fail": "1" } });
-      assertEquals([failed.route, failed.status], ["/health", 503]);
+      assertEquals([failed.route, failed.route_pattern, failed.status], ["/health", "/health", 503]);
       assertEquals(lines.length, 1);
     });
   });
