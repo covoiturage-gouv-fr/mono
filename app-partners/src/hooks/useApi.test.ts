@@ -36,6 +36,12 @@ describe("apiErrorMessage", () => {
     expect(apiErrorMessage(404, "not found")).toBe("Élément introuvable.");
   });
 
+  it("impose un message fixe sur 429, edge (texte brut) ou API (JSON)", () => {
+    const message = "Trop de requêtes, réessayez dans quelques instants.";
+    expect(apiErrorMessage(429, "local_rate_limited")).toBe(message);
+    expect(apiErrorMessage(429, { error: { code: 429, message: "Too many requests" } })).toBe(message);
+  });
+
   it("ne relaie jamais le corps d'une 5xx", () => {
     expect(apiErrorMessage(500, { message: "relation users does not exist" })).toBe(
       "Le service a rencontré une erreur interne (500). Réessayez plus tard.",
