@@ -53,6 +53,44 @@ sources:
             data_type: character varying
           - name: new_com
             data_type: character varying
+      - name: insee_mobpro_2023
+        columns:
+          - name: code_commune_residence
+            data_type: character varying
+          - name: code_arrondissement_residence
+            data_type: character varying
+          - name: code_commune_travail
+            data_type: character varying
+          - name: code_commune_travail_frontaliere
+            data_type: character varying
+          - name: code_region_residence
+            data_type: character varying
+          - name: code_region_travail
+            data_type: character varying
+          - name: indicateur_metropole_dom
+            data_type: character varying
+          - name: indicateur_lieu_travail
+            data_type: character varying
+          - name: indicateur_lieu_travail_unite_urbaine
+            data_type: character varying
+          - name: mode_transport_principal
+            data_type: character varying
+          - name: nb_voitures_menage
+            data_type: character varying
+          - name: poids_individu
+            data_type: numeric
+          - name: sexe
+            data_type: character varying
+          - name: tranche_age_quinquennale
+            data_type: character varying
+          - name: groupe_socioprofessionnel
+            data_type: character varying
+          - name: secteur_activite
+            data_type: character varying
+          - name: statut_professionnel
+            data_type: character varying
+          - name: temps_travail
+            data_type: character varying
       - name: aires_covoiturage
         columns:
           - name: id_lieu
