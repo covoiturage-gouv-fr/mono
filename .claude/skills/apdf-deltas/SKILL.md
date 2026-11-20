@@ -38,7 +38,9 @@ publication ; celui-ci explique un écart signalé après publication.
 - Connexion : variables `DBT_*` de `datalake/.env` (tunnel local `localhost:54321`).
   Si la connexion est refusée, **demander à l'utilisateur d'ouvrir le tunnel** ; ne pas viser
   une autre base.
-- Toujours en lecture seule : `PGOPTIONS='-c default_transaction_read_only=on'`.
+- Toujours en lecture seule : `PGOPTIONS='-c default_transaction_read_only=on'`. Ce n'est
+  qu'un défaut de session et le compte dbt peut écrire : **jamais** de `SET`, `BEGIN READ
+  WRITE`, `RESET`, DML ni DDL, même pour « débloquer » une requête.
 - Handlers de campagne : `api/src/pdc/services/policy/engine/policies/` ; le lien
   campagne → fichier passe par `dlk_import.policy_policies.handler` = `static readonly id`.
 - Page campagne : `https://app.covoiturage.beta.gouv.fr/campaign/<campaign_id>`
@@ -64,7 +66,9 @@ chaque campagne citée, puis croiser.
 ### 1. Lire les règles de la campagne
 
 ```bash
-cd datalake && set -a && . ./.env && set +a
+cd datalake
+# seulement les variables utiles, pas tout le .env (autres secrets)
+eval "$(grep -E '^DBT_(HOST|PORT|USER|DBNAME|PASSWORD)=' .env)"
 export PGPASSWORD=$DBT_PASSWORD PGOPTIONS='-c default_transaction_read_only=on'
 PSQL="psql -h $DBT_HOST -p $DBT_PORT -U $DBT_USER -d $DBT_DBNAME"
 $PSQL -c "SELECT _id, handler, max_amount, start_date, end_date FROM dlk_import.policy_policies WHERE _id = <ID>"
@@ -200,10 +204,12 @@ Structure :
 Règles :
 
 - Montants en euros dans la note (les tables sont en centimes).
-- **Aucune donnée personnelle** dans le message à envoyer ni dans Notion (note et annexe) :
-  pas de `driver_key`, `passenger_key`, identifiant utilisateur, téléphone.
-  `operator_journey_id` est admis (identifiant de trajet chez l'opérateur, sert au
-  rapprochement).
+- **Message à envoyer et note** : aucune donnée personnelle, chiffres agrégés seulement.
+- **Annexe** : données **pseudonymisées** (heure, commune, `operator_journey_id`, qui
+  permet à l'opérateur de remonter à la personne), nécessaires au rapprochement. Jamais
+  `driver_key`, `passenger_key`, identifiant utilisateur ni téléphone. La page Notion doit
+  rester interne à l'équipe ; si le rapprochement n'en a pas besoin, réduire (date au lieu
+  de l'heure, AOM au lieu de la commune).
 - Le détail trajet par trajet est joint en annexe CSV (étape 5), pas recopié dans la note.
 - Français correct, accents compris sur les majuscules. Aucune mention de Claude/IA.
 
@@ -230,15 +236,20 @@ Règles :
 3. Téléverser l'annexe : `notion-create-file-upload` (`filename` = nom du CSV), puis un seul
    POST multipart vers `upload_url` avec tous les `upload_headers` :
    `curl -sS -X POST "<upload_url>" -H "<header>: <valeur>" … -F "file=@annexe-….csv"`
-   (limite 20 Mio). Garder le `markdown_source` renvoyé.
+   (limite 20 Mio). Garder le `markdown_source` renvoyé. Le jeton des `upload_headers`
+   est éphémère mais secret : ne jamais le recopier dans la note ni dans la réponse.
 4. `notion-update-page` sur la tâche du ticket, `insert_content` en fin de page : ajouter une
    section datée, ne jamais écraser, avec l'annexe en fin de section
    (`<file source="file-upload://…" />`). Lier chaque campagne :
    `[<id> · <nom>](https://app.covoiturage.beta.gouv.fr/campaign/<id>)`.
 5. Le message à envoyer est rendu aussi dans la réponse, prêt à coller ; ne jamais l'envoyer
    soi-même. L'annexe reste interne : la transmettre à l'opérateur est une décision de
-   l'utilisateur.
-6. Une fois la note validée, proposer de supprimer `$DIR` (données trajets en clair).
+   l'utilisateur, et une annexe destinée à un opérateur est filtrée sur son seul
+   `operator_id` (sinon il verrait les trajets de ses concurrents).
+6. **Supprimer `$DIR`** une fois la note consignée et validée : le CSV de travail contient
+   `driver_key` / `passenger_key` (md5 d'identifiants, réversibles par force brute).
+   Ne pas clore la skill sans cette suppression, ou sans noter explicitement pourquoi elle
+   est reportée.
 
 ## Pièges connus
 

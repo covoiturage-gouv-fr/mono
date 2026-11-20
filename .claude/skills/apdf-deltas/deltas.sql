@@ -11,7 +11,7 @@ WITH
 camp AS (
   SELECT _id, left(territory_siret, 9) AS siren
   FROM zone_trusted.policies
-  WHERE _id = :camp
+  WHERE _id = :'camp'::int
 ),
 
 millesime AS (SELECT max(year) AS y FROM zone_trusted.perimeters),
@@ -23,7 +23,7 @@ trips AS (
     -- heure locale du trajet, comme l'APDF (tz de la campagne)
     c.start_datetime_tz >= :'start'::timestamp
     AND c.start_datetime_tz < :'end'::timestamp
-    AND (:op = 0 OR c.operator_id = :op)
+    AND (:'op'::int = 0 OR c.operator_id = :'op'::int)
 ),
 
 declared AS (
@@ -41,7 +41,7 @@ rpc AS (
     i.carpool_v2_id, i.result, i.amount, i.status, i.state
   FROM zone_trusted.incentives AS i
   INNER JOIN trips AS t ON t._id = i.carpool_v2_id
-  WHERE i.campaign_id = :camp
+  WHERE i.campaign_id = :'camp'::int
   ORDER BY i.carpool_v2_id, i.datetime DESC
 )
 
