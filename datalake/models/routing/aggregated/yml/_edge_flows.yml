@@ -1,0 +1,47 @@
+version: 2
+
+# osrm_route est fourni en SQL : dbt-postgres ne sait pas typer un bigint[] en dict.
+# Les cellules H3 sont des chaînes dans les tests : seule l'égalité est utilisée.
+unit_tests:
+  - name: edge_flows_sums_directions_and_counts_cell_pairs
+    model: edge_flows
+    given:
+      - input: ref('h3_od_month')
+        rows:
+          # a→b sur deux communes de départ : une seule paire de cellules
+          - {year: 2026, month: 10, h3_1: a, h3_2: b, arr_1: A1, arr_2: B, journeys: 4, lng_1: 1, lat_1: 1, lng_2: 2, lat_2: 2}
+          - {year: 2026, month: 10, h3_1: a, h3_2: b, arr_1: A2, arr_2: B, journeys: 1, lng_1: 1, lat_1: 1, lng_2: 2, lat_2: 2}
+          - {year: 2026, month: 10, h3_1: b, h3_2: a, arr_1: B, arr_2: A1, journeys: 3, lng_1: 2, lat_1: 2, lng_2: 1, lat_2: 1}
+          - {year: 2026, month: 10, h3_1: c, h3_2: d, arr_1: C, arr_2: D, journeys: 2, lng_1: 3, lat_1: 3, lng_2: 4, lat_2: 4}
+          # les mois de la fenêtre s'additionnent
+          - {year: 2026, month: 11, h3_1: a, h3_2: b, arr_1: A1, arr_2: B, journeys: 1, lng_1: 1, lat_1: 1, lng_2: 2, lat_2: 2}
+      - input: ref('route_trim')
+        rows:
+          - {dataset: '2023-12-21', h3_1: a, h3_2: b, lng_1: 1, lat_1: 1, lng_2: 2, lat_2: 2, first_idx: 2, last_idx: 4}
+          - {dataset: '2023-12-21', h3_1: b, h3_2: a, lng_1: 2, lat_1: 2, lng_2: 1, lat_2: 1, first_idx: 1, last_idx: 3}
+          - {dataset: '2023-12-21', h3_1: c, h3_2: d, lng_1: 3, lat_1: 3, lng_2: 4, lat_2: 4, first_idx: 1, last_idx: 4}
+      - input: source('raw', 'osrm_route')
+        format: sql
+        rows: |
+          SELECT '2023-12-21'::text AS dataset, 1::numeric AS lng_1, 1::numeric AS lat_1, 2::numeric AS lng_2, 2::numeric AS lat_2, 'ok'::text AS status, NULL::real AS distance, NULL::real AS duration, '{1,2,3,4}'::bigint[] AS nodes, now() AS routed_at
+          UNION ALL
+          SELECT '2023-12-21'::text AS dataset, 2::numeric AS lng_1, 2::numeric AS lat_1, 1::numeric AS lng_2, 1::numeric AS lat_2, 'ok'::text AS status, NULL::real AS distance, NULL::real AS duration, '{4,3,2,1}'::bigint[] AS nodes, now() AS routed_at
+          UNION ALL
+          SELECT '2023-12-21'::text AS dataset, 3::numeric AS lng_1, 3::numeric AS lat_1, 4::numeric AS lng_2, 4::numeric AS lat_2, 'ok'::text AS status, NULL::real AS distance, NULL::real AS duration, '{9,3,4,8}'::bigint[] AS nodes, now() AS routed_at
+      - input: source('raw', 'osrm_node')
+        rows:
+          - {dataset: '2023-12-21', node_id: 1, lng: 0, lat: 0}
+          - {dataset: '2023-12-21', node_id: 2, lng: 0, lat: 1}
+          - {dataset: '2023-12-21', node_id: 3, lng: 0, lat: 2}
+          - {dataset: '2023-12-21', node_id: 4, lng: 0, lat: 3}
+          - {dataset: '2023-12-21', node_id: 8, lng: 0, lat: 4}
+          - {dataset: '2023-12-21', node_id: 9, lng: 1, lat: 2}
+    expect:
+      rows:
+        # a→b (2→3→4), b→a (4→3→2) et c→d (9→3→4→8) : les deux sens d'une voie
+        # s'additionnent et comptent pour une paire ; 3–4 cumule deux paires
+        - {node_a: 2, node_b: 3, journeys: 9, pairs: 1, top_pair_journeys: 9}
+        - {node_a: 3, node_b: 4, journeys: 11, pairs: 2, top_pair_journeys: 9}
+        - {node_a: 3, node_b: 9, journeys: 2, pairs: 1, top_pair_journeys: 2}
+        - {node_a: 4, node_b: 8, journeys: 2, pairs: 1, top_pair_journeys: 2}
+

@@ -400,11 +400,20 @@ just pipeline-daily
 | Générer les YAMLs d'un layer           | `just osmosis-refactor trusted`                                    |
 | Export data.gouv (debug, sans publier) | `just datagouv --debug --start 2026-07-01 --end 2026-08-01`        |
 | Export des millésimes vers la prod     | `just export-perimeters`                                           |
+| Carte des flux par tronçon (OSRM)     | `just pipeline-routing`                                            |
 
 `just datagouv --debug [--start … --end …]` exécute l'export **sans publier** sur data.gouv :
 dépose CSV/description/rapport horodatés sous `datagouv/logs/` et imprime un verdict d'invariants
 de cohérence (exit 1 si un invariant dur est cassé). À lancer dans le pod datalake pour debugguer
 sur de vraies données.
+
+`just pipeline-routing` construit la carte des flux par tronçon de route (`models/routing/`, tag `routing`, hors pipeline quotidien) pour les trajets de la fenêtre `routing_from` / `routing_to` (vars de `dbt_project.yml`) :
+
+1. `h3_od_month` : flux orientés départ → arrivée entre cellules H3 z8 des trajets entre deux communes de 80 km au plus (périmètre de `/flux`), avec le centre des cellules ;
+2. `just route-od [--limit N] [--dry-run]` route avec OSRM les paires absentes du cache `zone_raw.osrm_route` (suite des nœuds OSM) / `zone_raw.osrm_node` (coordonnées), tables créées par la commande elle-même (pas par dbt : un `--full-refresh` viderait le cache). Interruptible et relançable sans perte ;
+3. `route_trim` (route sans sa partie dans la cellule de départ et d'arrivée, incrémental : seules les nouvelles paires sont coupées, la cellule des nœuds étant calculée à la volée par `osrm_node_h3`, éphémère) et `edge_flows` (trajets, nombre de paires de cellules et trajets de la paire dominante par tronçon `(node_a, node_b)` sur toute la fenêtre, sens cumulés, avec la géométrie). `edge_flows` est une table de travail pour les tuiles : seul le cache OSRM coûte cher à reconstruire.
+
+Variables : `OSRM_URL` (dans le cluster `http://osrm.extension-osrm.svc.cluster.local`, en local `just forward osrm` depuis le dépôt infra) et `OSRM_DATASET` / var dbt `osrm_dataset` (date de l'import OSM servi, défaut `2023-12-21`). L'instance OSRM sert aussi l'API de prod : garder `--concurrency 2` (défaut) et lancer la nuit.
 
 `just export-perimeters [--year N …] [--last 2]` dump les 2 derniers millésimes de `zone_trusted.perimeters` (ou ceux passés en `--year`) et `zone_trusted.com_evolution` au format du schéma `geo` de la prod : `pg_dump` custom de `geo_export.perimeters` et `geo_export.com_evolution`, écrit dans `tmp/geo/` (ignoré par git, option `--out-dir`) et uploadé sous `S3_BUCKET/geo/` avec son `.sha256`. Requiert `pg_dump` ≥ version du serveur (`nix develop`). Import : `geo-import stage <nom du dump>` dans le pod geo-import, ou `just geo-import tmp/geo/<nom du dump>` en local, qui remplace `geo.perimeters` (voir `api/src/db/README.md`).
 
