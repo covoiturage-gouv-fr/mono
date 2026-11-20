@@ -208,6 +208,35 @@
     ]
   },
   {
+    "name": "insee_mobpro_2023",
+    "filename": "insee_mobpro_2023.20261120T141913Z",
+    "ext": "csv",
+    "sha256": "sha256:6a26d687785a57304371524171eda26149c329cd16776caccba33cfdf773ef03",
+    "size": 826474099,
+    "uploaded_at": "2026-11-20T14:31:40+00:00",
+    "origin": "",
+    "select": [
+      ["COMMUNE", "varchar", "code_commune_residence"],
+      ["ARM", "varchar", "code_arrondissement_residence"],
+      ["DCLT", "varchar", "code_commune_travail"],
+      ["DCFLT", "varchar", "code_commune_travail_frontaliere"],
+      ["REGION", "varchar", "code_region_residence"],
+      ["REGLT", "varchar", "code_region_travail"],
+      ["METRODOM", "varchar", "indicateur_metropole_dom"],
+      ["ILT", "varchar", "indicateur_lieu_travail"],
+      ["ILTUU", "varchar", "indicateur_lieu_travail_unite_urbaine"],
+      ["TRANS", "varchar", "mode_transport_principal"],
+      ["VOIT", "varchar", "nb_voitures_menage"],
+      ["IPONDI", "numeric", "poids_individu"],
+      ["SEXE", "varchar", "sexe"],
+      ["AGEREVQ", "varchar", "tranche_age_quinquennale"],
+      ["GS", "varchar", "groupe_socioprofessionnel"],
+      ["NA5", "varchar", "secteur_activite"],
+      ["STAT", "varchar", "statut_professionnel"],
+      ["TP", "varchar", "temps_travail"]
+    ]
+  },
+  {
     "name": "campaigns",
     "filename": "campaigns.20260708T200045Z",
     "ext": "csv",

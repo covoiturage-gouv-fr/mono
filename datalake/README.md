@@ -304,6 +304,14 @@ just pipeline-raw
 
 Charge les données IGN 2025 (GPKG), CEREMA AOMs, mouvements INSEE, campagnes et aires de covoiturage depuis `<bucket>/seeds/` vers `zone_raw`. **Toutes les sources vivent dans notre S3** : les jeux data.gouv.fr / transport.data.gouv.fr sont recopiés au préalable via `just mirror <url> <clé>` (l'amont data.gouv est peu fiable), puis traités comme les autres. Le géo passe par **ogr2ogr** (streaming natif → PostGIS, remplace duckdb-spatial qui segfaultait) et le tabulaire par **COPY psycopg** dans des tables typées explicitement en config. Inclut géométries complètes, simplifiées et centroïdes pour communes, EPCIs, départements et régions. Chaque source porte en config son empreinte (`sha256`), sa taille et sa date d'upload : **intégrité vérifiée systématiquement** — une source sans empreinte committée est refusée (`just checksum` pour la calculer). La config `seed_raw.json` fait office de lock.
 
+`insee_mobpro_2023` (fichier détail [Mobilités professionnelles RP2023](https://www.insee.fr/fr/statistiques/9004795), géographie au 01/01/2025) est uploadé à la main : l'INSEE ne publie qu'un parquet ou un CSV zippé séparé par `;`, que le seed ne lit pas. Conversion une fois par millésime, sans dépendance de plus :
+
+```bash
+duckdb -c "COPY (FROM 'RP2023_mobpro.parquet') TO 'insee_mobpro_2023.<ts>.csv' (HEADER, DELIMITER ',')"
+```
+
+Une ligne = un individu : compter avec `sum(poids_individu)`, jamais `count(*)`.
+
 ### Étape 2 — Zone trusted géographique
 
 ```bash
