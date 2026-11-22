@@ -8,6 +8,9 @@ Invalidation par **version de publication** : la clé de cache embarque une vers
 (dérivée du cutoff `APP_OBSERVATORY_PUBLISHED_UNTIL` + un compteur `obs:cache:version`
 que le pipeline dbt incrémente à chaque publication). Changer de version rend les
 anciennes entrées inatteignables ; elles expirent ensuite par TTL.
+
+Une copie de secours (clé sans version, TTL long) est écrite à chaque MISS : elle
+est servie (`X-Cache: STALE`) si la requête SQL dépasse le `statement_timeout`.
 """
 
 import gzip
@@ -54,11 +57,19 @@ def get_redis():
     return _client
 
 
+def _digest(route: str, params: dict) -> str:
+    canonical = json.dumps(params, sort_keys=True, separators=(",", ":"), default=str)
+    return hashlib.sha256(f"{route}?{canonical}".encode()).hexdigest()[:32]
+
+
 def build_cache_key(version: str, route: str, params: dict) -> str:
     """Clé stable, indépendante de l'ordre des params, préfixée par la version."""
-    canonical = json.dumps(params, sort_keys=True, separators=(",", ":"), default=str)
-    digest = hashlib.sha256(f"{route}?{canonical}".encode()).hexdigest()[:32]
-    return f"obs:{version}:{digest}"
+    return f"obs:{version}:{_digest(route, params)}"
+
+
+def build_stale_key(route: str, params: dict) -> str:
+    """Clé de la copie de secours : même digest, sans version (survit au bump)."""
+    return f"obs:stale:{_digest(route, params)}"
 
 
 def gzip_payload(data) -> bytes:

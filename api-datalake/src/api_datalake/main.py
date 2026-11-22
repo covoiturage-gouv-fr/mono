@@ -6,6 +6,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from psycopg.errors import QueryCanceled
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
 
@@ -13,6 +14,7 @@ from .access_log import AccessLogMiddleware
 from .cache import close_redis, open_redis
 from .config import settings
 from .db import close_pool, open_pool
+from .errors import unavailable_response
 from .routers import observatory
 
 logger = logging.getLogger("api_datalake")
@@ -61,6 +63,10 @@ def create_app() -> FastAPI:
         # Trace d'observabilité sans la valeur brute (détection de scan/fuzzing).
         logger.info("validation error on %s %s", request.method, request.url.path)
         return JSONResponse({"detail": "invalid request parameters"}, status_code=422)
+
+    @app.exception_handler(QueryCanceled)
+    async def _timeout_handler(request, exc):
+        return unavailable_response(request.url.path)
 
     app.add_middleware(MaintenanceMiddleware)
     app.add_middleware(
