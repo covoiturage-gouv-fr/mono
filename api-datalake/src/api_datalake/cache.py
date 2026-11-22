@@ -67,9 +67,9 @@ def build_cache_key(version: str, route: str, params: dict) -> str:
     return f"obs:{version}:{_digest(route, params)}"
 
 
-def build_stale_key(route: str, params: dict) -> str:
-    """Clé de la copie de secours : même digest, sans version (survit au bump)."""
-    return f"obs:stale:{_digest(route, params)}"
+def build_stale_key(cutoff: str | None, route: str, params: dict) -> str:
+    """Clé de la copie de secours : survit au bump, pas à un changement de cutoff."""
+    return f"obs:stale:{cutoff or 'none'}:{_digest(route, params)}"
 
 
 def gzip_payload(data) -> bytes:

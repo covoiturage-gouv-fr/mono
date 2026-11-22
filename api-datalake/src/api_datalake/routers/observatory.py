@@ -43,11 +43,10 @@ def get_conn():
 
 def _gzip_json(blob: bytes, cache_state: str) -> Response:
     """Sert un payload déjà gzippé, avec les en-têtes de cache."""
-    return Response(
-        content=blob,
-        media_type="application/json",
-        headers={"Content-Encoding": "gzip", "X-Cache": cache_state},
-    )
+    headers = {"Content-Encoding": "gzip", "X-Cache": cache_state}
+    if cache_state == "STALE":
+        headers["Cache-Control"] = "no-store"
+    return Response(content=blob, media_type="application/json", headers=headers)
 
 
 async def _serve_cached(redis, route: str, params: dict, produce, acquire,
@@ -74,7 +73,7 @@ async def _serve_cached(redis, route: str, params: dict, produce, acquire,
     if hit is not None:
         return _gzip_json(hit, "HIT")
 
-    stale_key = build_stale_key(route, params) if redis is not None else None
+    stale_key = build_stale_key(cutoff, route, params) if redis is not None else None
     try:
         async with acquire() as conn:
             data = await produce(conn)

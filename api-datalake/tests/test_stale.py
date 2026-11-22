@@ -79,14 +79,19 @@ def timeout():
 
 
 def stale_key():
-    return cache_mod.build_stale_key(ROUTE, STALE_PARAMS)
+    return cache_mod.build_stale_key(settings.app_observatory_published_until, ROUTE, STALE_PARAMS)
 
 
 def test_stale_key_is_version_independent_and_shares_digest():
-    stale = cache_mod.build_stale_key("/a", {"x": 1})
+    stale = cache_mod.build_stale_key("2026-10-01", "/a", {"x": 1})
     versioned = cache_mod.build_cache_key("v1", "/a", {"x": 1})
-    assert stale.startswith("obs:stale:")
+    assert stale.startswith("obs:stale:2026-10-01:")
     assert stale.rsplit(":", 1)[1] == versioned.rsplit(":", 1)[1]
+
+
+def test_stale_key_changes_with_cutoff():
+    assert (cache_mod.build_stale_key("2026-10-01", "/a", {"x": 1})
+            != cache_mod.build_stale_key("2026-09-01", "/a", {"x": 1}))
 
 
 def test_miss_writes_versioned_and_stale_keys():
@@ -124,6 +129,7 @@ def test_timeout_serves_stale_when_present():
     r = make_client(redis=redis, error=timeout()).get(ROUTE, params=PARAMS)
     assert r.status_code == 200
     assert r.headers["x-cache"] == "STALE"
+    assert r.headers["cache-control"] == "no-store"
     assert r.json() == payload
 
 
