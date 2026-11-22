@@ -35,8 +35,8 @@ def resolve_grain(month: int | None, trimester: int | None,
     return "year", None, None
 
 
-def perimeter_in_subquery(observe_col: str, type_col: str) -> str:
-    """Sous-requête `IN (...)` des codes `observe` contenus dans (type=code).
+def _perimeter_select(observe_col: str, type_col: str, distinct: bool = False) -> str:
+    """`SELECT <observe> ...` des codes contenus dans (type=code), sans parenthèses.
 
     Reproduit `SELECT arr AS com, epci, ... FROM geo.perimeters` de l'API Deno,
     en lisant `zone_exposed.observatory_perimeters`. Le millésime = celui de l'année
@@ -62,12 +62,29 @@ def perimeter_in_subquery(observe_col: str, type_col: str) -> str:
       )"""
     else:
         match = f"t.{type_col} = %(code)s"
-    return f"""(
-      SELECT t.{observe_col}
+    select = "SELECT DISTINCT" if distinct else "SELECT"
+    return f"""{select} t.{observe_col}
       FROM (
         SELECT arr AS com, epci, aom, dep, reg, country
         FROM {PERIMETERS_TABLE}
         WHERE year = {millesime}
       ) t
-      WHERE {match}
+      WHERE {match}"""
+
+
+def perimeter_in_subquery(observe_col: str, type_col: str) -> str:
+    """Sous-requête `IN (...)` des codes `observe` contenus dans (type=code)."""
+    return f"""(
+      {_perimeter_select(observe_col, type_col)}
     )"""
+
+
+def perimeter_codes_cte(observe_col: str, type_col: str) -> str:
+    """CTE `perim(codes)` : le périmètre en un tableau, calculé une seule fois."""
+    return f"""WITH perim AS (
+      SELECT ARRAY({_perimeter_select(observe_col, type_col, distinct=True)}) AS codes
+    )"""
+
+
+# `= ANY(<InitPlan>)` : condition d'index, contrairement à `IN (sous-requête)` dans un OR.
+IN_PERIMETER = "{col} = ANY((SELECT codes FROM perim))"

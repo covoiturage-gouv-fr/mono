@@ -15,7 +15,9 @@ Différences structurelles avec le legacy, assumées et documentées :
 """
 
 from ..helpers import check_observe_param, check_territory_param
-from ..observatory_sql import perimeter_in_subquery, resolve_grain
+from ..observatory_sql import (
+    IN_PERIMETER, perimeter_codes_cte, perimeter_in_subquery, resolve_grain,
+)
 
 # indics interpolés (noms de colonnes) -> allowlist par famille, fallback legacy.
 _FLUX_INDICS = ("journeys", "passengers", "distance", "duration")
@@ -52,12 +54,12 @@ def build_flux(type_: str, observe: str, code: str, year: int,
     observe = check_observe_param(observe)
     type_ = check_territory_param(type_)
     suffix, tcol, tval = resolve_grain(month, trimester, semester)
-    perim = perimeter_in_subquery(observe, type_)
+    cte = perimeter_codes_cte(observe, type_)
 
     where = [
         "type = %(observe)s",
         "(distance / journeys) <= 80",
-        f"(territory_1 IN {perim} OR territory_2 IN {perim})",
+        f"({IN_PERIMETER.format(col='territory_1')} OR {IN_PERIMETER.format(col='territory_2')})",
         "territory_1 <> territory_2",
         "year = %(year)s",
     ]
@@ -66,6 +68,7 @@ def build_flux(type_: str, observe: str, code: str, year: int,
         where.append(f"{tcol} = %(tval)s")
         params["tval"] = tval
     sql = f"""
+      {cte}
       SELECT
         l_territory_1 AS ter_1, lng_1, lat_1,
         l_territory_2 AS ter_2, lng_2, lat_2,
@@ -82,17 +85,19 @@ def build_best_flux(type_: str, code: str, year: int, limit: int = 10,
     """Meilleurs flux d'un territoire (porté de getBestFlux). Périmètre = grain com."""
     type_ = check_territory_param(type_)
     suffix, tcol, tval = resolve_grain(month, trimester, semester)
-    perim = perimeter_in_subquery("com", type_)
+    cte = perimeter_codes_cte("com", type_)
 
     where = [
         "year = %(year)s",
-        f"(territory_1 IN {perim} OR territory_2 IN {perim})",
+        "type = 'com'",
+        f"({IN_PERIMETER.format(col='territory_1')} OR {IN_PERIMETER.format(col='territory_2')})",
     ]
     params = {"year": year, "code": code, "limit": limit}
     if tcol:
         where.append(f"{tcol} = %(tval)s")
         params["tval"] = tval
     sql = f"""
+      {cte}
       SELECT DISTINCT territory_1, l_territory_1, territory_2, l_territory_2, journeys
       FROM zone_exposed.od_{suffix}
       WHERE {' AND '.join(where)}

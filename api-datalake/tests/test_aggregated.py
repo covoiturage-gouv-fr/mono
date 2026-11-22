@@ -90,6 +90,34 @@ def test_flux_uses_od_table_and_kanon_filter():
     assert p == {"year": 2022, "code": "11", "tval": 6, "observe": "reg"}
 
 
+def _assert_perimeter_any(sql):
+    assert "WITH perim AS" in sql
+    assert "ARRAY(SELECT DISTINCT" in sql
+    assert "territory_1 = ANY((SELECT codes FROM perim))" in sql
+    assert "territory_2 = ANY((SELECT codes FROM perim))" in sql
+    assert "territory_1 IN" not in sql and "territory_2 IN" not in sql
+
+
+def test_flux_perimeter_uses_any_cte():
+    sql, _ = agg.build_flux("reg", "reg", "11", 2022, month=6)
+    _assert_perimeter_any(sql)
+    assert sql.count("t.reg = %(code)s") == 1
+
+
+def test_best_flux_perimeter_uses_any_cte_and_com_type():
+    sql, _ = agg.build_best_flux("reg", "11", 2022, 10, month=6)
+    _assert_perimeter_any(sql)
+    assert "type = 'com'" in sql
+
+
+def test_flux_and_best_flux_custom_perimeter_with_any_cte():
+    for sql in (agg.build_flux("custom", "custom", "12", 2022, month=6)[0],
+                agg.build_best_flux("custom", "12", 2022, 10, month=6)[0]):
+        _assert_perimeter_any(sql)
+        assert "zone_exposed.observatory_custom_perimeters" in sql
+        assert "t.custom" not in sql
+
+
 def test_flux_quarter_grain_maps_od_quarter():
     sql, _ = agg.build_flux("reg", "reg", "11", 2022, trimester=2)
     assert "zone_exposed.od_quarter" in sql
