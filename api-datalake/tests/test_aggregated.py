@@ -93,8 +93,8 @@ def test_flux_uses_od_table_and_kanon_filter():
 def _assert_perimeter_any(sql):
     assert "WITH perim AS" in sql
     assert "ARRAY(SELECT DISTINCT" in sql
-    assert "territory_1 = ANY((SELECT codes FROM perim))" in sql
-    assert "territory_2 = ANY((SELECT codes FROM perim))" in sql
+    assert "territory_1 = ANY((SELECT codes FROM perim)::varchar[])" in sql
+    assert "territory_2 = ANY((SELECT codes FROM perim)::varchar[])" in sql
     assert "territory_1 IN" not in sql and "territory_2 IN" not in sql
 
 

@@ -86,5 +86,5 @@ def perimeter_codes_cte(observe_col: str, type_col: str) -> str:
     )"""
 
 
-# `= ANY(<InitPlan>)` : condition d'index, contrairement à `IN (sous-requête)` dans un OR.
-IN_PERIMETER = "{col} = ANY((SELECT codes FROM perim))"
+# `= ANY(<InitPlan>)` : condition d'index, contrairement à `IN (sous-requête)` dans un OR ; le cast force la forme tableau (sinon ANY lit une sous-requête).
+IN_PERIMETER = "{col} = ANY((SELECT codes FROM perim)::varchar[])"
