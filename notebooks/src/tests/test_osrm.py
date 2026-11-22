@@ -8,6 +8,7 @@ from helpers.osrm import (
     assert_error_rate,
     count_osrm_status,
     fetch_route,
+    make_session,
 )
 
 
@@ -102,6 +103,22 @@ class TestFetchRoute(unittest.TestCase):
         self.assertIn("ReadTimeout", output)
         for secret in ("2.35", "48.85", "http", "/route"):
             self.assertNotIn(secret, output)
+
+    def test_should_return_error_on_malformed_ok_body(self):
+        for routes in ([{"distance": 1.0}], [{"duration": 1.0}], [None], ["x"], 5):
+            with self.subTest(routes=routes):
+                session = FakeSession(lambda url, **kw: FakeResponse({"code": "Ok", "routes": routes}))
+                self.assertEqual(fetch(session)["osrm_status"], "error")
+
+    def test_should_not_leak_coordinates_in_urllib3_retry_logs(self):
+        session = make_session()
+        session.adapters["http://"].max_retries.backoff_factor = 0
+        with self.assertLogs(level="WARNING") as logs:
+            result = fetch_route(session, "http://127.0.0.1:9", 2.35, 48.85, 4.83, 45.76)
+        self.assertEqual(result["osrm_status"], "error")
+        self.assertEqual(len(logs.output), 1)
+        for secret in ("2.35", "48.85", "/route"):
+            self.assertNotIn(secret, logs.output[0])
 
 
 class TestAddOsrmColumns(unittest.TestCase):

@@ -12,6 +12,8 @@ NO_ROUTE_CODES = ("NoRoute", "NoSegment")
 
 
 def make_session():
+    # urllib3 retry warnings log the request URL, i.e. trip coordinates.
+    logging.getLogger("urllib3").setLevel(logging.ERROR)
     retry = Retry(total=3, backoff_factor=0.5, status_forcelist=[502, 503, 504], allowed_methods=["GET"])
     adapter = HTTPAdapter(max_retries=retry, pool_connections=8, pool_maxsize=8)
     session = requests.Session()
@@ -51,12 +53,15 @@ def fetch_route(session, osrm_url, start_x, start_y, end_x, end_y, timeout=10):
     if not routes:
         return _error(code or f"HTTP {response.status_code}")
 
-    return _result(
-        "ok",
-        routes[0]["duration"],
-        routes[0]["distance"],
-        min(route["distance"] for route in routes),
-    )
+    try:
+        return _result(
+            "ok",
+            routes[0]["duration"],
+            routes[0]["distance"],
+            min(route["distance"] for route in routes),
+        )
+    except (KeyError, TypeError) as e:
+        return _error(type(e).__name__)
 
 
 def add_osrm_columns(df, osrm_url, session, workers=4, max_consecutive_errors=20):
