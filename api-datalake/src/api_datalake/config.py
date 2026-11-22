@@ -55,11 +55,13 @@ class Settings(BaseSettings):
         # `default_transaction_read_only` : garde-fou en profondeur — même si le rôle
         # PG a des droits d'écriture, aucune requête de l'API ne peut muter la base.
         # `statement_timeout` : coupe les requêtes trop longues avant qu'elles ne
-        # saturent le pool. `make_conninfo` échappe correctement chaque valeur
+        # saturent le pool. `jit=off` : le JIT coûte 15-30 % sur ces requêtes courtes.
+        # `make_conninfo` échappe correctement chaque valeur
         # (mot de passe avec espace/quote inclus).
         options = (
             f"-c statement_timeout={self.db_statement_timeout_ms} "
-            "-c default_transaction_read_only=on"
+            "-c default_transaction_read_only=on "
+            "-c jit=off"
         )
         return make_conninfo(
             host=self.dbt_host,
