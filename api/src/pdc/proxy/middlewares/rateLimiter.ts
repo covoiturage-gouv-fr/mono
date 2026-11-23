@@ -72,26 +72,6 @@ export function apiRateLimiter(
   return rateLimiter({ windowMs: 5 * minute, max: 2000, ...opts }, "rl-api");
 }
 
-// shortcut for acquisition route
-export function acquisitionRateLimiter(
-  opts: Partial<RateLimiterOptions> = {},
-): RateLimitRequestHandler {
-  return rateLimiter(
-    { windowMs: 1 * minute, max: 10000, ...opts },
-    "rl-acquisition",
-  );
-}
-
-// shortcut for journey status route
-export function checkRateLimiter(
-  opts: Partial<RateLimiterOptions> = {},
-): RateLimitRequestHandler {
-  return rateLimiter(
-    { windowMs: 1 * minute, max: 2000, ...opts },
-    "rl-acquisition-check",
-  );
-}
-
 // shortcut for /monitoring/honor route
 export function monHonorCertificateRateLimiter(
   opts: Partial<RateLimiterOptions> = {},
