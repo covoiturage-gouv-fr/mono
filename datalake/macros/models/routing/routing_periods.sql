@@ -3,9 +3,12 @@
    entièrement couverte (month NULL). Une année partielle n'est jamais écrite :
    elle remplacerait l'année complète par quelques mois. #}
 {% macro routing_periods() %}
-  {% set start = var('routing_from') %}
-  {% set end = var('routing_to') %}
-  {% if start[8:] != '01' or end[8:] != '01' or start >= end %}
+  {# string : une var YAML non quotée arrive en date ; la regex garde aussi
+     l'interpolation SQL ci-dessous. #}
+  {% set start = var('routing_from') | string %}
+  {% set end = var('routing_to') | string %}
+  {% set month_start = '^[0-9]{4}-[0-9]{2}-01$' %}
+  {% if not modules.re.match(month_start, start) or not modules.re.match(month_start, end) or start >= end %}
     {{ exceptions.raise_compiler_error(
       "routing_from / routing_to doivent être des débuts de mois, from < to : " ~ start ~ " / " ~ end
     ) }}
