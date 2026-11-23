@@ -35,6 +35,15 @@ function isBooster(ctx: StatelessContextInterface): boolean {
   return BOOSTER_DATES.includes(formatInTimeZone(ctx.carpool.datetime, "Europe/Paris", "yyyy-MM-dd"));
 }
 
+// Booster : un financement déclaré ni par l'opérateur, ni par une AOM, ni par un délégataire est un financement employeur
+function hasEmployerFunding(ctx: StatelessContextInterface): boolean {
+  const operatorSiren = ctx.carpool.operator_siret?.slice(0, 9);
+  return (ctx.carpool.operator_incentives ?? []).some(({ siret }) => {
+    const siren = siret.slice(0, 9);
+    return siren !== operatorSiren && !occitanie2026Data.notEmployerSirens.has(siren);
+  });
+}
+
 function startsOrEndsWithinArea(ctx: StatelessContextInterface) {
   const { areas } = occitanie2026Data;
   return startsOrEndsAt(ctx, { [TerritoryCodeEnum.Arr]: areas });
@@ -162,8 +171,8 @@ export const Occitanie20262027 = class extends AbstractPolicyHandler implements 
     const booster = isBooster(ctx);
 
     // Exclusion des trajets dont la contribution passager est nulle
-    // Le ticket passager minimum est de 0,5 € par trajet.
-    if (getContribution(ctx) < 50) {
+    // Le ticket passager minimum est de 0,5 € par trajet, sauf financement employeur en booster.
+    if (getContribution(ctx) < 50 && !(booster && hasEmployerFunding(ctx))) {
       throw new NotEligibleTargetException("Passenger contribution is too low");
     }
 
@@ -184,6 +193,8 @@ export const Occitanie20262027 = class extends AbstractPolicyHandler implements 
     set(ctx, "data.area", startsOrEndsWithinArea(ctx)); // boolean
     if (ctx.data!.area) {
       onDistanceRangeOrThrow(ctx, { min: 2_000, max: booster ? 50_001 : 50_000 });
+      // Pas de trajet interne à une AOM locale, y compris dans un bassin
+      filterInnerAOMOrThrow(ctx);
     } else {
       onDistanceRangeOrThrow(ctx, { min: 2_000, max: booster ? 50_001 : 30_000 });
       // Départ ET arrivée dans la région Occitanie (limite max)

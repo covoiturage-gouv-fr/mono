@@ -31,6 +31,7 @@ export interface PolicyInterface {
   export(): SerializedPolicyInterface;
   processStateless(
     carpool: CarpoolInterface,
+    onReject?: (reason: string) => void,
   ): Promise<StatelessIncentiveInterface>;
   processStateful(
     store: MetadataStoreInterface,

@@ -10,7 +10,9 @@ import { handlerConfig, ParamsInterface, ResultInterface } from "../contracts/ap
 import { alias } from "../contracts/apply.schema.ts";
 import { Policy } from "../engine/entities/Policy.ts";
 import { subDaysTz, today, toTzString } from "../helpers/index.ts";
+import { TerritoryPerimeterInterface } from "@/pdc/services/territory/contracts/common/interfaces/TerritoryPerimeterInterface.ts";
 import {
+  CarpoolInterface,
   IncentiveRepositoryProviderInterfaceResolver,
   PolicyRepositoryProviderInterfaceResolver,
   StatelessIncentiveInterface,
@@ -19,6 +21,13 @@ import {
 } from "../interfaces/index.ts";
 
 const log = taggedLogger("[campaign]");
+
+export interface ProcessPolicyOptions {
+  /** replaces the stored perimeter, for the guard and for the trip selection (simulation) */
+  perimeters?: TerritoryPerimeterInterface[];
+  /** called for every evaluated trip; `incentive` is undefined when the evaluation failed */
+  onTrip?: (carpool: CarpoolInterface, incentive: StatelessIncentiveInterface | undefined, reason?: string) => void;
+}
 
 @handler({
   ...handlerConfig,
@@ -72,11 +81,12 @@ export class ApplyAction extends AbstractAction {
     };
   }
 
-  protected async processPolicy(
+  public async processPolicy(
     policy_id: number,
     from: Date,
     to: Date,
     override = false,
+    options: ProcessPolicyOptions = {},
   ): Promise<void> {
     // 1. Find policy
     const pol = await this.policyRepository.find(policy_id);
@@ -84,7 +94,7 @@ export class ApplyAction extends AbstractAction {
       throw new NotFoundException(`[policy ${policy_id}] Not found`);
     }
 
-    pol.perimeters = await this.territoryRepository.findPerimeters(pol.territory_id);
+    pol.perimeters = options.perimeters ?? await this.territoryRepository.findPerimeters(pol.territory_id);
     const policy = await Policy.import(pol);
 
     // init counter and benchmark
@@ -123,6 +133,7 @@ export class ApplyAction extends AbstractAction {
       end,
       batchSize,
       override,
+      options.perimeters?.flatMap((p) => p.arr),
     );
     let done = false;
     let failed = 0;
@@ -142,8 +153,12 @@ export class ApplyAction extends AbstractAction {
             // 3. For each trip, process
             counter++;
             try {
-              incentives.push(await policy.processStateless(carpool));
+              let reason: string | undefined;
+              const incentive = await policy.processStateless(carpool, (r) => reason = r);
+              incentives.push(incentive);
+              options.onTrip?.(carpool, incentive, reason);
             } catch (e) {
+              options.onTrip?.(carpool, undefined, errorCode(e));
               // no incentive stored: the trip is retried on the next run
               failed++;
               log.error("process stateless failed", {

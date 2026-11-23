@@ -19,6 +19,7 @@ describe("ApplyAction", () => {
   let stored: string[];
   let released: boolean;
   let storeError: Error | undefined;
+  let tripArgs: unknown[];
 
   function setup(carpools: CarpoolInterface[]): ApplyAction {
     const policyRepository = {
@@ -37,7 +38,8 @@ describe("ApplyAction", () => {
     } as unknown as IncentiveRepositoryProviderInterfaceResolver;
 
     const tripRepository = {
-      async *findTripByPolicy() {
+      async *findTripByPolicy(...args: unknown[]) {
+        tripArgs = args;
         try {
           yield carpools;
         } finally {
@@ -88,5 +90,23 @@ describe("ApplyAction", () => {
     await assertRejects(() => action.handle({ policy_id: 1, from, to }), Error, "store failed");
 
     assertEquals(released, true);
+  });
+
+  it("should report every trip and replace the perimeter when asked", async () => {
+    const perimeters = [{ version: 1, arr: ["34172"], valid_from: new Date(0), valid_to: null }];
+    const action = setup([
+      generateCarpool({ operator_journey_id: "ok-1" }),
+      generateCarpool({ operator_journey_id: "ko", end: null as unknown as CarpoolInterface["end"] }),
+    ]);
+
+    const seen: Array<[string, boolean, string | undefined]> = [];
+    await action.processPolicy(1, from, to, true, {
+      perimeters,
+      onTrip: (c, incentive, reason) => seen.push([c.operator_journey_id, !!incentive, reason]),
+    });
+
+    assertEquals(seen, [["ok-1", true, undefined], ["ko", false, "TypeError"]]);
+    assertEquals((Policy.import as sinon.SinonStub).firstCall.args[0].perimeters, perimeters);
+    assertEquals(tripArgs[5], ["34172"]);
   });
 });

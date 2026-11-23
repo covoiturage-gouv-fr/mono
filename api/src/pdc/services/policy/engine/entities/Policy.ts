@@ -91,6 +91,7 @@ export class Policy implements PolicyInterface {
 
   async processStateless(
     carpool: CarpoolInterface,
+    onReject?: (reason: string) => void,
   ): Promise<StatelessIncentiveInterface> {
     const context: StatelessContextInterface = StatelessContext.fromCarpool(
       this._id,
@@ -106,11 +107,14 @@ export class Policy implements PolicyInterface {
         this.handler.processStateless(context);
       } catch (e) {
         if (e instanceof NotEligibleTargetException) {
+          onReject?.(e.message);
           context.incentive.set(0);
           return context.incentive;
         }
         throw e;
       }
+    } else {
+      onReject?.("out of policy dates or perimeter");
     }
     return context.incentive;
   }

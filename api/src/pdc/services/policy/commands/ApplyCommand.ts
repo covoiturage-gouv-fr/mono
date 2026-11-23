@@ -6,6 +6,8 @@ import { Timezone } from "@/pdc/providers/validator/index.ts";
 import { signature as apply } from "../contracts/apply.contract.ts";
 import { castUserStringToUTC, subDaysTz, today, toISOString } from "../helpers/index.ts";
 import { PolicyRepositoryProviderInterfaceResolver } from "../interfaces/index.ts";
+import { toCsv } from "../simulation/csv.ts";
+import { SimulationService } from "../simulation/SimulationService.ts";
 
 const log = taggedLogger("[campaign]", { maxLength: 512 });
 
@@ -15,6 +17,9 @@ interface CommandOptions {
   to: string;
   tz: Timezone;
   override: boolean;
+  dryRun: boolean;
+  out?: string;
+  perimeter?: string;
 }
 
 @command({
@@ -50,6 +55,19 @@ interface CommandOptions {
       description: "override existing incentives",
       default: false,
     },
+    {
+      signature: "--dry-run",
+      description: "simulate apply --override then finalize in memory, write nothing in database (needs -c and --out)",
+      default: false,
+    },
+    {
+      signature: "--out <file>",
+      description: "dry-run: CSV file, one line per trip, amounts in cents",
+    },
+    {
+      signature: "--perimeter <codes>",
+      description: "dry-run: replaces the territory perimeter, <type:code,...> as territory:perimeter (ex. reg:76)",
+    },
   ],
 })
 export class ApplyCommand implements CommandInterface {
@@ -57,6 +75,7 @@ export class ApplyCommand implements CommandInterface {
     protected kernel: KernelInterfaceResolver,
     private policyRepository: PolicyRepositoryProviderInterfaceResolver,
     private campaignRepository: CampaignRepository,
+    private simulation: SimulationService,
   ) {}
 
   public async call(options: CommandOptions): Promise<ResultType> {
@@ -66,6 +85,13 @@ export class ApplyCommand implements CommandInterface {
       // cast or default from/to dates
       const from = options.from && castUserStringToUTC(options.from, tz) || subDaysTz(today(tz), 7);
       const to = options.to && castUserStringToUTC(options.to, tz) || today(tz);
+
+      if (options.dryRun) {
+        return await this.dryRun(options, from, to);
+      }
+      if (options.perimeter || options.out) {
+        throw new Error("--perimeter and --out require --dry-run");
+      }
 
       // update all campaign statuses
       await this.policyRepository.updateAllCampaignStatuses();
@@ -115,5 +141,21 @@ export class ApplyCommand implements CommandInterface {
       const message = Error.isError(e) ? e.message : "Unknown error";
       log.error("apply command failed", { error: String(get(e, "rpcError.data", message)) });
     }
+  }
+
+  private async dryRun(options: CommandOptions, from: Date, to: Date): Promise<string> {
+    if (options.campaigns.length !== 1 || !options.out) {
+      throw new Error("--dry-run needs exactly one campaign (-c) and --out <file>");
+    }
+
+    const rows = await this.simulation.simulate({
+      policy_id: options.campaigns[0],
+      from,
+      to,
+      perimeter: options.perimeter,
+    });
+    await Deno.writeTextFile(options.out, toCsv(rows));
+    log.info("dry-run written", { policy_id: options.campaigns[0], out: options.out, trips: rows.length });
+    return "";
   }
 }

@@ -160,6 +160,27 @@ Les `arr` stockés sont figés : après le chargement d'un nouveau millésime, l
 versions en vigueur, à partir de `--from` (défaut : maintenant), les codes issus de fusions ou scissions
 (`geo.com_evolution`). Les territoires sans version suivent les millésimes via leurs sélecteurs.
 
+### Simulation d'une campagne (`campaign:apply --dry-run`)
+
+Rejoue `campaign:apply --override` puis `campaign:finalize` en mémoire, sans rien écrire en base (ni incitations,
+ni `policy_metas`, ni `incentive_sum`, ni statut des campagnes, ni périmètre) : un compte PostgreSQL en lecture seule suffit.
+
+```bash
+just api campaign:apply -c 1115 -f 2026-01-01 -t 2026-11-23 --dry-run --out /tmp/sim.csv [--perimeter reg:76]
+```
+
+- Une seule campagne (`-c`) et `--out` sont obligatoires. Tous les trajets de la période sont évalués, y compris ceux
+  qui ont déjà une incitation.
+- Les compteurs (limites journalières, enveloppe) repartent de zéro : l'étape avec état simule une base purgée.
+- `--perimeter` remplace le périmètre du territoire (mêmes codes `type:code` que `territory:perimeter`) pour la
+  sélection des trajets et pour le filtre de la campagne.
+- CSV, un trajet par ligne, montants en centimes comme dans `policy.incentives`, sans donnée personnelle :
+  `operator_id, operator_journey_id, datetime, start_arr, end_arr, distance, current_amount, current_status,
+  simulated_stateless_amount, simulated_final_amount, rejection_reason, simulated_final_status`.
+  `current_*` : ligne actuelle de la policy en base (vide si aucune). `simulated_final_status` vaut `error` pour les
+  trajets annulés ou en échec anomalie/fraude : comme `campaign:finalize`, leur montant n'est pas remis à zéro, à
+  exclure des totaux.
+
 ## Configuration
 
 ### Variables d'environnement

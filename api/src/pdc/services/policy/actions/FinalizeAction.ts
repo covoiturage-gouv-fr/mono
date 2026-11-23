@@ -68,6 +68,12 @@ export class FinalizeAction extends AbstractAction {
       });
     }
 
+    await this.finalizeRange(from, to);
+
+    log.info("finalize done", { ms: timer.stop() });
+  }
+
+  public async finalizeRange(from: Date, to: Date): Promise<void> {
     const policyMap: Map<number, PolicyInterface> = new Map();
 
     const timespan = 6 * 3600000; // N hours in milliseconds
@@ -100,8 +106,6 @@ export class FinalizeAction extends AbstractAction {
 
       currentTime += timespan; // move to the next hour
     }
-
-    log.info("finalize done", { ms: timer.stop() });
   }
 
   /**
