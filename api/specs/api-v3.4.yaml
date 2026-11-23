@@ -1636,7 +1636,7 @@ x-topics:
       atteinte, notre API renverra une erreur `429 Too Many Requests`.
 
       Chaque type de route a une limite de requêtes différente. La limite
-      pour l'envoi des trajets est de 20000 requêtes par minute.
+      pour l'envoi des trajets est de 10000 requêtes par minute.
       Le compteur est tenu par opérateur authentifié, sinon par adresse IP.
 
       Les en-têtes suivants sont envoyés avec chaque réponse :
