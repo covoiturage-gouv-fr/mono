@@ -1,11 +1,22 @@
 import { env_or_default, env_or_fail } from "@/lib/env/index.ts";
 import { Request, Response } from "dep:express";
-import rateLimit, { Options as RateLimiterOptions, RateLimitRequestHandler } from "dep:express-rate-limit";
+import rateLimit, {
+  ipKeyGenerator,
+  Options as RateLimiterOptions,
+  RateLimitRequestHandler,
+} from "dep:express-rate-limit";
 import RateLimitRedisStore from "dep:rate-limit-redis";
 import { Redis as RedisClient } from "dep:redis";
 import { redis as redisConfig } from "@/config/connections.ts";
 
 const minute = 60000;
+
+// Jeton opérateur valide : compteur par opérateur. Sinon par IP, IPv6 regroupée en /56 (défaut de la lib).
+export function rateLimitKey(req: Request): string {
+  const operatorId = Number(req.stateless?.user?.operator_id);
+  if (Number.isSafeInteger(operatorId) && operatorId > 0) return `operator:${operatorId}`;
+  return ipKeyGenerator(req.ip ?? "", 56);
+}
 
 export function rateLimiter(
   opts: Partial<RateLimiterOptions> = {},
@@ -21,6 +32,7 @@ export function rateLimiter(
     }),
     windowMs: minute,
     max: 360,
+    keyGenerator: rateLimitKey,
     handler(_req: Request, res: Response) {
       res.status(429).json({
         error: { code: 429, message: "Too many requests" },
