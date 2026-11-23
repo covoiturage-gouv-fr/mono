@@ -1,31 +1,53 @@
 {{ config(
-  materialized='table',
+  materialized='incremental',
+  incremental_strategy='append',
   tags=['aggregated'],
-  indexes=[
-    {'columns': ['node_a', 'node_b'], 'unique': true},
-  ]
+  pre_hook="""
+    {% if is_incremental() %}
+      DELETE FROM {{ this }} AS f
+      USING ({{ routing_periods() }}) AS p
+      WHERE f.year = p.year AND f.month IS NOT DISTINCT FROM p.month
+    {% endif %}
+  """,
+  post_hook="""
+    CREATE UNIQUE INDEX IF NOT EXISTS edge_flows_period_edge_uidx
+    ON {{ this }} (year, month, node_a, node_b) NULLS NOT DISTINCT
+  """
 ) }}
 
--- Flux par tronçon de route sur toute la fenêtre routing_from / routing_to
--- (direction both) : chaque flux entre cellules H3 z8 est reporté sur les
--- tronçons de sa route coupée (route_trim). Un tronçon = deux nœuds OSM
--- consécutifs ; les deux sens d'une même voie sont additionnés sous
--- node_a < node_b. pairs et top_pair_journeys (paires de cellules non
--- orientées) servent au seuil d'anonymisation de la carte.
--- Table de travail des tuiles : elle se recalcule depuis le cache OSRM.
-WITH od AS (
+-- Flux par tronçon de route et par période (direction both) : chaque flux
+-- entre cellules H3 z8 est reporté sur les tronçons de sa route coupée
+-- (route_trim). Un tronçon = deux nœuds OSM consécutifs ; les deux sens d'une
+-- même voie sont additionnés sous node_a < node_b. pairs et top_pair_journeys
+-- (paires de cellules non orientées) servent au seuil d'anonymisation.
+-- Périodes : routing_periods() (month NULL = année complète). Un passage
+-- remplace les périodes de sa fenêtre et garde les autres.
+-- Géométrie : edge_geom.
+WITH periods AS (
+  {{ routing_periods() }}
+),
+
+-- Les routes ne sont découpées en tronçons qu'au mois ; les années sont la
+-- somme de leurs mois (per_pair), sans second découpage.
+od AS (
   SELECT
-    h3_1,
-    h3_2,
-    least(h3_1, h3_2)    AS cell_a,
-    greatest(h3_1, h3_2) AS cell_b,
-    sum(journeys)        AS journeys
-  FROM {{ ref('h3_od_month') }}
-  GROUP BY h3_1, h3_2
+    o.year,
+    o.month,
+    o.h3_1,
+    o.h3_2,
+    least(o.h3_1, o.h3_2)    AS cell_a,
+    greatest(o.h3_1, o.h3_2) AS cell_b,
+    sum(o.journeys)          AS journeys
+  FROM {{ ref('h3_od_month') }} AS o
+  INNER JOIN periods AS p
+    ON o.year = p.year AND o.month = p.month
+  GROUP BY o.year, o.month, o.h3_1, o.h3_2
 ),
 
 edges AS (
   SELECT
+    od.year,
+    od.month,
     od.cell_a,
     od.cell_b,
     od.journeys,
@@ -53,40 +75,42 @@ edges AS (
   WHERE e.node_to IS NOT NULL
 ),
 
-per_pair AS (
+per_pair_month AS (
   SELECT
+    year,
+    month,
     node_a,
     node_b,
     cell_a,
     cell_b,
     sum(journeys) AS journeys
   FROM edges
-  GROUP BY node_a, node_b, cell_a, cell_b
+  GROUP BY year, month, node_a, node_b, cell_a, cell_b
 ),
 
-flows AS (
+per_pair AS (
+  SELECT * FROM per_pair_month
+  UNION ALL
   SELECT
-    node_a,
-    node_b,
-    sum(journeys) AS journeys,
-    count(*)      AS pairs,
-    max(journeys) AS top_pair_journeys
-  FROM per_pair
-  GROUP BY node_a, node_b
+    m.year,
+    NULL::int       AS month,  -- noqa: RF04
+    m.node_a,
+    m.node_b,
+    m.cell_a,
+    m.cell_b,
+    sum(m.journeys) AS journeys
+  FROM per_pair_month AS m
+  INNER JOIN periods AS p ON m.year = p.year AND p.month IS NULL
+  GROUP BY m.year, m.node_a, m.node_b, m.cell_a, m.cell_b
 )
 
 SELECT
-  f.node_a,
-  f.node_b,
-  f.journeys,
-  f.pairs,
-  f.top_pair_journeys,
-  st_makeline(
-    st_setsrid(st_makepoint(a.lng::float8, a.lat::float8), 4326),
-    st_setsrid(st_makepoint(b.lng::float8, b.lat::float8), 4326)
-  ) AS geom
-FROM flows AS f
-INNER JOIN {{ source('raw', 'osrm_node') }} AS a
-  ON a.dataset = '{{ var("osrm_dataset") }}' AND f.node_a = a.node_id
-INNER JOIN {{ source('raw', 'osrm_node') }} AS b
-  ON b.dataset = '{{ var("osrm_dataset") }}' AND f.node_b = b.node_id
+  year,
+  month,
+  node_a,
+  node_b,
+  sum(journeys) AS journeys,
+  count(*)      AS pairs,
+  max(journeys) AS top_pair_journeys
+FROM per_pair
+GROUP BY year, month, node_a, node_b
