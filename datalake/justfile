@@ -110,7 +110,8 @@ route-od *args:
   python -m pipelines.cmd.route_od {{args}}
 
 # Carte des flux par tronçon (models/routing) : paires à router, routage OSRM, puis flux.
-# Fenêtre de trajets : vars routing_from / routing_to (dbt_project.yml).
+# Fenêtre de trajets : vars routing_from / routing_to (dbt_project.yml), une carte par mois
+# et par année complète (ex: just pipeline-routing --vars '{routing_from: "2025-01-01", routing_to: "2026-01-01"}').
 pipeline-routing *args:
   just dbt run --select h3_od_month {{args}}
   just route-od

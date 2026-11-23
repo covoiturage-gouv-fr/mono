@@ -76,7 +76,8 @@ vars:
   # Pas de copie des lignes en échec dans le schéma elementary
   test_sample_row_count: 0
   # Routage OSRM des flux OD (models/routing, just route-od) : import OSM servi
-  # et fenêtre [from, to) des trajets dont les flux par tronçon sont cumulés.
+  # et fenêtre [from, to) des trajets, en débuts de mois. edge_flows écrit une
+  # carte par mois de la fenêtre et par année entièrement couverte.
   osrm_dataset: "2023-12-21"
   routing_from: "2026-10-01"
   routing_to: "2026-11-01"
