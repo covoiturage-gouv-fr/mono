@@ -1,4 +1,4 @@
-import { assertRejects } from "dep:assert";
+import { assertEquals, assertRejects } from "dep:assert";
 import { it } from "dep:testing-bdd";
 import { PolicyStatusEnum } from "../../contracts/common/interfaces/PolicyInterface.ts";
 import {
@@ -288,4 +288,31 @@ it("should refuse a carpool with an unknown territory", async () => {
   );
   const carpool = generateCarpool({ end: null as unknown as CarpoolInterface["end"] });
   await assertRejects(() => policy.processStateless(carpool), UnknownTerritoryException);
+});
+
+it("should report why a carpool is rejected or out of scope", async () => {
+  const policy = new Policy(
+    1,
+    1,
+    { aom: ["217500016"] },
+    "test",
+    new Date("2019-01-01"),
+    new Date("2019-12-31"),
+    "Europe/Paris",
+    new TestHandler(),
+    PolicyStatusEnum.ACTIVE,
+    0,
+  );
+  const reasons: string[] = [];
+
+  const rejected = await policy.processStateless(generateCarpool({ operator_class: "B" }), (r) => reasons.push(r));
+  const outOfDates = await policy.processStateless(
+    generateCarpool({ datetime: new Date("2020-06-01") }),
+    (r) => reasons.push(r),
+  );
+  await policy.processStateless(generateCarpool(), (r) => reasons.push(r));
+
+  assertEquals([rejected.get(), outOfDates.get()], [0, 0]);
+  assertEquals(reasons.length, 2);
+  assertEquals(reasons[1], "out of policy dates or perimeter");
 });

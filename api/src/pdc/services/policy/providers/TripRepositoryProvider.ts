@@ -37,6 +37,7 @@ export class TripRepositoryProvider implements TripRepositoryProviderInterfaceRe
     const query = sql`
       SELECT
         oo.uuid as operator_uuid,
+        oo.siret as operator_siret,
         cc.operator_trip_id,
         cc.operator_id,
         cc.operator_journey_id,
@@ -104,7 +105,14 @@ export class TripRepositoryProvider implements TripRepositoryProviderInterfaceRe
     to: Date,
     batchSize = 100,
     override = false,
+    arr?: string[],
   ): AsyncGenerator<CarpoolInterface[], void, void> {
+    // an explicit arr list replaces the stored perimeter (simulation)
+    if (arr) {
+      yield* this.findTripByGeo(arr, from, to, batchSize, override, policy._id);
+      return;
+    }
+
     const rows = await this.pgConnection.query<{ arr: string }>(sql`
       SELECT arr FROM ${raw(this.getArrRangeFunction)}(
         ${policy.territory_id}::int, ${from}::timestamptz, ${to}::timestamptz
