@@ -154,7 +154,7 @@ export class ApplyCommand implements CommandInterface {
       to,
       perimeter: options.perimeter,
     });
-    await Deno.writeTextFile(options.out, toCsv(rows));
+    await Deno.writeTextFile(options.out, toCsv(rows), { mode: 0o600 });
     log.info("dry-run written", { policy_id: options.campaigns[0], out: options.out, trips: rows.length });
     return "";
   }

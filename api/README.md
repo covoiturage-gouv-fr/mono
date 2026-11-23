@@ -174,7 +174,7 @@ just api campaign:apply -c 1115 -f 2026-01-01 -t 2026-11-23 --dry-run --out /tmp
 - Les compteurs (limites journalières, enveloppe) repartent de zéro : l'étape avec état simule une base purgée.
 - `--perimeter` remplace le périmètre du territoire (mêmes codes `type:code` que `territory:perimeter`) pour la
   sélection des trajets et pour le filtre de la campagne.
-- CSV, un trajet par ligne, montants en centimes comme dans `policy.incentives`, sans donnée personnelle :
+- CSV, un trajet par ligne, montants en centimes comme dans `policy.incentives`, données pseudonymisées (usage interne, ne pas publier, supprimer après analyse) :
   `operator_id, operator_journey_id, datetime, start_arr, end_arr, distance, current_amount, current_status,
   simulated_stateless_amount, simulated_final_amount, rejection_reason, simulated_final_status`.
   `current_*` : ligne actuelle de la policy en base (vide si aucune). `simulated_final_status` vaut `error` pour les
