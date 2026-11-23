@@ -77,7 +77,7 @@ export function acquisitionRateLimiter(
   opts: Partial<RateLimiterOptions> = {},
 ): RateLimitRequestHandler {
   return rateLimiter(
-    { windowMs: 1 * minute, max: 20000, ...opts },
+    { windowMs: 1 * minute, max: 10000, ...opts },
     "rl-acquisition",
   );
 }

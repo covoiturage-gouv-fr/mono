@@ -19,7 +19,7 @@ import { alias } from "../contracts/cancel.schema.ts";
     method: "POST",
     rateLimiter: {
       key: "rl-acquisition",
-      limit: 20_000,
+      limit: 10_000,
       windowMinute: 1,
     },
     rpcAnswerOnSuccess: true,

@@ -30,7 +30,7 @@ const log = taggedLogger("[acquisition]");
     successHttpCode: 201,
     rateLimiter: {
       key: "rl-acquisition",
-      limit: 20_000,
+      limit: 10_000,
       windowMinute: 1,
     },
     rpcAnswerOnSuccess: true,
