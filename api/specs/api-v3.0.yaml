@@ -20,7 +20,7 @@ info:
     ### Précisions d'usage
 
     - Attention, l'API v3 nécessite d'envoyer des preuves au plus tard 24h après le début du trajet.
-    - Un _rate limiting_ de 20000 requêtes par minute est appliqué sur l'envoi des trajets. Les différents points d'API ont des _rate limiters_ indépendants.
+    - Un _rate limiting_ de 10000 requêtes par minute est appliqué sur l'envoi des trajets. Les différents points d'API ont des _rate limiters_ indépendants.
 
 components:
   securitySchemes:

@@ -383,3 +383,67 @@ describe("Occitanie 2026 - Booster octobre 2026", () => {
       ],
     }, { incentive: [0, 0] }));
 });
+
+describe("Occitanie 2026 - Bassins : trajets internes à une AOM locale", () => {
+  const rodez = { ...defaultPosition, arr: "12202", aom: "241200187" };
+
+  it("Rodez -> Rodez rejected, normal period and booster", async () =>
+    await process({
+      policy: { handler: Handler.id },
+      carpool: [
+        { start: rodez, end: rodez, passenger_identity_key: uuidV4() },
+        { start: rodez, end: rodez, datetime: new Date("2026-10-05T10:00:00+0200"), passenger_identity_key: uuidV4() },
+      ],
+    }, { incentive: [0, 0] }));
+
+  it("Rodez -> other AOM accepted", async () =>
+    await process({
+      policy: { handler: Handler.id },
+      carpool: [{ start: rodez, passenger_identity_key: uuidV4() }],
+    }, { incentive: [150] }));
+});
+
+describe("Occitanie 2026 - Booster : financement employeur", () => {
+  const operatorSiret = "49190454600000";
+  const withIncentive = (siret: string, extra: Partial<CarpoolInterface> = {}) => ({
+    datetime: new Date("2026-10-05T10:00:00+0200"),
+    passenger_identity_key: uuidV4(),
+    passenger_contribution: 0,
+    operator_siret: operatorSiret,
+    operator_incentives: [{ siret, amount: 300 }],
+    ...extra,
+  });
+
+  it("employer incentive makes a free trip eligible", async () =>
+    await process({
+      policy: { handler: Handler.id },
+      carpool: [withIncentive("38347481400000")],
+    }, { incentive: [250] }));
+
+  it("incentive from Région, operator, AOM, AOM delegate or Agen does not count", async () =>
+    await process({
+      policy: { handler: Handler.id },
+      carpool: [
+        withIncentive("20005379100000"),
+        withIncentive("49190454600000"),
+        withIncentive("24120018700000"),
+        withIncentive("81317849800000"),
+        withIncentive("20003545900000"),
+        withIncentive("20005379100000", { operator_incentives: [] }),
+      ],
+    }, { incentive: [0, 0, 0, 0, 0, 0] }));
+
+  it("one employer line among others is enough", async () =>
+    await process({
+      policy: { handler: Handler.id },
+      carpool: [withIncentive("20005379100000", {
+        operator_incentives: [{ siret: "20005379100000", amount: 100 }, { siret: "38347481400000", amount: 200 }],
+      })],
+    }, { incentive: [250] }));
+
+  it("outside booster the contribution minimum stays", async () =>
+    await process({
+      policy: { handler: Handler.id },
+      carpool: [withIncentive("38347481400000", { datetime: new Date("2026-09-15T10:00:00+0200") })],
+    }, { incentive: [0] }));
+});

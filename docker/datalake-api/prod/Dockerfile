@@ -54,6 +54,7 @@ ENV PATH="/app/.venv/bin:$PATH" \
 USER datalake
 EXPOSE 8081
 # --no-server-header : masque la bannière `Server: uvicorn` (durcissement API8/API9).
-# --proxy-headers : X-Forwarded-For cru seulement depuis FORWARDED_ALLOW_IPS (lu par uvicorn).
+# --proxy-headers : X-Forwarded-For cru seulement depuis FORWARDED_ALLOW_IPS (lu par uvicorn),
+# surchargé en prod par l'infra avec le CIDR des pods Envoy Gateway.
 # --no-access-log : remplacé par le journal d'accès JSON de l'application.
 ENTRYPOINT ["uvicorn", "api_datalake.main:app", "--app-dir", "src", "--host", "0.0.0.0", "--port", "8081", "--no-server-header", "--proxy-headers", "--no-access-log"]

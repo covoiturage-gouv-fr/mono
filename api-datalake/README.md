@@ -76,8 +76,9 @@ Une ligne JSON par requête sur stdout, dans tous les environnements (sondes `/h
   l'est ; valeurs réduites à `[A-Za-z0-9._-]`, 64 caractères au plus.
 - `sub`, `role` : présents si l'authentification les a posés sur `request.state`.
 - `ip` : uvicorn ne croit `X-Forwarded-For` que si le pair figure dans
-  **`FORWARDED_ALLOW_IPS`** (IP ou CIDR, séparés par des virgules ; à renseigner avec le CIDR
-  des pods nginx ingress). Défaut `127.0.0.1` : en-tête ignoré, `ip` = adresse du pair.
+  **`FORWARDED_ALLOW_IPS`** (IP ou CIDR, séparés par des virgules). En prod, l'infra le pose sur le
+  déploiement avec le CIDR des pods Envoy Gateway. Défaut `127.0.0.1` : en-tête ignoré,
+  `ip` = adresse du pair.
 
 ## Développement
 

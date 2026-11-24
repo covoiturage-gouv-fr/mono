@@ -13,6 +13,8 @@ export const apiUrl = env_or_fail("APP_API_URL", "http://localhost:8080");
 export const certUrl = env_or_fail("APP_CERT_URL", "http://localhost:4200");
 
 export const port = env_or_int("PORT", 8080);
+// Sondes Kubernetes, port non exposé par le Service.
+export const healthPort = env_or_int("HEALTH_PORT", 8081);
 export const hostname = getHostName();
 
 export const session = {

@@ -167,20 +167,20 @@ export class DefaultMJMLTemplate extends AbstractTemplate<DefaultTemplateData> {
 
 export class DefaultTextTemplate extends AbstractTemplate<DefaultTemplateData> {
   static override readonly template = `
-Bonjour {{fullname}},
+Bonjour {{{ fullname }}},
 
-{{ message_text }}
+{{{ message_text }}}
 
 {{#if action_href}}
-{{ action_message }} [{{action_href}}]
+{{{ action_message }}} [{{{ action_href }}}]
 {{/if}}
 
 A bientôt
 -- 
-Registre de preuve de covoiturage - {{ app_url }}
+Registre de preuve de covoiturage - {{{ app_url }}}
 Un service fourni grâce au soutien financier de l'ADEME,
 puis de la DGITM et à l’appui stratégique et opérationnel de la DINUM.
-✉ {{contact_email}}
+✉ {{{ contact_email }}}
 📍 20 avenue de Ségur, 75007 Paris
   `;
 }

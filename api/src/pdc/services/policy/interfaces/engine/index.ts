@@ -64,6 +64,7 @@ export interface CarpoolInterface {
   operator_id: number;
   operator_trip_id?: string;
   operator_uuid: string;
+  operator_siret?: string;
   operator_class: string;
   datetime: Date;
   seats: number;

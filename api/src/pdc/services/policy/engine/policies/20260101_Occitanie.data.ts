@@ -618,6 +618,12 @@ const aom20250101 = new Map([
   ["200003325", "SM transports publics du bassin d'Alès"],
 ]);
 
+// SIREN d'AOM absents de l'annexe 2 : Région, et Agen (AOM depuis le 2026-04-28, inconnue du millésime géo)
+const otherAomSirens = ["200053791", "200035459"];
+
+// Délégataires d'AOM : ne sont pas des employeurs (22 trajets d'octobre 2026 pour Keolis Alès)
+const aomDelegateSirens = ["813178498"];
+
 export const occitanie2026Data = {
   // AOM Région
   region: {
@@ -627,6 +633,9 @@ export const occitanie2026Data = {
 
   // AOM locales
   inner: aom20250101.keys().toArray() as TerritoryCodeEnum.Mobility[],
+
+  // SIREN qui ne comptent pas comme financeur employeur (AOM et délégataires), liste statique : exception booster octobre 2026
+  notEmployerSirens: new Set([...aom20250101.keys(), ...otherAomSirens, ...aomDelegateSirens]),
 
   // Bassins
   areas: bassins20260101.keys().toArray() as TerritoryCodeEnum.Arr[],

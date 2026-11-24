@@ -28,9 +28,15 @@ services:
       - front
 
   mailer:
-    image: mailhog/mailhog:v1.0.1
+    image: axllent/mailpit:v1.34.0
     environment:
-      MH_CORS_ORIGIN: '*'
+      MP_SMTP_AUTH_ACCEPT_ANY: 'true'
+      MP_SMTP_AUTH_ALLOW_INSECURE: 'true'
+    healthcheck:
+      test: ['CMD', '/mailpit', 'readyz']
+      interval: 10s
+      timeout: 3s
+      retries: 5
     networks:
       - back
 
@@ -67,6 +73,8 @@ services:
 
       # Internal Services URLs
       APP_MAIL_SMTP_URL: ${APP_MAIL_SMTP_URL:-smtp://mailer:1025}
+      APP_MAIL_FROM_NAME: ${APP_MAIL_FROM_NAME:-Registre de preuve de covoiturage}
+      APP_MAIL_FROM_EMAIL: ${APP_MAIL_FROM_EMAIL:-noreply@covoiturage.test}
       APP_POSTGRES_URL: ${APP_POSTGRES_URL:-postgres://postgres:postgres@postgres:5432/local}
       APP_POSTGRES_INSECURE: ${APP_POSTGRES_INSECURE:-true}
       APP_REDIS_URL: ${APP_REDIS_URL:-redis://redis:6379/1}

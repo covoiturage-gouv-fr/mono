@@ -42,7 +42,6 @@
     "dep:express-mung": "npm:express-mung@^0.5",
     "dep:rate-limit-redis": "npm:rate-limit-redis@^6.0",
     "dep:express-session": "npm:express-session@^1.18",
-    "dep:prom-client": "npm:prom-client@^15.1",
     "dep:cors": "npm:cors@^2.8",
     "dep:mjml": "npm:mjml@^5.4.1",
     "dep:helmet": "npm:helmet@^8.3",

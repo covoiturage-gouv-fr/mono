@@ -20,6 +20,8 @@ import {
   UnauthorizedException,
 } from "@/ilos/common/index.ts";
 import { handlerListIdentifier, ServiceProvider } from "@/ilos/core/index.ts";
+import { LegacyPostgresConnection } from "@/ilos/connection-postgres/index.ts";
+import { registerOnSignal } from "@/lib/process/index.ts";
 
 import { env_or_fail, env_or_false } from "@/lib/env/index.ts";
 import { taggedLogger } from "@/lib/logger/tagged.ts";
@@ -32,9 +34,9 @@ import { registerExpressRoute } from "@/pdc/proxy/helpers/registerExpressRoute.t
 import { asyncHandler } from "./helpers/asyncHandler.ts";
 import { createRPCPayload } from "./helpers/createRPCPayload.ts";
 import { healthCheckFactory } from "./helpers/healthCheckFactory.ts";
+import { startHealthServer } from "./helpers/healthServer.ts";
 import { injectContext } from "./helpers/injectContext.ts";
 import { mapStatusCode } from "./helpers/mapStatusCode.ts";
-import { prometheusMetricsFactory } from "./helpers/prometheusMetricsFactory.ts";
 import { accessLogMiddleware } from "./middlewares/accessLogMiddleware.ts";
 import { CacheMiddleware, cacheMiddleware } from "./middlewares/cacheMiddleware.ts";
 import { dataWrapMiddleware, errorHandlerMiddleware } from "./middlewares/index.ts";
@@ -56,6 +58,7 @@ export class HttpTransport implements TransportInterface {
   config: ConfigInterface;
   port: string;
   server: Server;
+  healthServer: Server | undefined;
   cache: CacheMiddleware;
 
   constructor(private kernel: KernelInterface) {}
@@ -78,12 +81,30 @@ export class HttpTransport implements TransportInterface {
     this.setup();
 
     this.start(port);
+    await this.startHealth(this.config.get("proxy.healthPort", 8081));
   }
 
   async down(): Promise<void> {
     if (this.server) {
       this.server.close();
     }
+    if (this.healthServer) {
+      this.healthServer.close();
+      // close() attend la fin des connexions keep-alive.
+      this.healthServer.closeAllConnections();
+    }
+  }
+
+  private async startHealth(port: number): Promise<void> {
+    let shuttingDown = false;
+    registerOnSignal("SIGTERM", () => {
+      shuttingDown = true;
+    });
+    const pg = this.kernel.getContainer().get(LegacyPostgresConnection);
+    this.healthServer = await startHealthServer(port, {
+      checkReady: () => pg.getClient().query({ text: "SELECT 1", query_timeout: 500 }),
+      isShuttingDown: () => shuttingDown,
+    });
   }
 
   setup(): void {
@@ -92,7 +113,7 @@ export class HttpTransport implements TransportInterface {
     this.registerBodyHandler();
     this.registerSessionHandler();
     this.registerSecurity();
-    this.registerMetrics();
+    this.registerPublicHealth();
     this.registerGlobalMiddlewares();
     this.registerCache();
     this.registerNestedRoutes();
@@ -231,16 +252,11 @@ export class HttpTransport implements TransportInterface {
     );
   }
 
-  private registerMetrics(): void {
+  private registerPublicHealth(): void {
     this.app.get(
       "/health",
       metricsMiddleware("health"),
       healthCheckFactory([]),
-    );
-    this.app.get(
-      "/metrics",
-      metricsMiddleware("metrics"),
-      prometheusMetricsFactory(),
     );
   }
 

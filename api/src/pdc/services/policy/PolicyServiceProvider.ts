@@ -27,6 +27,9 @@ import { MetadataRepositoryProvider } from "./providers/MetadataRepositoryProvid
 import { PolicyRepositoryProvider } from "./providers/PolicyRepositoryProvider.ts";
 import { TerritoryRepositoryProvider } from "./providers/TerritoryRepositoryProvider.ts";
 import { TripRepositoryProvider } from "./providers/TripRepositoryProvider.ts";
+import { SimulationRepositoryProvider } from "./simulation/SimulationRepositoryProvider.ts";
+import { SimulationService } from "./simulation/SimulationService.ts";
+import { PerimeterRepositoryProvider } from "../territory/providers/PerimeterRepositoryProvider.ts";
 
 @serviceProvider({
   config,
@@ -34,7 +37,10 @@ import { TripRepositoryProvider } from "./providers/TripRepositoryProvider.ts";
     APDFNameProvider,
     IncentiveRepositoryProvider,
     MetadataRepositoryProvider,
+    PerimeterRepositoryProvider,
     PolicyRepositoryProvider,
+    SimulationRepositoryProvider,
+    SimulationService,
     TerritoryRepositoryProvider,
     TripRepositoryProvider,
   ],

@@ -160,6 +160,27 @@ Les `arr` stockés sont figés : après le chargement d'un nouveau millésime, l
 versions en vigueur, à partir de `--from` (défaut : maintenant), les codes issus de fusions ou scissions
 (`geo.com_evolution`). Les territoires sans version suivent les millésimes via leurs sélecteurs.
 
+### Simulation d'une campagne (`campaign:apply --dry-run`)
+
+Rejoue `campaign:apply --override` puis `campaign:finalize` en mémoire, sans rien écrire en base (ni incitations,
+ni `policy_metas`, ni `incentive_sum`, ni statut des campagnes, ni périmètre) : un compte PostgreSQL en lecture seule suffit.
+
+```bash
+just api campaign:apply -c 1115 -f 2026-01-01 -t 2026-11-23 --dry-run --out /tmp/sim.csv [--perimeter reg:76]
+```
+
+- Une seule campagne (`-c`) et `--out` sont obligatoires. Tous les trajets de la période sont évalués, y compris ceux
+  qui ont déjà une incitation.
+- Les compteurs (limites journalières, enveloppe) repartent de zéro : l'étape avec état simule une base purgée.
+- `--perimeter` remplace le périmètre du territoire (mêmes codes `type:code` que `territory:perimeter`) pour la
+  sélection des trajets et pour le filtre de la campagne.
+- CSV, un trajet par ligne, montants en centimes comme dans `policy.incentives`, données pseudonymisées (usage interne, ne pas publier, supprimer après analyse) :
+  `operator_id, operator_journey_id, datetime, start_arr, end_arr, distance, current_amount, current_status,
+  simulated_stateless_amount, simulated_final_amount, rejection_reason, simulated_final_status`.
+  `current_*` : ligne actuelle de la policy en base (vide si aucune). `simulated_final_status` vaut `error` pour les
+  trajets annulés ou en échec anomalie/fraude : comme `campaign:finalize`, leur montant n'est pas remis à zéro, à
+  exclure des totaux.
+
 ## Configuration
 
 ### Variables d'environnement
@@ -174,14 +195,19 @@ Copier `.env.example` vers `.env` et configurer les valeurs.
 | --- | --- | --- | --- |
 | `NODE_ENV` | Non | `local` | Environnement Node.js |
 | `APP_ENV` | Non | `${NODE_ENV}` | Environnement applicatif (`local`, `dev`, `staging`, `production`). Contrôle la sécurité des cookies de session, l'accès au listing RPC, le filtrage des actions par environnement |
-| `APP_MAINTENANCE` | Non | `false` | Active le mode maintenance (HTTP 503 sur toutes les requêtes) |
+| `APP_MAINTENANCE` | Non | `false` | Active le mode maintenance (HTTP 503 sur toutes les requêtes, `/health` public compris ; les sondes de `HEALTH_PORT` restent à 200) |
+| `PORT` | Non | `8080` | Port du serveur HTTP |
+| `HEALTH_PORT` | Non | `8081` | Port interne des sondes Kubernetes, à ne jamais exposer (Service, HTTPRoute) |
+| `APP_MONITORING_TOKEN` | Non | – | Transition : l'en-tête `x-monitoring-token` fait passer `GET /health` (port public) hors limite de débit. À retirer une fois les sondes sur `HEALTH_PORT` |
 | `APP_FEATURE_EXTERNAL_CAMPAIGNS` | Non | `false` | Active les campagnes déclarées (`/dashboard/external-campaign(s)`, 5 routes). Éteint : 404 « Fonctionnalité indisponible » avant tout accès base |
 | `APP_VERSION` | Non | ISO timestamp | Version de l'application, utilisée dans les tags Sentry et les logs de démarrage |
 | `APP_LOG_LEVEL` | Non | `INFO` | Niveau de log (`DEBUG`, `INFO`, `WARN`, `ERROR`). Les écritures passant par le Kernel sont tracées en `INFO` avec le préfixe `[audit]` (identifiants pseudonymes de l'acteur et des ressources uniquement, ni e-mail, ni nom, ni téléphone) |
 
 Format des logs : `[tag] étape clé=valeur` via `taggedLogger("[tag]")` (`src/lib/logger/tagged.ts`). Tags : `[audit]`, `[http]`, `[kernel]`, `[pg]`, `[cache]`, `[session]`, `[proconnect]`, `[dex]`, `[campaign]`, `[apdf]`, `[export]`, `[geo]`, `[boot]`… Les valeurs sont filtrées et tronquées ; sur les chemins de requête, une erreur est notée `error=<Classe:code>` (`errorCode(e)`), jamais par son message. `session=` est une empreinte de la session, stable du login au logout.
 
-Journal d'accès : une ligne `INFO` par requête HTTP, à la fin de la réponse, dans tous les environnements (`src/pdc/proxy/middlewares/accessLogMiddleware.ts`). Message `[access]`, champs dans `args` : `ip` (`req.ip`, comme le limiteur de débit), `request_id` (`X-Request-Id` du proxy), `method`, `route` (chemin réel filtré et borné, sans query string), `route_pattern` (motif Express, si une route a répondu), `api_version`, `status`, `duration_ms`, `sub` et `role` si authentifié (`user:<_id>` ou `operator:<operator_id>`), `pentest_id` si l'en-tête `X-Pentest-Id` est présent. Ni query string, ni corps, ni cookie, ni jeton. Les sondes `/health` et `/metrics` réussies ne sont pas journalisées.
+Journal d'accès : une ligne `INFO` par requête HTTP, à la fin de la réponse, dans tous les environnements (`src/pdc/proxy/middlewares/accessLogMiddleware.ts`). Message `[access]`, champs dans `args` : `ip` (`req.ip`, comme le limiteur de débit), `request_id` (`X-Request-Id` du proxy), `method`, `route` (chemin réel filtré et borné, sans query string), `route_pattern` (motif Express, si une route a répondu), `api_version`, `status`, `duration_ms`, `sub` et `role` si authentifié (`user:<_id>` ou `operator:<operator_id>`), `pentest_id` si l'en-tête `X-Pentest-Id` est présent. Ni query string, ni corps, ni cookie, ni jeton. Les sondes `/health` réussies ne sont pas journalisées.
+
+Sondes (`src/pdc/proxy/helpers/healthServer.ts`) : serveur HTTP nu sur `HEALTH_PORT`, démarré avec le transport `http` (pas par les commandes CLI), sans middleware, session, Redis ni limite de débit, ni jeton. `GET /health/live` → 200 tant que le processus répond (liveness, aucune dépendance). `GET /health/ready` → 200, ou 503 après `SIGTERM` ou si Postgres ne répond pas à `SELECT 1` en 500 ms (readiness ; Redis non vérifié, le mode maintenance non plus). Corps `{"status":"ok"}` ou `{"status":"error"}`, détail au journal `[health]`. Toute autre route : 404.
 
 #### URLs des services
 
@@ -214,7 +240,7 @@ Journal d'accès : une ligne `INFO` par requête HTTP, à la fin de la réponse,
 
 | Variable | Requis | Défaut | Description |
 | --- | --- | --- | --- |
-| `APP_MAIL_SMTP_URL` | **Oui** | — | URL du serveur SMTP (ex: `smtp://mailhog:1025`) |
+| `APP_MAIL_SMTP_URL` | **Oui** | — | URL du serveur SMTP (ex: `smtp://mailer:1025`) |
 | `APP_MAIL_FROM_NAME` | Non | `Preuve de covoiturage` | Nom de l'expéditeur |
 | `APP_MAIL_FROM_EMAIL` | Non | `contact@covoiturage.beta.gouv.fr` | Email de l'expéditeur |
 | `APP_MAIL_DEBUG_MODE` | Non | `false` | Redirige tous les emails sortants vers l'adresse de debug |
@@ -226,9 +252,11 @@ Journal d'accès : une ligne `INFO` par requête HTTP, à la fin de la réponse,
 
 | Variable | Requis | Défaut | Description |
 | --- | --- | --- | --- |
-| `BREVO_API_KEY` | Non | `""` | Clé API Brevo. Vide = service désactivé |
-| `BREVO_WELCOME_TEMPLATE_ID` | Non | `0` | ID du template Brevo pour l'email de bienvenue. `0` = désactivé |
+| `BREVO_API_KEY` | Non | `""` | Clé API Brevo. Vide = e-mail de bienvenue envoyé par SMTP |
+| `BREVO_WELCOME_TEMPLATE_ID` | Non | `0` | ID du template Brevo pour l'email de bienvenue. `0` = e-mail de bienvenue envoyé par SMTP |
 | `BREVO_API_URL` | Non | `https://api.brevo.com/v3/smtp/email` | Endpoint API Brevo |
+
+Sans clé API Brevo (local, CI), l'e-mail de bienvenue part par SMTP (`WelcomeUserNotification`, contenu aligné sur le template Brevo) et s'affiche dans Mailpit.
 
 L'e-mail de bienvenue (création d'un utilisateur) transmet au template Brevo les paramètres `email`, `siret` et `login_url` (URL du front, `APP_APP_URL`). Le template doit utiliser `{{ params.login_url }}` pour le lien de connexion, jamais une URL en dur : la même clé sert en démo et en production.
 

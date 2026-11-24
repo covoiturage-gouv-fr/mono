@@ -1,38 +1,39 @@
 "use client";
+import TerritoryAutocomplete from "@/components/common/TerritoryAutocomplete";
+import type { TerritoryOption } from "@/helpers/api";
 import { useTerritoriesList } from "@/hooks/api";
-import { Select } from "@codegouvfr/react-dsfr/Select";
 import { useState } from "react";
 
+// Même identifiant (`territory_group._id`) que `user.territory_id` : la route
+// `dashboard/territories` sert à la fois la recherche et la résolution du libellé initial.
 export default function SelectTerritory(props: {
   defaultValue: number | null;
   onChange: (id: number | null, label?: string) => void;
 }) {
-  const [value, setValue] = useState<number | null>(props.defaultValue);
-  const { data } = useTerritoriesList({ limit: 200 });
+  const [id, setId] = useState<number | null>(props.defaultValue);
+  const [picked, setPicked] = useState<TerritoryOption | null>(null);
   const [prevDefaultValue, setPrevDefaultValue] = useState(props.defaultValue);
   if (prevDefaultValue !== props.defaultValue) {
     setPrevDefaultValue(props.defaultValue);
-    setValue(props.defaultValue);
+    setId(props.defaultValue);
   }
+  const { data } = useTerritoriesList({ limit: 1, territory_id: id });
+
+  const fetched = data?.data[0];
+  let value: TerritoryOption | null = null;
+  if (picked?._id === id) value = picked;
+  else if (id && fetched?._id === id)
+    value = { _id: id, name: fetched.name, siret: fetched.siret };
 
   return (
-    <Select
-      label=""
-      nativeSelectProps={{
-        value: value ?? "",
-        onChange: (e) => {
-          const newValue = Number(e.target.value);
-          setValue(newValue);
-          props.onChange(newValue, e.target.selectedOptions[0]?.text);
-        },
+    <TerritoryAutocomplete
+      label="Territoire"
+      value={value}
+      onChange={(t) => {
+        setPicked(t);
+        setId(t?._id ?? null);
+        props.onChange(t?._id ?? null, t?.name);
       }}
-    >
-      <option value="">Selectionner un territoire</option>
-      {data?.data.map((d, i) => (
-        <option key={i} value={d._id}>
-          {d.name}
-        </option>
-      ))}
-    </Select>
+    />
   );
 }

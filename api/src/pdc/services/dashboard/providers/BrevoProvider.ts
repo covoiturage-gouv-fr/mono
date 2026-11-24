@@ -1,5 +1,10 @@
 import { ConfigInterfaceResolver, provider } from "@/ilos/common/index.ts";
 import {
+  MailTemplateNotificationInterface,
+  NotificationTransporterInterfaceResolver,
+} from "@/pdc/providers/notification/index.ts";
+import { WelcomeUserNotification } from "../notifications/WelcomeUserNotification.ts";
+import {
   BrevoProviderInterface,
   BrevoProviderInterfaceResolver,
   SendWelcomeEmailParams,
@@ -13,7 +18,10 @@ export class BrevoProvider implements BrevoProviderInterface {
   private apiKey: string = "";
   private welcomeTemplateId: number = 0;
 
-  constructor(private config: ConfigInterfaceResolver) {}
+  constructor(
+    private config: ConfigInterfaceResolver,
+    private emailer: NotificationTransporterInterfaceResolver<MailTemplateNotificationInterface>,
+  ) {}
 
   async init(): Promise<void> {
     this.apiUrl = this.config.get("brevo.apiUrl", "");
@@ -23,6 +31,14 @@ export class BrevoProvider implements BrevoProviderInterface {
 
   async sendWelcomeEmail(params: SendWelcomeEmailParams): Promise<void> {
     if (!this.apiUrl || !this.apiKey || !this.welcomeTemplateId) {
+      // Sans Brevo (local, CI) : même contenu via SMTP, visible dans Mailpit.
+      await this.emailer.send(
+        new WelcomeUserNotification(params.email, {
+          email: params.email,
+          siret: params.siret,
+          action_href: params.login_url,
+        }),
+      );
       return;
     }
 
