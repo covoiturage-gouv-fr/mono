@@ -457,6 +457,27 @@ export default function UsersTable(props: { title: string; territoryId: number |
                     ))}
                   </Select>
                 </div>
+                {canManageScopes && isOperatorTarget && (
+                  <div className={fr.cx("fr-fieldset__element")}>
+                    <Select
+                      label="Opérateur"
+                      state={modal.errors?.operator_id ? "error" : "default"}
+                      stateRelatedMessage={modal.errors?.operator_id ?? ""}
+                      nativeSelectProps={{
+                        "aria-invalid": !!modal.errors?.operator_id,
+                        value: (modal.currentRow.operator_id as number | null) ?? "",
+                        onChange: (e) => onChangeOperator(e.target.value),
+                      }}
+                    >
+                      <option value="">aucun</option>
+                      {operatorsList().map((o, i) => (
+                        <option key={i} value={o?.id}>
+                          {o?.name}
+                        </option>
+                      ))}
+                    </Select>
+                  </div>
+                )}
               </fieldset>
 
               {/* Connexion : login_siren réservé registry.admin, masqué (pas grisé) sinon. */}
@@ -482,54 +503,31 @@ export default function UsersTable(props: { title: string; territoryId: number |
                 </fieldset>
               )}
 
-              {/* Périmètres : masqués pour territory.admin et pour un rôle sans périmètre (registry). */}
-              {(isOperatorTarget || (canManageScopes && isTerritoryTarget)) && (
+              {/* Périmètres : territoires seulement, pour registry.admin. */}
+              {canManageScopes && isTerritoryTarget && (
                 <fieldset className={fr.cx("fr-fieldset")}>
                   <legend className={fr.cx("fr-fieldset__legend")}>Périmètres</legend>
-                  {isOperatorTarget && (
-                    <div className={fr.cx("fr-fieldset__element")}>
-                      <Select
-                        label="Opérateur"
-                        state={modal.errors?.operator_id ? "error" : "default"}
-                        stateRelatedMessage={modal.errors?.operator_id ?? ""}
-                        nativeSelectProps={{
-                          "aria-invalid": !!modal.errors?.operator_id,
-                          value: (modal.currentRow.operator_id as number | null) ?? "",
-                          onChange: (e) => onChangeOperator(e.target.value),
-                        }}
-                      >
-                        {canManageScopes && <option value="">aucun</option>}
-                        {operatorsList().map((o, i) => (
-                          <option key={i} value={o?.id}>
-                            {o?.name}
-                          </option>
-                        ))}
-                      </Select>
-                    </div>
-                  )}
-                  {canManageScopes && isTerritoryTarget && !isOperatorTarget && (
-                    <div className={fr.cx("fr-fieldset__element")}>
-                      {features.multiSiret ? (
-                        <UserScopesEditor
-                          scopes={(modal.currentRow.scopes as UserScopeInput[]) ?? []}
-                          onChange={onChangeScopes}
-                        />
-                      ) : (
-                        <TerritoryAutocomplete
-                          label="Territoire"
-                          value={defaultTerritory()}
-                          onChange={(t) =>
-                            onChangeScopes(
-                              t
-                                ? [{ territory_id: t._id, is_default: true, territory_name: t.name, siret: t.siret }]
-                                : [],
-                            )
-                          }
-                        />
-                      )}
-                      {modal.errors?.scopes && <p className={fr.cx("fr-error-text")}>{modal.errors.scopes}</p>}
-                    </div>
-                  )}
+                  <div className={fr.cx("fr-fieldset__element")}>
+                    {features.multiSiret ? (
+                      <UserScopesEditor
+                        scopes={(modal.currentRow.scopes as UserScopeInput[]) ?? []}
+                        onChange={onChangeScopes}
+                      />
+                    ) : (
+                      <TerritoryAutocomplete
+                        label="Territoire"
+                        value={defaultTerritory()}
+                        onChange={(t) =>
+                          onChangeScopes(
+                            t
+                              ? [{ territory_id: t._id, is_default: true, territory_name: t.name, siret: t.siret }]
+                              : [],
+                          )
+                        }
+                      />
+                    )}
+                    {modal.errors?.scopes && <p className={fr.cx("fr-error-text")}>{modal.errors.scopes}</p>}
+                  </div>
                 </fieldset>
               )}
             </>
