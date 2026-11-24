@@ -9,6 +9,7 @@ def test_conninfo_enforces_read_only_and_statement_timeout():
     opts = conninfo_to_dict(s.conninfo())["options"]
     assert "default_transaction_read_only=on" in opts
     assert "statement_timeout=1234" in opts
+    assert "jit=off" in opts
 
 
 def test_conninfo_escapes_special_chars_in_password():

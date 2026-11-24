@@ -2,6 +2,7 @@
 
   {% set period = exposed_period(grain) %}
 
+{#- post_hook, pas config(indexes) : ce dernier n'agit qu'à la création, pas sur une table incrémentale existante. -#}
 {{ config(
   materialized='incremental',
   incremental_strategy='delete+insert',
@@ -10,7 +11,11 @@
     {'columns': ['year'] + period.cols + ['type', 'territory_1', 'territory_2'], 'unique': true}
   ],
   tags=['exposed', 'observatory', 'od'],
-  pre_hook=(['{{ exposed_types_delete() }}'] if exposed_types() else [])
+  pre_hook=(['{{ exposed_types_delete() }}'] if exposed_types() else []),
+  post_hook=[
+    "CREATE INDEX IF NOT EXISTS {{ this.name }}_type_territory_1_idx ON {{ this }} (type, territory_1)",
+    "CREATE INDEX IF NOT EXISTS {{ this.name }}_type_territory_2_idx ON {{ this }} (type, territory_2)",
+  ]
 ) }}
 
 {% set type_map = [

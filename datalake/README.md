@@ -304,6 +304,14 @@ just pipeline-raw
 
 Charge les données IGN 2025 (GPKG), CEREMA AOMs, mouvements INSEE, campagnes et aires de covoiturage depuis `<bucket>/seeds/` vers `zone_raw`. **Toutes les sources vivent dans notre S3** : les jeux data.gouv.fr / transport.data.gouv.fr sont recopiés au préalable via `just mirror <url> <clé>` (l'amont data.gouv est peu fiable), puis traités comme les autres. Le géo passe par **ogr2ogr** (streaming natif → PostGIS, remplace duckdb-spatial qui segfaultait) et le tabulaire par **COPY psycopg** dans des tables typées explicitement en config. Inclut géométries complètes, simplifiées et centroïdes pour communes, EPCIs, départements et régions. Chaque source porte en config son empreinte (`sha256`), sa taille et sa date d'upload : **intégrité vérifiée systématiquement** — une source sans empreinte committée est refusée (`just checksum` pour la calculer). La config `seed_raw.json` fait office de lock.
 
+`insee_mobpro_2023` (fichier détail [Mobilités professionnelles RP2023](https://www.insee.fr/fr/statistiques/9004795), géographie au 01/01/2025) est uploadé à la main : l'INSEE ne publie qu'un parquet ou un CSV zippé séparé par `;`, que le seed ne lit pas. Conversion une fois par millésime, sans dépendance de plus :
+
+```bash
+duckdb -c "COPY (FROM 'RP2023_mobpro.parquet') TO 'insee_mobpro_2023.<ts>.csv' (HEADER, DELIMITER ',')"
+```
+
+Une ligne = un individu : compter avec `sum(poids_individu)`, jamais `count(*)`.
+
 ### Étape 2 — Zone trusted géographique
 
 ```bash
@@ -400,11 +408,22 @@ just pipeline-daily
 | Générer les YAMLs d'un layer           | `just osmosis-refactor trusted`                                    |
 | Export data.gouv (debug, sans publier) | `just datagouv --debug --start 2026-07-01 --end 2026-08-01`        |
 | Export des millésimes vers la prod     | `just export-perimeters`                                           |
+| Carte des flux par tronçon (OSRM)     | `just pipeline-routing`                                            |
 
 `just datagouv --debug [--start … --end …]` exécute l'export **sans publier** sur data.gouv :
 dépose CSV/description/rapport horodatés sous `datagouv/logs/` et imprime un verdict d'invariants
 de cohérence (exit 1 si un invariant dur est cassé). À lancer dans le pod datalake pour debugguer
 sur de vraies données.
+
+`just pipeline-routing` construit la carte des flux par tronçon de route (`models/routing/`, tag `routing`, hors pipeline quotidien) pour les trajets de la fenêtre `routing_from` / `routing_to` (vars de `dbt_project.yml`) :
+
+1. `h3_od_month` : flux orientés départ → arrivée entre cellules H3 z8 des trajets entre deux communes de 80 km au plus (périmètre de `/flux`), avec le centre des cellules ;
+2. `just route-od [--limit N] [--dry-run]` route avec OSRM les paires absentes du cache `zone_raw.osrm_route` (suite des nœuds OSM) / `zone_raw.osrm_node` (coordonnées), tables créées par la commande elle-même (pas par dbt : un `--full-refresh` viderait le cache). Interruptible et relançable sans perte ;
+3. `route_trim` (route sans sa partie dans la cellule de départ et d'arrivée, incrémental : seules les nouvelles paires sont coupées, la cellule des nœuds étant calculée à la volée par `osrm_node_h3`, éphémère), `edge_flows` (trajets, nombre de paires de cellules et trajets de la paire dominante par tronçon `(node_a, node_b)` et par période, sens cumulés) et `edge_geom` (géométrie de chaque tronçon, une ligne toutes périodes confondues).
+
+`edge_flows` a une ligne par période : `year` + `month` pour chaque mois de la fenêtre, `year` + `month` vide pour chaque année **entièrement** couverte (une fenêtre partielle n'écrit pas d'année). Un passage remplace les périodes de sa fenêtre et garde les autres : on calcule une année avec `just pipeline-routing --vars '{routing_from: "2025-01-01", routing_to: "2026-01-01"}'`, qui écrit ses 12 mois et l'année. La fenêtre doit commencer et finir un premier du mois. Un `--full-refresh` d'`edge_flows` ne garde que la fenêtre courante : les autres périodes sont à recalculer (depuis le cache, sans nouveau routage). Seul le cache OSRM coûte cher à reconstruire : la première année route la plupart des paires, les suivantes seulement les nouvelles.
+
+Variables : `OSRM_URL` (dans le cluster `http://osrm.extension-osrm.svc.cluster.local`, en local `just forward osrm` depuis le dépôt infra) et `OSRM_DATASET` / var dbt `osrm_dataset` (date de l'import OSM servi, défaut `2023-12-21`). L'instance OSRM sert aussi l'API de prod : garder `--concurrency 2` (défaut) et lancer la nuit.
 
 `just export-perimeters [--year N …] [--last 2]` dump les 2 derniers millésimes de `zone_trusted.perimeters` (ou ceux passés en `--year`) et `zone_trusted.com_evolution` au format du schéma `geo` de la prod : `pg_dump` custom de `geo_export.perimeters` et `geo_export.com_evolution`, écrit dans `tmp/geo/` (ignoré par git, option `--out-dir`) et uploadé sous `S3_BUCKET/geo/` avec son `.sha256`. Requiert `pg_dump` ≥ version du serveur (`nix develop`). Import : `geo-import stage <nom du dump>` dans le pod geo-import, ou `just geo-import tmp/geo/<nom du dump>` en local, qui remplace `geo.perimeters` (voir `api/src/db/README.md`).
 
