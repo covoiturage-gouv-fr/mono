@@ -1,4 +1,4 @@
-import { ConfigInterfaceResolver, NotFoundException, provider } from "@/ilos/common/index.ts";
+import { ConfigInterfaceResolver, NotFoundException, provider, UnexpectedException } from "@/ilos/common/index.ts";
 
 import {
   CompanyDataSourceProviderInterface,
@@ -20,8 +20,12 @@ export class CompanyDataSourceProvider implements CompanyDataSourceProviderInter
 
   async find(siret: string): Promise<CompanyInterface> {
     try {
-      const { url, token } = this.config.get("dataSource");
+      const { url, token, timeout } = this.config.get("dataSource");
+      if (!token) {
+        throw new UnexpectedException("company data source: APP_INSEE_API_KEY is not set");
+      }
       const response = await fetcher.get(`${url}/siret/${siret}`, {
+        signal: AbortSignal.timeout(timeout),
         headers: {
           "X-INSEE-Api-Key-Integration": token,
           "Accept": "application/json",
@@ -76,6 +80,9 @@ export class CompanyDataSourceProvider implements CompanyDataSourceProviderInter
       };
     } catch (e) {
       log.error("fetch failed", { error: errorCode(e) });
+      if (e instanceof DOMException && e.name === "TimeoutError") {
+        throw new UnexpectedException("company data source: timeout");
+      }
       throw e;
     }
   }
