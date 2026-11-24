@@ -55,7 +55,7 @@ export class CreateUserAction extends AbstractAction {
 
     // L'échec de l'e-mail d'invitation ne remet pas en cause la création du compte.
     try {
-      const siret = await this.getSiretForUser(data.operator_id, data.territory_id);
+      const siret = data.login_siren || await this.getSiretForUser(data.operator_id, data.territory_id);
       await this.brevoProvider.sendWelcomeEmail({
         email: data.email,
         siret: siret || "",
