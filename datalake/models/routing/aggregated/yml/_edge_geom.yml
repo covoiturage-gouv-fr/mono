@@ -1,0 +1,24 @@
+version: 2
+
+unit_tests:
+  - name: edge_geom_one_line_per_edge_across_periods
+    model: edge_geom
+    description: Un tronçon présent dans plusieurs périodes n'a qu'une géométrie.
+    overrides:
+      macros:
+        is_incremental: false
+    given:
+      - input: ref('edge_flows')
+        rows:
+          - {year: 2026, month: 10, node_a: 1, node_b: 2, journeys: 3, pairs: 1, top_pair_journeys: 3}
+          - {year: 2026, month: null, node_a: 1, node_b: 2, journeys: 5, pairs: 1, top_pair_journeys: 5}
+      - input: source('raw', 'osrm_node')
+        rows:
+          - {dataset: '2023-12-21', node_id: 1, lng: 0, lat: 0}
+          - {dataset: '2023-12-21', node_id: 2, lng: 0, lat: 1}
+          # autre import OSM : ignoré
+          - {dataset: '2026-01-01', node_id: 1, lng: 9, lat: 9}
+    expect:
+      format: sql
+      rows: |
+        SELECT 1::bigint AS node_a, 2::bigint AS node_b, st_geomfromtext('LINESTRING(0 0, 0 1)', 4326) AS geom

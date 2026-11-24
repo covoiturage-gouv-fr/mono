@@ -1,11 +1,14 @@
 """Endpoints publics de l'observatoire."""
 
+import logging
 from typing import Literal
 
 from fastapi import APIRouter, Depends, Query, Response
+from psycopg.errors import QueryCanceled
 
 from ..cache import (
     build_cache_key,
+    build_stale_key,
     cache_get,
     cache_set,
     get_redis,
@@ -14,10 +17,13 @@ from ..cache import (
 )
 from ..config import settings
 from ..db import connection
+from ..errors import unavailable_response
 from ..helpers import check_code_param, check_observe_param, check_territory_param
 from ..period import is_published, last_record_cutoff
 from ..repositories import observatory as repo
 from ..repositories import observatory_aggregated as agg
+
+logger = logging.getLogger("api_datalake")
 
 router = APIRouter(prefix="/observatory", tags=["observatory"])
 
@@ -37,11 +43,10 @@ def get_conn():
 
 def _gzip_json(blob: bytes, cache_state: str) -> Response:
     """Sert un payload déjà gzippé, avec les en-têtes de cache."""
-    return Response(
-        content=blob,
-        media_type="application/json",
-        headers={"Content-Encoding": "gzip", "X-Cache": cache_state},
-    )
+    headers = {"Content-Encoding": "gzip", "X-Cache": cache_state}
+    if cache_state == "STALE":
+        headers["Cache-Control"] = "no-store"
+    return Response(content=blob, media_type="application/json", headers=headers)
 
 
 async def _serve_cached(redis, route: str, params: dict, produce, acquire,
@@ -51,6 +56,9 @@ async def _serve_cached(redis, route: str, params: dict, produce, acquire,
     La connexion n'est ouverte (`acquire()`) que sur cache MISS, et relâchée dès la
     requête terminée — avant la sérialisation/gzip. Une panne Redis dégrade en
     cache-miss (`X-Cache: BYPASS`), jamais en 500.
+
+    Si la requête dépasse le `statement_timeout`, on sert la copie de secours
+    (`X-Cache: STALE`) ou, à défaut, un 503 avec `Retry-After`.
 
     `ttl` : durée de vie en cache (défaut `cache_ttl_seconds`). Un endpoint à
     espace de clés large (texte libre) passe un TTL plus court.
@@ -65,12 +73,22 @@ async def _serve_cached(redis, route: str, params: dict, produce, acquire,
     if hit is not None:
         return _gzip_json(hit, "HIT")
 
-    async with acquire() as conn:
-        data = await produce(conn)
+    stale_key = build_stale_key(cutoff, route, params) if redis is not None else None
+    try:
+        async with acquire() as conn:
+            data = await produce(conn)
+    except QueryCanceled:
+        stale, _ = await cache_get(redis, stale_key)
+        if stale is None:
+            return unavailable_response(route)
+        logger.warning("statement timeout on %s, served stale", route)
+        return _gzip_json(stale, "STALE")
     blob = gzip_payload(data)
     if ok:
         await cache_set(redis, key, blob,
                         ttl if ttl is not None else settings.cache_ttl_seconds)
+        if ttl is None:
+            await cache_set(redis, stale_key, blob, settings.cache_stale_ttl_seconds)
     return _gzip_json(blob, "MISS" if ok else "BYPASS")
 
 

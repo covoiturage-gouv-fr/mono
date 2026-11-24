@@ -30,6 +30,11 @@ datalake_production  ·  zone_exposed.{od,incentive,distribution,occupation,loca
   `Content-Encoding: gzip`. Clé = route + params + version de publication
   (cutoff `APP_OBSERVATORY_PUBLISHED_UNTIL` + compteur `obs:cache:version` que le
   pipeline dbt incrémente à chaque publication).
+  Chaque MISS écrit aussi une **copie de secours** indexée par le cutoff mais pas par
+  le compteur (`obs:stale:<cutoff>:*`, TTL `CACHE_STALE_TTL_SECONDS`, 7 j), hors
+  endpoint de recherche. Si la requête SQL dépasse `DB_STATEMENT_TIMEOUT_MS`, la copie
+  est servie (`X-Cache: STALE`, `Cache-Control: no-store`) ; sans copie, réponse 503 +
+  `Retry-After: 120`.
 - **Fenêtre de publication** : `APP_OBSERVATORY_PUBLISHED_UNTIL` (borne supérieure
   exclusive, `YYYY-MM-DD`), portée depuis `helpers/publishedDate.ts`.
 

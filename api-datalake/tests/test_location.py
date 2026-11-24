@@ -124,7 +124,7 @@ def test_location_cache_hit_served_from_redis():
     first = c.get("/observatory/location", params={"code": "75056", "type": "com", "year": 2022, "n": 8})
     assert first.headers["x-cache"] == "MISS"
     # on force une entrée pré-existante et on rappelle : HIT
-    (only_key,) = redis.store.keys()
+    (only_key,) = [k for k in redis.store if not k.startswith("obs:stale:")]
     redis.store[only_key] = gzip.compress(json.dumps(cached).encode())
     second = c.get("/observatory/location", params={"code": "75056", "type": "com", "year": 2022, "n": 8})
     assert second.headers["x-cache"] == "HIT"
