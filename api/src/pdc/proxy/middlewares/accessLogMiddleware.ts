@@ -19,7 +19,7 @@ export type AccessLogFields = {
 };
 
 // Sondes k8s et Prometheus : plusieurs appels par minute et par pod, sans intérêt tant qu'elles réussissent.
-const PROBE_ROUTES = new Set(["/health", "/metrics"]);
+const PROBE_ROUTES = new Set(["/health"]);
 
 // En-tête fourni par l'appelant : borné et filtré avant d'entrer dans le journal.
 function header(req: Request, name: string): string | undefined {

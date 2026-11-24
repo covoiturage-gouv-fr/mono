@@ -26,7 +26,6 @@ async function withServer(fn: (hit: Hit, lines: AccessLogFields[], get: Get) => 
     next();
   });
   app.get("/health", (req: Request, res: Response) => res.status(req.headers["x-test-fail"] ? 503 : 200).send("ok"));
-  app.get("/metrics", (_req: Request, res: Response) => res.send("ok"));
   app.post("/:api_version/journeys/:id", (_req: Request, res: Response) => res.status(201).json({ ok: true }));
   app.get(
     "/:api_version/guarded/:id",
@@ -211,7 +210,6 @@ describe("accessLogMiddleware", () => {
   it("skips successful probes but keeps their failures", async () => {
     await withServer(async (hit, lines, get) => {
       await get("/health");
-      await get("/metrics");
       const failed = await hit("/health", { headers: { "x-test-fail": "1" } });
       assertEquals([failed.route, failed.route_pattern, failed.status], ["/health", "/health", 503]);
       assertEquals(lines.length, 1);
