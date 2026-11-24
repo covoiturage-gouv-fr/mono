@@ -102,7 +102,7 @@ export class HttpTransport implements TransportInterface {
     });
     const pg = this.kernel.getContainer().get(LegacyPostgresConnection);
     this.healthServer = await startHealthServer(port, {
-      checkReady: () => pg.getClient().query("SELECT 1"),
+      checkReady: () => pg.getClient().query({ text: "SELECT 1", query_timeout: 500 }),
       isShuttingDown: () => shuttingDown,
     });
   }

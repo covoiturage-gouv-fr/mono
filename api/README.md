@@ -195,7 +195,7 @@ Copier `.env.example` vers `.env` et configurer les valeurs.
 | --- | --- | --- | --- |
 | `NODE_ENV` | Non | `local` | Environnement Node.js |
 | `APP_ENV` | Non | `${NODE_ENV}` | Environnement applicatif (`local`, `dev`, `staging`, `production`). Contrôle la sécurité des cookies de session, l'accès au listing RPC, le filtrage des actions par environnement |
-| `APP_MAINTENANCE` | Non | `false` | Active le mode maintenance (HTTP 503 sur toutes les requêtes, sauf les sondes) |
+| `APP_MAINTENANCE` | Non | `false` | Active le mode maintenance (HTTP 503 sur toutes les requêtes, `/health` public compris ; les sondes de `HEALTH_PORT` restent à 200) |
 | `PORT` | Non | `8080` | Port du serveur HTTP |
 | `HEALTH_PORT` | Non | `8081` | Port interne des sondes Kubernetes, à ne jamais exposer (Service, HTTPRoute) |
 | `APP_MONITORING_TOKEN` | Non | – | Transition : l'en-tête `x-monitoring-token` fait passer `GET /health` (port public) hors limite de débit. À retirer une fois les sondes sur `HEALTH_PORT` |
