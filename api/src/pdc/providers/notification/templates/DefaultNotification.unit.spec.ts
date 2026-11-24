@@ -113,8 +113,19 @@ describe("default notification", () => {
     const { text, html } = stub.sendMail.getCall(0).args[0];
     assert((html as string).includes("<p>&lt;b&gt;x&lt;/b&gt; &amp; &quot;y&quot;</p>"));
     assert(!(html as string).includes("<b>x</b>"));
-    // the text template already escapes message_text: moustache must not escape it twice
     assert(!(text as string).includes("&amp;lt;"));
+  });
+
+  it("should not HTML-escape the text version", async () => {
+    const notification = new DefaultNotification("toto <toto@example.com>", {
+      fullname: "Jean & d'Arc",
+      message_text: "Il ne devrait pas d'être là & ici",
+    });
+
+    await transporter.send(notification);
+    const { text } = stub.sendMail.getCall(0).args[0];
+    assert((text as string).includes("Bonjour Jean & d'Arc,"));
+    assert((text as string).includes("Il ne devrait pas d'être là & ici"));
   });
 
   it("should render missing placeholder values as empty", async () => {

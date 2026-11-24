@@ -1,10 +1,18 @@
 import { assertEquals } from "dep:assert";
 import { afterEach, describe, it } from "dep:testing-bdd";
 import { ConfigInterfaceResolver } from "@/ilos/common/index.ts";
+import { WelcomeUserNotification } from "../notifications/WelcomeUserNotification.ts";
 import { BrevoProvider } from "./BrevoProvider.ts";
 
 function fakeConfig(values: Record<string, unknown>): ConfigInterfaceResolver {
   return { get: (k: string, d?: unknown) => values[k] ?? d } as unknown as ConfigInterfaceResolver;
+}
+
+function fakeEmailer() {
+  const sent: WelcomeUserNotification[] = [];
+  // deno-lint-ignore no-explicit-any
+  const emailer = { send: async (n: WelcomeUserNotification) => void sent.push(n) } as any;
+  return { emailer, sent };
 }
 
 const configured = {
@@ -30,7 +38,7 @@ describe("BrevoProvider.sendWelcomeEmail", () => {
 
   it("transmet login_url au template Brevo", async () => {
     const calls = stubFetch();
-    const provider = new BrevoProvider(fakeConfig(configured));
+    const provider = new BrevoProvider(fakeConfig(configured), fakeEmailer().emailer);
     await provider.init();
 
     await provider.sendWelcomeEmail({
@@ -49,13 +57,30 @@ describe("BrevoProvider.sendWelcomeEmail", () => {
     });
   });
 
-  it("n'envoie rien quand la configuration est vide", async () => {
+  it("n'appelle pas Brevo ni le SMTP quand Brevo est configuré", async () => {
     const calls = stubFetch();
-    const provider = new BrevoProvider(fakeConfig({ ...configured, "brevo.apiKey": "" }));
+    const { emailer, sent } = fakeEmailer();
+    const provider = new BrevoProvider(fakeConfig(configured), emailer);
     await provider.init();
 
     await provider.sendWelcomeEmail({ email: "u@example.com", siret: "", login_url: "https://x" });
 
+    assertEquals(calls.length, 1);
+    assertEquals(sent.length, 0);
+  });
+
+  it("envoie l'e-mail de bienvenue par SMTP quand Brevo n'est pas configuré", async () => {
+    const calls = stubFetch();
+    const { emailer, sent } = fakeEmailer();
+    const provider = new BrevoProvider(fakeConfig({ ...configured, "brevo.apiKey": "" }), emailer);
+    await provider.init();
+
+    await provider.sendWelcomeEmail({ email: "u@example.com", siret: "12345678901234", login_url: "https://x" });
+
     assertEquals(calls.length, 0);
+    assertEquals(sent.length, 1);
+    assertEquals(sent[0].to, "u@example.com");
+    assertEquals(sent[0].data.siret, "12345678901234");
+    assertEquals(sent[0].data.action_href, "https://x");
   });
 });

@@ -235,7 +235,7 @@ Journal d'accès : une ligne `INFO` par requête HTTP, à la fin de la réponse,
 
 | Variable | Requis | Défaut | Description |
 | --- | --- | --- | --- |
-| `APP_MAIL_SMTP_URL` | **Oui** | — | URL du serveur SMTP (ex: `smtp://mailhog:1025`) |
+| `APP_MAIL_SMTP_URL` | **Oui** | — | URL du serveur SMTP (ex: `smtp://mailer:1025`) |
 | `APP_MAIL_FROM_NAME` | Non | `Preuve de covoiturage` | Nom de l'expéditeur |
 | `APP_MAIL_FROM_EMAIL` | Non | `contact@covoiturage.beta.gouv.fr` | Email de l'expéditeur |
 | `APP_MAIL_DEBUG_MODE` | Non | `false` | Redirige tous les emails sortants vers l'adresse de debug |
@@ -247,9 +247,11 @@ Journal d'accès : une ligne `INFO` par requête HTTP, à la fin de la réponse,
 
 | Variable | Requis | Défaut | Description |
 | --- | --- | --- | --- |
-| `BREVO_API_KEY` | Non | `""` | Clé API Brevo. Vide = service désactivé |
-| `BREVO_WELCOME_TEMPLATE_ID` | Non | `0` | ID du template Brevo pour l'email de bienvenue. `0` = désactivé |
+| `BREVO_API_KEY` | Non | `""` | Clé API Brevo. Vide = e-mail de bienvenue envoyé par SMTP |
+| `BREVO_WELCOME_TEMPLATE_ID` | Non | `0` | ID du template Brevo pour l'email de bienvenue. `0` = e-mail de bienvenue envoyé par SMTP |
 | `BREVO_API_URL` | Non | `https://api.brevo.com/v3/smtp/email` | Endpoint API Brevo |
+
+Sans clé API Brevo (local, CI), l'e-mail de bienvenue part par SMTP (`WelcomeUserNotification`, contenu aligné sur le template Brevo) et s'affiche dans Mailpit.
 
 L'e-mail de bienvenue (création d'un utilisateur) transmet au template Brevo les paramètres `email`, `siret` et `login_url` (URL du front, `APP_APP_URL`). Le template doit utiliser `{{ params.login_url }}` pour le lien de connexion, jamais une URL en dur : la même clé sert en démo et en production.
 

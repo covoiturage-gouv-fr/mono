@@ -73,6 +73,7 @@ Les différents fichiers `docker-compose.*.yml` sont utilisés en _overlay_ pour
 - Utiliser Docker dans l'environnement: `just docker <docker_command>`
 - Afficher les logs des services: `just logs [<service>] [-f]`
 - Stopper les services: `just stop | just down`
+- Lire les e-mails envoyés en local (Mailpit, SMTP `mailer:1025`): <http://localhost:8025> ou <https://mailer.covoiturage.test> avec `just proxy`
 
 #### Misc
 
