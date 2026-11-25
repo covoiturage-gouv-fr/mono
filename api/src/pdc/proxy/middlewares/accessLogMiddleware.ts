@@ -18,9 +18,6 @@ export type AccessLogFields = {
   role?: string;
 };
 
-// Sondes k8s et Prometheus : plusieurs appels par minute et par pod, sans intérêt tant qu'elles réussissent.
-const PROBE_ROUTES = new Set(["/health"]);
-
 // En-tête fourni par l'appelant : borné et filtré avant d'entrer dans le journal.
 function header(req: Request, name: string): string | undefined {
   const value = req.headers[name];
@@ -52,7 +49,6 @@ export function accessLogMiddleware(log: (fields: AccessLogFields) => void = wri
     res.on("finish", () => {
       // Chemin réel (filtré, sans query string) ; le motif Express est à part, absent si aucune route n'a répondu.
       const pattern = routePattern(req);
-      if (pattern && PROBE_ROUTES.has(pattern) && res.statusCode < 400) return;
 
       try {
         const fields: AccessLogFields = {
