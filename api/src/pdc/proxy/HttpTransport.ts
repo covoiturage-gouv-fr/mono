@@ -33,14 +33,12 @@ import { Sentry, SentryProvider } from "@/pdc/providers/sentry/index.ts";
 import { registerExpressRoute } from "@/pdc/proxy/helpers/registerExpressRoute.ts";
 import { asyncHandler } from "./helpers/asyncHandler.ts";
 import { createRPCPayload } from "./helpers/createRPCPayload.ts";
-import { healthCheckFactory } from "./helpers/healthCheckFactory.ts";
 import { startHealthServer } from "./helpers/healthServer.ts";
 import { injectContext } from "./helpers/injectContext.ts";
 import { mapStatusCode } from "./helpers/mapStatusCode.ts";
 import { accessLogMiddleware } from "./middlewares/accessLogMiddleware.ts";
 import { CacheMiddleware, cacheMiddleware } from "./middlewares/cacheMiddleware.ts";
 import { dataWrapMiddleware, errorHandlerMiddleware } from "./middlewares/index.ts";
-import { metricsMiddleware } from "./middlewares/metricsMiddleware.ts";
 import {
   apiRateLimiter,
   authRateLimiter,
@@ -113,7 +111,6 @@ export class HttpTransport implements TransportInterface {
     this.registerBodyHandler();
     this.registerSessionHandler();
     this.registerSecurity();
-    this.registerPublicHealth();
     this.registerGlobalMiddlewares();
     this.registerCache();
     this.registerNestedRoutes();
@@ -249,14 +246,6 @@ export class HttpTransport implements TransportInterface {
         auditLog.info("cache:flush", { outcome: "ok", transport: "http", prefix });
         res.status(200).json({ id: 1, jsonrpc: "2.0", result });
       }),
-    );
-  }
-
-  private registerPublicHealth(): void {
-    this.app.get(
-      "/health",
-      metricsMiddleware("health"),
-      healthCheckFactory([]),
     );
   }
 

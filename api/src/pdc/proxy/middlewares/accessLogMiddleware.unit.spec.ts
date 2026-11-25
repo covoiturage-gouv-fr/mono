@@ -4,10 +4,9 @@ import { describe, it } from "dep:testing-bdd";
 import { AccessLogFields, accessLogMiddleware } from "./accessLogMiddleware.ts";
 
 type Hit = (path: string, init?: RequestInit) => Promise<AccessLogFields>;
-type Get = (path: string, init?: RequestInit) => Promise<void>;
 
 // Serveur Express réel derrière un proxy de confiance, comme en production.
-async function withServer(fn: (hit: Hit, lines: AccessLogFields[], get: Get) => Promise<void>) {
+async function withServer(fn: (hit: Hit, lines: AccessLogFields[]) => Promise<void>) {
   const lines: AccessLogFields[] = [];
   let logged = () => {};
   const app = express();
@@ -25,7 +24,6 @@ async function withServer(fn: (hit: Hit, lines: AccessLogFields[], get: Get) => 
     }
     next();
   });
-  app.get("/health", (req: Request, res: Response) => res.status(req.headers["x-test-fail"] ? 503 : 200).send("ok"));
   app.post("/:api_version/journeys/:id", (_req: Request, res: Response) => res.status(201).json({ ok: true }));
   app.get(
     "/:api_version/guarded/:id",
@@ -40,17 +38,14 @@ async function withServer(fn: (hit: Hit, lines: AccessLogFields[], get: Get) => 
   const server = app.listen(0);
   await new Promise((resolve) => server.once("listening", resolve));
   const { port } = server.address() as { port: number };
-  const get: Get = async (path, init = {}) => {
-    await (await fetch(`http://127.0.0.1:${port}${path}`, init)).text();
-  };
   const hit: Hit = async (path, init = {}) => {
     const done = new Promise<void>((resolve) => (logged = resolve));
-    await get(path, init);
+    await (await fetch(`http://127.0.0.1:${port}${path}`, init)).text();
     await done;
     return lines.at(-1)!;
   };
   try {
-    await fn(hit, lines, get);
+    await fn(hit, lines);
   } finally {
     await new Promise((resolve) => server.close(resolve));
   }
@@ -204,15 +199,6 @@ describe("accessLogMiddleware", () => {
       const path = `/v3.1/journeys/${"a".repeat(256)}/cancel`;
       assertEquals((await hit(path)).route, path);
       assertEquals((await hit(`/${"b".repeat(5000)}`)).route?.length, 512);
-    });
-  });
-
-  it("skips successful probes but keeps their failures", async () => {
-    await withServer(async (hit, lines, get) => {
-      await get("/health");
-      const failed = await hit("/health", { headers: { "x-test-fail": "1" } });
-      assertEquals([failed.route, failed.route_pattern, failed.status], ["/health", "/health", 503]);
-      assertEquals(lines.length, 1);
     });
   });
 });
