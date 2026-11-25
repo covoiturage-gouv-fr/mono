@@ -6,10 +6,9 @@ import { API } from "../../lib/API.ts";
 describe("Unauthenticated smoke test", () => {
   const http = new API();
 
-  it("should be up and running", async () => {
+  it("should not expose health on the public port", async () => {
     const response = await http.get("/health");
-    expect(response.status).toBe(200);
-    expect(response.body).toEqual({ status: "ok" });
+    expect(response.status).toBe(404);
   });
 
   it("should return 401 for unauthenticated user", async () => {
