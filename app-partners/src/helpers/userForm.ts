@@ -1,4 +1,5 @@
 import { roles } from "@/interfaces/auth";
+import type { OperatorsInterface, UserScopeInput } from "@/interfaces/dataInterface";
 import { z } from "zod";
 
 // Bornes alignées sur l'API (Varchar 256) ; rognage pour refuser les blancs et normaliser l'email.
@@ -39,6 +40,16 @@ export const userFormSchema = z
   })
   // Un rôle opérateur sans opérateur, ou territoire sans périmètre, est un compte sans accès.
   .superRefine((row, ctx) => {
+    // Obligatoire hors registre. `undefined` = champ masqué (réservé registry.admin) : l'API retombe alors
+    // sur le SIRET de l'opérateur ou du territoire.
+    const needsSiret = row.role.startsWith("operator.") || row.role.startsWith("territory.");
+    if (needsSiret && row.login_siret === null) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["login_siret"],
+        message: "Le SIRET de connexion est obligatoire (14 chiffres)",
+      });
+    }
     if (row.role.startsWith("operator.") && !row.operator_id) {
       ctx.addIssue({ code: "custom", path: ["operator_id"], message: "Sélectionnez un opérateur" });
     }
@@ -46,3 +57,28 @@ export const userFormSchema = z
       ctx.addIssue({ code: "custom", path: ["scopes"], message: "Ajoutez au moins un périmètre" });
     }
   });
+
+// SIRET du périmètre par défaut (à défaut le premier). null, jamais "" : l'API n'accepte que null ou 14 chiffres.
+export const suggestSiret = (scopes: UserScopeInput[]): string | null =>
+  (scopes.find((s) => s.is_default) ?? scopes[0])?.siret ?? null;
+
+// Une valeur saisie ou déjà enregistrée n'est jamais écrasée par le changement de périmètre.
+export const siretAfterScopesChange = (current: string | null | undefined, scopes: UserScopeInput[]): string | null =>
+  // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- "" doit aussi être remplacé
+  current || suggestSiret(scopes);
+
+export const operatorSiret = (operators: OperatorsInterface["data"], operatorId: number | null): string | null =>
+  // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- siret "" = absent
+  operators.find((o) => o.id === operatorId)?.siret || null;
+
+// Le SIRET dépend de la famille du rôle (opérateur, territoire, registre) : il ne survit pas au changement de famille.
+export const siretAfterRoleChange = (
+  from: string,
+  to: string,
+  current: string | null | undefined,
+  scopes: UserScopeInput[],
+): string | null => {
+  const family = (role: string) => role.split(".")[0];
+  if (family(from) === family(to)) return current ?? null;
+  return family(to) === "territory" ? suggestSiret(scopes) : null;
+};

@@ -7,7 +7,7 @@ import TerritoryAutocomplete from "@/components/common/TerritoryAutocomplete";
 import { features } from "@/config/features";
 import { type TerritoryOption } from "@/helpers/api";
 import { getRolesList, isEditableRole, isOperator, isTerritory, labelRole } from "@/helpers/auth";
-import { userFormSchema } from "@/helpers/userForm";
+import { operatorSiret, siretAfterRoleChange, siretAfterScopesChange, suggestSiret, userFormSchema } from "@/helpers/userForm";
 import { roleColor, territoriesCell } from "@/helpers/usersTable";
 import { useOperatorsList, useTerritoriesList, useUsersList } from "@/hooks/api";
 import { FormValidationError, useActionsModal } from "@/hooks/useActionsModal";
@@ -93,11 +93,6 @@ export default function UsersTable(props: { title: string; territoryId: number |
     return [];
   };
 
-  // Suggestion login_siret = SIRET du territoire par défaut.
-  // null (jamais "") quand rien à suggérer : l'API n'accepte que null ou 14 chiffres.
-  const suggestSiret = (scopes: UserScopeInput[]): string | null =>
-    (scopes.find((s) => s.is_default) ?? scopes[0])?.siret ?? null;
-
   // Périmètre par défaut du formulaire, sous la forme attendue par l'autocomplétion.
   const defaultTerritory = (): TerritoryOption | null => {
     const scopes = (modal.currentRow.scopes as UserScopeInput[] | undefined) ?? [];
@@ -118,7 +113,14 @@ export default function UsersTable(props: { title: string; territoryId: number |
       role: row.role,
       operator_id: row.operator_id ?? null,
       territory_id: row.territory_id ?? null,
-      ...(canManageScopes ? { scopes, login_siret: row.login_siret ?? suggestSiret(scopes) } : {}),
+      ...(canManageScopes
+        ? {
+            scopes,
+            login_siret:
+              row.login_siret ??
+              (isOperator(row.role) ? operatorSiret(operatorsList(), row.operator_id ?? null) : suggestSiret(scopes)),
+          }
+        : {}),
     });
     modal.setErrors({});
     modal.setOpenModal(true);
@@ -218,9 +220,17 @@ export default function UsersTable(props: { title: string; territoryId: number |
       ...prev,
       role,
       ...(role.startsWith("operator.") ? {} : { operator_id: null }),
-      ...(role.startsWith("territory.") || !canManageScopes
-        ? {}
-        : { scopes: [], territory_id: null, login_siret: null }),
+      ...(role.startsWith("territory.") || !canManageScopes ? {} : { scopes: [], territory_id: null }),
+      ...(canManageScopes
+        ? {
+            login_siret: siretAfterRoleChange(
+              prev.role as string,
+              role,
+              prev.login_siret as string | null | undefined,
+              (prev.scopes as UserScopeInput[] | undefined) ?? [],
+            ),
+          }
+        : {}),
     }));
     modal.setErrors({});
   };
@@ -260,20 +270,24 @@ export default function UsersTable(props: { title: string; territoryId: number |
   const isTerritoryTarget = targetScopeType === "territory";
 
   // Met à jour les périmètres, resynchronise territory_id (dual-write legacy) et suggère le SIRET si vide.
+  // Un SIRET déjà rempli n'est jamais écrasé.
   const onChangeScopes = (scopes: UserScopeInput[]) => {
     const def = scopes.find((s) => s.is_default) ?? scopes[0];
     modal.setCurrentRow((prev) => ({
       ...prev,
       scopes,
       territory_id: def?.territory_id ?? null,
-      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- "" doit aussi être remplacé
-      login_siret: prev.login_siret || suggestSiret(scopes),
+      login_siret: siretAfterScopesChange(prev.login_siret as string | null | undefined, scopes),
     }));
   };
 
   // Le select natif ne connaît que des chaînes : "" = aucun opérateur.
-  const onChangeOperator = (value: string) =>
-    modal.validateInputChange(userFormSchema, "operator_id", value === "" ? null : Number(value));
+  // Choisir un opérateur est un geste explicite : son SIRET remplace celui déjà saisi.
+  const onChangeOperator = (value: string) => {
+    const operatorId = value === "" ? null : Number(value);
+    const siret = operatorSiret(operatorsList(), operatorId);
+    modal.validateInputsChange(userFormSchema, { operator_id: operatorId, ...(siret ? { login_siret: siret } : {}) });
+  };
 
   const errorAlertMessage = () => {
     const fields = Object.values(modal.errors ?? {}).filter(Boolean);

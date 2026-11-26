@@ -58,4 +58,36 @@ describe("TerritoryRepositoryProvider", () => {
     assertEquals(result.meta.pagination.limit, 1);
     assertEquals(result.meta.pagination.total, 2);
   });
+
+  // La modale utilisateur ne charge plus de liste bornée à 200 : la recherche doit atteindre tout le catalogue.
+  describe("list search over a large catalogue", () => {
+    beforeAll(async () => {
+      await db.connection.query(sql`
+        INSERT INTO territory.territory_group (name, company_id)
+        SELECT 'Catalogue ' || lpad(n::text, 4, '0'), NULL FROM generate_series(1, 250) AS n
+      `);
+      await db.connection.query(sql`
+        INSERT INTO territory.territory_group (name, company_id) VALUES ('Zzz périmètre sur mesure', NULL)
+      `);
+    });
+
+    it("finds a territory beyond the 200th by name", async () => {
+      const result = await repository.list({ search: "catalogue 0250", limit: 20 });
+
+      assertEquals(result.data.map((t) => t.name), ["Catalogue 0250"]);
+    });
+
+    it("finds a custom territory sorted last alphabetically", async () => {
+      const result = await repository.list({ search: "sur mesure", limit: 20 });
+
+      assertEquals(result.data.map((t) => t.name), ["Zzz périmètre sur mesure"]);
+    });
+
+    it("pages through every match with offset", async () => {
+      const last = await repository.list({ search: "catalogue", limit: 200, offset: 200 });
+
+      assertEquals(last.meta.pagination.total, 250);
+      assertEquals(last.data.length, 50);
+    });
+  });
 });

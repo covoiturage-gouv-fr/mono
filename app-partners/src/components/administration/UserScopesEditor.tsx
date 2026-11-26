@@ -60,13 +60,13 @@ export default function UserScopesEditor(props: {
 
   return (
     <>
-      <Table data={rows} headers={["Territoire", "Défaut", "Action"]} fixed />
       <TerritoryAutocomplete
         value={null}
         label="Ajouter un périmètre"
         excludeIds={scopes.map((s) => s.territory_id).filter((id): id is number => !!id)}
         onChange={add}
       />
+      <Table data={rows} headers={["Territoire", "Défaut", "Action"]} fixed />
     </>
   );
 }

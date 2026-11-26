@@ -43,13 +43,10 @@ export const useActionsModal = <T extends Record<string, unknown>>() => {
         return "Action";
     }
   };
-  const validateInputChange = <T extends Record<string, unknown>>(
-    schema: ZodType<T>,
-    field: keyof T,
-    value: T[typeof field],
-  ) => {
+  // Applique plusieurs champs d'un coup (ex. opérateur + SIRET) et revalide la ligne.
+  const validateInputsChange = <T extends Record<string, unknown>>(schema: ZodType<T>, patch: Partial<T>) => {
     setCurrentRow((prev) => {
-      const updatedRow = { ...prev, [field]: value };
+      const updatedRow = { ...prev, ...patch };
       try {
         schema.parse(updatedRow);
         setErrors({});
@@ -61,6 +58,11 @@ export const useActionsModal = <T extends Record<string, unknown>>() => {
       return updatedRow;
     });
   };
+  const validateInputChange = <T extends Record<string, unknown>>(
+    schema: ZodType<T>,
+    field: keyof T,
+    value: T[typeof field],
+  ) => validateInputsChange(schema, { [field]: value } as Partial<T>);
 
   const submitModal = useCallback(
     async (url: string, validationSchema: ZodType) => {
@@ -140,6 +142,7 @@ export const useActionsModal = <T extends Record<string, unknown>>() => {
     typeModal,
     setTypeModal,
     validateInputChange,
+    validateInputsChange,
     submitModal,
     submitLoading,
     submitError,
