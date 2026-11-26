@@ -8,7 +8,7 @@ const valid = {
   role: "territory.user",
   operator_id: null,
   territory_id: 12,
-  login_siren: null,
+  login_siret: null,
   scopes: [{ territory_id: 12, is_default: true }],
 };
 
@@ -36,11 +36,11 @@ describe("userFormSchema", () => {
     expect(fieldErrors({ ...valid, lastname: "a".repeat(257) }).lastname).toBeDefined();
   });
 
-  it("accepte un SIREN de 9 chiffres ou null, jamais une chaîne vide", () => {
-    expect(fieldErrors({ ...valid, login_siren: "123456789" }).login_siren).toBeUndefined();
-    expect(fieldErrors({ ...valid, login_siren: null }).login_siren).toBeUndefined();
-    expect(fieldErrors({ ...valid, login_siren: "" }).login_siren).toBeDefined();
-    expect(fieldErrors({ ...valid, login_siren: "12345678" }).login_siren).toBeDefined();
+  it("accepte un SIRET de 14 chiffres ou null, jamais une chaîne vide", () => {
+    expect(fieldErrors({ ...valid, login_siret: "12345678900012" }).login_siret).toBeUndefined();
+    expect(fieldErrors({ ...valid, login_siret: null }).login_siret).toBeUndefined();
+    expect(fieldErrors({ ...valid, login_siret: "" }).login_siret).toBeDefined();
+    expect(fieldErrors({ ...valid, login_siret: "123456789" }).login_siret).toBeDefined();
   });
 
   it("exige un opérateur pour un rôle opérateur", () => {

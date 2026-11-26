@@ -23,9 +23,9 @@ export const userFormSchema = z
     operator_id: z.number({ message: "Sélectionnez un opérateur" }).nullish(),
     territory_id: z.number({ message: "Sélectionnez un territoire" }).nullish(),
     role: z.enum(roles, { message: "Le rôle n'est pas valide" }),
-    login_siren: z
+    login_siret: z
       .string()
-      .regex(/^\d{9}$/, { message: "Le SIREN doit contenir 9 chiffres" })
+      .regex(/^\d{14}$/, { message: "Le SIRET doit contenir 14 chiffres" })
       .nullish(),
     scopes: z
       .array(

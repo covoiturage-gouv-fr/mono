@@ -63,6 +63,6 @@ fin est dépassée à l'horloge réelle.
 Créer `profiles/<nom>.ts` (type `SyntheticProfile`) et l'enregistrer dans `profiles/index.ts`. Les tests unitaires
 vérifient chaque profil : SIRET valides, handlers connus, `allowedEnvs` limité à `local` et au nom du profil.
 
-`email` et `login_siren` des utilisateurs sont de simples données du profil : à la connexion ProConnect, le compte est
-cherché par e-mail puis le SIREN renvoyé est comparé à `login_siren` (sauf `registry.admin`). Les aligner sur les
-identités du fournisseur d'identité utilisé.
+`email` et `login_siret` des utilisateurs sont de simples données du profil : à la connexion ProConnect, le compte est
+cherché par e-mail puis les 9 premiers chiffres de `login_siret` sont comparés au SIREN renvoyé (sauf `registry.admin`).
+Les aligner sur les identités du fournisseur d'identité utilisé.

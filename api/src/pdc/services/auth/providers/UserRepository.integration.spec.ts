@@ -61,6 +61,15 @@ describe("UserRepository.authenticateByEmail", () => {
     assertEquals(user?.scopes[0].territory_id, 300);
   });
 
+  it("returns login_siret", async () => {
+    const { id, email } = await createUser(null);
+    await db.connection.query(sql`UPDATE auth.users SET login_siret = '12345678900012' WHERE _id = ${id}`);
+
+    const user = await repository.authenticateByEmail(email);
+
+    assertEquals(user?.login_siret, "12345678900012");
+  });
+
   it("falls back to MIN(_id) scope when no default is flagged", async () => {
     const { id, email } = await createUser(null);
     await ensureTerritory(302);

@@ -253,13 +253,13 @@ describe("UsersRepository multi-scope (pivot)", () => {
     assertEquals(byT310.data[0].scopes_count, 2);
   });
 
-  it("la liste expose les périmètres complets et le login_siren", async () => {
+  it("la liste expose les périmètres complets et le login_siret", async () => {
     const listed = await repository.getUsers({ search: "multi.scope@example.com" });
     assertEquals(listed.data[0].scopes, [
       { territory_id: 310, is_default: true, territory_name: "Test territoire 310", siret: "13002526500013" },
       { territory_id: 311, is_default: false, territory_name: "Test territoire 311", siret: "13002526500013" },
     ]);
-    assertEquals(listed.data[0].login_siren, null);
+    assertEquals(listed.data[0].login_siret, null);
   });
 
   it("chaque périmètre porte le nom et le SIRET de son territoire", async () => {

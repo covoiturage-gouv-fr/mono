@@ -38,6 +38,32 @@ describe("ProConnectOIDCProvider.failsSirenCheck", () => {
 });
 
 describe("ProConnectOIDCProvider.sirenRefusal", () => {
+  it("compare le SIREN ProConnect aux 9 premiers chiffres de login_siret", () => {
+    const user = { login_siret: "12345678900012", login_siren: null, role: "territory.admin" };
+    assertEquals(sirenRefusal({ siren: "123456789" }, user), null);
+    assertEquals(sirenRefusal({ siren: "987654321" }, user), "siren_mismatch");
+  });
+
+  it("login_siret prime sur login_siren", () => {
+    const user = { login_siret: "12345678900012", login_siren: "987654321", role: "territory.admin" };
+    assertEquals(sirenRefusal({ siren: "123456789" }, user), null);
+    assertEquals(sirenRefusal({ siren: "987654321" }, user), "siren_mismatch");
+  });
+
+  it("repli sur login_siren quand login_siret est absent ou vide", () => {
+    for (const login_siret of [null, undefined, "", "  "]) {
+      const user = { login_siret, login_siren: "123456789", role: "territory.admin" };
+      assertEquals(sirenRefusal({ siren: "123456789" }, user), null);
+    }
+  });
+
+  it("no_login_siren quand ni login_siret ni login_siren", () => {
+    assertEquals(
+      sirenRefusal({ siren: "123456789" }, { login_siret: null, login_siren: null, role: "territory.admin" }),
+      "no_login_siren",
+    );
+  });
+
   it("renvoie null pour registry.admin", () => {
     assertEquals(sirenRefusal({ siren: "999999999" }, { login_siren: null, role: "registry.admin" }), null);
   });

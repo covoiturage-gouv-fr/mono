@@ -196,16 +196,16 @@ export class SyntheticSeeder {
     territories: Record<string, number>,
   ): Promise<void> {
     const rows = await this.connection.query<{ _id: number }>(sql`
-      INSERT INTO auth.users (email, firstname, lastname, status, role, login_siren)
+      INSERT INTO auth.users (email, firstname, lastname, status, role, login_siret)
       VALUES (
-        ${user.email}, ${user.firstname}, ${user.lastname}, 'active', ${user.role}, ${user.login_siren ?? null}
+        ${user.email}, ${user.firstname}, ${user.lastname}, 'active', ${user.role}, ${user.login_siret ?? null}
       )
       ON CONFLICT (email) DO UPDATE SET
         firstname = excluded.firstname,
         lastname = excluded.lastname,
         status = excluded.status,
         role = excluded.role,
-        login_siren = excluded.login_siren
+        login_siret = excluded.login_siret
       RETURNING _id
     `);
 

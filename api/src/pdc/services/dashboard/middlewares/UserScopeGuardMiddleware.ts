@@ -47,7 +47,7 @@ function grantsScope(params: ParamsType): boolean {
 
 /**
  * Garde les actions create/update user :
- * - champs privilégiés (login_siren, octroi de périmètre) réservés à MANAGE_SCOPES_PERMISSION ;
+ * - champs privilégiés (login_siret, octroi de périmètre) réservés à MANAGE_SCOPES_PERMISSION ;
  * - interdit d'attribuer un rôle de rang supérieur à celui du caller (anti-escalade).
  */
 @middleware()
@@ -61,10 +61,10 @@ export class UserScopeGuardMiddleware implements MiddlewareInterface {
     const callerRole = get(context, "call.user.role", "") as string;
     const hasManageScopes = permissions.includes(MANAGE_SCOPES_PERMISSION);
 
-    // Gate champ privilégié : login_siren / octroi de périmètre sans la permission.
-    const asksPrivileged = get(params, "login_siren", null) != null || grantsScope(params);
+    // Gate champ privilégié : login_siret / octroi de périmètre sans la permission.
+    const asksPrivileged = get(params, "login_siret", null) != null || grantsScope(params);
     if (asksPrivileged && !hasManageScopes) {
-      throw new ForbiddenException("login_siren / octroi de scope réservé à registry.admin");
+      throw new ForbiddenException("login_siret / octroi de scope réservé à registry.admin");
     }
 
     // Garde hiérarchie : ne pas attribuer un rôle plus privilégié que soi.

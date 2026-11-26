@@ -65,7 +65,7 @@ const profile: SyntheticProfile = {
       lastname: "One",
       role: "operator.admin",
       operator: "one",
-      login_siren: siret("00000011").slice(0, 9),
+      login_siret: siret("00000011"),
     },
     {
       email: "synth.saclay@example.com",
@@ -73,7 +73,7 @@ const profile: SyntheticProfile = {
       lastname: "Saclay",
       role: "territory.user",
       territory: "saclay",
-      login_siren: siret("00000013").slice(0, 9),
+      login_siret: siret("00000013"),
     },
   ],
   carpools: {
@@ -154,9 +154,9 @@ describe("SyntheticSeeder", () => {
     ]);
   });
 
-  it("creates users with their scope and login_siren", async () => {
+  it("creates users with their scope and login_siret", async () => {
     const rows = await db.connection.query(sql`
-      SELECT u.email, u.role, u.status::varchar, u.login_siren, s.operator_id, s.territory_id, s.is_default
+      SELECT u.email, u.role, u.status::varchar, u.login_siret, s.operator_id, s.territory_id, s.is_default
       FROM auth.users u
       LEFT JOIN auth.user_scopes s ON s.user_id = u._id
       WHERE u.email LIKE 'synth.%'
@@ -167,7 +167,7 @@ describe("SyntheticSeeder", () => {
         email: "synth.admin@example.com",
         role: "registry.admin",
         status: "active",
-        login_siren: null,
+        login_siret: null,
         operator_id: null,
         territory_id: null,
         is_default: null,
@@ -176,7 +176,7 @@ describe("SyntheticSeeder", () => {
         email: "synth.one@example.com",
         role: "operator.admin",
         status: "active",
-        login_siren: profile.operators[0].siret.slice(0, 9),
+        login_siret: profile.operators[0].siret,
         operator_id: report.operators.one,
         territory_id: null,
         is_default: true,
@@ -185,7 +185,7 @@ describe("SyntheticSeeder", () => {
         email: "synth.saclay@example.com",
         role: "territory.user",
         status: "active",
-        login_siren: profile.territories[0].siret.slice(0, 9),
+        login_siret: profile.territories[0].siret,
         operator_id: null,
         territory_id: report.territories.saclay,
         is_default: true,

@@ -51,10 +51,15 @@ describe("UserScopeGuardMiddleware", () => {
     );
   });
 
-  it("403 when territory.admin provides login_siren (privileged field)", async () => {
+  it("403 when territory.admin provides login_siret (privileged field)", async () => {
     await assertRejects(
       () =>
-        middleware.process({ role: "territory.admin", login_siren: "123456789" }, ctx(territoryAdmin), next, undefined),
+        middleware.process(
+          { role: "territory.admin", login_siret: "12345678900012" },
+          ctx(territoryAdmin),
+          next,
+          undefined,
+        ),
       ForbiddenException,
     );
   });
@@ -99,10 +104,10 @@ describe("UserScopeGuardMiddleware", () => {
     );
   });
 
-  it("OK when registry.admin provides login_siren + scopes", async () => {
+  it("OK when registry.admin provides login_siret + scopes", async () => {
     assertEquals(
       await middleware.process(
-        { role: "registry.admin", login_siren: "123456789", scopes: [{ territory_id: 1 }, { territory_id: 2 }] },
+        { role: "registry.admin", login_siret: "12345678900012", scopes: [{ territory_id: 1 }, { territory_id: 2 }] },
         ctx(registryAdmin),
         next,
         undefined,
