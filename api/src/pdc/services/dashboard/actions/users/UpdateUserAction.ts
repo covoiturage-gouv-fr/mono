@@ -55,7 +55,7 @@ export class UpdateUserAction extends AbstractAction {
    *
    * Les champs de périmètre viennent du corps de la requête et `seedScopes` remplace tout le
    * pivot : les laisser passer permettrait de rattacher un compte à un autre opérateur, ou de
-   * l'évincer de ses autres territoires. `login_siren` est déjà refusé par la garde, on le
+   * l'évincer de ses autres territoires. `login_siret` est déjà refusé par la garde, on le
    * retire aussi pour ne pas l'écraser par mégarde.
    */
   private sanitizePayload(params: UpdateUser, context: ContextType): UpdateUser {
@@ -65,7 +65,7 @@ export class UpdateUserAction extends AbstractAction {
     const {
       operator_id: _operator_id,
       territory_id: _territory_id,
-      login_siren: _login_siren,
+      login_siret: _login_siret,
       scopes: _scopes,
       ...rest
     } = params;

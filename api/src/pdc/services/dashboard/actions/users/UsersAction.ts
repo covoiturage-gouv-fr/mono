@@ -14,7 +14,7 @@ export type UserResult = {
   territory_id?: number;
   phone?: string;
   role: string;
-  login_siren?: string | null;
+  login_siret?: string | null;
   // Nombre total de périmètres du compte, indépendant du filtre du caller.
   scopes_count: number;
   // Périmètres territoire du compte, défaut en tête ; nom et SIRET du territoire pour l'affichage.
@@ -30,7 +30,7 @@ export type ResultInterface = {
 };
 
 /**
- * Sans `manageScopes`, ni le détail des périmètres ni le SIREN de connexion : le premier
+ * Sans `manageScopes`, ni le détail des périmètres ni le SIRET de connexion : le premier
  * cartographie les rattachements hors du périmètre de l'appelant, le second sert au contrôle
  * ProConnect. Seul `scopes_count` reste, il porte les libellés de suppression du dashboard.
  */
@@ -40,7 +40,7 @@ export function maskPrivilegedFields(result: ResultInterface, context: ContextTy
 
   return {
     ...result,
-    data: result.data.map(({ login_siren: _login_siren, scopes: _scopes, ...row }) => ({ ...row, scopes: [] })),
+    data: result.data.map(({ login_siret: _login_siret, scopes: _scopes, ...row }) => ({ ...row, scopes: [] })),
   };
 }
 

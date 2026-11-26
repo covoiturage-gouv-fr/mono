@@ -80,7 +80,7 @@ export class UsersRepository implements UsersRepositoryInterface {
         (ARRAY_AGG(us.operator_id ORDER BY us.is_default DESC, us._id ASC))[1] AS operator_id,
         (ARRAY_AGG(us.territory_id ORDER BY us.is_default DESC, us._id ASC))[1] AS territory_id,
         users.role,
-        users.login_siren,
+        users.login_siret,
         -- Sous-requêtes : le WHERE dégrade le LEFT JOIN en jointure interne, il ne verrait
         -- que les scopes du caller.
         (SELECT COUNT(*) FROM ${raw(this.tableScopes)} s WHERE s.user_id = users._id)::int AS scopes_count,
@@ -130,9 +130,9 @@ export class UsersRepository implements UsersRepositoryInterface {
   async createUser(data: CreateUserDataInterface): Promise<CreateUserResultInterface> {
     const query = sql`
       INSERT INTO ${raw(this.table)} (
-        firstname, lastname, email, role, login_siren
+        firstname, lastname, email, role, login_siret
       ) VALUES (
-        ${data.firstname}, ${data.lastname}, ${data.email}, ${data.role}, ${data.login_siren ?? null}
+        ${data.firstname}, ${data.lastname}, ${data.email}, ${data.role}, ${data.login_siret ?? null}
       )
       RETURNING
         _id, created_at, firstname, lastname, email, role
@@ -228,7 +228,7 @@ export class UsersRepository implements UsersRepositoryInterface {
     // Champ privilégié : on ne l'écrit que si l'appelant l'a fourni. L'écrire inconditionnellement
     // viderait le SIREN à chaque modification par un admin de territoire, et le contrôle ProConnect
     // étant fail-closed, le compte ne pourrait plus se connecter.
-    const loginSiren = data.login_siren !== undefined ? sql`login_siren = ${data.login_siren},` : sql``;
+    const loginSiret = data.login_siret !== undefined ? sql`login_siret = ${data.login_siret},` : sql``;
 
     const query = sql`
       UPDATE ${raw(this.table)}
@@ -237,7 +237,7 @@ export class UsersRepository implements UsersRepositoryInterface {
         lastname = ${data.lastname},
         email = ${data.email},
         role = ${data.role},
-        ${loginSiren}
+        ${loginSiret}
         updated_at = now()
       WHERE _id = ${data.id}
       RETURNING _id, updated_at, firstname, lastname, email, role

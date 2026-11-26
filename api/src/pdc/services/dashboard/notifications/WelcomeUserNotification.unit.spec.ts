@@ -16,18 +16,18 @@ describe("WelcomeUserNotification", () => {
     assertEquals(n.data.action_href, data.action_href);
   });
 
-  it("mentionne le SIREN de connexion, l'email et le lien vers la documentation", () => {
+  it("mentionne le SIRET de connexion, l'email et le lien vers la documentation", () => {
     const n = new WelcomeUserNotification("u@example.com", data);
     for (const text of [n.data.message_html ?? "", n.data.message_text ?? ""]) {
-      assertStringIncludes(text, "SIREN de connexion fourni : {{ siret }}");
+      assertStringIncludes(text, "SIRET de connexion fourni : {{ siret }}");
       assertStringIncludes(text, "{{ email }}");
       assertStringIncludes(text, "doc.covoiturage.beta.gouv.fr");
     }
   });
 
-  it("omet la ligne SIREN quand la structure n'en a pas", () => {
+  it("omet la ligne SIRET quand la structure n'en a pas", () => {
     const n = new WelcomeUserNotification("u@example.com", { ...data, siret: "" });
-    assertEquals((n.data.message_html ?? "").includes("SIREN"), false);
-    assertEquals((n.data.message_text ?? "").includes("SIREN"), false);
+    assertEquals((n.data.message_html ?? "").includes("SIRET"), false);
+    assertEquals((n.data.message_text ?? "").includes("SIRET"), false);
   });
 });

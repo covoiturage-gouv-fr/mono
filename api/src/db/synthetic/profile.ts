@@ -29,8 +29,8 @@ export function profileErrors(profile: SyntheticProfile): string[] {
     if (user.operator && user.territory) errors.push(`${user.email} : opérateur et territoire à la fois`);
     if (user.operator && !operators.has(user.operator)) errors.push(`${user.email} : opérateur inconnu`);
     if (user.territory && !territories.has(user.territory)) errors.push(`${user.email} : territoire inconnu`);
-    if (user.role !== "registry.admin" && !/^[0-9]{9}$/.test(user.login_siren ?? "")) {
-      errors.push(`${user.email} : login_siren absent ou invalide`);
+    if (user.role !== "registry.admin" && !/^[0-9]{14}$/.test(user.login_siret ?? "")) {
+      errors.push(`${user.email} : login_siret absent ou invalide`);
     }
   }
   if (new Set(profile.users.map((u) => u.email)).size !== profile.users.length) {

@@ -51,7 +51,7 @@ export default function UsersTable(props: { title: string; territoryId: number |
     setCurrentPage(1);
   };
 
-  // registry.admin seul manipule login_siren / octroi de scope (miroir de la permission back).
+  // registry.admin seul manipule login_siret / octroi de scope (miroir de la permission back).
   const canManageScopes = user?.role === "registry.admin";
 
   // Garde-fou : signale une édition en cours pour la confirmation de bascule de périmètre.
@@ -93,12 +93,10 @@ export default function UsersTable(props: { title: string; territoryId: number |
     return [];
   };
 
-  // Suggestion login_siren = 9 premiers chiffres du SIRET du territoire par défaut.
-  // null (jamais "") quand rien à suggérer : l'API n'accepte que null ou 9 chiffres.
-  const suggestSiren = (scopes: UserScopeInput[]): string | null => {
-    const siret = (scopes.find((s) => s.is_default) ?? scopes[0])?.siret;
-    return siret ? siret.slice(0, 9) : null;
-  };
+  // Suggestion login_siret = SIRET du territoire par défaut.
+  // null (jamais "") quand rien à suggérer : l'API n'accepte que null ou 14 chiffres.
+  const suggestSiret = (scopes: UserScopeInput[]): string | null =>
+    (scopes.find((s) => s.is_default) ?? scopes[0])?.siret ?? null;
 
   // Périmètre par défaut du formulaire, sous la forme attendue par l'autocomplétion.
   const defaultTerritory = (): TerritoryOption | null => {
@@ -120,7 +118,7 @@ export default function UsersTable(props: { title: string; territoryId: number |
       role: row.role,
       operator_id: row.operator_id ?? null,
       territory_id: row.territory_id ?? null,
-      ...(canManageScopes ? { scopes, login_siren: row.login_siren ?? suggestSiren(scopes) } : {}),
+      ...(canManageScopes ? { scopes, login_siret: row.login_siret ?? suggestSiret(scopes) } : {}),
     });
     modal.setErrors({});
     modal.setOpenModal(true);
@@ -222,7 +220,7 @@ export default function UsersTable(props: { title: string; territoryId: number |
       ...(role.startsWith("operator.") ? {} : { operator_id: null }),
       ...(role.startsWith("territory.") || !canManageScopes
         ? {}
-        : { scopes: [], territory_id: null, login_siren: null }),
+        : { scopes: [], territory_id: null, login_siret: null }),
     }));
     modal.setErrors({});
   };
@@ -261,7 +259,7 @@ export default function UsersTable(props: { title: string; territoryId: number |
   const isOperatorTarget = targetScopeType === "operator";
   const isTerritoryTarget = targetScopeType === "territory";
 
-  // Met à jour les périmètres, resynchronise territory_id (dual-write legacy) et suggère le SIREN si vide.
+  // Met à jour les périmètres, resynchronise territory_id (dual-write legacy) et suggère le SIRET si vide.
   const onChangeScopes = (scopes: UserScopeInput[]) => {
     const def = scopes.find((s) => s.is_default) ?? scopes[0];
     modal.setCurrentRow((prev) => ({
@@ -269,7 +267,7 @@ export default function UsersTable(props: { title: string; territoryId: number |
       scopes,
       territory_id: def?.territory_id ?? null,
       // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- "" doit aussi être remplacé
-      login_siren: prev.login_siren || suggestSiren(scopes),
+      login_siret: prev.login_siret || suggestSiret(scopes),
     }));
   };
 
@@ -346,7 +344,7 @@ export default function UsersTable(props: { title: string; territoryId: number |
                 territory_id: user?.territory_id ?? undefined,
                 role: `${user?.role === "registry.admin" ? user?.role : `${user?.role.split(".")[0]}.user`}`,
                 // Sans la permission, le périmètre du nouveau compte vient du seul territory_id.
-                ...(canManageScopes ? { scopes, login_siren: suggestSiren(scopes) } : {}),
+                ...(canManageScopes ? { scopes, login_siret: suggestSiret(scopes) } : {}),
               });
               modal.setOpenModal(true);
               modal.setErrors({});
@@ -480,23 +478,23 @@ export default function UsersTable(props: { title: string; territoryId: number |
                 )}
               </fieldset>
 
-              {/* Connexion : login_siren réservé registry.admin, masqué (pas grisé) sinon. */}
+              {/* Connexion : login_siret réservé registry.admin, masqué (pas grisé) sinon. */}
               {canManageScopes && (
                 <fieldset className={fr.cx("fr-fieldset")}>
                   <legend className={fr.cx("fr-fieldset__legend")}>Connexion</legend>
                   <div className={fr.cx("fr-fieldset__element")}>
                     <Input
-                      label="SIREN de connexion (ProConnect)"
-                      hintText="9 chiffres — distinct du SIRET du territoire"
-                      state={modal.errors?.login_siren ? "error" : "default"}
-                      stateRelatedMessage={modal.errors?.login_siren ?? ""}
+                      label="SIRET de connexion"
+                      hintText="14 chiffres, SIRET de la structure rattachée au compte"
+                      state={modal.errors?.login_siret ? "error" : "default"}
+                      stateRelatedMessage={modal.errors?.login_siret ?? ""}
                       nativeInputProps={{
-                        "aria-invalid": !!modal.errors?.login_siren,
+                        "aria-invalid": !!modal.errors?.login_siret,
                         inputMode: "numeric",
-                        maxLength: 9,
-                        value: (modal.currentRow.login_siren as string | null) ?? "",
+                        maxLength: 14,
+                        value: (modal.currentRow.login_siret as string | null) ?? "",
                         onChange: (e) =>
-                          modal.validateInputChange(userFormSchema, "login_siren", e.target.value || null),
+                          modal.validateInputChange(userFormSchema, "login_siret", e.target.value || null),
                       }}
                     />
                   </div>

@@ -35,8 +35,8 @@ export interface SyntheticUser {
   firstname: string;
   lastname: string;
   role: string;
-  // SIREN renvoyé par ProConnect pour ce compte (ignoré pour registry.admin)
-  login_siren?: string;
+  // SIRET de connexion : ses 9 premiers chiffres sont comparés au SIREN renvoyé par ProConnect (ignoré pour registry.admin)
+  login_siret?: string;
   operator?: string;
   territory?: string;
 }

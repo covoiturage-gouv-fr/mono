@@ -120,7 +120,7 @@ const permissions = {
   ],
   "user.sendEmail": ["operator.admin", "territory.admin", "registry.admin"],
 
-  // Champs/opérations privilégiés (login_siren, octroi de scope multi-territoire) : registry.admin seul.
+  // Champs/opérations privilégiés (login_siret, octroi de scope multi-territoire) : registry.admin seul.
   "user.manageScopes": ["registry.admin"],
 
   // export service

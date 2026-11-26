@@ -14,8 +14,8 @@ export class WelcomeUserNotification extends DefaultNotification {
   static override readonly subject = title;
 
   constructor(to: string, data: Partial<WelcomeUserTemplateData>) {
-    const siretHtml = data.siret ? "<p>SIREN de connexion fourni : {{ siret }}</p>" : "";
-    const siretText = data.siret ? "SIREN de connexion fourni : {{ siret }}\n" : "";
+    const siretHtml = data.siret ? "<p>SIRET de connexion fourni : {{ siret }}</p>" : "";
+    const siretText = data.siret ? "SIRET de connexion fourni : {{ siret }}\n" : "";
     super(to, {
       title,
       fullname: data.email,

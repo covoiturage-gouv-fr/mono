@@ -48,8 +48,8 @@ export function UserMenu() {
               </p>
               <p className={fr.cx("fr-text--xs", "fr-mb-0")}>{user.email}</p>
               <p className={fr.cx("fr-text--xs", "fr-mb-0")}>{labelRole(user.role)}</p>
-              {user.login_siren && (
-                <p className={fr.cx("fr-text--xs", "fr-mb-0")}>SIREN de connexion : {user.login_siren}</p>
+              {(user.login_siret ?? user.login_siren) && (
+                <p className={fr.cx("fr-text--xs", "fr-mb-0")}>{user.login_siret ? "SIRET" : "SIREN"} de connexion : {user.login_siret ?? user.login_siren}</p>
               )}
             </li>
             {territories.length > 0 && (

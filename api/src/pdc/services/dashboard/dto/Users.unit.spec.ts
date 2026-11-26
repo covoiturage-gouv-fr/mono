@@ -34,9 +34,16 @@ describe("dto/Users", () => {
     assertEquals(failures({ ...base, scopes: [{ is_default: true }] }, CreateUser).length > 0, true);
   });
 
-  it("refuse un login_siren qui n'a pas 9 chiffres", () => {
-    assertEquals(failures({ ...base, login_siren: "1234" }, CreateUser).length > 0, true);
+  it("refuse un login_siret qui n'a pas 14 chiffres", () => {
+    assertEquals(failures({ ...base, login_siret: "1234" }, CreateUser).length > 0, true);
+    assertEquals(failures({ ...base, login_siret: "123456789" }, CreateUser).length > 0, true);
   });
+
+  it("accepte un login_siret de 14 chiffres, ou null", () => {
+    assertEquals(failures({ ...base, login_siret: "12345678900012" }, CreateUser).length, 0);
+    assertEquals(failures({ ...base, login_siret: null }, CreateUser).length, 0);
+  });
+
   it("refuse les balises dans le nom et le prénom", () => {
     assertEquals(failures({ ...base, firstname: "<script>alert(1)</script>" }, CreateUser).length > 0, true);
     assertEquals(failures({ ...base, lastname: "Dupont <img onerror=x>" }, CreateUser).length > 0, true);
