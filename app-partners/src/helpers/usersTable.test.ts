@@ -1,4 +1,4 @@
-import { roleColor, territoriesCell } from "@/helpers/usersTable";
+import { roleColor, roleDotClass, territoriesCell } from "@/helpers/usersTable";
 import { describe, expect, it } from "vitest";
 
 describe("territoriesCell", () => {
@@ -51,5 +51,16 @@ describe("roleColor", () => {
   it("ne colore pas les rôles hors famille", () => {
     expect(roleColor("demo")).toBeUndefined();
     expect(roleColor("")).toBeUndefined();
+  });
+});
+
+describe("roleDotClass", () => {
+  it("pastille pleine pour un admin, cerclée pour un utilisateur", () => {
+    expect(roleDotClass("territory.admin")).toBe("role-pill__dot role-pill__dot--green");
+    expect(roleDotClass("operator.user")).toBe("role-pill__dot role-pill__dot--orange role-pill__dot--outline");
+  });
+
+  it("gris cerclé pour un rôle inconnu", () => {
+    expect(roleDotClass("demo")).toBe("role-pill__dot role-pill__dot--grey role-pill__dot--outline");
   });
 });

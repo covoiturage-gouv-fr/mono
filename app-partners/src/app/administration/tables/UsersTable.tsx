@@ -8,7 +8,7 @@ import { features } from "@/config/features";
 import { type TerritoryOption } from "@/helpers/api";
 import { getRolesList, isEditableRole, isOperator, isTerritory, labelRole } from "@/helpers/auth";
 import { operatorSiret, siretAfterRoleChange, siretAfterScopesChange, suggestSiret, userFormSchema } from "@/helpers/userForm";
-import { ROLE_LEGEND, roleColor, territoriesCell } from "@/helpers/usersTable";
+import { ROLE_LEGEND, roleDotClass, territoriesCell } from "@/helpers/usersTable";
 import { useOperatorsList, useTerritoriesList, useUsersList } from "@/hooks/api";
 import { FormValidationError, useActionsModal } from "@/hooks/useActionsModal";
 import { useUrlSearch } from "@/hooks/useUrlSearch";
@@ -195,15 +195,14 @@ export default function UsersTable(props: { title: string; territoryId: number |
     return null;
   };
 
-  const roleColumn = (role: string) => {
-    const color = roleColor(role);
-    return (
+  const roleColumn = (role: string) => (
+    <div className="role-cell">
       <Tooltip kind="hover" title={labelRole(role)}>
-        <span className={`role-pill__dot role-pill__dot--${color ?? "grey"}`} />
+        <span className={roleDotClass(role)} />
         <span className={fr.cx("fr-sr-only")}>{labelRole(role)}</span>
       </Tooltip>
-    );
-  };
+    </div>
+  );
 
   const dataTable =
     data?.data?.map((d) => [
@@ -387,9 +386,9 @@ export default function UsersTable(props: { title: string; territoryId: number |
       <AdminTable data={dataTable} headers={headers} />
       <Pagination count={totalPages} defaultPage={currentPage} onChange={onChangePage} />
       <ul className="role-legend" aria-label="Légende des rôles">
-        {ROLE_LEGEND.map(({ color, label }) => (
-          <li key={color} className="role-pill">
-            <span className={`role-pill__dot role-pill__dot--${color}`} aria-hidden="true" />
+        {ROLE_LEGEND.map(({ className, label }) => (
+          <li key={label} className="role-pill">
+            <span className={`role-pill__dot ${className}`} aria-hidden="true" />
             {label}
           </li>
         ))}

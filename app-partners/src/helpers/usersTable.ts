@@ -17,12 +17,21 @@ export const territoriesCell = (
 
 const ROLE_COLORS = { registry: "blue", operator: "orange", territory: "green" } as const;
 
-// Légende du tableau : une pastille par famille de rôle.
+// Légende du tableau : une pastille par famille de rôle, puis pleine/cerclée pour admin/utilisateur.
 export const ROLE_LEGEND = [
-  { color: ROLE_COLORS.registry, label: "Registre (RPC)" },
-  { color: ROLE_COLORS.operator, label: "Opérateur" },
-  { color: ROLE_COLORS.territory, label: "Territoire" },
+  { className: `role-pill__dot--${ROLE_COLORS.registry}`, label: "Registre (RPC)" },
+  { className: `role-pill__dot--${ROLE_COLORS.operator}`, label: "Opérateur" },
+  { className: `role-pill__dot--${ROLE_COLORS.territory}`, label: "Territoire" },
+  { className: "role-pill__dot--grey", label: "Administrateur" },
+  { className: "role-pill__dot--grey role-pill__dot--outline", label: "Utilisateur" },
 ] as const;
+
+// Classes de la pastille : couleur de la famille, cerclée si le rôle n'est pas admin.
+export const roleDotClass = (role: string): string => {
+  const color = roleColor(role) ?? "grey";
+  const outline = role.endsWith(".admin") ? "" : " role-pill__dot--outline";
+  return `role-pill__dot role-pill__dot--${color}${outline}`;
+};
 
 // Pastille de la colonne « Rôle » : la couleur suit la famille (préfixe avant le point).
 export const roleColor = (role: string): (typeof ROLE_COLORS)[keyof typeof ROLE_COLORS] | undefined =>
