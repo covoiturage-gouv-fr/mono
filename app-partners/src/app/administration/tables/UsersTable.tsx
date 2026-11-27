@@ -492,29 +492,6 @@ export default function UsersTable(props: { title: string; territoryId: number |
                 )}
               </fieldset>
 
-              {/* Connexion : login_siret réservé registry.admin, masqué (pas grisé) sinon. */}
-              {canManageScopes && (
-                <fieldset className={fr.cx("fr-fieldset")}>
-                  <legend className={fr.cx("fr-fieldset__legend")}>Connexion</legend>
-                  <div className={fr.cx("fr-fieldset__element")}>
-                    <Input
-                      label="SIRET de connexion ProConnect"
-                      hintText="14 chiffres, SIRET de la structure rattachée au compte"
-                      state={modal.errors?.login_siret ? "error" : "default"}
-                      stateRelatedMessage={modal.errors?.login_siret ?? ""}
-                      nativeInputProps={{
-                        "aria-invalid": !!modal.errors?.login_siret,
-                        inputMode: "numeric",
-                        maxLength: 14,
-                        value: (modal.currentRow.login_siret as string | null) ?? "",
-                        onChange: (e) =>
-                          modal.validateInputChange(userFormSchema, "login_siret", e.target.value || null),
-                      }}
-                    />
-                  </div>
-                </fieldset>
-              )}
-
               {/* Périmètres : territoires seulement, pour registry.admin. */}
               {canManageScopes && isTerritoryTarget && (
                 <fieldset className={fr.cx("fr-fieldset")}>
@@ -539,6 +516,29 @@ export default function UsersTable(props: { title: string; territoryId: number |
                       />
                     )}
                     {modal.errors?.scopes && <p className={fr.cx("fr-error-text")}>{modal.errors.scopes}</p>}
+                  </div>
+                </fieldset>
+              )}
+
+              {/* Connexion : login_siret réservé registry.admin, masqué (pas grisé) sinon. */}
+              {canManageScopes && (
+                <fieldset className={fr.cx("fr-fieldset")}>
+                  <legend className={fr.cx("fr-fieldset__legend")}>Connexion</legend>
+                  <div className={fr.cx("fr-fieldset__element")}>
+                    <Input
+                      label="SIRET de connexion ProConnect"
+                      hintText="14 chiffres, SIRET de la structure rattachée au compte"
+                      state={modal.errors?.login_siret ? "error" : "default"}
+                      stateRelatedMessage={modal.errors?.login_siret ?? ""}
+                      nativeInputProps={{
+                        "aria-invalid": !!modal.errors?.login_siret,
+                        inputMode: "numeric",
+                        maxLength: 14,
+                        value: (modal.currentRow.login_siret as string | null) ?? "",
+                        onChange: (e) =>
+                          modal.validateInputChange(userFormSchema, "login_siret", e.target.value || null),
+                      }}
+                    />
                   </div>
                 </fieldset>
               )}
