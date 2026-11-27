@@ -1,4 +1,5 @@
 import { ConnectionInterface, DestroyHookInterface, InitHookInterface } from "@/ilos/common/index.ts";
+import "./noDelay.ts";
 import { env_or_fail, env_or_int } from "@/lib/env/index.ts";
 import { errorCode, taggedLogger } from "@/lib/logger/tagged.ts";
 import { v4 } from "@/lib/uuid/index.ts";

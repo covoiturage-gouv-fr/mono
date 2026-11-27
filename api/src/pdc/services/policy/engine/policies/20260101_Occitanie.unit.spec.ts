@@ -447,3 +447,277 @@ describe("Occitanie 2026 - Booster : financement employeur", () => {
       carpool: [withIncentive("38347481400000", { datetime: new Date("2026-09-15T10:00:00+0200") })],
     }, { incentive: [0] }));
 });
+
+describe("Occitanie 2026 - Exception employeur du booster (table)", () => {
+  const EMPLOYER = "38347481400000";
+  const OPERATOR = "49190454600000";
+  const LOCAL_AOM = "24120018700000";
+  const DELEGATE = "81317849800000";
+  const KEOLIS_TARBES = "39362393900000";
+  const REGION = "20005379100000";
+  const BOOSTER = "2026-10-15T10:00:00+0200";
+
+  // incentive attendu en centimes : 0 = rejeté
+  const cases: Array<{ name: string; datetime: string; contribution: number; funders: string[]; expected: number }> = [
+    {
+      name: "30/09 23:59, 0 €, employeur",
+      datetime: "2026-09-30T23:59:00+0200",
+      contribution: 0,
+      funders: [EMPLOYER],
+      expected: 0,
+    },
+    {
+      name: "01/10 00:00, 0 €, employeur",
+      datetime: "2026-10-01T00:00:00+0200",
+      contribution: 0,
+      funders: [EMPLOYER],
+      expected: 250,
+    },
+    { name: "15/10, 0,49 €, employeur", datetime: BOOSTER, contribution: 49, funders: [EMPLOYER], expected: 250 },
+    { name: "15/10, 0 €, aucun financeur", datetime: BOOSTER, contribution: 0, funders: [], expected: 0 },
+    { name: "15/10, 0 €, opérateur seul", datetime: BOOSTER, contribution: 0, funders: [OPERATOR], expected: 0 },
+    { name: "15/10, 0 €, AOM locale seule", datetime: BOOSTER, contribution: 0, funders: [LOCAL_AOM], expected: 0 },
+    { name: "15/10, 0 €, délégataire seul", datetime: BOOSTER, contribution: 0, funders: [DELEGATE], expected: 0 },
+    {
+      name: "15/10, 0 €, Keolis Tarbes seul",
+      datetime: BOOSTER,
+      contribution: 0,
+      funders: [KEOLIS_TARBES],
+      expected: 0,
+    },
+    { name: "15/10, 0 €, Région seule", datetime: BOOSTER, contribution: 0, funders: [REGION], expected: 0 },
+    {
+      name: "15/10, 0 €, employeur + AOM locale",
+      datetime: BOOSTER,
+      contribution: 0,
+      funders: [EMPLOYER, LOCAL_AOM],
+      expected: 250,
+    },
+    {
+      name: "31/10 23:59, 0 €, employeur",
+      datetime: "2026-10-31T23:59:00+0100",
+      contribution: 0,
+      funders: [EMPLOYER],
+      expected: 250,
+    },
+    {
+      name: "01/11 00:00, 0 €, employeur",
+      datetime: "2026-11-01T00:00:00+0100",
+      contribution: 0,
+      funders: [EMPLOYER],
+      expected: 0,
+    },
+    { name: "15/10, 2,01 €, employeur", datetime: BOOSTER, contribution: 201, funders: [EMPLOYER], expected: 0 },
+  ];
+
+  for (const c of cases) {
+    it(c.name, async () =>
+      await process({
+        policy: { handler: Handler.id },
+        carpool: [{
+          datetime: new Date(c.datetime),
+          passenger_contribution: c.contribution,
+          operator_siret: OPERATOR,
+          operator_incentives: c.funders.map((siret) => ({ siret, amount: 300 })),
+        }],
+      }, { incentive: [c.expected] }));
+  }
+});
+
+describe("Occitanie 2026 - Matrice des trajets entre AOM (table)", () => {
+  const place = (com: string, aom: string, reg = "76") => ({ ...defaultPosition, com, arr: com, aom, reg });
+  const T = {
+    R: place("46240", "200053791"), // AOM Région, hors bassin
+    R2: place("46042", "200053791"), // Cahors
+    Narbonne: place("11262", "241100593"),
+    Beziers: place("34032", "243400769"),
+    Montpellier: place("34172", "243400017"),
+    Mauguio: place("34154", "243400470"), // Pays de l'Or
+    Sete: place("34301", "200066355"),
+    Rodez: place("12202", "241200187"), // bassin
+    Ales: place("30007", "200003325"), // bassin
+    Mende: place("48095", "244800470"), // bassin, AOM CC du Gévaudan (annexe 2)
+    LesAngles: place("30011", "248400251"), // type A : Grand Avignon
+    Barcelonne: place("32027", "200000000"), // type A : AOM Nouvelle-Aquitaine (SIREN fictif)
+    Avignon: place("84007", "248400251", "93"),
+    Agen: place("47001", "200035459", "75"),
+  };
+  type Place = keyof typeof T;
+
+  const JUL = "2026-07-15T10:00:00+0200"; // aucune AOM réintégrée
+  const AUG = "2026-08-15T10:00:00+0200"; // Montpellier réintégrée
+  const SEP = "2026-09-10T10:00:00+0200"; // Montpellier et Pays de l'Or réintégrés, Sète exclue
+  const OCT = "2026-10-15T10:00:00+0200"; // booster
+
+  type Row = { date: string; a: Place; b: Place; ok: boolean; distance?: number };
+
+  // Jouées dans les deux sens ; hors booster : 5 km = 1,50 €, bassin 40 km = 2,00 €
+  const rows: Row[] = [
+    { date: SEP, a: "R", b: "R", ok: true },
+    { date: SEP, a: "R", b: "R2", ok: true },
+    { date: SEP, a: "R", b: "Narbonne", ok: true },
+    { date: SEP, a: "R", b: "Montpellier", ok: true }, // Lr
+    { date: JUL, a: "R", b: "Montpellier", ok: true }, // Lx
+    { date: SEP, a: "R", b: "Sete", ok: true },
+    { date: SEP, a: "Narbonne", b: "Narbonne", ok: false },
+    { date: SEP, a: "Sete", b: "Sete", ok: false },
+    { date: JUL, a: "Montpellier", b: "Montpellier", ok: false },
+    { date: SEP, a: "Narbonne", b: "Beziers", ok: true },
+    { date: SEP, a: "Montpellier", b: "Montpellier", ok: true },
+    { date: SEP, a: "Montpellier", b: "Mauguio", ok: true }, // deux AOM réintégrées
+    { date: AUG, a: "Montpellier", b: "Sete", ok: true }, // Lr, Lx
+    { date: SEP, a: "Montpellier", b: "Narbonne", ok: true },
+    { date: SEP, a: "R", b: "Avignon", ok: false },
+    { date: SEP, a: "Narbonne", b: "Agen", ok: false },
+    { date: SEP, a: "Montpellier", b: "Avignon", ok: false },
+    { date: SEP, a: "Avignon", b: "Agen", ok: false },
+    { date: SEP, a: "Avignon", b: "Avignon", ok: false },
+    { date: SEP, a: "R", b: "LesAngles", ok: false },
+    { date: SEP, a: "Narbonne", b: "Barcelonne", ok: false },
+    { date: SEP, a: "Montpellier", b: "LesAngles", ok: false },
+    { date: SEP, a: "LesAngles", b: "LesAngles", ok: false },
+    { date: SEP, a: "LesAngles", b: "Barcelonne", ok: false },
+    // bassins, 40 km
+    { date: SEP, a: "Rodez", b: "R", ok: true, distance: 40_000 },
+    { date: SEP, a: "Rodez", b: "Narbonne", ok: true, distance: 40_000 },
+    { date: SEP, a: "Rodez", b: "Montpellier", ok: true, distance: 40_000 },
+    { date: SEP, a: "Rodez", b: "Rodez", ok: false, distance: 40_000 },
+    { date: SEP, a: "Ales", b: "Ales", ok: false, distance: 40_000 },
+    { date: SEP, a: "Mende", b: "Mende", ok: false, distance: 40_000 },
+    { date: SEP, a: "Rodez", b: "LesAngles", ok: true, distance: 40_000 },
+    { date: SEP, a: "Rodez", b: "Avignon", ok: true, distance: 40_000 },
+    { date: SEP, a: "Agen", b: "Mende", ok: true, distance: 40_000 },
+    // hors bassin : tranche longue refusée
+    { date: SEP, a: "R", b: "R2", ok: false, distance: 40_000 },
+    { date: SEP, a: "Narbonne", b: "Beziers", ok: false, distance: 40_000 },
+  ];
+
+  // Régime booster (2,50 € fixe, 3,50 € au-delà de 7 km) : lignes « même AOM » et « deux AOM différentes »
+  const boosterRows: Row[] = [
+    { date: OCT, a: "R", b: "R", ok: true },
+    { date: OCT, a: "Narbonne", b: "Narbonne", ok: false },
+    { date: OCT, a: "Narbonne", b: "Beziers", ok: true },
+    { date: OCT, a: "Montpellier", b: "Montpellier", ok: true },
+    { date: OCT, a: "Sete", b: "Sete", ok: true },
+    { date: OCT, a: "Mauguio", b: "Mauguio", ok: true },
+    { date: OCT, a: "Montpellier", b: "Mauguio", ok: true },
+    { date: OCT, a: "Montpellier", b: "Narbonne", ok: true },
+    { date: OCT, a: "R", b: "Avignon", ok: false },
+    { date: OCT, a: "Rodez", b: "Rodez", ok: false, distance: 40_000 },
+    { date: OCT, a: "Rodez", b: "Avignon", ok: true, distance: 40_000 },
+    { date: OCT, a: "R", b: "R2", ok: true, distance: 40_000 }, // booster : 50 km sur toutes les zones
+  ];
+
+  const label = ({ date, a, b, ok, distance }: Row) =>
+    `${date.slice(0, 10)} ${a} <-> ${b}${distance ? ` ${distance / 1000} km` : ""} : ${ok ? "incité" : "rejeté"}`;
+
+  const play = (list: Row[], prefix: string, amount: (r: Row) => number) => {
+    for (const row of list) {
+      for (const [from, to] of [[row.a, row.b], [row.b, row.a]] as Array<[Place, Place]>) {
+        it(`${prefix}${label(row)} (${from} -> ${to})`, async () =>
+          await process({
+            policy: { handler: Handler.id },
+            carpool: [{ datetime: new Date(row.date), distance: row.distance ?? 5_000, start: T[from], end: T[to] }],
+          }, { incentive: [row.ok ? amount(row) : 0] }));
+      }
+    }
+  };
+
+  play(rows, "", (r) => (r.distance ? 200 : 150));
+  play(boosterRows, "booster ", (r) => (r.distance ? 350 : 250));
+});
+
+describe("Occitanie 2026 - Bascules de fin de campagne des AOM locales", () => {
+  const place = (com: string, aom: string) => ({ ...defaultPosition, com, arr: com, aom });
+  const montpellier = place("34172", "243400017");
+  const paysDeLOr = place("34154", "243400470");
+  const sete = place("34301", "200066355");
+  const narbonne = place("11262", "241100593");
+  const internal = (p: typeof montpellier) => ({
+    start: p,
+    end: p,
+    passenger_contribution: 100,
+    distance: 10_000,
+    passenger_identity_key: uuidV4(),
+  });
+
+  const switchovers = [
+    {
+      name: "Montpellier",
+      p: montpellier,
+      lastRejected: "2026-07-31T23:59:59+0200",
+      firstOk: "2026-08-01T00:00:00+0200",
+    },
+    {
+      name: "Pays de l'Or",
+      p: paysDeLOr,
+      lastRejected: "2026-08-31T23:59:59+0200",
+      firstOk: "2026-09-01T00:00:00+0200",
+    },
+    { name: "Sète", p: sete, lastRejected: "2026-09-28T23:59:59+0200", firstOk: "2026-09-29T00:00:00+0200" },
+  ];
+
+  for (const { name, p, lastRejected, firstOk } of switchovers) {
+    it(`${name} : bascule à la seconde (Paris)`, async () =>
+      await process({
+        policy: { handler: Handler.id },
+        carpool: [
+          { ...internal(p), datetime: new Date(lastRejected) },
+          { ...internal(p), datetime: new Date(firstOk) },
+        ],
+      }, { incentive: [0, 100] }));
+  }
+
+  it("2026-08-15 : seule Montpellier réintégrée", async () => {
+    const datetime = new Date("2026-08-15T10:00:00+0200");
+    await process({
+      policy: { handler: Handler.id },
+      carpool: [
+        { ...internal(montpellier), datetime },
+        { ...internal(paysDeLOr), datetime },
+        { ...internal(sete), datetime },
+        { ...internal(montpellier), end: sete, datetime },
+      ],
+    }, { incentive: [100, 0, 0, 100] });
+  });
+
+  it("2026-09-15 : Pays de l'Or réintégrée, Sète exclue", async () => {
+    const datetime = new Date("2026-09-15T10:00:00+0200");
+    await process({
+      policy: { handler: Handler.id },
+      carpool: [
+        { ...internal(paysDeLOr), datetime },
+        { ...internal(sete), datetime },
+      ],
+    }, { incentive: [100, 0] });
+  });
+
+  it("2026-10-15 booster : les trois réintégrées au tarif booster", async () => {
+    const datetime = new Date("2026-10-15T10:00:00+0200");
+    await process({
+      policy: { handler: Handler.id },
+      carpool: [montpellier, paysDeLOr, sete].map((p) => ({ ...internal(p), datetime })),
+    }, { incentive: [350, 350, 350] });
+  });
+
+  it("Narbonne -> Narbonne (sans date de fin) reste rejetée", async () =>
+    await process({
+      policy: { handler: Handler.id },
+      carpool: [
+        "2026-07-31T23:59:59+0200",
+        "2026-08-15T10:00:00+0200",
+        "2026-09-15T10:00:00+0200",
+        "2026-09-29T00:00:00+0200",
+        "2026-10-15T10:00:00+0200",
+        "2026-11-15T10:00:00+0100",
+      ].map((d) => ({ ...internal(narbonne), datetime: new Date(d) })),
+    }, { incentive: [0, 0, 0, 0, 0, 0] }));
+
+  it("annexe 2 complète conservée dans inner et notEmployerSirens", () => {
+    for (const siren of ["243400017", "243400470", "200066355"]) {
+      assertEquals(occitanie2026Data.inner.includes(siren as TerritoryCodeEnum.Mobility), true);
+      assertEquals(occitanie2026Data.notEmployerSirens.has(siren), true);
+    }
+    assertEquals(occitanie2026Data.notEmployerSirens.has("393623939"), true);
+  });
+});
