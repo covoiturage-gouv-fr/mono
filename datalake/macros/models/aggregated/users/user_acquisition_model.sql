@@ -1,8 +1,6 @@
 {% macro user_acquisition_model(perim) %}
 
-  {% if perim not in ['aom', 'aomreg'] %}
-    {{ exceptions.raise_compiler_error("Invalid perim: " ~ perim ~ ". Expected: aom, aomreg") }}
-  {% endif %}
+  {{ check_user_perim(perim) }}
 
 {# Table fulle refresh a-la users.sql afin de détecter correctement les nouveaux users#}
 {{ config(

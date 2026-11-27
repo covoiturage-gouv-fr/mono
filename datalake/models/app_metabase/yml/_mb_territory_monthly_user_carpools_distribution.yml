@@ -1,0 +1,25 @@
+version: 2
+models:
+  - name: mb_territory_monthly_user_carpools_distribution
+    description: >
+      Vue app_metabase des quartiles du nombre de trajets mensuels par utilisateur, par
+      epci/dep/reg/country, rôle et mois.
+      Filtrer toujours sur perim : les codes INSEE dep et reg se recouvrent
+      ('11' = Aude et Île-de-France, '75' = Paris et Nouvelle-Aquitaine).
+    columns:
+      - name: perim
+        data_type: text
+      - name: code
+        data_type: character varying
+      - name: date
+        data_type: text
+      - name: role
+        data_type: text
+      - name: users
+        data_type: bigint
+      - name: q1_carpools
+        data_type: double precision
+      - name: median_carpools
+        data_type: double precision
+      - name: q3_carpools
+        data_type: double precision

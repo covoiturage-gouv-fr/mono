@@ -1,0 +1,36 @@
+version: 2
+models:
+  - name: mb_territory_monthly_financials
+    description: >
+      Vue app_metabase des montants d'incitation et moyennes par trajet par
+      epci/dep/reg/country et par mois, lue sur territory_month_<perim>_both.
+      Collectivité = SIREN epci ou AOM, comme mb_territory_monthly_carpools.
+      Filtrer toujours sur perim : les codes INSEE dep et reg se recouvrent
+      ('11' = Aude et Île-de-France, '75' = Paris et Nouvelle-Aquitaine).
+    columns:
+      - name: perim
+        data_type: text
+      - name: code
+        data_type: character varying
+      - name: date
+        data_type: text
+      - name: carpools
+        data_type: bigint
+      - name: oi_amount_total
+        data_type: numeric
+      - name: oi_amount_collectivite
+        data_type: numeric
+      - name: oi_amount_operator
+        data_type: numeric
+      - name: oi_amount_other
+        data_type: numeric
+      - name: avg_driver_revenue
+        data_type: numeric
+      - name: avg_passenger_contribution
+        data_type: numeric
+      - name: avg_incentive
+        data_type: numeric
+      - name: avg_incentive_collectivite
+        data_type: numeric
+      - name: avg_incentive_operator
+        data_type: numeric

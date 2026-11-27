@@ -51,7 +51,7 @@ Remplace les projet legacy `sqlmesh/` et `dbt/`. Ingère les données brutes de 
                                 │  dbt run --select aggregated.*
                                 ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
-│  ZONE AGGREGATED  (zone_aggregated)  — 475 modèles générés par macros   │
+│  ZONE AGGREGATED  (zone_aggregated)  — 559 modèles générés par macros   │
 │                                                                         │
 │  Grains temporels : day · month · quarter · semester · year             │
 │  Périmètres géo   : arr · com · plm · epci · aom · dep · reg · pays     │
@@ -101,19 +101,28 @@ Remplace les projet legacy `sqlmesh/` et `dbt/`. Ingère les données brutes de 
 │  └────────────────────────────────────────────────────────────────┘     │
 │                                                                         │
 │  ┌────────────────────────────────────────────────────────────────┐     │
-│  │  Users · 11 modèles                                            │     │
+│  │  Incited carpools · 4 modèles                                  │     │
+│  │  incited_carpools_month_<epci|dep|reg|country>_both            │     │
+│  │  compteurs de trajets incités (collectivité, opérateur,        │     │
+│  │  opérateur seul, autre) de mb_territory_monthly_carpools       │     │
+│  └────────────────────────────────────────────────────────────────┘     │
+│                                                                         │
+│  ┌────────────────────────────────────────────────────────────────┐     │
+│  │  Users · 23 modèles                                            │     │
 │  │  users              user_id · 1re/dernière date conducteur     │     │
 │  │                     et passager · geo_code de 1re activité     │     │
 │  │  user_od_day        activité journalière par rôle              │     │
 │  │                     avec métriques OD (distance, revenus, CI…) │     │
-│  │  user_<aom|aomreg>_<day|month>  carpools par user/rôle/        │     │
+│  │  user_<perim>_<day|month>  carpools par user/rôle/             │     │
 │  │                     territoire (grain day ou month)            │     │
 │  │  user_arr_month     présence mensuelle par arrondissement      │     │
 │  │                     et côté du trajet (unique_* grains longs)  │     │
-│  │  user_<aom|aomreg>_acquisition_month  nouveaux/actifs          │     │
+│  │  user_<perim>_acquisition_month  nouveaux/actifs               │     │
 │  │                     mensuels (role-agnostique via role='any')  │     │
-│  │  user_<aom|aomreg>_carpools_distribution_month  quartiles      │     │
+│  │  user_<perim>_carpools_distribution_month  quartiles           │     │
 │  │                     du nb de trajets/mois par user, par rôle   │     │
+│  │  perim : aom, aomreg (day + month) ;                           │     │
+│  │          epci, dep, reg, country (month)                       │     │
 │  └────────────────────────────────────────────────────────────────┘     │
 └───────────────────────────────┬─────────────────────────────────────────┘
                                 │  dbt run --select exposed.*
@@ -163,7 +172,7 @@ Remplace les projet legacy `sqlmesh/` et `dbt/`. Ingère les données brutes de 
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
-Hors diagramme : `models/app_metabase/` (schéma `app_metabase`, 22 vues `mb_*`) expose des retraitements ad hoc au grain attendu par chaque dashboard Metabase — pas de convention de nommage générique comme les zones ci-dessus.
+Hors diagramme : `models/app_metabase/` (schéma `app_metabase`, 27 vues `mb_*`) expose des retraitements ad hoc au grain attendu par chaque dashboard Metabase — pas de convention de nommage générique comme les zones ci-dessus.
 
 ---
 
@@ -206,7 +215,7 @@ La recette recalcule aussi l'exposé observatoire (users, occupation, distributi
 
 ## Macros
 
-Toute la génération de code des 475 modèles agrégés repose sur des macros Jinja organisées en trois familles.
+Toute la génération de code des 559 modèles agrégés repose sur des macros Jinja organisées en trois familles.
 
 ### Macros de génération de modèles
 
@@ -215,11 +224,12 @@ Ces macros constituent le corps entier d'un fichier `.sql` — un appel suffit �
 | Macro             | Signature                   | Rôle                                                                                                                                                                      |
 | ----------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `od_model`        | `(perim, grain)`            | Agrégation OD : paire `(territory_1, territory_2)` ordonnée par LEAST/GREATEST pour éviter les doublons directionnels. `com` = vue UNION ALL de `arr` + `plm`.            |
-| `perimeter_model` | `(kind, perim, grain, direction, columns, keys, key_ids, filtered_args, on_schema_change)` | Squelette commun de `territory_model`, `fraud_model` et `operators_model`. `both` = UNION ALL start + end en excluant les intra sur le second membre. `com` = vue UNION ALL de `arr` + `plm`, colonnes énumérées par nom depuis `arr`. |
+| `perimeter_model` | `(kind, perim, grain, direction, columns, keys, key_ids, filtered_args, on_schema_change)` | Squelette commun de `territory_model`, `fraud_model`, `operators_model` et `incited_carpools_model`. `both` = UNION ALL start + end en excluant les intra sur le second membre. `com` = vue UNION ALL de `arr` + `plm`, colonnes énumérées par nom depuis `arr`. |
 | `territory_model` | `(perim, grain, direction)` | Agrégation par territoire. Mode strict : les codes hors-périmètre sont NULL (pas de fallback). |
 | `fraud_model`     | `(perim, grain, direction)` | Par opérateur, sans filtre `valid_acquisition_status` — comptabilise tous les statuts pour mesurer fraudes et anomalies. |
 | `operators_model` | `(perim, grain, direction)` | Comme `territory_model` avec `operator_id` et `operator_name` en clés supplémentaires. |
 | `aom_financials_model` | `(perim, grain)` | Stats financières des vues `mb_aom_*` (aom/aomreg, day/month, direction both) : incitations de l'AOM du périmètre (self) ou d'une autre AOM (other), ventilations intra/inter, quantiles de distance. Self/other lus sur les lignes `operator_incentives` / `incentives`, pas sur les jsonb de `carpools`. |
+| `incited_carpools_model` | `(perim)` | Compteurs de trajets incités (collectivité, opérateur, opérateur seul, autre) de `mb_territory_monthly_carpools` (epci/dep/reg/country, month, direction both), via `perimeter_model`. Hors `territory_agg_columns`, dont ils sont sortis (migration 0006). |
 
 Fenêtre de recalcul incrémental par grain, commune à toutes les macros (`grain_lookback(grain)`) :
 
@@ -254,6 +264,7 @@ Injectées dans les SELECT via `{{ macro_name() }}`.
 | `territory_agg_columns()` | idem OD + intra_carpools, passenger_over_18, passenger_seats, dist_distribution[17 tranches 0-5km…80+]                                                |
 | `fraud_agg_columns()`     | carpools, carpools_valid, carpools_invalid, carpools_fraud, carpools_anomaly, carpools_terms_violation                                                |
 | `user_agg_columns()`      | carpools, trips, distance, duration, revenue, contribution, OI×3, CI, hours_distribution[24], oc_distribution[A/B/C]                                  |
+| `incited_carpools_columns()` | carpools_collectivite_incentive, carpools_operator_incentive, carpools_operator_only_incentive, carpools_other_incentive (COUNT FILTER > 0)      |
 
 ### Macros filtres et helpers
 

@@ -2,9 +2,7 @@
 
   {% set lb = grain_lookback(grain, ['day', 'month']) %}
 
-  {% if perim not in ['aom', 'aomreg'] %}
-    {{ exceptions.raise_compiler_error("Invalid perim: " ~ perim ~ ". Expected: aom, aomreg") }}
-  {% endif %}
+  {{ check_user_perim(perim) }}
 
   {% if direction not in ['from', 'to', 'both'] %}
     {{ exceptions.raise_compiler_error("Invalid direction: " ~ direction ~ ". Expected: from, to, both") }}
