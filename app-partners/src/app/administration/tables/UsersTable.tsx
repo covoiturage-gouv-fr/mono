@@ -364,10 +364,10 @@ export default function UsersTable(props: { title: string; territoryId: number |
               modal.setErrors({});
               modal.setTypeModal("create");
             }}
-            title="Ajouter un utilisateur"
+            title="Inviter un utilisateur"
             size="small"
           >
-            Ajouter
+            Inviter
           </Button>
           <Input
             label="Rechercher"
@@ -386,7 +386,7 @@ export default function UsersTable(props: { title: string; territoryId: number |
       <Pagination count={totalPages} defaultPage={currentPage} onChange={onChangePage} />
       <Modal
         open={modal.openModal}
-        title={modal.modalTitle(modal.typeModal)}
+        title={modal.typeModal === "create" ? "Inviter un utilisateur" : modal.modalTitle(modal.typeModal)}
         onOpen={async () => {
           if (modal.typeModal === "update" || modal.typeModal === "create") {
             await refetchOperators();
