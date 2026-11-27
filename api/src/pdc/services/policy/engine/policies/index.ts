@@ -50,6 +50,7 @@ import { LannionTregor2026 } from "./20251201_LannionTregor.ts";
 import { ATMBx2CCAM2026 } from "./20260101_ATMBx2CCAM_2026.ts";
 import { GrandChatellerault2026 } from "./20260101_GrandChatellerault.ts";
 import { GrandPoitiers2026 } from "./20260101_GrandPoitiers2026.ts";
+import { GrandPoitiers2027 } from "./20270101_GrandPoitiers2027.ts";
 import { LaRochelle2026 } from "./20260101_LaRochelle.ts";
 import { MontluconCommunaute2026 } from "./20260101_Montlucon_2026.ts";
 import { Occitanie20262027 } from "./20260101_Occitanie.ts";
@@ -76,6 +77,7 @@ export const policies: Map<string, PolicyHandlerStaticInterface> = new Map(
     GrandPoitiers,
     GrandPoitiers2025,
     GrandPoitiers2026,
+    GrandPoitiers2027,
     HauteCorreze2025,
     HauteCorreze2026,
     IDFMPeriodeNormale2021,
