@@ -7,8 +7,8 @@ import TerritoryAutocomplete from "@/components/common/TerritoryAutocomplete";
 import { features } from "@/config/features";
 import { type TerritoryOption } from "@/helpers/api";
 import { getRolesList, isEditableRole, isOperator, isTerritory, labelRole } from "@/helpers/auth";
-import { userFormSchema } from "@/helpers/userForm";
-import { roleColor, territoriesCell } from "@/helpers/usersTable";
+import { operatorSiret, siretAfterRoleChange, siretAfterScopesChange, suggestSiret, userFormSchema } from "@/helpers/userForm";
+import { ROLE_LEGEND, roleDotClass, territoriesCell } from "@/helpers/usersTable";
 import { useOperatorsList, useTerritoriesList, useUsersList } from "@/hooks/api";
 import { FormValidationError, useActionsModal } from "@/hooks/useActionsModal";
 import { useUrlSearch } from "@/hooks/useUrlSearch";
@@ -73,7 +73,8 @@ export default function UsersTable(props: { title: string; territoryId: number |
   const totalPages = data?.meta.totalPages ?? 1;
   const totalRecords = data?.meta.total ?? 0;
 
-  const headers = ["Nom", "Adresse mail", "Rôle", "Entités", "Actions"];
+  // « ProConnect » = SIRET de connexion, renvoyé par l'API seulement à registry.admin.
+  const headers = ["Rôle", "Nom", "Adresse mail", ...(canManageScopes ? ["ProConnect"] : []), "Entités", "Actions"];
   const { data: operatorsData, refetch: refetchOperators } = useOperatorsList({ limit: 100 });
   const operatorsList = () => {
     if (user?.operator_id) {
@@ -92,11 +93,6 @@ export default function UsersTable(props: { title: string; territoryId: number |
     if (row.territory_id) return [{ territory_id: row.territory_id, is_default: true }];
     return [];
   };
-
-  // Suggestion login_siret = SIRET du territoire par défaut.
-  // null (jamais "") quand rien à suggérer : l'API n'accepte que null ou 14 chiffres.
-  const suggestSiret = (scopes: UserScopeInput[]): string | null =>
-    (scopes.find((s) => s.is_default) ?? scopes[0])?.siret ?? null;
 
   // Périmètre par défaut du formulaire, sous la forme attendue par l'autocomplétion.
   const defaultTerritory = (): TerritoryOption | null => {
@@ -118,7 +114,14 @@ export default function UsersTable(props: { title: string; territoryId: number |
       role: row.role,
       operator_id: row.operator_id ?? null,
       territory_id: row.territory_id ?? null,
-      ...(canManageScopes ? { scopes, login_siret: row.login_siret ?? suggestSiret(scopes) } : {}),
+      ...(canManageScopes
+        ? {
+            scopes,
+            login_siret:
+              row.login_siret ??
+              (isOperator(row.role) ? operatorSiret(operatorsList(), row.operator_id ?? null) : suggestSiret(scopes)),
+          }
+        : {}),
     });
     modal.setErrors({});
     modal.setOpenModal(true);
@@ -192,21 +195,21 @@ export default function UsersTable(props: { title: string; territoryId: number |
     return null;
   };
 
-  const roleColumn = (role: string) => {
-    const color = roleColor(role);
-    return (
-      <span className="role-pill">
-        {color && <span className={`role-pill__dot role-pill__dot--${color}`} aria-hidden="true" />}
-        {labelRole(role)}
-      </span>
-    );
-  };
+  const roleColumn = (role: string) => (
+    <div className="role-cell">
+      <Tooltip kind="hover" title={labelRole(role)}>
+        <span className={roleDotClass(role)} />
+        <span className={fr.cx("fr-sr-only")}>{labelRole(role)}</span>
+      </Tooltip>
+    </div>
+  );
 
   const dataTable =
     data?.data?.map((d) => [
+      roleColumn(d.role),
       ellipsis(`${d.firstname} ${d.lastname}`),
       ellipsis(d.email),
-      roleColumn(d.role),
+      ...(canManageScopes ? [d.login_siret ?? ""] : []),
       entitiesColumn(d),
       rowActions(d),
     ]) ?? [];
@@ -218,9 +221,17 @@ export default function UsersTable(props: { title: string; territoryId: number |
       ...prev,
       role,
       ...(role.startsWith("operator.") ? {} : { operator_id: null }),
-      ...(role.startsWith("territory.") || !canManageScopes
-        ? {}
-        : { scopes: [], territory_id: null, login_siret: null }),
+      ...(role.startsWith("territory.") || !canManageScopes ? {} : { scopes: [], territory_id: null }),
+      ...(canManageScopes
+        ? {
+            login_siret: siretAfterRoleChange(
+              prev.role as string,
+              role,
+              prev.login_siret as string | null | undefined,
+              (prev.scopes as UserScopeInput[] | undefined) ?? [],
+            ),
+          }
+        : {}),
     }));
     modal.setErrors({});
   };
@@ -260,20 +271,24 @@ export default function UsersTable(props: { title: string; territoryId: number |
   const isTerritoryTarget = targetScopeType === "territory";
 
   // Met à jour les périmètres, resynchronise territory_id (dual-write legacy) et suggère le SIRET si vide.
+  // Un SIRET déjà rempli n'est jamais écrasé.
   const onChangeScopes = (scopes: UserScopeInput[]) => {
     const def = scopes.find((s) => s.is_default) ?? scopes[0];
     modal.setCurrentRow((prev) => ({
       ...prev,
       scopes,
       territory_id: def?.territory_id ?? null,
-      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- "" doit aussi être remplacé
-      login_siret: prev.login_siret || suggestSiret(scopes),
+      login_siret: siretAfterScopesChange(prev.login_siret as string | null | undefined, scopes),
     }));
   };
 
   // Le select natif ne connaît que des chaînes : "" = aucun opérateur.
-  const onChangeOperator = (value: string) =>
-    modal.validateInputChange(userFormSchema, "operator_id", value === "" ? null : Number(value));
+  // Choisir un opérateur est un geste explicite : son SIRET remplace celui déjà saisi.
+  const onChangeOperator = (value: string) => {
+    const operatorId = value === "" ? null : Number(value);
+    const siret = operatorSiret(operatorsList(), operatorId);
+    modal.validateInputsChange(userFormSchema, { operator_id: operatorId, ...(siret ? { login_siret: siret } : {}) });
+  };
 
   const errorAlertMessage = () => {
     const fields = Object.values(modal.errors ?? {}).filter(Boolean);
@@ -296,8 +311,8 @@ export default function UsersTable(props: { title: string; territoryId: number |
       )}
       {alert === "create" && (
         <AlertMessage
-          title="Utilisateur ajouté avec succès"
-          message="L'utilisateur a été enregistré dans la base de données."
+          title="Invitation envoyée"
+          message="L'utilisateur a reçu un e-mail d'invitation."
           typeAlert={alert}
           onClose={() => setAlert(undefined)}
         />
@@ -350,10 +365,10 @@ export default function UsersTable(props: { title: string; territoryId: number |
               modal.setErrors({});
               modal.setTypeModal("create");
             }}
-            title="Ajouter un utilisateur"
+            title="Inviter un utilisateur"
             size="small"
           >
-            Ajouter
+            Inviter
           </Button>
           <Input
             label="Rechercher"
@@ -370,9 +385,19 @@ export default function UsersTable(props: { title: string; territoryId: number |
       )}
       <AdminTable data={dataTable} headers={headers} />
       <Pagination count={totalPages} defaultPage={currentPage} onChange={onChangePage} />
+      <ul className="role-legend" aria-label="Légende des rôles">
+        {ROLE_LEGEND.map(({ className, label }) => (
+          <li key={label} className="role-pill">
+            <span className={`role-pill__dot ${className}`} aria-hidden="true" />
+            {label}
+          </li>
+        ))}
+      </ul>
       <Modal
         open={modal.openModal}
-        title={modal.modalTitle(modal.typeModal)}
+        title={modal.typeModal === "create" ? "Inviter un utilisateur" : modal.modalTitle(modal.typeModal)}
+        inlineButtons={modal.typeModal !== "delete"}
+        submitLabel={{ create: "Inviter", update: "Enregistrer", delete: "Supprimer" }[modal.typeModal]}
         onOpen={async () => {
           if (modal.typeModal === "update" || modal.typeModal === "create") {
             await refetchOperators();
@@ -399,30 +424,34 @@ export default function UsersTable(props: { title: string; territoryId: number |
               <fieldset className={fr.cx("fr-fieldset")}>
                 <legend className={fr.cx("fr-fieldset__legend")}>Identité</legend>
                 <div className={fr.cx("fr-fieldset__element")}>
-                  <Input
-                    label="Prénom"
-                    state={modal.errors?.firstname ? "error" : "default"}
-                    stateRelatedMessage={modal.errors?.firstname ?? ""}
-                    nativeInputProps={{
-                      "aria-invalid": !!modal.errors?.firstname,
-                      type: "text",
-                      value: (modal.currentRow.firstname as string) ?? "",
-                      onChange: (e) => modal.validateInputChange(userFormSchema, "firstname", e.target.value),
-                    }}
-                  />
-                </div>
-                <div className={fr.cx("fr-fieldset__element")}>
-                  <Input
-                    label="Nom"
-                    state={modal.errors?.lastname ? "error" : "default"}
-                    stateRelatedMessage={modal.errors?.lastname ?? ""}
-                    nativeInputProps={{
-                      "aria-invalid": !!modal.errors?.lastname,
-                      type: "text",
-                      value: (modal.currentRow.lastname as string) ?? "",
-                      onChange: (e) => modal.validateInputChange(userFormSchema, "lastname", e.target.value),
-                    }}
-                  />
+                  <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters")}>
+                    <div className={fr.cx("fr-col-12", "fr-col-sm-6")}>
+                      <Input
+                        label="Prénom"
+                        state={modal.errors?.firstname ? "error" : "default"}
+                        stateRelatedMessage={modal.errors?.firstname ?? ""}
+                        nativeInputProps={{
+                          "aria-invalid": !!modal.errors?.firstname,
+                          type: "text",
+                          value: (modal.currentRow.firstname as string) ?? "",
+                          onChange: (e) => modal.validateInputChange(userFormSchema, "firstname", e.target.value),
+                        }}
+                      />
+                    </div>
+                    <div className={fr.cx("fr-col-12", "fr-col-sm-6")}>
+                      <Input
+                        label="Nom"
+                        state={modal.errors?.lastname ? "error" : "default"}
+                        stateRelatedMessage={modal.errors?.lastname ?? ""}
+                        nativeInputProps={{
+                          "aria-invalid": !!modal.errors?.lastname,
+                          type: "text",
+                          value: (modal.currentRow.lastname as string) ?? "",
+                          onChange: (e) => modal.validateInputChange(userFormSchema, "lastname", e.target.value),
+                        }}
+                      />
+                    </div>
+                  </div>
                 </div>
                 <div className={fr.cx("fr-fieldset__element")}>
                   <Input
@@ -478,33 +507,10 @@ export default function UsersTable(props: { title: string; territoryId: number |
                 )}
               </fieldset>
 
-              {/* Connexion : login_siret réservé registry.admin, masqué (pas grisé) sinon. */}
-              {canManageScopes && (
-                <fieldset className={fr.cx("fr-fieldset")}>
-                  <legend className={fr.cx("fr-fieldset__legend")}>Connexion</legend>
-                  <div className={fr.cx("fr-fieldset__element")}>
-                    <Input
-                      label="SIRET de connexion"
-                      hintText="14 chiffres, SIRET de la structure rattachée au compte"
-                      state={modal.errors?.login_siret ? "error" : "default"}
-                      stateRelatedMessage={modal.errors?.login_siret ?? ""}
-                      nativeInputProps={{
-                        "aria-invalid": !!modal.errors?.login_siret,
-                        inputMode: "numeric",
-                        maxLength: 14,
-                        value: (modal.currentRow.login_siret as string | null) ?? "",
-                        onChange: (e) =>
-                          modal.validateInputChange(userFormSchema, "login_siret", e.target.value || null),
-                      }}
-                    />
-                  </div>
-                </fieldset>
-              )}
-
               {/* Périmètres : territoires seulement, pour registry.admin. */}
               {canManageScopes && isTerritoryTarget && (
                 <fieldset className={fr.cx("fr-fieldset")}>
-                  <legend className={fr.cx("fr-fieldset__legend")}>Périmètres</legend>
+                  <legend className={fr.cx("fr-fieldset__legend")}>Géographies</legend>
                   <div className={fr.cx("fr-fieldset__element")}>
                     {features.multiSiret ? (
                       <UserScopesEditor
@@ -525,6 +531,29 @@ export default function UsersTable(props: { title: string; territoryId: number |
                       />
                     )}
                     {modal.errors?.scopes && <p className={fr.cx("fr-error-text")}>{modal.errors.scopes}</p>}
+                  </div>
+                </fieldset>
+              )}
+
+              {/* Connexion : login_siret réservé registry.admin, masqué (pas grisé) sinon. */}
+              {canManageScopes && (
+                <fieldset className={fr.cx("fr-fieldset")}>
+                  <legend className={fr.cx("fr-fieldset__legend")}>Connexion</legend>
+                  <div className={fr.cx("fr-fieldset__element")}>
+                    <Input
+                      label="SIRET de connexion ProConnect"
+                      hintText="14 chiffres, SIRET de la structure rattachée au compte"
+                      state={modal.errors?.login_siret ? "error" : "default"}
+                      stateRelatedMessage={modal.errors?.login_siret ?? ""}
+                      nativeInputProps={{
+                        "aria-invalid": !!modal.errors?.login_siret,
+                        inputMode: "numeric",
+                        maxLength: 14,
+                        value: (modal.currentRow.login_siret as string | null) ?? "",
+                        onChange: (e) =>
+                          modal.validateInputChange(userFormSchema, "login_siret", e.target.value || null),
+                      }}
+                    />
                   </div>
                 </fieldset>
               )}

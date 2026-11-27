@@ -1,3 +1,4 @@
+import ButtonsGroup from "@codegouvfr/react-dsfr/ButtonsGroup";
 import { createModal } from "@codegouvfr/react-dsfr/Modal";
 import { useIsModalOpen } from "@codegouvfr/react-dsfr/Modal/useIsModalOpen";
 import { type ReactNode, useEffect, useId, useState } from "react";
@@ -7,6 +8,9 @@ export interface ModalProps {
   title: string;
   children?: ReactNode;
   cancelButton?: boolean;
+  submitLabel?: string;
+  // Boutons en fin de contenu plutôt qu'en pied fixe : il faut défiler tout le formulaire pour valider.
+  inlineButtons?: boolean;
   onClose: () => void;
   onOpen?: () => Promise<void>;
   // Renvoyer `false` garde la modale ouverte (erreurs de champ à corriger).
@@ -45,8 +49,7 @@ export function Modal(props: ModalProps) {
   // Verrou : un double clic sur OK envoyait deux requêtes.
   const [submitting, setSubmitting] = useState(false);
   const okButton = {
-    children: "OK",
-    doClosesModal: false,
+    children: props.submitLabel ?? "OK",
     disabled: submitting,
     onClick: async () => {
       if (submitting) return;
@@ -63,22 +66,14 @@ export function Modal(props: ModalProps) {
     },
   };
 
+  const cancel = { children: "Annuler", priority: "secondary" as const };
+  const footerOk = { ...okButton, doClosesModal: false };
+  const footerCancel = { ...cancel, onClick: () => props.onClose() };
+
   return (
     <modal.Component
       title={props.title}
-      buttons={
-        props.cancelButton !== false
-          ? [
-              {
-                children: "Annuler",
-                onClick: () => {
-                  props.onClose();
-                },
-              },
-              okButton,
-            ]
-          : [okButton]
-      }
+      buttons={props.inlineButtons ? undefined : props.cancelButton !== false ? [footerCancel, footerOk] : [footerOk]}
       concealingBackdrop={false}
     >
       {/* Le DSFR n'écoute Échap que sur ses propres boutons : depuis un champ, la modale restait ouverte. */}
@@ -91,6 +86,16 @@ export function Modal(props: ModalProps) {
         }}
       >
         {props.children}
+        {props.inlineButtons && (
+          <ButtonsGroup
+            inlineLayoutWhen="always"
+            alignment="right"
+            buttonsEquisized
+            buttons={
+              props.cancelButton !== false ? [{ ...cancel, onClick: () => modal.close() }, okButton] : [okButton]
+            }
+          />
+        )}
       </div>
     </modal.Component>
   );

@@ -57,30 +57,33 @@ export default function TerritoryAutocomplete(props: {
   const tooShort = input.trim().length < MIN_CHARS;
 
   return (
-    <Autocomplete
-      value={value}
-      inputValue={input}
-      options={visible}
-      disabled={disabled}
-      // Porté hors de la modale, le menu se peignait sous le `<dialog>`.
-      disablePortal
-      getOptionLabel={territoryLabel}
-      isOptionEqualToValue={(a, b) => a._id === b._id}
-      filterOptions={(o) => o}
-      noOptionsText={tooShort ? `Saisissez au moins ${MIN_CHARS} caractères` : "Aucun territoire"}
-      renderInput={(params) => <TextField {...params} label={label} />}
-      onInputChange={(e, v, reason) => {
-        setInput(v);
-        // `reset` = libellé réinjecté après sélection, pas une saisie : ne pas rechercher.
-        if (reason !== "input") return;
-        if (v.trim().length < MIN_CHARS) return stop();
-        search.run(v);
-      }}
-      onChange={(e, v) => {
-        stop();
-        setInput(v && v._id === value?._id ? territoryLabel(v) : "");
-        onChange(v);
-      }}
-    />
+    // Un <fieldset> position: relative sert de repère au popper, mais Chrome y décale l'origine sous la <legend> : on ancre ailleurs.
+    <div style={{ position: "relative" }}>
+      <Autocomplete
+        value={value}
+        inputValue={input}
+        options={visible}
+        disabled={disabled}
+        // Porté hors de la modale, le menu se peignait sous le `<dialog>`.
+        disablePortal
+        getOptionLabel={territoryLabel}
+        isOptionEqualToValue={(a, b) => a._id === b._id}
+        filterOptions={(o) => o}
+        noOptionsText={tooShort ? `Saisissez au moins ${MIN_CHARS} caractères` : "Aucun territoire"}
+        renderInput={(params) => <TextField {...params} label={label} />}
+        onInputChange={(e, v, reason) => {
+          setInput(v);
+          // `reset` = libellé réinjecté après sélection, pas une saisie : ne pas rechercher.
+          if (reason !== "input") return;
+          if (v.trim().length < MIN_CHARS) return stop();
+          search.run(v);
+        }}
+        onChange={(e, v) => {
+          stop();
+          setInput(v && v._id === value?._id ? territoryLabel(v) : "");
+          onChange(v);
+        }}
+      />
+    </div>
   );
 }

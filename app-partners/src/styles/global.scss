@@ -114,26 +114,48 @@
   vertical-align: bottom;
 }
 
-// Pastille du rôle : bleu = registre, orange = opérateur, vert = territoire.
+// Pastille du rôle : couleur = famille (bleu registre, orange opérateur, vert territoire),
+// pleine = administrateur, cerclée = utilisateur.
 .role-pill {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
 }
+.role-cell {
+  text-align: center;
+}
 .role-pill__dot {
+  display: inline-block; // hors flex (infobulle), un span inline ignore width/height
   flex: none;
   width: 0.75rem;
   height: 0.75rem;
   border-radius: 50%;
+  background-color: var(--role-dot);
   &--blue {
-    background-color: var(--background-flat-blue-france);
+    --role-dot: var(--background-flat-blue-france);
   }
   &--orange {
-    background-color: var(--background-flat-orange-terre-battue);
+    --role-dot: var(--background-flat-orange-terre-battue);
   }
   &--green {
-    background-color: var(--background-flat-green-emeraude);
+    --role-dot: var(--background-flat-green-emeraude);
   }
+  &--grey {
+    --role-dot: var(--background-flat-grey);
+  }
+  &--outline {
+    background-color: transparent;
+    box-shadow: inset 0 0 0 2px var(--role-dot);
+  }
+}
+.role-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  list-style: none;
+  padding: 0;
+  margin-top: 1rem;
+  font-size: 0.875rem;
 }
 
 // Accueil : « covoiturage.beta.gouv.fr » ne tient pas sur une ligne de titre en mobile.
