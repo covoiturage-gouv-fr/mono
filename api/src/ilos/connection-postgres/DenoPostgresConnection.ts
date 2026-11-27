@@ -1,4 +1,5 @@
 import { ClientOptions, Pool } from "dep:postgres";
+import "./noDelay.ts";
 import { array, assert, boolean, number, object, pattern, refine, string, union } from "dep:superstruct";
 import { env_or_default, env_or_false } from "../../lib/env/index.ts";
 import { errorCode, taggedLogger } from "../../lib/logger/tagged.ts";
