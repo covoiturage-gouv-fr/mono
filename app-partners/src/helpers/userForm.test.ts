@@ -44,7 +44,7 @@ describe("userFormSchema", () => {
   });
 
   it("exige le SIRET de connexion pour les rôles opérateur et territoire quand le champ est affiché", () => {
-    const required = "Le SIRET de connexion est obligatoire (14 chiffres)";
+    const required = "Le SIRET de connexion ProConnect est obligatoire (14 chiffres)";
     expect(fieldErrors({ ...valid, login_siret: null }).login_siret).toEqual([required]);
     expect(fieldErrors({ ...valid, role: "territory.admin", login_siret: null }).login_siret).toEqual([required]);
     expect(

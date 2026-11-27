@@ -498,7 +498,7 @@ export default function UsersTable(props: { title: string; territoryId: number |
                   <legend className={fr.cx("fr-fieldset__legend")}>Connexion</legend>
                   <div className={fr.cx("fr-fieldset__element")}>
                     <Input
-                      label="SIRET de connexion"
+                      label="SIRET de connexion ProConnect"
                       hintText="14 chiffres, SIRET de la structure rattachée au compte"
                       state={modal.errors?.login_siret ? "error" : "default"}
                       stateRelatedMessage={modal.errors?.login_siret ?? ""}

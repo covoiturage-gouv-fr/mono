@@ -47,7 +47,7 @@ export const userFormSchema = z
       ctx.addIssue({
         code: "custom",
         path: ["login_siret"],
-        message: "Le SIRET de connexion est obligatoire (14 chiffres)",
+        message: "Le SIRET de connexion ProConnect est obligatoire (14 chiffres)",
       });
     }
     if (row.role.startsWith("operator.") && !row.operator_id) {
