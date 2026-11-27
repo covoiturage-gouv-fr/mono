@@ -26,20 +26,23 @@ export default function SearchSelect(props: {
 }) {
   const { options, value, onChange, label, noOptionsText } = props;
   return (
-    <Autocomplete
-      value={options.find((o) => o.id === value) ?? null}
-      options={options}
-      // Dans un <dialog> ou une carte, le menu porté hors du DOM passerait dessous.
-      disablePortal
-      filterOptions={(opts, { inputValue }) => {
-        const q = normalize(inputValue);
-        return opts.filter((o) => normalize(o.label).includes(q));
-      }}
-      getOptionLabel={(o) => o.label}
-      isOptionEqualToValue={(a, b) => a.id === b.id}
-      noOptionsText={noOptionsText}
-      renderInput={(params) => <TextField {...params} label={label} />}
-      onChange={(_, o) => onChange(o?.id ?? null, o?.label)}
-    />
+    // Un <fieldset> position: relative sert de repère au popper, mais Chrome y décale l'origine sous la <legend> : on ancre ailleurs.
+    <div style={{ position: "relative" }}>
+      <Autocomplete
+        value={options.find((o) => o.id === value) ?? null}
+        options={options}
+        // Dans un <dialog> ou une carte, le menu porté hors du DOM passerait dessous.
+        disablePortal
+        filterOptions={(opts, { inputValue }) => {
+          const q = normalize(inputValue);
+          return opts.filter((o) => normalize(o.label).includes(q));
+        }}
+        getOptionLabel={(o) => o.label}
+        isOptionEqualToValue={(a, b) => a.id === b.id}
+        noOptionsText={noOptionsText}
+        renderInput={(params) => <TextField {...params} label={label} />}
+        onChange={(_, o) => onChange(o?.id ?? null, o?.label)}
+      />
+    </div>
   );
 }

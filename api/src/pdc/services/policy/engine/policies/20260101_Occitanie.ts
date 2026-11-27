@@ -11,6 +11,7 @@ import {
 import { NotEligibleTargetException } from "../exceptions/NotEligibleTargetException.ts";
 import { dateRange } from "../helpers/dateRange.ts";
 import { getOperatorsAt, TimestampedOperators } from "../helpers/getOperatorsAt.ts";
+import { getLocalAomsAt } from "../helpers/getLocalAomsAt.ts";
 import { isOperatorClassOrThrow } from "../helpers/isOperatorClassOrThrow.ts";
 import { isOperatorOrThrow } from "../helpers/isOperatorOrThrow.ts";
 import { LimitTargetEnum, watchForGlobalMaxAmount, watchForPersonMaxTripByDay } from "../helpers/limits.ts";
@@ -50,10 +51,11 @@ function startsOrEndsWithinArea(ctx: StatelessContextInterface) {
 }
 
 function filterInnerAOMOrThrow(ctx: StatelessContextInterface): void {
-  const { inner } = occitanie2026Data;
+  const { inner, innerEnds } = occitanie2026Data;
 
-  // check if start and end are within inner AOM
-  const isInner = startsAndEndsAt(ctx, { [TerritoryCodeEnum.Mobility]: inner });
+  // une AOM locale dont la campagne est finie à la date du trajet est traitée comme l'AOM Région
+  const excluded = getLocalAomsAt(inner, innerEnds, ctx.carpool.datetime);
+  const isInner = startsAndEndsAt(ctx, { [TerritoryCodeEnum.Mobility]: excluded });
   if (!isInner) return;
 
   // throw if start and end are within the same AOM
@@ -66,25 +68,21 @@ function filterInnerAOMOrThrow(ctx: StatelessContextInterface): void {
 //
 //   ● Opérateurs : BlaBlaCar Daily, Karos, Mobicoop
 //   ● Classe de preuve : B ou C
-//   ● Distance : au minimum 2.000 et au maximum 30.000 inclus sauf sur les bassins de mobilité
-//     de Mende, d’Armagnac, de Rodez, d’Alès (cf. Annexe 1) et dans ce cas les trajets éligibles
-//     sont au minimum 2.000 et au maximum 50.000 inclus dont l’origine et/ou la destination est dans le bassin.
-//   ● Départ ET arrivée dans le périmètre de la région Occitanie hors trajets internes aux autres
-//     Autorités Organisatrices de Mobilité de la Région (cf. Annexe 2) ;
-//   ● Exclusion des trajets internes aux autres AOM de la Région (cf. Annexe 2), exemple Narbonne->Narbonne.
-//     (
-//        Point d'attention : les trajets entre deux AOM de la Région Occitanie -
-//        exemple : Narbonne ->Béziers ou Montpellier-->Gignac - sont en revanche bien éligibles
-//     )
-//   ● Exclusion des trajets effectué le dimanche ;
-//   ● Exclusion des trajets dont la contribution passager est nulle hormis trajet effectué avant le 1er novembre non inclus ;
-//     Le ticket passager minimum est de 0,5 € par trajet.
+//   ● Contribution passager : minimum 0,50 € par trajet (exception booster : voir plus bas)
+//   ● Distance : 2 à 30 km inclus, 2 à 50 km inclus si l'origine et/ou la destination est dans un
+//     bassin de mobilité (Annexe 1 : Mende, Armagnac, Rodez, Alès)
+//   ● Hors bassin : départ ET arrivée dans la région Occitanie, et dans l'AOM Région ou une AOM locale
+//     (Annexe 2) ; une extrémité en bassin dispense de ce contrôle de région
+//   ● Exclusion des trajets internes à une AOM locale (Annexe 2), ex. Narbonne -> Narbonne, y compris
+//     en bassin ; les trajets entre deux AOM différentes restent éligibles
+//   ● Une AOM locale dont la campagne est terminée (innerEnds, heure de Paris) est réintégrée :
+//     ses trajets internes ne sont plus exclus à partir de cette date
 //   ● 2 trajets / jour / passager ;
 //   ● 6 trajets / jour / conducteur ;
 //
 // Booster (dates dans BOOSTER_DATES, 1re période : octobre 2026) :
 //   ● Distance : 2 à 50 km inclus sur toutes les zones
-//   ● Contribution passager : 0,50 € à 2,00 €
+//   ● Contribution passager : 0,50 € à 2,00 €, sans minimum si un financement employeur est déclaré
 //   ● Incitation fixe par passager, sans déduction de la contribution ni plafond à 2 €
 //
 

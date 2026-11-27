@@ -32,7 +32,7 @@ describe("synthetic / profile", () => {
     assert(errors.some((e) => e.includes("SIRET invalide")), errors.join("\n"));
     assert(errors.some((e) => e.includes("Opérateur inconnu 'beta'")));
     assert(errors.some((e) => e.includes("a@example.com : opérateur inconnu")));
-    assert(errors.some((e) => e.includes("login_siren")));
+    assert(errors.some((e) => e.includes("login_siret")));
     assert(errors.some((e) => e.includes("double")));
   });
 

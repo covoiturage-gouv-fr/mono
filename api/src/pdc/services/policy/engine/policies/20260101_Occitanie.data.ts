@@ -1,6 +1,7 @@
 // ANNEXE 1 - bassins pour lesquels les trajets éligibles sont inférieurs ou égal à 50 km
 
 import { TerritoryCodeEnum } from "../../interfaces/index.ts";
+import { LocalAomEnds } from "../helpers/getLocalAomsAt.ts";
 
 const bassins20260101 = new Map([
   // Bassin de Mende
@@ -621,8 +622,15 @@ const aom20250101 = new Map([
 // SIREN d'AOM absents de l'annexe 2 : Région, et Agen (AOM depuis le 2026-04-28, inconnue du millésime géo)
 const otherAomSirens = ["200053791", "200035459"];
 
-// Délégataires d'AOM : ne sont pas des employeurs (22 trajets d'octobre 2026 pour Keolis Alès)
-const aomDelegateSirens = ["813178498"];
+// Délégataires d'AOM : ne sont pas des employeurs (Keolis Alès, Keolis Tarbes Lourdes Pyrénées)
+const aomDelegateSirens = ["813178498", "393623939"];
+
+// Fin de campagne des AOM locales (heure de Paris) : ajouter une ligne par AOM réintégrée
+const localAomEnds: LocalAomEnds = [
+  { siren: "243400017", date: new Date("2026-08-01T00:00:00+0200") }, // Montpellier
+  { siren: "243400470", date: new Date("2026-09-01T00:00:00+0200") }, // Pays de l'Or
+  { siren: "200066355", date: new Date("2026-09-29T00:00:00+0200") }, // Sète
+];
 
 export const occitanie2026Data = {
   // AOM Région
@@ -631,8 +639,10 @@ export const occitanie2026Data = {
     [TerritoryCodeEnum.Region]: "76",
   },
 
-  // AOM locales
+  // AOM locales (annexe 2 complète) ; la liste exclue à une date = getLocalAomsAt(inner, innerEnds, date)
   inner: aom20250101.keys().toArray() as TerritoryCodeEnum.Mobility[],
+
+  innerEnds: localAomEnds,
 
   // SIREN qui ne comptent pas comme financeur employeur (AOM et délégataires), liste statique : exception booster octobre 2026
   notEmployerSirens: new Set([...aom20250101.keys(), ...otherAomSirens, ...aomDelegateSirens]),

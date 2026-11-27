@@ -13,7 +13,7 @@ export interface UsersInterface {
     territory_id?: number;
     phone?: string;
     role: string;
-    login_siren?: string | null;
+    login_siret?: string | null;
     scopes?: UserScopeInput[];
     // Nombre total de périmètres du compte, indépendant du filtre de périmètre de l'appelant.
     scopes_count?: number;

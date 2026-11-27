@@ -52,9 +52,9 @@ export default function ProfilPage() {
                 {activeScope?.siret && ` (SIRET ${activeScope.siret})`}
               </p>
             )}
-            {user.login_siren && (
+            {(user.login_siret ?? user.login_siren) && (
               <p>
-                <b>SIREN de connexion ProConnect:</b> {user.login_siren}
+                <b>{user.login_siret ? "SIRET" : "SIREN"} de connexion ProConnect:</b> {user.login_siret ?? user.login_siren}
               </p>
             )}
             {scopes.length > 1 && (

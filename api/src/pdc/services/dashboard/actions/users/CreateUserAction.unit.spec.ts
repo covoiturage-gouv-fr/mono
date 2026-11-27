@@ -44,14 +44,14 @@ describe("CreateUserAction", () => {
     assertEquals(sent, [{ email: "u@example.com", siret: "12345678901234", login_url: appUrl }]);
   });
 
-  it("l'e-mail affiche le SIREN de connexion saisi quand il existe", async () => {
+  it("l'e-mail affiche le SIRET de connexion saisi quand il existe", async () => {
     const sent: SendWelcomeEmailParams[] = [];
     const action = makeAction({ sendWelcomeEmail: async (p) => void sent.push(p) });
 
     // deno-lint-ignore no-explicit-any
-    await action.handle({ ...params, login_siren: "987654321" } as any, ctx);
+    await action.handle({ ...params, login_siret: "98765432100012" } as any, ctx);
 
-    assertEquals(sent[0].siret, "987654321");
+    assertEquals(sent[0].siret, "98765432100012");
   });
 
   it("un échec Brevo ne fait pas échouer la création", async () => {

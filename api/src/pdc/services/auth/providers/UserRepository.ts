@@ -7,6 +7,7 @@ export type LocalSiretUser = {
   email: string;
   role: string;
   login_siren: string | null;
+  login_siret: string | null;
   operator_id: number | null;
   territory_id: number | null;
   siret: string | null;
@@ -21,6 +22,7 @@ type UserIdentityRow = {
   email: string;
   role: string;
   login_siren: string | null;
+  login_siret: string | null;
   _id: number;
   analytics_id: string;
 };
@@ -37,7 +39,7 @@ export class UserRepository {
   // Existence du compte : sert à invalider une session dont l'utilisateur a été supprimé.
   async findById(id: number): Promise<UserIdentityRow | null> {
     const rows = await this.denoConnection.query<UserIdentityRow>(sql`
-      SELECT u.email, u.role, u.login_siren, u._id, u.analytics_id
+      SELECT u.email, u.role, u.login_siren, u.login_siret, u._id, u.analytics_id
       FROM ${raw(this.table)} u
       WHERE u._id = ${id}
       LIMIT 1
@@ -52,6 +54,7 @@ export class UserRepository {
         u.email,
         u.role,
         u.login_siren,
+        u.login_siret,
         u._id,
         u.analytics_id
       FROM ${raw(this.table)} u
@@ -73,16 +76,18 @@ export class UserRepository {
     // Périmètres : liste complète (dropdown) + défaut (contexte actif), fallback MIN(_id) porté par le repo.
     const scopes = await this.userScopeRepository.findByUser(identity._id);
     const def = await this.userScopeRepository.findDefault(identity._id);
-    const active = scopes.find((s) =>
-      def?.operator_id != null
-        ? s.operator_id === def.operator_id
-        : def?.territory_id != null && s.territory_id === def.territory_id
-    ) ?? scopes[0];
+    const active =
+      scopes.find((s) =>
+        def?.operator_id != null
+          ? s.operator_id === def.operator_id
+          : def?.territory_id != null && s.territory_id === def.territory_id
+      ) ?? scopes[0];
 
     return {
       email: identity.email,
       role: identity.role,
       login_siren: identity.login_siren,
+      login_siret: identity.login_siret,
       _id: identity._id,
       analytics_id: identity.analytics_id,
       operator_id: def?.operator_id ?? null,

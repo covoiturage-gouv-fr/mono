@@ -33,7 +33,7 @@ type UserRow = {
   role: string;
   territory_id: number | null;
   operator_id: number | null;
-  login_siren?: string | null;
+  login_siret?: string | null;
   scopes_count: number;
   scopes: Array<{ territory_id: number; is_default: boolean }>;
 };
@@ -138,7 +138,7 @@ describe("Multi-périmètre : administration des utilisateurs", () => {
       lastname: "Multi",
       email,
       role: "territory.admin",
-      login_siren: "130025265",
+      login_siret: "13002526500013",
       scopes: [
         { territory_id: TERRITORY_IDFM_ID, is_default: true },
         { territory_id: TERRITORY_LYON_ID },
@@ -149,7 +149,7 @@ describe("Multi-périmètre : administration des utilisateurs", () => {
     let row = await findUser(http, email);
     expect(row.scopes_count).toBe(2);
     expect(row.territory_id).toBe(TERRITORY_IDFM_ID);
-    expect(row.login_siren).toBe("130025265");
+    expect(row.login_siret).toBe("13002526500013");
 
     // La ligne renvoyée par la liste doit pouvoir être réémise telle quelle par le formulaire.
     const updated = await http.put("/v3/dashboard/user", {
@@ -160,7 +160,7 @@ describe("Multi-périmètre : administration des utilisateurs", () => {
       role: "territory.admin",
       operator_id: null,
       territory_id: row.territory_id,
-      login_siren: row.login_siren,
+      login_siret: row.login_siret,
       scopes: [
         { territory_id: TERRITORY_IDFM_ID, is_default: false },
         { territory_id: TERRITORY_LYON_ID, is_default: true },
@@ -210,7 +210,7 @@ describe("Multi-périmètre : administration des utilisateurs", () => {
     await admin.delete(`/v3/dashboard/user/${row.id}`);
   });
 
-  it("la liste masque périmètres et SIREN de connexion sans la permission", async () => {
+  it("la liste masque périmètres et SIRET de connexion sans la permission", async () => {
     const territoryAdmin = new API();
     await territoryAdmin.callback(TERRITORY_EMAIL, TERRITORY_PASSWORD);
 
@@ -218,10 +218,10 @@ describe("Multi-périmètre : administration des utilisateurs", () => {
     // Le compteur reste (il porte les libellés de suppression), le détail disparaît.
     expect(row.scopes_count).toBe(2);
     expect(row.scopes).toEqual([]);
-    expect(row.login_siren).toBe(undefined);
+    expect(row.login_siret).toBe(undefined);
   });
 
-  it("un admin de territoire ne peut octroyer aucun périmètre, ni un login_siren", async () => {
+  it("un admin de territoire ne peut octroyer aucun périmètre, ni un login_siret", async () => {
     const admin = new API();
     await admin.callback(ADMIN_EMAIL, ADMIN_PASSWORD);
     const email = `e2e-guard-${Date.now()}@example.com`;
@@ -261,12 +261,14 @@ describe("Multi-périmètre : administration des utilisateurs", () => {
       })).status,
     ).toBe(403);
 
-    expect((await territoryAdmin.put("/v3/dashboard/user", { ...body, login_siren: "130025265" })).status).toBe(403);
+    expect((await territoryAdmin.put("/v3/dashboard/user", { ...body, login_siret: "13002526500013" })).status).toBe(
+      403,
+    );
 
     await admin.delete(`/v3/dashboard/user/${row.id}`);
   });
 
-  it("une modification par un admin de territoire ne touche ni le SIREN ni le pivot", async () => {
+  it("une modification par un admin de territoire ne touche ni le SIRET ni le pivot", async () => {
     const admin = new API();
     await admin.callback(ADMIN_EMAIL, ADMIN_PASSWORD);
     const email = `e2e-siren-${Date.now()}@example.com`;
@@ -275,7 +277,7 @@ describe("Multi-périmètre : administration des utilisateurs", () => {
       lastname: "Siren",
       email,
       role: "territory.user",
-      login_siren: "130025265",
+      login_siret: "13002526500013",
       scopes: [
         { territory_id: TERRITORY_IDFM_ID, is_default: true },
         { territory_id: TERRITORY_LYON_ID },
@@ -297,9 +299,9 @@ describe("Multi-périmètre : administration des utilisateurs", () => {
     });
     expect(updated.status).toBe(200);
 
-    // Le SIREN de connexion survit : sinon le compte ne pourrait plus s'authentifier.
+    // Le SIRET de connexion survit : sinon le compte ne pourrait plus s'authentifier.
     const after = await findUser(admin, email);
-    expect(after.login_siren).toBe("130025265");
+    expect(after.login_siret).toBe("13002526500013");
     expect(after.scopes_count).toBe(2);
     expect(after.operator_id).toBe(null);
 

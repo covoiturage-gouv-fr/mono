@@ -15,6 +15,7 @@ export interface UserInterface {
   territory_id: number | null;
   siret?: string;
   login_siren?: string | null;
+  login_siret?: string | null;
   scopes?: UserScope[];
   analytics_id?: string;
   organisation?: string;

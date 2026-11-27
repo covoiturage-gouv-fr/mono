@@ -33,13 +33,12 @@ export default function AlertMessage(props: AlertProps) {
 
   return (
     <div
-      className="fr-container"
       style={{
         position: "fixed",
         backgroundColor: "var(--background-default-grey)",
         top: "1rem",
-        left: 0,
-        right: 0,
+        right: "1rem",
+        width: "min(28rem, calc(100vw - 2rem))",
         zIndex: 1000,
       }}
     >

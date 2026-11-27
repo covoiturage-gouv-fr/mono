@@ -37,20 +37,23 @@ export type LocalUserRefusal =
   | "missing_claims"
   | "db_error";
 
-// Gate ProConnect fail-closed : SIREN(ProConnect) doit égaler login_siren (registry.admin bypass).
+type LoginIdentifiers = { login_siret?: string | null; login_siren?: string | null; role: string };
+
+// Gate ProConnect fail-closed : SIREN(ProConnect) doit égaler les 9 premiers chiffres de login_siret,
+// à défaut login_siren (comptes non migrés). registry.admin bypass.
 export function sirenRefusal(
   proconnect: { siren: string },
-  user: { login_siren?: string | null; role: string },
+  user: LoginIdentifiers,
 ): "no_login_siren" | "siren_mismatch" | null {
   if (user.role === "registry.admin") return null; // admin : bypass du gate
-  const loginSiren = user.login_siren?.trim();
-  if (!loginSiren) return "no_login_siren"; // fail-closed explicite : pas de SIREN de connexion, jamais de String(null)
+  const loginSiren = (user.login_siret?.trim() || user.login_siren?.trim())?.substring(0, 9);
+  if (!loginSiren) return "no_login_siren"; // fail-closed explicite : pas d'identifiant de connexion, jamais de String(null)
   return proconnect.siren.substring(0, 9) !== loginSiren ? "siren_mismatch" : null;
 }
 
 export function failsSirenCheck(
   proconnect: { siren: string },
-  user: { login_siren?: string | null; role: string },
+  user: LoginIdentifiers,
 ): boolean {
   return sirenRefusal(proconnect, user) !== null;
 }
