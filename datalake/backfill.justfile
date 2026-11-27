@@ -50,7 +50,7 @@ trusted start="2019-01-01" end="2027-01-01" *args:
   export DBT_THREADS=1
   just backfill-batch "models/trusted --exclude tag:geo" month {{start}} {{end}} {{args}}
 
-# Couche agrégée (~470 modèles) : lectures LOCALES (plus de FDW) => MULTI-THREAD sûr.
+# Couche agrégée (~560 modèles) : lectures LOCALES (plus de FDW) => MULTI-THREAD sûr.
 # Deux passes (filtered_carpools -> time_filter honore --vars start/end), bornes étendues
 # à des périodes entières : une tranche plus courte que le grain remplacerait sa ligne par
 # le seul morceau calculé (delete+insert par clé).

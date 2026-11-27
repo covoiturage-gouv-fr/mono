@@ -1,5 +1,6 @@
 {#
-  Squelette commun des agrégats par périmètre et direction (territory, fraud, operators).
+  Squelette commun des agrégats par périmètre et direction (territory, fraud, operators,
+  incited_carpools).
 
   - kind : préfixe des modèles et tag (territory_<grain>_<perim>_<direction>)
   - columns : SQL des colonnes agrégées (sortie d'une macro *_agg_columns)

@@ -1,0 +1,23 @@
+version: 2
+models:
+  - name: mb_territory_monthly_user_acquisition
+    description: >
+      Vue app_metabase des utilisateurs actifs, nouveaux et cumulés par
+      epci/dep/reg/country, rôle et mois, lue sur user_<perim>_acquisition_month.
+      Filtrer toujours sur perim : les codes INSEE dep et reg se recouvrent
+      ('11' = Aude et Île-de-France, '75' = Paris et Nouvelle-Aquitaine).
+    columns:
+      - name: perim
+        data_type: text
+      - name: code
+        data_type: character varying
+      - name: role
+        data_type: text
+      - name: active_users
+        data_type: bigint
+      - name: new_users
+        data_type: bigint
+      - name: month
+        data_type: text
+      - name: cumulative_users
+        data_type: numeric

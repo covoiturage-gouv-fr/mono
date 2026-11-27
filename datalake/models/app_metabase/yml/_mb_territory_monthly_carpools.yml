@@ -1,0 +1,40 @@
+version: 2
+models:
+  - name: mb_territory_monthly_carpools
+    description: >
+      Vue app_metabase des trajets et de leur incitation par epci/dep/reg/country et par
+      mois, lue sur territory_month_<perim>_both. Contrairement à mb_aom_monthly_carpools,
+      pas de distinction self/other. Collectivité = SIREN epci ou AOM (trusted carpools) :
+      une incitation départementale passe par l'epci/AOM, sinon elle tombe en other.
+      Filtrer toujours sur perim : les codes INSEE dep et reg se recouvrent
+      ('11' = Aude et Île-de-France, '75' = Paris et Nouvelle-Aquitaine).
+    columns:
+      - name: perim
+        data_type: text
+      - name: code
+        data_type: character varying
+      - name: date
+        data_type: text
+      - name: carpools
+        data_type: bigint
+      - name: carpools_with_incentive
+        data_type: bigint
+      - name: incited_pct
+        data_type: numeric
+      - name: carpools_with_collectivite_incentive
+        data_type: bigint
+        description: >
+          Trajets avec une incitation d'une collectivité (epci ou AOM) quelconque, pas
+          seulement celle du territoire : un trajet inter A→B financé par A compte aussi
+          pour B (direction both). Pour le financement propre au territoire, voir
+          mb_aom_monthly_carpools (self/other, aom/aomreg uniquement).
+      - name: carpools_with_operator_incentive
+        data_type: bigint
+      - name: carpools_with_operator_incentive_only
+        data_type: bigint
+      - name: carpools_with_other_incentive
+        data_type: bigint
+      - name: intra_carpools
+        data_type: bigint
+      - name: inter_carpools
+        data_type: bigint

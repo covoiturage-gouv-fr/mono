@@ -1,0 +1,21 @@
+version: 2
+models:
+  - name: mb_territory_monthly_user_carpools
+    description: >
+      Vue app_metabase du nombre de trajets par utilisateur, epci/dep/reg/country, rôle
+      et mois.
+      Filtrer toujours sur perim : les codes INSEE dep et reg se recouvrent
+      ('11' = Aude et Île-de-France, '75' = Paris et Nouvelle-Aquitaine).
+    columns:
+      - name: perim
+        data_type: text
+      - name: code
+        data_type: character varying
+      - name: date
+        data_type: text
+      - name: role
+        data_type: text
+      - name: user_id
+        data_type: text
+      - name: carpools
+        data_type: bigint
