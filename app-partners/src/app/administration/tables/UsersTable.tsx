@@ -310,8 +310,8 @@ export default function UsersTable(props: { title: string; territoryId: number |
       )}
       {alert === "create" && (
         <AlertMessage
-          title="Utilisateur ajouté avec succès"
-          message="L'utilisateur a été enregistré dans la base de données."
+          title="Invitation envoyée"
+          message="L'utilisateur a reçu un e-mail d'invitation."
           typeAlert={alert}
           onClose={() => setAlert(undefined)}
         />
