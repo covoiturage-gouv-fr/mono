@@ -1,4 +1,5 @@
 "use client";
+import { fr } from "@codegouvfr/react-dsfr";
 import TerritoryAutocomplete from "@/components/common/TerritoryAutocomplete";
 import { type TerritoryOption } from "@/helpers/api";
 import { type UserScopeInput } from "@/interfaces/dataInterface";
@@ -66,7 +67,7 @@ export default function UserScopesEditor(props: {
         excludeIds={scopes.map((s) => s.territory_id).filter((id): id is number => !!id)}
         onChange={add}
       />
-      <Table data={rows} headers={["Territoire", "Défaut", "Action"]} fixed />
+      <Table data={rows} headers={["Territoire", "Défaut", "Action"]} fixed className={fr.cx("fr-mb-0")} />
     </>
   );
 }

@@ -396,6 +396,8 @@ export default function UsersTable(props: { title: string; territoryId: number |
       <Modal
         open={modal.openModal}
         title={modal.typeModal === "create" ? "Inviter un utilisateur" : modal.modalTitle(modal.typeModal)}
+        inlineButtons={modal.typeModal !== "delete"}
+        submitLabel={{ create: "Inviter", update: "Enregistrer", delete: "Supprimer" }[modal.typeModal]}
         onOpen={async () => {
           if (modal.typeModal === "update" || modal.typeModal === "create") {
             await refetchOperators();
