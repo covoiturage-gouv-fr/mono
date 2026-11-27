@@ -79,7 +79,7 @@ describe("userFormSchema", () => {
   });
 
   it("exige un périmètre pour un rôle territoire quand les périmètres sont édités", () => {
-    expect(fieldErrors({ ...valid, scopes: [] }).scopes).toEqual(["Ajoutez au moins un périmètre"]);
+    expect(fieldErrors({ ...valid, scopes: [] }).scopes).toEqual(["Ajoutez au moins une géographie"]);
     // territory.admin n'édite pas les périmètres : scopes absent du corps.
     expect(fieldErrors({ ...valid, scopes: undefined }).scopes).toBeUndefined();
   });

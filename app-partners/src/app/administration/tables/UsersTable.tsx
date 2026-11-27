@@ -495,7 +495,7 @@ export default function UsersTable(props: { title: string; territoryId: number |
               {/* Périmètres : territoires seulement, pour registry.admin. */}
               {canManageScopes && isTerritoryTarget && (
                 <fieldset className={fr.cx("fr-fieldset")}>
-                  <legend className={fr.cx("fr-fieldset__legend")}>Périmètres</legend>
+                  <legend className={fr.cx("fr-fieldset__legend")}>Géographies</legend>
                   <div className={fr.cx("fr-fieldset__element")}>
                     {features.multiSiret ? (
                       <UserScopesEditor

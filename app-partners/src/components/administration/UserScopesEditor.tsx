@@ -41,7 +41,7 @@ export default function UserScopesEditor(props: {
       key={`def-${s.territory_id}`}
       type="radio"
       name="scope-default"
-      aria-label={`Périmètre par défaut : ${nameOf(s)}`}
+      aria-label={`Géographie par défaut : ${nameOf(s)}`}
       checked={!!s.is_default}
       onChange={() => setDefault(s.territory_id)}
     />,
@@ -50,7 +50,7 @@ export default function UserScopesEditor(props: {
       iconId="fr-icon-delete-bin-line"
       priority="tertiary no outline"
       size="small"
-      title="Retirer le périmètre"
+      title="Retirer la géographie"
       disabled={scopes.length <= 1}
       onClick={() => remove(s.territory_id)}
     >
@@ -62,7 +62,7 @@ export default function UserScopesEditor(props: {
     <>
       <TerritoryAutocomplete
         value={null}
-        label="Ajouter un périmètre"
+        label="Ajouter une géographie"
         excludeIds={scopes.map((s) => s.territory_id).filter((id): id is number => !!id)}
         onChange={add}
       />

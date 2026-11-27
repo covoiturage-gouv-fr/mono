@@ -54,7 +54,7 @@ export const userFormSchema = z
       ctx.addIssue({ code: "custom", path: ["operator_id"], message: "Sélectionnez un opérateur" });
     }
     if (row.role.startsWith("territory.") && row.scopes?.length === 0) {
-      ctx.addIssue({ code: "custom", path: ["scopes"], message: "Ajoutez au moins un périmètre" });
+      ctx.addIssue({ code: "custom", path: ["scopes"], message: "Ajoutez au moins une géographie" });
     }
   });
 
