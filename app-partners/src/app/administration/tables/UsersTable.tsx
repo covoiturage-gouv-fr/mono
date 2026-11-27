@@ -413,30 +413,34 @@ export default function UsersTable(props: { title: string; territoryId: number |
               <fieldset className={fr.cx("fr-fieldset")}>
                 <legend className={fr.cx("fr-fieldset__legend")}>Identité</legend>
                 <div className={fr.cx("fr-fieldset__element")}>
-                  <Input
-                    label="Prénom"
-                    state={modal.errors?.firstname ? "error" : "default"}
-                    stateRelatedMessage={modal.errors?.firstname ?? ""}
-                    nativeInputProps={{
-                      "aria-invalid": !!modal.errors?.firstname,
-                      type: "text",
-                      value: (modal.currentRow.firstname as string) ?? "",
-                      onChange: (e) => modal.validateInputChange(userFormSchema, "firstname", e.target.value),
-                    }}
-                  />
-                </div>
-                <div className={fr.cx("fr-fieldset__element")}>
-                  <Input
-                    label="Nom"
-                    state={modal.errors?.lastname ? "error" : "default"}
-                    stateRelatedMessage={modal.errors?.lastname ?? ""}
-                    nativeInputProps={{
-                      "aria-invalid": !!modal.errors?.lastname,
-                      type: "text",
-                      value: (modal.currentRow.lastname as string) ?? "",
-                      onChange: (e) => modal.validateInputChange(userFormSchema, "lastname", e.target.value),
-                    }}
-                  />
+                  <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters")}>
+                    <div className={fr.cx("fr-col-12", "fr-col-sm-6")}>
+                      <Input
+                        label="Prénom"
+                        state={modal.errors?.firstname ? "error" : "default"}
+                        stateRelatedMessage={modal.errors?.firstname ?? ""}
+                        nativeInputProps={{
+                          "aria-invalid": !!modal.errors?.firstname,
+                          type: "text",
+                          value: (modal.currentRow.firstname as string) ?? "",
+                          onChange: (e) => modal.validateInputChange(userFormSchema, "firstname", e.target.value),
+                        }}
+                      />
+                    </div>
+                    <div className={fr.cx("fr-col-12", "fr-col-sm-6")}>
+                      <Input
+                        label="Nom"
+                        state={modal.errors?.lastname ? "error" : "default"}
+                        stateRelatedMessage={modal.errors?.lastname ?? ""}
+                        nativeInputProps={{
+                          "aria-invalid": !!modal.errors?.lastname,
+                          type: "text",
+                          value: (modal.currentRow.lastname as string) ?? "",
+                          onChange: (e) => modal.validateInputChange(userFormSchema, "lastname", e.target.value),
+                        }}
+                      />
+                    </div>
+                  </div>
                 </div>
                 <div className={fr.cx("fr-fieldset__element")}>
                   <Input
