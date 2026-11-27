@@ -8,7 +8,7 @@ import { features } from "@/config/features";
 import { type TerritoryOption } from "@/helpers/api";
 import { getRolesList, isEditableRole, isOperator, isTerritory, labelRole } from "@/helpers/auth";
 import { operatorSiret, siretAfterRoleChange, siretAfterScopesChange, suggestSiret, userFormSchema } from "@/helpers/userForm";
-import { roleColor, territoriesCell } from "@/helpers/usersTable";
+import { ROLE_LEGEND, roleColor, territoriesCell } from "@/helpers/usersTable";
 import { useOperatorsList, useTerritoriesList, useUsersList } from "@/hooks/api";
 import { FormValidationError, useActionsModal } from "@/hooks/useActionsModal";
 import { useUrlSearch } from "@/hooks/useUrlSearch";
@@ -73,7 +73,8 @@ export default function UsersTable(props: { title: string; territoryId: number |
   const totalPages = data?.meta.totalPages ?? 1;
   const totalRecords = data?.meta.total ?? 0;
 
-  const headers = ["Nom", "Adresse mail", "Rôle", "Entités", "Actions"];
+  // « ProConnect » = SIRET de connexion, renvoyé par l'API seulement à registry.admin.
+  const headers = ["Rôle", "Nom", "Adresse mail", ...(canManageScopes ? ["ProConnect"] : []), "Entités", "Actions"];
   const { data: operatorsData, refetch: refetchOperators } = useOperatorsList({ limit: 100 });
   const operatorsList = () => {
     if (user?.operator_id) {
@@ -197,18 +198,19 @@ export default function UsersTable(props: { title: string; territoryId: number |
   const roleColumn = (role: string) => {
     const color = roleColor(role);
     return (
-      <span className="role-pill">
-        {color && <span className={`role-pill__dot role-pill__dot--${color}`} aria-hidden="true" />}
-        {labelRole(role)}
-      </span>
+      <Tooltip kind="hover" title={labelRole(role)}>
+        <span className={`role-pill__dot role-pill__dot--${color ?? "grey"}`} />
+        <span className={fr.cx("fr-sr-only")}>{labelRole(role)}</span>
+      </Tooltip>
     );
   };
 
   const dataTable =
     data?.data?.map((d) => [
+      roleColumn(d.role),
       ellipsis(`${d.firstname} ${d.lastname}`),
       ellipsis(d.email),
-      roleColumn(d.role),
+      ...(canManageScopes ? [d.login_siret ?? ""] : []),
       entitiesColumn(d),
       rowActions(d),
     ]) ?? [];
@@ -384,6 +386,14 @@ export default function UsersTable(props: { title: string; territoryId: number |
       )}
       <AdminTable data={dataTable} headers={headers} />
       <Pagination count={totalPages} defaultPage={currentPage} onChange={onChangePage} />
+      <ul className="role-legend" aria-label="Légende des rôles">
+        {ROLE_LEGEND.map(({ color, label }) => (
+          <li key={color} className="role-pill">
+            <span className={`role-pill__dot role-pill__dot--${color}`} aria-hidden="true" />
+            {label}
+          </li>
+        ))}
+      </ul>
       <Modal
         open={modal.openModal}
         title={modal.typeModal === "create" ? "Inviter un utilisateur" : modal.modalTitle(modal.typeModal)}

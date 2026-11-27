@@ -134,6 +134,18 @@
   &--green {
     background-color: var(--background-flat-green-emeraude);
   }
+  &--grey {
+    background-color: var(--background-flat-grey);
+  }
+}
+.role-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  list-style: none;
+  padding: 0;
+  margin-top: 1rem;
+  font-size: 0.875rem;
 }
 
 // Accueil : « covoiturage.beta.gouv.fr » ne tient pas sur une ligne de titre en mobile.

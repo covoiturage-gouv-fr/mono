@@ -17,6 +17,13 @@ export const territoriesCell = (
 
 const ROLE_COLORS = { registry: "blue", operator: "orange", territory: "green" } as const;
 
+// Légende du tableau : une pastille par famille de rôle.
+export const ROLE_LEGEND = [
+  { color: ROLE_COLORS.registry, label: "Registre (RPC)" },
+  { color: ROLE_COLORS.operator, label: "Opérateur" },
+  { color: ROLE_COLORS.territory, label: "Territoire" },
+] as const;
+
 // Pastille de la colonne « Rôle » : la couleur suit la famille (préfixe avant le point).
 export const roleColor = (role: string): (typeof ROLE_COLORS)[keyof typeof ROLE_COLORS] | undefined =>
   ROLE_COLORS[role.split(".")[0] as keyof typeof ROLE_COLORS];
