@@ -32,7 +32,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --locked --no-dev
 
 # Stage 2 -- runtime : image minimale, pas de compilateurs
-FROM python:3.13-slim-bookworm AS runtime
+FROM python:3.15-slim-bookworm AS runtime
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
       ca-certificates \
